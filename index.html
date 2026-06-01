@@ -1159,7 +1159,7 @@ function openModal(id){
     gifHtml='<div class="msec">Kepler.gl Live Recordings</div><div class="mgal mgal-gifs">';
     d.gifs.forEach(g=>{
       const src=eval(g.src);
-      gifHtml+='<figure class="mgal-fig"><img src="'+src+'" alt="'+g.cap+'" loading="lazy" style="width:100%;border-radius:8px;display:block;"><figcaption>'+g.cap+'</figcaption></figure>';
+      gifHtml+='<figure class="mgal-fig"><img src="'+src+'" alt="'+g.cap+'" loading="lazy" style="width:100%;border-radius:8px;display:block;cursor:zoom-in;pointer-events:auto;" onclick="zoomImg(this)"><figcaption>'+g.cap+'</figcaption></figure>';
     });
     gifHtml+='</div>';
   }
@@ -1182,11 +1182,11 @@ function openModal(id){
 
 function zoomImg(img){
   const ov=document.createElement("div");
-  ov.style.cssText="position:fixed;inset:0;z-index:9999;background:rgba(4,6,14,.96);display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:2rem";
+  ov.style.cssText="position:fixed;inset:0;z-index:9999;background:rgba(4,6,14,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:zoom-out;padding:1rem;gap:.75rem";const hint=document.createElement("span");hint.textContent="Click anywhere to close";hint.style.cssText="font-family:IBM Plex Mono,monospace;font-size:.65rem;color:rgba(255,255,255,.35);position:absolute;bottom:1.25rem;";
   const clone=document.createElement("img");
   clone.src=img.src;
-  clone.style.cssText="max-width:100%;max-height:90vh;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.8)";
-  ov.appendChild(clone);
+  clone.style.cssText="max-width:95vw;max-height:95vh;width:auto;height:auto;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.8);object-fit:contain;";
+  ov.appendChild(clone);ov.appendChild(hint);
   ov.onclick=(e)=>{e.stopPropagation();document.body.removeChild(ov);};
   document.body.appendChild(ov);
 }
