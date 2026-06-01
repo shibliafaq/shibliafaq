@@ -31,7 +31,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--t);font-family:"IBM Plex Sans",sans-serif;font-weight:400;line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--t);font-family:"IBM Plex Sans",sans-serif;font-weight:400;line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased;text-align:justify}
 a{color:inherit;text-decoration:none}
 ::selection{background:var(--ambd);color:var(--amber)}
 ::-webkit-scrollbar{width:3px}
@@ -168,13 +168,13 @@ section{position:relative;z-index:1;padding:88px 5%}
 .sl::after{content:"";width:26px;height:1px;background:var(--amber);opacity:.5}
 .st{font-family:"Syne",sans-serif;font-weight:800;font-size:clamp(1.9rem,3.8vw,2.85rem);letter-spacing:-.04em;color:var(--t);line-height:1.1;margin-bottom:.9rem}
 .st em{font-style:italic;font-family:"Cormorant Garamond",serif;font-weight:400;font-size:1.15em;color:var(--amber)}
-.ss{font-size:.92rem;color:var(--t2);max-width:520px;line-height:1.75}
+.ss{text-align:justify;font-size:.92rem;color:var(--t2);max-width:520px;line-height:1.75}
 
 /* ── ABOUT ───────────────────────────────────────────────── */
 #about{background:var(--bg);padding-top:80px}
 .ag{display:grid;grid-template-columns:1.1fr 1fr;gap:4.5rem;align-items:start;margin-top:3rem}
-.at{font-size:.93rem;color:var(--t2);line-height:1.88}
-.at p{margin-bottom:1.2rem}
+.at{font-size:.93rem;color:var(--t2);line-height:1.88;text-align:justify}
+.at p{margin-bottom:1.2rem;text-align:justify}
 .at strong{color:var(--t);font-weight:500}
 .apull{border-left:2px solid var(--amber);padding-left:1.2rem;font-family:"Cormorant Garamond",serif;font-style:italic;font-weight:400;font-size:1.15rem;color:var(--t);line-height:1.6;margin:1.5rem 0}
 .acs{display:flex;flex-direction:column;gap:.7rem}
@@ -259,7 +259,7 @@ section{position:relative;z-index:1;padding:88px 5%}
 .pst{display:inline-flex;align-items:center;gap:.3rem;font-family:"IBM Plex Mono",monospace;font-size:.62rem;padding:.2rem .6rem;border-radius:99px}
 .sr2{color:var(--amber);background:var(--ambd);border:1px solid var(--ambm)}
 .sp{color:var(--violet);background:var(--viod);border:1px solid rgba(157,125,250,.25)}
-.pabs{font-size:.79rem;color:var(--t2);line-height:1.65;margin-top:.56rem}
+.pabs{text-align:justify;font-size:.79rem;color:var(--t2);line-height:1.65;margin-top:.56rem}
 
 /* ── SKILLS ──────────────────────────────────────────────── */
 .sw{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:.88rem;margin-top:2.75rem}
@@ -304,7 +304,7 @@ footer{padding:1.6rem 5%;border-top:1px solid var(--bd);display:flex;align-items
 .mc:hover{background:rgba(255,255,255,.1);color:var(--t)}
 .mcat{font-family:"IBM Plex Mono",monospace;font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(--amber);margin-bottom:.6rem}
 .mtit{font-family:"Syne",sans-serif;font-weight:800;font-size:clamp(1.3rem,2.8vw,1.85rem);letter-spacing:-.03em;color:var(--t);margin-bottom:.85rem;line-height:1.15}
-.mdesc{font-size:.87rem;color:var(--t2);line-height:1.82;margin-bottom:1.5rem}
+.mdesc{text-align:justify;font-size:.87rem;color:var(--t2);line-height:1.82;margin-bottom:1.5rem}
 .mmets{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.88rem;padding:1.25rem;background:var(--bgc);border-radius:var(--rl);margin-bottom:1.5rem}
 .mmv{font-family:"Syne",sans-serif;font-weight:800;font-size:1.4rem;letter-spacing:-.03em}
 .mml{font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;color:var(--t2);margin-top:.12rem}
@@ -496,6 +496,17 @@ img{-webkit-user-drag:none;user-select:none;}
 .mgal img,.mgal-gifs img{pointer-events:auto;}
 @media(max-width:600px){.arch-slide{padding:.5rem;}.arch-arrow{opacity:.4!important;}#archHint{display:none;}}
 
+
+/* Keep headings + labels left-aligned */
+h1,h2,h3,h4,h5,h6,.sl,.st,.sgt,.pn,.ptit,.pm,.pst,.tag,.mc,.mcat,.mtit,.msec,
+nav,.nav,.hd,.ht,.hero-text,.skill-label,button,.arch-logo,.arch-info,.arch-counter,
+.arch-btn,.arch-close,.ml,.mlp,.mlg,.pcat,.pcb *,.pfcta,.pfcta *,
+.metric-val,.metric-lab,.exp-title,.exp-org,.cf-label,
+#archModal *{text-align:left;}
+.mtit{text-align:left;}
+/* Keep centered elements */
+.arch-dots,#archDots,#archHint,.hero-center{text-align:center;}
+
 </style>
 </head>
 <body>
@@ -597,7 +608,7 @@ img{-webkit-user-drag:none;user-select:none;}
   <div class="ag">
     <div class="at r rd2">
       <p>I&rsquo;m a licensed architect with <strong>4+ years across professional design and project delivery</strong> who made a deliberate pivot. After managing architectural projects across India and leading a $720K portfolio spanning commercial, educational, and residential spaces, I realised that the escalating urban and climate crises I witnessed could not be solved at the building scale alone.</p>
-      <div class="apull">&ldquo;To effectively tackle the climate crisis in our cities, I needed a deeper understanding of city-scale informatics &mdash; so I set out to build it.&rdquo;</div>
+      <div class="apull">&ldquo;To effectively tackle the climate crisis in our cities, I needed a deeper understanding of city-scale informatics, so I set out to build it.&rdquo;</div>
       <p>Now completing an <strong>M.Sc. in Smart and Sustainable Cities at KFUPM</strong> (GPA 4.0/4.0), I combine architectural spatial thinking with satellite remote sensing, GIS, and machine learning to build evidence-based heat adaptation tools for the Arabian Peninsula.</p>
       <p>Whether driving innovation in a research lab, a spatial data consultancy, or a municipal smart city team, I bridge the gap between <strong>technical data science and the physical realities of urban design</strong>.</p>
     </div>
@@ -646,7 +657,7 @@ img{-webkit-user-drag:none;user-select:none;}
 <section id="projects">
   <div class="sl r">Research &amp; Projects</div>
   <h2 class="st r rd1">Six projects.<br><em>One direction.</em></h2>
-  <p class="ss r rd2">From architectural BIM to real-time satellite pipelines &mdash; all converging on one question: how do we make cities survive the climate crisis?</p>
+  <p class="ss r rd2">From architectural BIM to real-time satellite pipelines, all converging on one question: how do we make cities survive the climate crisis?</p>
 
   <!-- Featured — thesis, under development -->
   <div class="pf r rd3" onclick="openModal('thesis')">
@@ -657,7 +668,7 @@ img{-webkit-user-drag:none;user-select:none;}
         <span class="pfb" style="color:var(--t2);background:rgba(255,255,255,.04);border-color:var(--bd2)">KFUPM &middot; Dept. Architecture &amp; City Design</span>
       </div>
       <h3 class="pft">A Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation</h3>
-      <p class="pfd">Built on a <strong>Design Science methodology</strong>, this near-real-time digital twin platform transforms retrospective urban climate studies into live decision-support tools. Monitors multi-city thermal variations across five Saudi climate zones and urban typologies &mdash; <strong>Riyadh, Jeddah, Dammam, Makkah, and NEOM</strong> &mdash; combining satellite feeds with demographic layers to deploy an equity-focused Heat Vulnerability Index that prioritises interventions in underserved residential communities.</p>
+      <p class="pfd">Built on a <strong>Design Science methodology</strong>, this near-real-time digital twin platform transforms retrospective urban climate studies into live decision-support tools. Monitors multi-city thermal variations across five Saudi climate zones and urban typologies across <strong>Riyadh, Jeddah, Dammam, Makkah, and NEOM</strong>, combining satellite feeds with demographic layers to deploy an equity-focused Heat Vulnerability Index that prioritises interventions in underserved residential communities.</p>
       <div class="pfm">
         <div><div class="pfmv" style="color:var(--cyan)">&lt;10 min</div><div class="pfml">Pipeline latency</div></div>
         <div><div class="pfmv" style="color:var(--amber)">&lt;1.5&deg;C</div><div class="pfml">Forecast RMSE</div></div>
@@ -699,21 +710,21 @@ img{-webkit-user-drag:none;user-select:none;}
       <div class="ptit">A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments</div>
       <div class="pm">Shibli Afaq &middot; Advisors: Dr. Yusuf A. Adenle &amp; Dr. Muhammad Aamir Basheer &middot; 2025 &middot; Target: Landscape and Urban Planning / Urban Climate</div>
       <span class="pst sr2">&#x23F3; Under Review</span>
-      <div class="pabs">The traditional urban design approach taken by most hot-arid cities often has little regard for the auditory environment when designing public places, negatively impacting thermal comfort and leading to under-utilisation of urban spaces. This systematic review synthesises 22 articles (2005&ndash;2025), creating an auditory-thermal mapping of urban design to draw conclusions for Saudi Arabia&rsquo;s Vision 2030 Programme. Findings across five categories indicate that in hot-arid climates, soundscapes can positively affect thermal comfort perception, decrease stress, and support psychological recovery through green and blue infrastructure. Integrated thermo-acoustic planning techniques and a context-responsive soundscape tool produce actionable, evidence-based recommendations for walkable, comfortable public environments aligned with the Vision 2030 Quality of Life Programme.</div>
+      <div class="pabs">Systematic review of 22 articles (2005&ndash;2025) examining how soundscape design affects thermal comfort in hot-arid cities. Findings show soundscapes can reduce perceived heat stress and support psychological recovery through green and blue infrastructure, yielding evidence-based recommendations for walkable public spaces aligned with Vision 2030.</div>
     </div></div>
 
     <div class="pi r rd2"><div class="pn">02</div><div>
       <div class="ptit">GIS and Remote Sensing-Based Assessment of Urban Heat Island in the Dammam Metropolitan Area, Saudi Arabia</div>
       <div class="pm">Shibli Afaq, Sultan Aldhafeeri &middot; Supervisor: Dr. Baqer Al-Ramadan &middot; 2026 &middot; Target: Urban Climate / Sustainable Cities and Society</div>
       <span class="pst sp">&#x270D;&#xFE0F; Manuscript in Preparation</span>
-      <div class="pabs">This paper evaluates patterns of land surface temperature (LST) and heat vulnerability across the Dammam Metropolitan Area (DMA) using a five-step GIS and remote sensing model. LST was derived from Landsat 8/9 TIRS data for 2020, 2023, and 2025; NDVI and NDBI from Sentinel-2 MSI; and population exposure from WorldPop 2020, processed over a 500&nbsp;m fishnet grid with 12,954 cells. NDBI is the strongest LST predictor (r&nbsp;=&nbsp;0.715, R&sup2;&nbsp;=&nbsp;0.511 in 2020). Composite HVI classified 92.6% of cells as High vulnerability. The dual-threshold exposure map identified 229 cells (57.3&nbsp;km&sup2;, 1.8% of DMA) as Very High Exposure. The HVI 99% Hot Spot was 4.18 times larger than the LST-only equivalent, confirming that multi-factor vulnerability analysis reveals planning priorities that temperature-only mapping does not show.</div>
+      <div class="pabs">Five-step GIS &amp; remote sensing model assessing LST and heat vulnerability across the Dammam Metropolitan Area using Landsat 8/9, Sentinel-2, and WorldPop over a 500&nbsp;m fishnet (12,954 cells). NDBI is the strongest LST predictor (r&nbsp;=&nbsp;0.715). Composite HVI classified 92.6% of cells as High vulnerability, with the HVI hot spot 4.18&times; larger than temperature-only mapping, revealing planning priorities hidden by single-factor analysis.</div>
     </div></div>
 
     <div class="pi r rd3"><div class="pn">03</div><div>
       <div class="ptit">ITS-Based Congestion Management for Event Corridors in Arid Cities: A Case Study of the Aramco Stadium Corridor, Al Khobar</div>
       <div class="pm">Shibli Afaq, H. Alnasser, H. Alghamdi, S. Aldhafeeri &middot; Instructor: Dr. Muhammad Abdullah &middot; 2026 &middot; Target: Journal of Intelligent Transportation Systems / Transportation Research Part C</div>
       <span class="pst sp">&#x270D;&#xFE0F; Manuscript in Preparation</span>
-      <div class="pabs">The Aramco Stadium corridor in Al Khobar, with a venue capacity of 47,000, faces chronic congestion at 48.5% during evening rush hour (TomTom 2025), with conditions projected to worsen ahead of the 2027 AFC Asian Cup and 2034 FIFA World Cup. This paper develops an integrated ITS strategy evaluating four cumulative alternatives through a weighted multi-criteria matrix: Adaptive Traffic Signal Control (ATSC) as the operational layer, ATMS/ATIS as the monitoring layer, smart parking and park-and-ride as the event-access layer, and demand-management pricing as the final layer. The optimal strategy (Alternative C) projects 20&ndash;35% travel time reduction within a SAR 28&ndash;47M three-stage implementation plan, positioning the corridor as a pilot for Vision 2030 smart mobility.</div>
+      <div class="pabs">Al Khobar&rsquo;s Aramco Stadium corridor (47,000-seat capacity) suffers 48.5% evening congestion, set to worsen before the 2034 FIFA World Cup. Four cumulative ITS alternatives were evaluated via weighted multi-criteria analysis, from adaptive signal control to demand-management pricing. The optimal strategy projects 20&ndash;35% travel time reduction within a SAR 28&ndash;47M plan, piloting Vision 2030 smart mobility.</div>
     </div></div>
   </div>
 </section>
@@ -801,7 +812,7 @@ img{-webkit-user-drag:none;user-select:none;}
 <section id="contact">
   <div class="sl r" style="justify-content:center">Contact</div>
   <h2 class="st r rd1" style="text-align:center">Let&rsquo;s talk <em>research</em></h2>
-  <p class="ss r rd2" style="margin:0 auto;text-align:center;max-width:560px">I&rsquo;m actively looking for <strong style="color:var(--t)">fully funded PhD positions</strong> in urban climate informatics, smart city analytics, and GIS-based climate adaptation &mdash; particularly in the UK, EU, North America, and the GCC. If you&rsquo;re working on heat resilience, digital twins, or spatial data for sustainable cities, I&rsquo;d love to connect. Also open to smart city research roles and GIS consultancy in KSA.</p>
+  <p class="ss r rd2" style="margin:0 auto;text-align:center;max-width:560px">I&rsquo;m actively looking for <strong style="color:var(--t)">fully funded PhD positions</strong> in urban climate informatics, smart city analytics, and GIS-based climate adaptation, particularly in the UK, EU, North America, and the GCC. If you&rsquo;re working on heat resilience, digital twins, or spatial data for sustainable cities, I&rsquo;d love to connect. Also open to smart city research roles and GIS consultancy in KSA.</p>
   <a href="mailto:shibliafaq4@gmail.com" class="ce r rd3">shibliafaq4@gmail.com</a>
 
   <!-- Contact form -->
