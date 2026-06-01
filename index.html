@@ -447,7 +447,33 @@ footer{padding:1.6rem 5%;border-top:1px solid var(--bd);display:flex;align-items
 #sa-progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#f59e0b,#f97316);z-index:9999;width:0%;transition:width .1s linear;pointer-events:none;}
 
 /* ══ CURSOR GLOW ════════════════════════════════════════════════ */
-#sa-cursor-glow{position:fixed;width:260px;height:260px;border-radius:50%;pointer-events:none;z-index:1;background:radial-gradient(circle,rgba(245,158,11,.07),transparent 70%);transform:translate(-50%,-50%);will-change:transform;}
+#sa-cursor-glow{
+  position:fixed;top:0;left:0;
+  width:380px;height:380px;border-radius:50%;
+  pointer-events:none;
+  z-index:9998;
+  background:radial-gradient(circle at center,rgba(245,158,11,.13) 0%,rgba(245,158,11,.05) 35%,transparent 70%);
+  transform:translate(-50%,-50%);
+  will-change:transform;
+  mix-blend-mode:screen;
+  transition:transform .08s linear;
+}
+#sa-cursor-dot{
+  position:fixed;top:0;left:0;
+  width:8px;height:8px;border-radius:50%;
+  pointer-events:none;
+  z-index:9999;
+  background:rgba(245,158,11,.85);
+  transform:translate(-50%,-50%);
+  will-change:transform;
+  mix-blend-mode:screen;
+  transition:transform .03s linear,width .2s,height .2s,opacity .2s;
+  box-shadow:0 0 10px rgba(245,158,11,.6);
+}
+body:has(a:hover) #sa-cursor-dot,
+body:has(button:hover) #sa-cursor-dot{
+  width:20px;height:20px;opacity:.6;
+}
 
 /* ══ SCROLL REVEAL ══════════════════════════════════════════════ */
 .sa-reveal{opacity:1;transform:none;} /* elements always visible */
@@ -512,6 +538,7 @@ nav,.nav,.hd,.ht,.hero-text,.skill-label,button,.arch-logo,.arch-info,.arch-coun
 <body>
 <div id="sa-progress"></div>
 <div id="sa-cursor-glow"></div>
+<div id="sa-cursor-dot"></div>
 
 <div id="pg-load">
   <span class="pg-logo">S<em>A</em></span>
@@ -1476,9 +1503,45 @@ const ARCH_PAGES = [
 /* ══ CURSOR GLOW ═════════════════════════════════════════════ */
 (function(){
   var g=document.getElementById('sa-cursor-glow');
-  if(!g||!window.matchMedia('(hover:hover)').matches)return;
+  var d=document.getElementById('sa-cursor-dot');
+  if(!g||!window.matchMedia('(hover:hover)').matches){
+    if(g)g.style.display='none';
+    if(d)d.style.display='none';
+    return;
+  }
+  // Hide default cursor on desktop
+  document.body.style.cursor='none';
+  // Add custom cursor style for all interactive elements
+  var style=document.createElement('style');
+  style.textContent='a,button,[onclick]{cursor:none!important;}';
+  document.head.appendChild(style);
+
+  var mx=window.innerWidth/2, my=window.innerHeight/2;
+  var gx=mx, gy=my;
+
   document.addEventListener('mousemove',function(e){
-    g.style.transform='translate('+e.clientX+'px,'+e.clientY+'px) translate(-50%,-50%)';
+    mx=e.clientX; my=e.clientY;
+    // Dot follows instantly
+    if(d) d.style.transform='translate('+mx+'px,'+my+'px) translate(-50%,-50%)';
+  },{passive:true});
+
+  // Glow follows with smooth lerp
+  function lerp(a,b,t){return a+(b-a)*t;}
+  (function loop(){
+    gx=lerp(gx,mx,.12);
+    gy=lerp(gy,my,.12);
+    if(g) g.style.transform='translate('+gx+'px,'+gy+'px) translate(-50%,-50%)';
+    requestAnimationFrame(loop);
+  })();
+
+  // Expand dot on hover of interactive elements
+  document.addEventListener('mouseover',function(e){
+    var t=e.target.closest('a,button,[onclick],.pf,.pc,.pfcta');
+    if(d){
+      d.style.width=t?'18px':'8px';
+      d.style.height=t?'18px':'8px';
+      d.style.opacity=t?'.5':'1';
+    }
   },{passive:true});
 })();
 
