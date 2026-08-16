@@ -166,10 +166,10 @@ node tools/sync-site-copy.mjs --write   # apply it
 - Research &amp; Projects
 
 ### projects.title
-- Seven projects.<br><em>One direction.</em>
+- Seven projects
 
 ### projects.lead
-- From architectural BIM to real-time satellite pipelines, all converging on one question: how do we make cities survive the climate crisis?
+- During the M.Sc<br>I was doing architectural projects but now I learned working with real-time satellite pipelines,<br>All the works are based on one question:<br>How do we make cities survive the climate crisis?
 
 ### projects.1
 - <span class="badge__dot"></span>Under Development

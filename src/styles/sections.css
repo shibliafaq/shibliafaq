@@ -612,13 +612,16 @@
    nothing to lead in from: it just pushes the word off the axis it is meant
    to sit on. */
 #skills .eyebrow,
-#background .eyebrow { display: block; text-align: center; }
+#background .eyebrow,
+#projects .eyebrow { display: block; text-align: center; }
 
 #skills .eyebrow::before,
-#background .eyebrow::before { display: none; }
+#background .eyebrow::before,
+#projects .eyebrow::before { display: none; }
 
 #skills .sec-title,
-#background .sec-title {
+#background .sec-title,
+#projects .sec-title {
   max-width: none;
   margin-inline: auto;
   text-align: center;
@@ -628,11 +631,17 @@
    which left it ranged against the column edge under a centred title — the two
    sat on different axes. Keeping the measure and centring the block is what
    holds the line length readable AND on the title's axis. */
-#background .lead {
+#background .lead,
+#projects .lead {
   margin-inline: auto;
   text-align: center;
   margin-top: clamp(.85rem, 2vh, 1.35rem);
 }
+
+/* The Projects lead is four deliberate lines broken with <br>, not a wrapped
+   paragraph. `--measure` would re-wrap them into a ragged block that fights the
+   author's own breaks, so the measure comes off and the <br>s decide. */
+#projects .lead { max-width: none; }
 
 /* Size is Skills' alone — the brain is the page's biggest figure and carries
    a display-scale title. Background's is left at the section default. */
