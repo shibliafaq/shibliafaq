@@ -396,3 +396,41 @@ which finds the wrong `</p>` the moment an element contains another of its kind.
 Verified by round trip: edit a string in the doc, `--write`, confirm it lands in
 the markup, restore the doc, `--write` again — `index.html` came back
 byte-identical.
+
+---
+
+## 13. Where the work happens (from 2026-08-16)
+
+**`E:\Website\shibli-portfolio` is the working copy.** It is the git repository
+that deploys to Vercel, and every change goes here.
+
+**`E:\Website\v2` is an archive. Do not edit it.** Editing both is how the two
+diverge and the wrong one gets pushed.
+
+```bash
+npm --prefix E:\Website\shibli-portfolio run dev -- --port 5199 --strictPort
+```
+
+### The one thing this folder does not have
+
+The 412 MB `assets/` tree of raw source art — the itch.io packs, the CraftPix
+desert tileset, the PSDs and scans — is deliberately not here. Nothing in it is
+needed to build: everything the page serves was already converted into
+`public/assets/pixel/` and is committed.
+
+The consequence is worth knowing before a tool fails in a confusing way. These
+still reference the source tree and **will not run from this folder**:
+
+| tool | needs |
+|---|---|
+| `build-map-kit.mjs`, `render-map.mjs` | `assets/tilesets`, `../map-kit` |
+| `compose_map.py`, `prep_final_assets.py` | `../map-kit`, `assets/` |
+| `desert-pack.json`, `campus-pack.json`, `new-packs.json` | source art paths |
+
+All of them are one-off conversion scripts that have already been run, and their
+output is committed. If new art ever needs converting: run them from
+`E:\Website\v2`, where the sources still are, then copy the resulting `.webp`
+into this repo's `public/assets/pixel/` and commit that.
+
+Everything used routinely works here — `sync-site-copy.mjs`, `sync-copy.mjs`,
+`check-paths.mjs`, `grow-map.mjs`, and `lab/editor.html`.
