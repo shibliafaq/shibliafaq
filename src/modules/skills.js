@@ -60,6 +60,11 @@ const MIN_FS  = 7.5;  // never shrink type past this to hit DENSITY
    refuses anything that genuinely cannot be packed. */
 const OVERFLOW_OK = 1.95;
 
+/** The site accent, as "r, g, b", read from the stylesheet so the canvas and
+    the CSS can never disagree. */
+const ACCENT_RGB = (getComputedStyle(document.documentElement)
+  .getPropertyValue('--accent-rgb') || '245, 158, 11').trim();
+
 const STEP   = 1 / 60; // fixed timestep; variable dt makes collisions jitter
 const DAMP   = 0.995;  // near-frictionless — they should keep drifting
 const WALL   = 0.86;   // boundary restitution
@@ -582,9 +587,12 @@ export function initSkills() {
     ctx.fillStyle = 'rgba(255,255,255,.018)';
     ctx.fill();
     ctx.lineWidth = 1.4;
-    ctx.strokeStyle = 'rgba(245,158,11,.34)';
+    /* Canvas cannot use var(), so the accent is READ from the token rather
+       than copied. A second hard-coded literal is how the brain outline
+       stayed amber after the rest of the site went green. */
+    ctx.strokeStyle = `rgba(${ACCENT_RGB}, .34)`;
     ctx.shadowBlur = 18;
-    ctx.shadowColor = 'rgba(245,158,11,.22)';
+    ctx.shadowColor = `rgba(${ACCENT_RGB}, .22)`;
     ctx.stroke();
     ctx.shadowBlur = 0;
 

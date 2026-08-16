@@ -325,7 +325,7 @@
 }
 
 .badge--muted { color: var(--t-3); border-color: var(--line-2); background: transparent; }
-.badge--dev { color: var(--ember); border-color: rgba(255, 95, 31, .3); background: rgba(255, 95, 31, .08); }
+.badge--dev { color: var(--ember); border-color: rgba(var(--accent-rgb), .3); background: rgba(var(--accent-rgb), .08); }
 
 .badge__dot {
   width: 5px; height: 5px;
@@ -1871,8 +1871,8 @@
 
 .pcard--poster .badge--dev {
   color: var(--ember);
-  border-color: rgba(255, 95, 31, .42);
-  background: color-mix(in srgb, var(--ink) 74%, rgba(255, 95, 31, .12));
+  border-color: rgba(var(--accent-rgb), .42);
+  background: color-mix(in srgb, var(--ink) 74%, rgba(var(--accent-rgb), .12));
 }
 
 /* Same reasoning for the stack tags underneath. */

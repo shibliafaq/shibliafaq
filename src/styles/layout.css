@@ -236,7 +236,7 @@
      not a colour jump. */
   background:
     radial-gradient(92% 62% at 50% 122%, rgba(226, 232, 240, .34), rgba(120, 140, 170, .14) 46%, transparent 72%),
-    radial-gradient(50% 34% at 74% 96%, rgba(255, 95, 31, .08), transparent 60%),
+    radial-gradient(50% 34% at 74% 96%, rgba(var(--accent-rgb), .08), transparent 60%),
     #05060a;
 }
 
@@ -279,7 +279,7 @@ body.is-grabbing .hero.is-draggable { cursor: grabbing; }
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(58% 38% at 50% 92%, rgba(255, 95, 31, .15), transparent 68%);
+  background: radial-gradient(58% 38% at 50% 92%, rgba(var(--accent-rgb), .15), transparent 68%);
   mix-blend-mode: screen;
   animation: heatBreath 18s var(--e-soft) infinite alternate;
 }
