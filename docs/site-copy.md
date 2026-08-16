@@ -183,33 +183,6 @@ node tools/sync-site-copy.mjs --write   # apply it
 ### projects.4
 - A Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation
 
-### projects.5
-- Built on a <strong>Design Science methodology</strong>, this digital twin platform monitors, forecasts, and mitigates urban heat across five Saudi cities. Combines MODIS satellite feeds (cross-validated against Landsat at r ≥ 0.85), Prophet forecasting to 2030, an equity-weighted Heat Vulnerability Index, and an <strong>intervention simulator</strong> that ranks cooling strategies by residents reached per riyal. Covers <strong>Riyadh, Jeddah, Dammam, Makkah, and NEOM</strong> across three climate zones.
-
-### projects.6
-- 5 cities
-
-### projects.7
-- Riyadh · Jeddah · Dammam · Makkah · NEOM
-
-### projects.8
-- 0.96–1.91°C
-
-### projects.9
-- Monthly forecast RMSE
-
-### projects.10
-- 1.37M
-
-### projects.11
-- Residents in top-vulnerability quintile
-
-### projects.12
-- 12 measures
-
-### projects.13
-- In the intervention simulator
-
 ### projects.14
 - Google Earth Engine
 
@@ -232,7 +205,10 @@ node tools/sync-site-copy.mjs --write   # apply it
 - Docker Compose
 
 ### projects.22
-- Click to view full details →
+- Open the study →
+
+### projects.5
+- Built on a <strong>Design Science methodology
 
 ### projects.23
 - CRP 583 · Urban Informatics · KFUPM
