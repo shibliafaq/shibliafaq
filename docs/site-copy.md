@@ -579,7 +579,7 @@ node tools/sync-site-copy.mjs --write   # apply it
 - Let me walk you through the Journey so far.
 
 ### background.1
-- <span data-i18n="bg.hint">Keep scrolling — he walks the map</span>
+- <span data-i18n="bg.hint">Keep scrolling</span>
 
 ### background.2
 - <p class="tli__period">Aug 2025 – Aug 2026 (Expected)</p> <h3 class="tli__role" data-i18n="bg.role.kfupm">Master of Science in Smart &amp; Sustainable Cities</h3> <p class="tli__org">King Fahd University of Petroleum &amp; Minerals (KFUPM), Dhahran, KSA</p> <p class="tli__desc"><strong class="tli__stat">Cumulative GPA: 4.0/4.0 · Specialisation in Urban Informatics &amp; Sustainability</strong> Thesis: <em class="serif">Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation</em>. Coursework: Big Data Analytics, Smart City Systems &amp; IoT, GIS &amp; Spatial Analysis, Environmental Economics, Urban Informatics, Circular Economy.</p> <p class="tli__note" data-i18n="bg.note.kfupm" hidden><strong class="tli__stat">GPA 4.0/4.0 · Specialisation in Urban Informatics &amp; Sustainability</strong> Thesis: <em class="serif">Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation</em>. Coursework: Big Data Analytics, Smart City Systems &amp; IoT, GIS &amp; Spatial Analysis, Environmental Economics, Urban Informatics, Circular Economy.</p> <p class="tli__says" data-i18n="bg.says.kfupm" hidden>I decided to pursue an M.Sc in Smart and Sustainable Cities at KFUPM, Dhahran.</p> <span class="tli__badge">GPA 4.0 / 4.0</span>
