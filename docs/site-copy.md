@@ -169,7 +169,7 @@ node tools/sync-site-copy.mjs --write   # apply it
 - Seven projects
 
 ### projects.lead
-- During the M.Sc<br>I was doing architectural projects but now I learned working with real-time satellite pipelines,<br>All the works are based on one question:<br>How do we make cities survive the climate crisis?
+- <span class="lead__meta">During the M.Sc</span><span class="lead__body">I was doing architectural projects but now I learned working with real-time satellite pipelines,</span><span class="lead__meta">All the works are based on one question:</span><em class="lead__ask">How do we make cities survive the climate crisis?</em>
 
 ### projects.1
 - <span class="badge__dot"></span>Under Development

@@ -638,10 +638,63 @@
   margin-top: clamp(.85rem, 2vh, 1.35rem);
 }
 
-/* The Projects lead is four deliberate lines broken with <br>, not a wrapped
-   paragraph. `--measure` would re-wrap them into a ragged block that fights the
-   author's own breaks, so the measure comes off and the <br>s decide. */
-#projects .lead { max-width: none; }
+/* ---- the Projects lead, as a hierarchy ----------------------
+   Four lines that each do a different job, so they are typeset differently.
+   Set flat — one weight, one size, four <br>s — they read as a paragraph that
+   happens to be broken, and the question at the end lands with no more force
+   than the sentence before it. That question IS the section: every card under
+   it is an attempt at an answer, so it gets the second-largest type on screen
+   after the title itself.
+
+   Four elements rather than four keys: the whole block stays ONE string in
+   site-copy.md, edited in one line, and the markup travels with it the way
+   `<em class="serif">` already does in the timeline. */
+#projects .lead {
+  max-width: none;
+  display: grid;
+  justify-items: center;
+  gap: .55rem;
+  margin-top: clamp(.5rem, 2vh, 1.25rem);
+}
+
+/* The framing lines. Quiet, mono, small — they are stage directions, and they
+   should be readable without ever competing for the eye. */
+#projects .lead__meta {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  line-height: 1.4;
+}
+
+/* The narrative line. Body weight, held to a readable measure. */
+#projects .lead__body {
+  font-size: var(--fs-lead);
+  line-height: 1.55;
+  color: var(--t-1);
+  max-width: 46ch;
+}
+
+/* The question. Serif italic, amber, and large enough to be the thing you read
+   second — after "Seven projects" and before any card. */
+#projects .lead__ask {
+  font-family: var(--f-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.45rem, 3.6vw, 2.9rem);
+  line-height: 1.22;
+  color: var(--amber);
+  max-width: 20ch;
+  margin-top: .35rem;
+  text-wrap: balance;
+}
+
+@media (max-width: 700px) {
+  #projects .lead { gap: .45rem; }
+  #projects .lead__body { font-size: var(--fs-sm); max-width: 34ch; }
+  #projects .lead__ask { max-width: 18ch; }
+}
 
 /* Size is Skills' alone — the brain is the page's biggest figure and carries
    a display-scale title. Background's is left at the section default. */
