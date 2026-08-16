@@ -230,29 +230,29 @@
   <div class="projects__pin" id="projectsPin">
     <div class="projects__track" id="projectsTrack">
 
-      <article class="pcard pcard--wide" data-modal="thesis" tabindex="0" role="button" aria-label="Open: Smart Digital Twin Framework">
+      <article class="pcard pcard--poster" data-modal="thesis" tabindex="0" role="button" aria-label="Open: Smart Digital Twin Framework">
         <div class="pcard__media">
           <img src="/assets/img/hero-thesis.webp" alt="Smart Digital Twin · UHI Monitoring &amp; Forecasting" loading="lazy" width="2400" height="1340">
         </div>
-        <div class="pcard__body">
+
+        <div class="pcard__plate">
           <div class="pcard__badges">
-            <span data-copy="projects.1" class="badge badge--dev"><span class="badge__dot"></span>M.Sc. Thesis</span>
+            <span data-copy="projects.1" class="badge badge--dev"><span class="badge__dot"></span><span class="badge__dot"></span>
             <span data-copy="projects.2" class="badge">KFUPM · Aug 2026</span>
             <span data-copy="projects.3" class="badge badge--muted">Architecture &amp; City Design</span>
           </div>
           <h3 data-copy="projects.4" class="pcard__title">A Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation</h3>
-          <p data-copy="projects.5" class="pcard__desc">Built on a <strong>Design Science methodology</strong>, this digital twin platform monitors, forecasts, and mitigates urban heat across five Saudi cities. Combines MODIS satellite feeds (cross-validated against Landsat at r ≥ 0.85), Prophet forecasting to 2030, an equity-weighted Heat Vulnerability Index, and an <strong>intervention simulator</strong> that ranks cooling strategies by residents reached per riyal. Covers <strong>Riyadh, Jeddah, Dammam, Makkah, and NEOM</strong> across three climate zones.</p>
-          <div class="pcard__metrics">
-            <div><span data-copy="projects.6" class="m-v">5 cities</span><span data-copy="projects.7" class="m-l">Riyadh · Jeddah · Dammam · Makkah · NEOM</span></div>
-            <div><span data-copy="projects.8" class="m-v">0.96–1.91°C</span><span data-copy="projects.9" class="m-l">Monthly forecast RMSE</span></div>
-            <div><span data-copy="projects.10" class="m-v">1.37M</span><span data-copy="projects.11" class="m-l">Residents in top-vulnerability quintile</span></div>
-            <div><span data-copy="projects.12" class="m-v">12 measures</span><span data-copy="projects.13" class="m-l">In the intervention simulator</span></div>
-          </div>
           <div class="tags">
-            <span data-copy="projects.14" class="tag tag--amber">Google Earth Engine</span><span data-copy="projects.15" class="tag tag--amber">PostgreSQL/PostGIS</span><span data-copy="projects.16" class="tag tag--amber">FastAPI</span><span data-copy="projects.17" class="tag">Prophet</span><span data-copy="projects.18" class="tag tag--amber">deck.gl</span><span data-copy="projects.19" class="tag tag--amber">MapLibre</span><span data-copy="projects.20" class="tag">Docker Compose</span>
+            <span data-copy="projects.14" class="tag">Google Earth Engine</span><span data-copy="projects.15" class="tag tag--amber">PostgreSQL/PostGIS</span><span data-copy="projects.16" class="tag tag--amber">FastAPI</span><span data-copy="projects.17" class="tag">Prophet</span><span data-copy="projects.18" class="tag tag--amber">deck.gl</span><span data-copy="projects.19" class="tag tag--amber">MapLibre</span><span data-copy="projects.20" class="tag">Docker Compose</span>
           </div>
-          <span data-copy="projects.22" class="pcard__cta">Click to view full details →</span>
+          <span data-copy="projects.22" class="pcard__cta">Open the study →</span>
         </div>
+
+        <!-- The prose and the metrics move into the modal, but stay in the HTML
+             so a crawler and a reader with JS off still get them. `.pcard__crawl`
+             is visually-hidden, not display:none — display:none is dropped from
+             the accessibility tree and skipped by some crawlers. -->
+        <p data-copy="projects.5" class="pcard__crawl">Built on a <strong>Design Science methodology</p>
       </article>
 
       <article class="pcard" data-modal="gis" tabindex="0" role="button" aria-label="Open: GIS &amp; Remote Sensing UHI Assessment">

@@ -16,6 +16,21 @@ export const projects = {
     cat: 'M.Sc. Thesis · KFUPM · Architecture & City Design',
     title: 'Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting & Mitigation',
     desc: 'Built on Design Science Research methodology, this digital twin platform pulls MODIS Land Surface Temperature via Google Earth Engine, runs a Prophet forecasting ensemble (Terra and Aqua modelled separately, day and night, monthly + 7-day + 2030 horizons), and computes an equity-weighted Heat Vulnerability Index. An intervention simulator ranks twelve mitigation measures by cooling delivered, spillover reach, cost, and beneficiaries — using own-data seasonal betas, not literature values. Served through a FastAPI + PostgreSQL/PostGIS backend and a deck.gl + MapLibre frontend. Five Saudi cities. One framework.',
+    // The one sentence worth remembering — it goes above everything else.
+    finding: {
+      claim: 'Saudi cities are daytime <em>cool</em>-islands against the surrounding desert — the inverse of the classical Oke model.',
+      note: 'Makkah’s cool-island reaches −0.01 °C by 2030.',
+    },
+    diagram: 'thesis',
+    worked: {
+      sec: 'Intervention Simulator — a worked example',
+      lead: 'Twelve mitigation measures ranked by cooling delivered, spillover reach, cost, and beneficiaries — scored on this study’s own seasonal betas rather than literature values. In Dammam, for the same money:',
+      rows: [
+        { v: '16,167', l: 'residents cooled by one water feature' },
+        { v: '602', l: 'residents cooled by one cool-pavement patch' },
+      ],
+      foot: 'Same budget, 27× the reach. Ranking by residents-per-riyal is what the simulator exists to do.',
+    },
     metrics: [
       { v: '0.96–1.91°C', l: 'Monthly RMSE' },
       { v: 'r ≥ 0.85', l: 'MODIS vs Landsat' },
@@ -24,12 +39,6 @@ export const projects = {
     ],
     method: 'Google Earth Engine (on-demand ingestion) → PostgreSQL/PostGIS spatial DB → Prophet forecasting (Terra + Aqua separately, day + night) → Intervention Simulator (own-data seasonal OLS betas, exponential spillover kernel, Saudi/Gulf cost rates) → FastAPI backend → deck.gl + MapLibre dashboard. Kafka/Spark streaming layer designed for future automation.',
     tags: ['Google Earth Engine', 'PostgreSQL/PostGIS', 'FastAPI', 'Prophet', 'deck.gl', 'MapLibre', 'Docker Compose', 'Design Science Research', 'Heat Vulnerability Index', 'Intervention Simulator', 'Vision 2030'],
-    images: [
-      // Captions carry the correction the diagrams themselves still need: both
-      // images draw Kafka, Spark and Streamlit as live blocks. See docs/CONTEXT.md.
-      { src: `${IMG}/thesis_arch.webp`, cap: 'System Architecture — Input → Processing Engine → Output Dashboard → End Users. Kafka/Spark shown here are roadmap, not the delivered pipeline.' },
-      { src: `${IMG}/thesis_pipeline.webp`, cap: 'Technical Data Pipeline — diagram predates the current stack: ingestion is on-demand via GEE, and the dashboard is FastAPI + deck.gl rather than Streamlit.' },
-    ],
     links: [{ t: 'Live demo available on request', h: 'mailto:shibliafaq4@gmail.com?subject=Digital%20Twin%20demo%20request', primary: true }],
   },
 

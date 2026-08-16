@@ -317,3 +317,121 @@ body.is-locked { overflow: hidden; }
 /* Set while the globe is being dragged — otherwise the pointer sweeping across
    the headline starts a text selection and the hero fills with highlight boxes. */
 body.is-grabbing, body.is-grabbing * { user-select: none; }
+
+/* ============================================================
+   CASE-STUDY BLOCKS INSIDE THE PROJECT MODAL
+   The modal used to be a flat stack: kicker, paragraph, metrics, method,
+   images. Every project looked identical whatever it was about. These three
+   blocks give a study somewhere to put its finding, its architecture and one
+   worked example — the things that make it a case study rather than a listing.
+   ============================================================ */
+
+/* ---- the headline finding ---- */
+.mfind {
+  margin: 1.5rem 0 .5rem;
+  padding: 1.35rem 1.5rem 1.25rem;
+  border-inline-start: 3px solid var(--amber);
+  background: linear-gradient(90deg, var(--amber-06), transparent 70%);
+  border-radius: 0 var(--r) var(--r) 0;
+}
+
+.mfind blockquote {
+  font-family: var(--f-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.15rem, 2.2vw, 1.65rem);
+  line-height: 1.34;
+  color: var(--t);
+  text-wrap: pretty;
+}
+
+.mfind blockquote em { font-style: italic; color: var(--amber); }
+
+.mfind figcaption {
+  margin-top: .6rem;
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .08em;
+  color: var(--t-3);
+}
+
+/* ---- the architecture diagram ---- */
+.mdiagram {
+  /* A pipeline is wide by nature. Scroll it rather than shrink the labels to
+     nothing — `overflow-x` on the container, never on the page. */
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--ink-1);
+  padding: .5rem;
+}
+
+.mdiagram .dg { display: block; width: 100%; min-width: 720px; height: auto; }
+
+.dg-lane rect { fill: none; stroke: var(--line); stroke-width: 1; }
+.dg-lane--plan rect { stroke-dasharray: 5 5; }
+.dg-lane-t {
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em;
+  fill: var(--t-4);
+}
+.dg-lane--live .dg-lane-t { fill: var(--amber); opacity: .75; }
+
+.dg-node rect { fill: var(--ink-card); stroke: var(--line-2); stroke-width: 1.25; }
+.dg-node--dash rect { fill: none; stroke-dasharray: 6 5; stroke: var(--line-3); }
+
+.dg-t { font-size: 14px; font-weight: 600; fill: var(--t); }
+.dg-s { font-family: var(--f-mono); font-size: 10.5px; fill: var(--t-3); }
+.dg-node--dash .dg-t { fill: var(--t-2); }
+.dg-node--dash .dg-s { fill: var(--t-4); }
+
+.dg-link { stroke: var(--line-3); stroke-width: 1.5; fill: none; }
+.dg-link--dash { stroke-dasharray: 5 4; }
+.dg-arrow { fill: var(--line-3); }
+
+.dg-note {
+  font-family: var(--f-mono); font-size: 11px; fill: var(--t-3);
+}
+
+/* ---- the worked example ---- */
+.mwork {
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 1.25rem 1.4rem;
+  background: var(--ink-card);
+}
+
+.mwork__lead { font-size: var(--fs-sm); color: var(--t-2); line-height: 1.6; max-width: 62ch; }
+
+.mwork__rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 1rem;
+  margin: 1.1rem 0 .9rem;
+}
+
+.mwork__row {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  padding-inline-start: .9rem;
+  border-inline-start: 2px solid var(--amber-24);
+}
+
+.mwork__v {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 3.4vw, 2.2rem);
+  line-height: 1;
+  color: var(--amber);
+}
+
+.mwork__l { font-size: var(--fs-sm); color: var(--t-2); line-height: 1.45; }
+
+.mwork__foot {
+  font-size: var(--fs-sm);
+  color: var(--t-1);
+  font-weight: 500;
+  padding-top: .85rem;
+  border-top: 1px solid var(--line);
+}

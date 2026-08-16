@@ -1685,3 +1685,143 @@
   .modal .thermal__sticky { height: clamp(240px, 34vh, 380px); }
   .modal .thermal__legend { gap: .5rem; }
 }
+
+/* ============================================================
+   POSTER CARD — full-bleed image, name and tags, nothing else
+   The rest of the story lives in the modal. A card that carries
+   description, four metrics and a stack list is a page in a row of pages;
+   this is a poster you decide to open.
+   ============================================================ */
+
+.pcard--poster {
+  width: min(94vw, 1180px);
+  /* Fixed ratio, not content height: a row of posters has to share a baseline
+     or the track reads as ragged. 86svh caps it on short viewports. */
+  aspect-ratio: 16 / 10;
+  max-height: 86svh;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: relative;
+  padding: 0;
+  border-color: var(--line-2);
+  /* The 3D. `perspective` here rather than on the track so each card owns its
+     own vanishing point — one shared perspective on a horizontally travelling
+     row makes the far cards shear. */
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+/* The image is the card, not an illustration inside it. */
+.pcard--poster .pcard__media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  aspect-ratio: auto;
+  border-radius: inherit;
+}
+
+.pcard--poster .pcard__media img {
+  transform: scale(1.02);
+  filter: saturate(.9) contrast(1.06) brightness(.92);
+}
+
+.pcard--poster:hover .pcard__media img,
+.pcard--poster:focus-visible .pcard__media img {
+  transform: scale(1.06);
+  filter: saturate(1.02) contrast(1.06) brightness(1);
+}
+
+/* Two gradients, not one. A single bottom fade leaves the badges floating on
+   whatever the photograph happens to be doing at the top; the second wash
+   settles them without greying the middle of the image. */
+.pcard--poster .pcard__media::after {
+  /* Stops chosen against where the plate actually sits, not by eye. Measured on
+     a 565px card: the badge row starts 52% up and the old ramp had already
+     decayed to ~0.28 alpha there, which is why the badges washed out against a
+     bright frame. The scrim now holds ~0.55 to 55% and only then releases. */
+  background:
+    linear-gradient(to top,
+      rgba(9, 9, 11, .95) 4%,
+      rgba(9, 9, 11, .86) 22%,
+      rgba(9, 9, 11, .62) 42%,
+      rgba(9, 9, 11, .38) 56%,
+      transparent 74%),
+    linear-gradient(to bottom, rgba(9, 9, 11, .5), transparent 30%);
+}
+
+/* The plate holds everything that is still on the face of the card. It is
+   lifted on the Z axis so the hover tilt parallaxes it against the image —
+   that separation is the whole effect; without it the card is a photograph
+   that leans. */
+.pcard--poster .pcard__plate {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: .85rem;
+  padding: clamp(1.5rem, 3.5vw, 2.75rem);
+  transform: translateZ(38px);
+}
+
+.pcard--poster .pcard__title {
+  font-size: clamp(1.35rem, 2.9vw, 2.4rem);
+  line-height: 1.14;
+  letter-spacing: -.02em;
+  max-width: 22ch;
+  text-wrap: balance;
+  text-shadow: 0 2px 30px rgba(9, 9, 11, .85);
+}
+
+.pcard--poster .tags { gap: .35rem; }
+
+.pcard--poster .pcard__cta {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--amber);
+  opacity: .75;
+  transition: opacity var(--d-fast) var(--e-out);
+}
+
+.pcard--poster:hover .pcard__cta { opacity: 1; }
+
+/* Kept for crawlers and for JS-off readers; never shown. Not display:none —
+   that drops it from the accessibility tree and some crawlers skip it. */
+.pcard__crawl {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The tilt itself. Driven by --rx/--ry, which projects.js writes from the
+   pointer; both default to 0 so the card is flat until touched and flat again
+   the moment the pointer leaves. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pcard--poster {
+    transition: transform .28s var(--e-out), border-color var(--d) var(--e-out),
+                box-shadow .28s var(--e-out);
+  }
+  .pcard--poster:hover {
+    transform:
+      perspective(1200px)
+      rotateX(var(--rx, 0deg))
+      rotateY(var(--ry, 0deg))
+      translateY(-8px)
+      scale(1.012);
+    box-shadow: 0 40px 90px rgba(0, 0, 0, .55);
+  }
+  /* While the pointer is moving the tilt must track it with no easing, or the
+     card lags the cursor and feels like syrup. The transition above still runs
+     on enter and, crucially, on leave. */
+  .pcard--poster.is-tilting { transition: none; }
+}
+
+@media (max-width: 760px) {
+  .pcard--poster { aspect-ratio: 4 / 5; width: min(86vw, 460px); }
+  .pcard--poster .pcard__title { font-size: clamp(1.2rem, 5.5vw, 1.7rem); max-width: none; }
+}

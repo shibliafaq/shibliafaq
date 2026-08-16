@@ -792,3 +792,71 @@ study. Only the thesis claimed them wrongly.
   a Delivered/Roadmap split, and a Chapters strip.
 - **`atlas.lead` has no translations.** Six carried "17 million" and
   "near-real-time" and were removed rather than left contradicting the English.
+
+---
+
+## 21. Card 1 redesigned — poster face, case-study interior (2026-08-16)
+
+Two changes, in that order: the card face became a poster, and the modal behind
+it became a case study instead of a listing. Cards 2–7 are untouched; the plan
+is one at a time.
+
+### The face
+
+`.pcard--poster`: full-bleed image, badges, title, stack tags, one call to
+action. The description and all four metrics come off the face and live in the
+modal.
+
+The description STAYS in the HTML as `.pcard__crawl`, visually hidden. Moving it
+"inside" would move it into `projects.js`, which no crawler and no JS-off reader
+ever sees — and that paragraph was the only indexable description of the thesis.
+Hidden with `clip-path`, not `display: none`, which is dropped from the
+accessibility tree.
+
+**The 3D is a pointer-follow tilt**, capped at 5°: past about 7 the text edges
+distort and it reads as a toy. What makes it depth rather than a leaning
+photograph is that the text plate sits on `translateZ(38px)` and parallaxes
+against the image. `projects.js` writes `--rx`/`--ry` and the stylesheet owns
+what hover looks like. Gated on `hover: hover and pointer: fine` and off under
+reduced motion — on touch a tap would tilt the card and leave it tilted.
+
+The scrim was re-ramped against measured positions, not by eye: on a 565px card
+the badge row starts 52% up, where the original gradient had decayed to ~0.28
+alpha, which is why badges washed out over bright frames.
+
+### The interior
+
+Three new optional fields in `data/projects.js`, rendered by `modal.js` when
+present, so any project can adopt them:
+
+| field | what it is |
+|---|---|
+| `finding` | the headline claim, set as a pull quote directly under the title |
+| `diagram` | names an SVG builder in `modules/diagrams.js` |
+| `worked` | one worked example — lead, two or more figures, a closing line |
+
+`finding` exists because the modal described machinery and never said what the
+study **found**. It now opens with the cool-island inversion.
+
+`worked` exists because a capability list is not evidence. "Ranks interventions
+by beneficiaries" is a feature; "one water feature cools 16,167 residents, one
+cool-pavement patch cools 602, same budget" is a result a reader can argue with.
+
+### The diagrams are SVG now
+
+`thesis_arch.webp` and `thesis_pipeline.webp` are gone. They had been wrong for
+a while — Kafka/Spark/Streamlit drawn as live, "48-Hour RMSE < 1.5°C", "5
+Prophet Models" against twenty, "2023-2025 (730 days)" against an eight-year
+series, no beta_NDBI — and staying wrong is what an image guarantees: every one
+of those is a one-word edit in `diagrams.js` and a redraw-and-re-export in an
+image editor.
+
+`thesisDiagram()` draws two lanes. **Solid boxes are running; dashed boxes are
+designed and not deployed.** The old diagrams drew both identically, which is
+how the site came to claim a live Kafka cluster. Inline SVG also scales without
+blurring, follows the theme through CSS custom properties, and puts its labels
+in the DOM where a screen reader and a translator can reach them.
+
+Still outstanding: the generic 3D render on the card face wants replacing with a
+real dashboard screenshot — the poster layout leans on that image far harder
+than the old split card did.

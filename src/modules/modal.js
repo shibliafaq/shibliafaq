@@ -1,4 +1,5 @@
 import { projects, archPages } from '../data/projects.js';
+import { DIAGRAMS } from './diagrams.js';
 import { stopScroll, startScroll } from './scroll.js';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -21,6 +22,41 @@ function render(data) {
 
   const method = data.method
     ? `<div class="msec">Method</div><p class="mmethod">${esc(data.method)}</p>`
+    : '';
+
+  /* The headline finding. A case study that only describes its machinery never
+     says what it discovered — the reader leaves knowing how it was built and
+     not what it showed. This goes directly under the title, above everything
+     else, because it is the one sentence worth remembering. */
+  const finding = data.finding
+    ? `<figure class="mfind">
+         <blockquote>${data.finding.claim}</blockquote>
+         ${data.finding.note ? `<figcaption>${esc(data.finding.note)}</figcaption>` : ''}
+       </figure>`
+    : '';
+
+  /* An architecture diagram drawn as SVG rather than shipped as an image, so a
+     number can be corrected in a text editor. See modules/diagrams.js. */
+  const diagram = data.diagram && DIAGRAMS[data.diagram]
+    ? `<div class="msec">Architecture</div>
+       <div class="mdiagram">${DIAGRAMS[data.diagram]()}</div>`
+    : '';
+
+  /* One worked example beats a capability list. "Ranks interventions by
+     beneficiaries" is a feature; "one water feature cools 16,167 residents and
+     one cool-pavement patch cools 602, for the same money" is a finding the
+     reader can argue with. */
+  const worked = data.worked
+    ? `<div class="msec">${esc(data.worked.sec)}</div>
+       <div class="mwork">
+         <p class="mwork__lead">${data.worked.lead}</p>
+         <div class="mwork__rows">${data.worked.rows
+           .map((r) => `<div class="mwork__row">
+              <span class="mwork__v">${r.v}</span>
+              <span class="mwork__l">${esc(r.l)}</span>
+            </div>`).join('')}</div>
+         ${data.worked.foot ? `<p class="mwork__foot">${esc(data.worked.foot)}</p>` : ''}
+       </div>`
     : '';
 
   const gallery = data.images?.length
@@ -63,8 +99,9 @@ function render(data) {
   return `
     <p class="mcat">${esc(data.cat)}</p>
     <h2 class="mtitle" id="modalTitle">${esc(data.title)}</h2>
+    ${finding}
     <p class="mdesc">${data.desc}</p>
-    ${metrics}${method}${embed}${gallery}${videos}${extra}${tags}${links}
+    ${metrics}${embed}${diagram}${method}${worked}${gallery}${videos}${extra}${tags}${links}
   `;
 }
 
