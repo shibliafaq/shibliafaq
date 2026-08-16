@@ -434,3 +434,65 @@ into this repo's `public/assets/pixel/` and commit that.
 
 Everything used routinely works here — `sync-site-copy.mjs`, `sync-copy.mjs`,
 `check-paths.mjs`, `grow-map.mjs`, and `lab/editor.html`.
+
+---
+
+## 14. GitHub and Vercel (2026-08-16)
+
+**Repo:** `https://github.com/shibliafaq/shibliafaq` — remote `origin`, branch `main`.
+**Live:** `https://shibliafaq.vercel.app`
+
+### README.md is the GitHub profile page. Do not replace it.
+
+`shibliafaq/shibliafaq` is the special *username/username* repository, so its
+`README.md` renders on the public profile at github.com/shibliafaq — thesis
+summary, the Dammam UHI figures, publications, PhD availability.
+
+The first push was rejected (`fetch first`), and that rejection was lucky: the
+remote already held seven commits, and a plain force would have rewritten a
+public bio into a build guide. **The project's own README lives at
+`docs/DEVELOPMENT.md`.** Anything that would normally go in a project README
+goes there.
+
+### What the merge did
+
+The repo was already serving the site as an 11 MB single-file `index.html` with
+51 base64-inlined assets and no build step.
+
+| | |
+|---|---|
+| `README.md` | the profile text, byte-for-byte unchanged |
+| `index.html` | now the 53 KB Vite entry point |
+| `docs/DEVELOPMENT.md` | build, deploy and copy-editing guide |
+| old single-file site | still in history at `adfafc4` |
+
+Merged with `--allow-unrelated-histories`; only `index.html` conflicted and was
+resolved to ours. SEO is unchanged — same `<title>`, same `og:url`, five
+meta/OG/Twitter tags.
+
+### Vercel
+
+`vercel.json` pins framework `vite`, build `npm run build`, output `dist`. The
+project used to serve this repo as **static files**, so after the switch confirm
+the deployment log says *Framework: Vite* and actually runs a build. If it
+deploys instantly without building, set Project → Settings → General → Framework
+Preset to **Vite** and redeploy.
+
+**There is no staging step.** A push to `main` replaces the live site as soon as
+the build succeeds. To look first:
+
+```bash
+git push origin main:preview     # own preview URL, live untouched
+```
+
+### Still open
+
+- **Asset licensing.** CraftPix and several itch.io packs permit use in games
+  including commercial ones but **forbid redistributing the assets themselves**,
+  and both a public repo and a website redistribute the sprite files directly.
+  Making the repo private while keeping the deployment public would narrow it.
+- **`E:\Website\v2` holds the only copy of the 412 MB source art.** It is not in
+  the repo and is not backed up anywhere else. Do not delete that folder.
+- The `IntersectionObserver` driving `setActive` in `experience.js` may be as
+  dead as the one that had to be replaced in §11 — which would mean the walk
+  never pauses off-screen. Costs battery, breaks nothing. Unverified.
