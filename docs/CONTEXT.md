@@ -236,3 +236,163 @@ built against the wrong cause.
 
 One environment note: **do not use Python heredocs to write JS containing `\n` or
 `\r`** — they get interpreted and produce broken strings. This has bitten twice.
+
+---
+
+## 11. Session of 2026-08-16 — mobile, and the two bugs under it
+
+### The map and the brain now run at every width
+
+Both sections used to hide below a width gate and show their HTML fallback.
+`MIN_W` was 900 for the map, justified in a comment by "the world is 34 tiles
+wide" — that described the FIRST map; the valley is 44 x 164. The premise was
+wrong anyway: the camera follows the character and has always cropped, so
+seeing the whole width was never the requirement. Both floors are now 320, the
+width below which there is no layout at all.
+
+**The brain drops its labels instead of hiding.** At 375px the brain draws about
+367x320 and 40 labelled balls need roughly four times that area. `fitDensity`
+now shrinks type toward `MIN_FS` PER BALL and re-measures each radius, rather
+than scaling finished radii by one factor — which cut ball area from 133,740 to
+37,468 and let the labels survive on a phone at 63% fill. Only if that still
+does not fit do the names come off and move to the tooltip.
+
+Two coincidences in the numbers cost real time here, both worth knowing:
+
+- The smallest label, "Claude Code" at group scale 0.75, is `BASE_FS * 0.75`
+  = exactly `MIN_FS`. So a `kFloor = MIN_FS / smallest` test evaluated to
+  exactly 1.0 and collapsed to "labels only if nothing needs shrinking at all",
+  stripping every name on DESKTOP too.
+- `forEach(measure)` passes the array INDEX as the second argument. Adding a
+  `shrink` parameter to `measure` silently made every ball shrink by its own
+  index until the call site became `forEach((b) => measure(b))`.
+
+### The blackout: Lenis was not syncing touch
+
+Reported as "the scroll just makes everything black when the character is about
+to move". Measured on an emulated phone:
+
+    lenis.scroll = 0        while  window.scrollY = 13814
+    st.progress  = 0        while  scrollY was between start 11778 and end 20951
+    stage top    = -2036    pin-spacer height 9985
+
+Lenis emits its `scroll` event from its own animation loop, and that loop only
+runs for input it OWNS. With `syncTouch` off, touch was left to the browser, so
+`lenis.on('scroll', ScrollTrigger.update)` never fired — every ScrollTrigger's
+progress stayed frozen at 0, the Experience pin never engaged, and because the
+spacer was still 9,985px tall the stage simply scrolled away and left ten
+thousand pixels of black section. The same frozen progress meant distance 0,
+which is why the character never took a step while the joystick still worked.
+
+Proved before changing anything: one hand-fired `lenis.emit('scroll')` snapped
+the stage from top -2036 to 0 and progress from 0 to its correct 0.222.
+`syncTouch: true` in `initScroll`. It can feel heavier than native momentum on
+iOS; `syncTouchLerp` tunes it, but the pin cannot work on touch without it.
+
+### 24x overdraw in the walk
+
+`walk.js` passed the WHOLE map as the source rect every frame and let the
+browser clip — 704x2624 scaled to 1408x5248. Against a 375x812 phone stage that
+is 24x more source pixels than are on screen, about 0.44 Gpx/s of
+nearest-neighbour blit at 60fps. `blitWorld()` now culls to the visible window,
+verified pixel-identical to the old draw at seven camera positions including
+both clamped edges and the negative-camX letterbox. Source pixels per frame:
+1,847,296 -> ~76,400.
+
+It is also called from `buildRamps` after a resize, because assigning
+`canvas.width` wipes the backing store and `ScrollTrigger.refresh()` is
+synchronous — the blank canvas was on screen for several frames every time the
+pin engaged or released, which read as the map reloading.
+
+### Mobile chrome
+
+- **Zoom**: a third constraint, `MIN_COLS = 20`. The two existing rules are both
+  about FILLING the stage, and on a 375px phone ZOOM 2 filled it while showing
+  twelve of forty-four columns. Phones now land on ZOOM 1; every other size is
+  unchanged. Pacing is untouched — `pxPerTile` still derives from `fitH`.
+- **Chapter rail** lies down along the top under 700px. Vertical on the left it
+  took 35% of the width, and at `z-index: 2` it drew OVER the arrival card and
+  clipped the first characters of every line. Ticks are `flex: 1 1 0` so five
+  always fit whatever the translation.
+- **Joystick**, touch only, gated on `(pointer: coarse)` rather than width —
+  a narrow desktop window has a keyboard, a large tablet does not. Positioned
+  with physical `right`, not `inset-inline-end`: handedness does not mirror in
+  Arabic.
+- **Camera lead** tightens to 0.32/0.42 on a narrow stage. The desktop values
+  parked him under the card — measured 79px of overlap walking up.
+
+### A loading animation was built and reverted
+
+Rejected on sight. Worth recording because it exposed something real: to give
+the loader something to cover, the mount was deferred until the section came
+near, and THAT is what made the timeline fallback linger visibly. The eager
+idle mount is the reason the swap is never witnessed. Do not defer it.
+
+Also learned: an `IntersectionObserver` on `#background` with
+`rootMargin: '100% 0px'` never fired a single callback on this page, with the
+section filling the viewport. Cause unproven — Lenis owns the scroll and GSAP
+transforms the pinned wrapper. **The `IntersectionObserver` in `mount()` that
+drives `setActive` may be equally dead**, which would mean the walk never pauses
+off-screen. Unverified, worth checking.
+
+### Method note
+
+Most of this session was spent on a belief that was never tested: that the
+agent's browser could not run `requestAnimationFrame`, so nothing could be
+verified visually. It was wrong. The pane throttles BACKGROUND tabs; the first
+probe happened to land on one, and the conclusion was carried for a dozen turns
+without re-checking. Measured properly: 61 rAF callbacks in 1016ms,
+`document.hidden` false. Front the tab, then screenshot.
+
+---
+
+## 12. Packaging (2026-08-16)
+
+This folder IS the deployable repository. `E:\Website\v2` remains the working
+copy with the 412 MB of source art beside it.
+
+| | |
+|---|---|
+| checked in | 411 files, 16 MB |
+| built (`dist/`) | 15 MB |
+| deploy | Vercel, `vercel.json` pins framework/build/output |
+
+**Left out on purpose:** `assets/` (412 MB of itch.io packs, the CraftPix
+tileset, PSDs and raw scans — none of it needed to build); `node_modules`;
+`dist`; `.map-history`; and `final/_road_debug.png` + `final/base_map.png`
+(14.6 MB, referenced only by `walkmap.js`, which only `lab/walkmap.html` imports
+and which belongs to the superseded first map).
+
+**One `.gitignore` trap, caught by counting.** Written as `assets/`, the pattern
+matches a directory of that name at ANY depth — so it silently excluded
+`public/assets/` as well: every sprite, every sheet, and `valley-map.json`. The
+staged file count was 101 instead of 411. It has to be `/assets/`, anchored to
+the root. **Check `git ls-files | grep -c public/assets` after touching that
+file** — 310 is the expected number.
+
+### `tools/sync-site-copy.mjs` — the front page in one document
+
+`docs/site-copy.md` holds 236 strings in reading order. `sync-copy.mjs` keeps
+the seven timeline entries; the two do not overlap, because anything carrying
+`class="tli__*"` is skipped by the new tool.
+
+Anchoring is by attribute, never by position: `data-i18n` where it already
+exists (98 elements, shared with the translation engine), and `data-copy`
+added by `--init` to the other 180. "The third paragraph in About" stops meaning
+anything the moment a paragraph is added.
+
+**Outermost anchors only, and this is the important rule.**
+`<p data-i18n="about.p1">… <em data-copy="about.7">word</em> …</p>` is two
+anchors over overlapping text: rewriting the paragraph replaces the span the
+`<em>` pointed at. The first `--init` produced 352 anchors of which **61 were
+nested**. `collect()` now keeps a high-water mark and drops anything starting
+inside the previous anchor, and `--init` will not add one inside an existing
+one. It is also the right editorial unit — a paragraph and its inline emphasis
+are one sentence to edit, not two fragments.
+
+Closing tags are found by counting opens and closes, not by a non-greedy regex,
+which finds the wrong `</p>` the moment an element contains another of its kind.
+
+Verified by round trip: edit a string in the doc, `--write`, confirm it lands in
+the markup, restore the doc, `--write` again — `index.html` came back
+byte-identical.
