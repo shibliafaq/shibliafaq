@@ -181,7 +181,11 @@
 
 /* ---- SECTION TITLES ---------------------------------------- */
 
-.section--raised { background: var(--ink-1); }
+/* There used to be a `.section--raised` modifier here painting alternate
+   sections in --ink-1, one step lighter than --ink. Removed: the alternation
+   read as two different blacks rather than as depth, and every section now
+   sits on the same ground. --ink-1 is still the surface for things that ARE
+   raised off the page — the marquee strip and the modal panel. */
 
 .sec-title {
   font-size: var(--fs-h2);
