@@ -22,17 +22,17 @@
 
      Previously amber (#f59e0b), chosen because amber -> ember is
      the ramp of a thermal raster and the research is about heat.
-     Now a bright green at the author's request. Worth knowing what
+     Now a bright yellow at the author's request. Worth knowing what
      that trades away: the accent no longer echoes the subject, and
      the pixel-art valley is graded to autumn amber in canvas — art
      the stylesheet cannot reach — so the map and the UI now pull in
      different directions.
 
      To go back: restore #f59e0b / #fbbf24 / #ff5f1f / 245,158,11.  */
-  --accent:     #2BE07C;
-  --accent-hi:  #6BF2A8;
-  --accent-lo:  #12B45F;
-  --accent-rgb: 43, 224, 124;
+  --accent:     #FFD429;
+  --accent-hi:  #FFE86B;
+  --accent-lo:  #E0A800;
+  --accent-rgb: 255, 212, 41;
 
   /* Legacy names, kept as aliases. Renaming would touch 93 call
      sites across six stylesheets for no behavioural gain, and every
