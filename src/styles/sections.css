@@ -1703,13 +1703,21 @@
   justify-content: flex-end;
   position: relative;
   padding: 0;
-  border-color: var(--line-2);
   /* The 3D. `perspective` here rather than on the track so each card owns its
      own vanishing point — one shared perspective on a horizontally travelling
      row makes the far cards shear. */
   perspective: 1200px;
   transform-style: preserve-3d;
+  /* No border. A hairline round a full-bleed image reads as a frame and makes
+     the card a picture OF something rather than the thing itself. The hover
+     affordance is carried by the lift, the tilt and the shadow, which is more
+     than a 1px line was doing. */
+  border: 0;
 }
+
+/* .pcard:hover repaints the border colour; there is no border to repaint. */
+.pcard--poster:hover,
+.pcard--poster:focus-visible { border-color: transparent; }
 
 /* The image is the card, not an illustration inside it. */
 .pcard--poster .pcard__media {
@@ -1842,4 +1850,33 @@
 .pcard--poster:focus-visible .pcard__video {
   transform: scale(1.06);
   filter: saturate(1.02) contrast(1.06) brightness(1);
+}
+
+/* Badges on a poster card sit over a moving image, so they cannot rely on the
+   page's ink showing through. `.badge` ships with `--amber-06` — six percent —
+   and `.badge--muted` with a transparent background and `--t-3` text, which is
+   legible against flat ink and disappears entirely over a bright video frame.
+   Each gets its own dark plate here, and the text is lifted a step. */
+.pcard--poster .badge {
+  background: color-mix(in srgb, var(--ink) 76%, transparent);
+  backdrop-filter: blur(10px);
+  border-color: var(--amber-24);
+  color: var(--t);
+}
+
+.pcard--poster .badge--muted {
+  color: var(--t-1);
+  border-color: var(--line-3);
+}
+
+.pcard--poster .badge--dev {
+  color: var(--ember);
+  border-color: rgba(255, 95, 31, .42);
+  background: color-mix(in srgb, var(--ink) 74%, rgba(255, 95, 31, .12));
+}
+
+/* Same reasoning for the stack tags underneath. */
+.pcard--poster .tag {
+  background: color-mix(in srgb, var(--ink) 72%, transparent);
+  backdrop-filter: blur(10px);
 }
