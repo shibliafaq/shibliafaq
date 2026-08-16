@@ -59,19 +59,43 @@ export function initHero() {
     .from('.hero__actions .btn', { y: 14, opacity: 0, duration: 0.7, ease: 'power3.out', stagger: 0.07 }, '-=0.65')
     .from('.hstat', { y: 16, opacity: 0, duration: 0.7, ease: 'power3.out', stagger: 0.08 }, '-=0.5');
 
-  // Scroll choreography — the name drifts up and dissolves while the photograph
-  // pushes in behind it. This is the shot the reference sites open on.
-  //
-  // immediateRender:false matters here. These tweens target the same properties
-  // the intro timeline is still animating; without it GSAP samples the in-flight
-  // value (0) as the scrub start and the text never becomes visible.
+  /* Scroll choreography — the name drifts up and dissolves while the globe
+     pushes in behind it. This is the shot the reference sites open on.
+     Built only AFTER the intro has finished, and declared with fromTo.
+
+     Both of those are fixes for the same bug, reproduced: scroll down while the
+     intro is still running, come back to the top, and the eyebrow, the role and
+     the description stay at opacity 0 for good. Measured after the trip —
+     hey 0, role 0, desc 0, actions 0.81.
+
+     `.to()` SAMPLES its start value the first time it renders. If that happens
+     while the intro's `.from()` tweens are mid-flight, the value it records is
+     whatever they were passing through — so scrolling back to the top restores
+     the text to a partial opacity, or to nothing at all. `immediateRender:false`
+     was already here for exactly this reason and is not enough on its own: it
+     defers the sampling, it does not stop it happening at a bad moment.
+
+     `fromTo` declares both ends, so nothing is ever sampled. Waiting for the
+     intro means the two timelines never touch the same property at the same
+     time — and if the reader scrolls during the intro, ScrollTrigger applies
+     the correct state for wherever they are the moment this is created. */
   const scrub = { ease: 'none', immediateRender: false };
 
-  gsap.timeline({
-    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 0.8 },
-  })
-    .to('.hero__name', { y: -80, scale: 1.04, opacity: 0.12, ...scrub }, 0)
-    .to(['.hero__globe', '.hero__space'], { scale: 1.14, yPercent: 5, ...scrub }, 0)
-    .to(['.hero__hey', '.hero__role', '.hero__desc', '.hero__actions'], { y: -40, opacity: 0, ...scrub }, 0)
-    .to('.hero__stats', { y: -20, opacity: 0, ...scrub }, 0.15);
+  intro.eventCallback('onComplete', () => {
+    gsap.timeline({
+      scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 0.8 },
+    })
+      .fromTo('.hero__name',
+        { y: 0, scale: 1, opacity: 1 },
+        { y: -80, scale: 1.04, opacity: 0.12, ...scrub }, 0)
+      .fromTo(['.hero__globe', '.hero__space'],
+        { scale: 1, yPercent: 0 },
+        { scale: 1.14, yPercent: 5, ...scrub }, 0)
+      .fromTo(['.hero__hey', '.hero__role', '.hero__desc', '.hero__actions'],
+        { y: 0, opacity: 1 },
+        { y: -40, opacity: 0, ...scrub }, 0)
+      .fromTo('.hero__stats',
+        { y: 0, opacity: 1 },
+        { y: -20, opacity: 0, ...scrub }, 0.15);
+  });
 }

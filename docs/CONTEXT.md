@@ -683,3 +683,36 @@ creeps off the stage.
 
 Every stop, both widths, comparing bubble against stage, card, rail, joystick
 and the nav: 7/7 clean at 1280x900 and 7/7 at 375x812.
+
+---
+
+## 18. Hero text vanishing on the way back to the top (2026-08-16)
+
+Reported as text sometimes disappearing when scrolling back up. Reproduced: go
+down while the intro is still playing, come straight back, and the eyebrow, the
+role line and the description stay at **opacity 0 permanently**. Measured after
+the trip — hey 0, role 0, desc 0, actions 0.81, and the page looks like the
+screenshot with only the name and the buttons.
+
+**`.to()` samples its start value the first time it renders.** The scroll
+timeline fades `.hero__hey`, `.hero__role`, `.hero__desc` and `.hero__actions`
+out, and the intro timeline is animating those same properties with `.from()`.
+If the first scroll happens mid-intro, the value the scrub records as "start" is
+whatever the intro was passing through — so scrolling back restores the text to
+a partial opacity, or to zero.
+
+`immediateRender: false` was already there for exactly this reason, and the
+comment beside it said so. It is not enough: it defers the sampling, it does not
+stop it happening at a bad moment.
+
+Two changes, both needed:
+
+1. **`fromTo` instead of `to`** — declares both ends, so nothing is sampled.
+2. **The scroll timeline is built in the intro's `onComplete`** — the two
+   timelines then never touch the same property at the same time. If the reader
+   scrolls during the intro, ScrollTrigger applies the correct state for wherever
+   they are at the moment it is created.
+
+Verified: the original repro restores all six elements to opacity 1, plus five
+rapid up/down thrashes, a deep scroll and jump home, and a resize mid-scroll
+followed by a jump home.
