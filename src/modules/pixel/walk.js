@@ -37,6 +37,7 @@
  *     `lenis.scrollTo`; `window.scrollTo` desyncs Lenis (HANDOFF §10).
  */
 
+import { reducedMotion } from '../scroll.js';
 import { TILE as CF_TILE, loadAll } from './cutefantasy.js';
 import { gradeSheets, SITE_GRADE } from './recolour.js';
 import { buildScene as buildSceneDefault } from './worldmap.js';
@@ -483,6 +484,16 @@ export function initWalk(stage, opts = {}) {
 
     stickEl = document.createElement('div');
     stickEl.className = 'journeystick';
+    /* Lenis must keep its hands off this element.
+       `syncTouch: true` is what makes the pinned section work on a phone at all
+       — without it Lenis never emits a scroll event for touch and every
+       ScrollTrigger freezes at progress 0. The cost is that Lenis then
+       intercepts touchmove document-wide, and a drag that starts on the stick
+       is swallowed as scroll input before the stick's own pointermove sees it.
+       `touch-action: none` stops the BROWSER scrolling; it does nothing about a
+       library listening on document. This attribute is Lenis's own opt-out, and
+       `#modalInner` already relies on it for the same reason. */
+    stickEl.setAttribute('data-lenis-prevent', '');
     stickEl.setAttribute('aria-hidden', 'true');   // the timeline is the accessible path
     stickEl.innerHTML = '<span class="journeystick__thumb"></span>';
     stage.appendChild(stickEl);
@@ -624,7 +635,10 @@ export function initWalk(stage, opts = {}) {
     const Z = ZOOM;
     const targetLead = dir === 'down' ? leadDown : dir === 'up' ? leadUp : (leadDown + leadUp) / 2;
     // Freeze the lead while a card is up, or a corner yanks the view mid-read.
-    if (!cardStop) leadY += (targetLead - leadY) * (1 - Math.exp(-dt / TAU));
+    // Easing the camera is a second motion layered on his: it keeps drifting
+    // after he stops. Snap to the target instead when motion is reduced.
+    if (!cardStop) leadY = reducedMotion ? targetLead
+      : leadY + (targetLead - leadY) * (1 - Math.exp(-dt / TAU));
 
     // Horizontal: a dead zone, not a hard follow. The path swings between col 6
     // and col 24, so following his x directly makes every corner a full lateral
@@ -639,7 +653,8 @@ export function initWalk(stage, opts = {}) {
       const sx = feetX * Z - camX;
       const want = sx < stageW / 2 - dz ? feetX * Z - (stageW / 2 - dz)
         : sx > stageW / 2 + dz ? feetX * Z - (stageW / 2 + dz) : camX;
-      camX = clampX(camX + (want - camX) * (1 - Math.exp(-dt / TAU_X)));
+      camX = reducedMotion ? clampX(want)
+        : clampX(camX + (want - camX) * (1 - Math.exp(-dt / TAU_X)));
     }
     // The distance -> position mapping is never damped: damping it would let the
     // card and the character disagree about where he is during a fast scroll.
@@ -662,7 +677,10 @@ export function initWalk(stage, opts = {}) {
        frame never changed and he held one pose across the whole map. */
     const gait = mode === 'free' ? free.dist / FREE_STRIDE : d / STRIDE;
     const col = !moving
-      ? Math.floor(t / 160) % FRAMES                        // idle is time-driven
+      // Standing still means STILL under reduced motion. The idle cycle is a
+      // loop that runs forever with no input behind it — exactly the kind of
+      // ambient movement the preference is asking to stop.
+      ? (reducedMotion ? 0 : Math.floor(t / 160) % FRAMES)  // idle is time-driven
       : ((Math.floor(gait) % FRAMES) + FRAMES) % FRAMES;
 
     const dxp = Math.round(feetX * Z - HERO_CX * Z - ox);

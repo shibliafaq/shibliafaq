@@ -126,7 +126,16 @@ function polyArea(p) {
 }
 
 export function initSkills() {
-  if (reducedMotion) return;
+  /* Reduced motion used to return here, which hid the brain entirely and left
+     the tag list. That over-corrects: the preference asks for less MOTION, not
+     less content, and the brain is the content — forty skills, grouped and
+     colour-coded, that the flat list conveys far less well.
+
+     So the field is still built and still drawn; what stops is the drifting.
+     `startStill` below settles the layout without ever running the idle
+     animation loop, and user-initiated motion — dragging a ball, tapping to
+     scatter — stays available, because a gesture someone chose is not the kind
+     of movement the setting is protecting them from. */
 
   const field  = document.getElementById('skillField');
   const canvas = document.getElementById('skillCanvas');
@@ -643,6 +652,19 @@ export function initSkills() {
 
   function start() {
     if (running || !live) return;
+    /* Under reduced motion the balls are settled once and then left alone.
+       Stepping the solver ~90 times resolves the overlaps and lets them come
+       to rest inside the outline — the same arrangement the animated version
+       reaches, arrived at in one frame instead of over several seconds of
+       visible drift. After this nothing moves unless the reader moves it. */
+    if (reducedMotion) {
+      // step()'s argument is the frame's SCROLL DELTA, not a timestep — it is
+      // the slosh nudge. Passing STEP here would push every ball downward 90
+      // times and pile them in the base of the skull.
+      for (let i = 0; i < 90; i++) step(0);
+      draw();
+      return;
+    }
     running = true; last = performance.now(); acc = 0;
     lastScroll = window.scrollY; // or the first frame slams in the whole offset
     raf = requestAnimationFrame(frame);

@@ -44,10 +44,18 @@ export function initExperience() {
   const rail = document.getElementById('journeyRail');
   if (!stage || !list) return;
 
-  // Reduced motion: return before anything is built. Deliberately not a static
-  // map image instead — a six-screen pinned walk swapped for a decorative
-  // picture is worse than the list, which is the actual content.
-  if (reducedMotion) return;
+  /* Reduced motion used to return here, and the section stayed a list.
+     The reasoning was that a six-screen pinned walk swapped for a decorative
+     picture is worse than the list — which is true of a PICTURE, and this is
+     not one. The map is live: the chapter rail jumps between milestones, the
+     cards carry the CV, and on touch the stick still walks him around. What
+     the preference is protecting against is motion the reader did not ask for,
+     and under it the walk no longer moves on its own — `walk.js` skips the
+     idle gait and the camera easing, and he only moves when someone moves him.
+
+     The timeline remains the fallback for JS off, a failed sheet, and widths
+     under 320. It is still the content; it is no longer the only option for
+     someone who has asked their phone to calm down. */
 
   let api = null, st = null, io = null, ro = null;
   let mounted = false, loading = false, enabled = false, lastTotal = 0;

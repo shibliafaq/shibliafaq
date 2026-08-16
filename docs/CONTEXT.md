@@ -559,3 +559,70 @@ sections returned home and hidden every time.
 - The Projects heading said "Six projects" against seven cards. Corrected.
 - `main.js` no longer imports either module, and the three.js chunk is no longer
   fetched until someone opens the globe.
+
+---
+
+## 16. Reduced motion, and a joystick regression I caused (2026-08-16)
+
+### The "old design on mobile" was not a deploy problem
+
+Reported as the live site still showing the old Tools and Experience sections on
+a phone. It was not. Verified against `shibliafaq.vercel.app` directly: the
+deployed JS carries `syncTouch` and `pointer: coarse`, the deployed CSS carries
+`journeystick` and `tli__stat`, HTML is served `max-age=0, must-revalidate` so
+no stale copy is possible, and at 375x812 the live site mounts the brain and the
+map correctly.
+
+The cause was **`prefers-reduced-motion` on the device**. Both modules returned
+before building anything:
+
+    experience.js  if (reducedMotion) return;
+    skills.js      if (reducedMotion) return;
+
+which leaves the tag list and the timeline — precisely "the old design".
+
+### What changed, and why it is not a bypass
+
+The setting is honoured, not ignored. It asks for less MOTION, not less
+content, and the previous behaviour removed the content.
+
+| | before | now |
+|---|---|---|
+| skills brain | not built | built, settled with ~90 solver steps in one frame, then still |
+| dragging a ball | n/a | still works — a gesture the reader chose is not ambient motion |
+| the map | not built | built; rail, cards and the stick all work |
+| idle gait | n/a | frozen on frame 0 rather than cycling on a timer |
+| camera lead / camX | n/a | snaps to target instead of easing |
+
+The timeline and tag list remain the fallback for JS off, a failed sheet, and
+widths under 320.
+
+`step()` takes the frame's **scroll delta**, not a timestep. The settle loop
+calls `step(0)`; passing `STEP` would have nudged every ball downward ninety
+times and piled them in the base of the skull.
+
+### The joystick regression, which was mine
+
+`syncTouch: true` — added in §11 to make the pin work on touch — makes Lenis
+intercept `touchmove` document-wide. A drag starting on the stick was being
+swallowed as scroll input before the stick's own `pointermove` ever saw it. The
+joystick worked before that change and stopped after it.
+
+`touch-action: none` does not help: it stops the BROWSER scrolling and says
+nothing to a library listening on document. The fix is Lenis's own opt-out,
+`data-lenis-prevent`, which `#modalInner` already relied on for the same reason.
+
+Two measurement traps on the way to that, both mine:
+- `--hero-x/--hero-y` cannot detect free-roam movement. The camera follows him,
+  so his SCREEN position is pinned at the lead by design. Canvas frame
+  signatures showed 11 distinct frames during a push — the stick was working all
+  along in emulation.
+- The first run started from a polluted session already in free mode at tile
+  (0,0), which is off-road, so nothing could move in any direction.
+
+### Still to verify on a real device
+
+The stillness of the reduced-motion brain was checked by reading the code path,
+not observed: emulating the media query mid-session leaves the page's original
+animated instance drawing to the same canvas, so a second instance cannot be
+measured. Worth one look on a phone with Reduce Motion on.
