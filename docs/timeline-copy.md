@@ -40,7 +40,7 @@ Deleting a `says` line removes that bubble rather than showing an empty one.
 - **org:** Birla Institute of Technology (BIT), Mesra · Ranchi, India · CGPA: 7.61/10
 - **desc:** <strong class="tli__stat">Cumulative GPA: 7.61/10.0 · First Class with Distinction</strong> Thesis: <em class="serif">Twin Tower Complex – Mixed-Use Net-Zero Energy High-Rise Development</em>. Leadership: Vice President of the Student Society of Architecture (orchestrated events for 300+ members and led the Vajra Pavilion build); Executive Member of the National Service Scheme (managed welfare initiatives for 10 villages). Awards: 1st Place Interior Design Trophy (Zonasa 2019) · 2nd Place Café Design (NASA 2017) · National Top 66 Finalist (ANDC Embark 2019) · Shortlisted Main Design Trophy (Zonasa 2018).
 - **note:** <strong class="tli__stat">Cumulative GPA: 7.61/10.0 · First Class with Distinction</strong> Awards: 1st Place Interior Design Trophy (Zonasa 2019); 2nd Place Café Design (NASA 2017); Shortlisted Main Design Trophy (Zonasa 2018); National Top 66: Embark Competition (ANDC 2019).
-- **says:** I spent five years here and learned the basics of design.
+- **says:** My first college, I spent five years here and learned how to think like an Architect.
 
 ### chadda
 
@@ -76,7 +76,7 @@ Deleting a `says` line removes that bubble rather than showing an empty one.
 - **org:** Medicfibers · New Delhi, India
 - **desc:** Crafted strategic investment pitch decks and visual brand assets supporting capital funding campaigns. Developed and executed a comprehensive social media strategy expanding online audience engagement by 3× and increasing overall brand visibility by 40%.
 - **note:** Crafted strategic investment pitch decks and visual brand assets supporting capital funding campaigns. Developed and executed a comprehensive social media strategy expanding online audience engagement by 3× and increasing overall brand visibility by 40%.
-- **says:** I joined this office for a detour into design because of the pandemic.
+- **says:** I joined this office for a detour into graphic design because of the job scarcity during the pandemic.
 
 ### metarch2
 
@@ -85,7 +85,7 @@ Deleting a `says` line removes that bubble rather than showing an empty one.
 - **org:** Metarch Studios · Ranchi, India
 - **desc:** Led the full project lifecycle for a $720K commercial, educational, and residential portfolio with 100% on-time and on-budget delivery. Managed multi-disciplinary teams across 4 concurrent projects, reducing construction change orders by 8% and coordination delays by 10%. Boosted team drawing delivery speed by 15% through workflow standardisation and pioneered BIM/3D visualisation pipelines, increasing client satisfaction by 20%.
 - **note:** Led the full project lifecycle for a $720K commercial, educational, and residential portfolio with 100% on-time and on-budget delivery. Managed multi-disciplinary teams across 4 concurrent projects, reducing construction change orders by 8% and coordination delays by 10%. Boosted team drawing delivery speed by 15% through workflow standardisation and pioneered BIM/3D visualisation pipelines, increasing client satisfaction by 20%.
-- **says:** I rejoined Metarch Studios, this time leading every project.
+- **says:** I rejoined the Metarch Studios office and this time leading the projects.
 
 ### kfupm
 
@@ -94,4 +94,4 @@ Deleting a `says` line removes that bubble rather than showing an empty one.
 - **org:** King Fahd University of Petroleum &amp; Minerals (KFUPM), Dhahran, KSA
 - **desc:** <strong class="tli__stat">Cumulative GPA: 4.0/4.0 · Specialisation in Urban Informatics &amp; Sustainability</strong> Thesis: <em class="serif">Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation</em>. Coursework: Big Data Analytics, Smart City Systems &amp; IoT, GIS &amp; Spatial Analysis, Environmental Economics, Urban Informatics, Circular Economy.
 - **note:** <strong class="tli__stat">GPA 4.0/4.0 · Specialisation in Urban Informatics &amp; Sustainability</strong> Thesis: <em class="serif">Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation</em>. Coursework: Big Data Analytics, Smart City Systems &amp; IoT, GIS &amp; Spatial Analysis, Environmental Economics, Urban Informatics, Circular Economy.
-- **says:** I decided to pursue an M.Sc in Smart and Sustainable Cities at KFUPM, Dhahran.
+- **says:** I decided to pursue an M.Sc in Smart and Sustainable Cities at KFUPM to learn more about cities.

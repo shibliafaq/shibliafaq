@@ -1,4 +1,18 @@
-# Editing the speech bubbles
+# The speech bubbles
+
+> **This file is a reference, not the source.**
+>
+> These seven lines are the `says` field in **`docs/timeline-copy.md`**, and
+> `tools/sync-copy.mjs` is what writes them into `index.html`. Two documents
+> once described the same strings and drifted apart without anyone noticing —
+> the table here still said "architectural internship" and "leading projects in
+> Architecture" long after the markup had said something else, because whichever
+> tool ran last silently won.
+>
+> **Edit `docs/timeline-copy.md`.** The table below is regenerated from the
+> markup and is here so the seven lines can be read together, in the order he
+> reaches them, which the six-field document cannot show.
+
 
 The line the character says when he arrives at each of the seven focal points.
 
@@ -35,15 +49,15 @@ The map is walked top to bottom, but the timeline list is newest-first, so the
 line numbers run in the opposite order to the journey. Listed here in the order
 he actually reaches them.
 
-| # | `data-stop` | line | what he says |
-|---|---|---|---|
-| 1 | `barch` | **528** | I spent five years here and learned the basics of design. |
-| 2 | `chadda` | **519** | My first real office; it was hard learning the professional dynamics. |
-| 3 | `metarch1` | **510** | The second summer internship in my favorite office. |
-| 4 | `jaiswal` | **501** | I went to Delhi for a five-month architectural internship, and I learned a lot there. |
-| 5 | `medicfibers` | **492** | I joined this office for a detour into graphic design because of the pandemic. |
-| 6 | `metarch2` | **483** | I rejoined Metarch Studios, this time leading projects in Architecture. |
-| 7 | `kfupm` | **473** | I decided to pursue an M.Sc in Smart and Sustainable Cities at KFUPM, Dhahran to learn about cities. |
+| # | `data-stop` | what he says |
+|---|---|---|
+| 1 | `barch` | My first college, I spent five years here and learned how to think like an Architect. |
+| 2 | `chadda` | My first real office; it was hard learning the professional dynamics. |
+| 3 | `metarch1` | The second summer internship in my favorite office. |
+| 4 | `jaiswal` | I went to Delhi for a five-month internship, and I learned a lot there. |
+| 5 | `medicfibers` | I joined this office for a detour into graphic design because of the job scarcity during the pandemic. |
+| 6 | `metarch2` | I rejoined the Metarch Studios office and this time leading the projects. |
+| 7 | `kfupm` | I decided to pursue an M.Sc in Smart and Sustainable Cities at KFUPM to learn more about cities. |
 
 The `line` column is where each one currently sits in `index.html` — it is only
 a signpost and the sync ignores it, because line numbers go stale the moment

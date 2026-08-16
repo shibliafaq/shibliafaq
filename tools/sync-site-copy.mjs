@@ -66,11 +66,14 @@ const TEXTY = ['h1', 'h2', 'h3', 'h4', 'h5', 'p', 'li', 'span', 'a', 'button',
   'blockquote', 'figcaption', 'summary', 'strong', 'em', 'small', 'label'];
 
 /* Left alone on purpose:
-   tli__*      the timeline — tools/sync-copy.mjs owns those, from its own doc
+   tli, tli__* the timeline — tools/sync-copy.mjs owns those, from its own doc.
+               `tli` matters as much as `tli__`: without it --init anchored
+               the seven <li class="tli"> wrappers too, so site-copy.md ended up
+               owning the whole CV a second time
    sec-title   split into per-character spans by the reveal animation at runtime,
                but static in the file, so it IS editable — kept in.
    journey__   map chrome written by JS at runtime; editing the HTML does nothing */
-const SKIP_CLASS = /\btli__|\bjourney__rail\b|\bjourney__cards\b/;
+const SKIP_CLASS = /\btli\b|\btli__|\bjourney__rail\b|\bjourney__cards\b/;
 
 /** Human-readable section names, in page order. */
 const SECTIONS = {
