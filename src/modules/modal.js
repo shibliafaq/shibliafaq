@@ -55,12 +55,69 @@ function render(data) {
         .join('')}</div>`
     : '';
 
+  // Where a relocated section is dropped in, if this project has one. Placed
+  // after the metrics and method and before the static gallery: it is the live
+  // version of what the gallery shows stills of, so it earns the higher slot.
+  const embed = data.embed ? '<div class="membed" data-embed-slot></div>' : '';
+
   return `
     <p class="mcat">${esc(data.cat)}</p>
     <h2 class="mtitle" id="modalTitle">${esc(data.title)}</h2>
     <p class="mdesc">${data.desc}</p>
-    ${metrics}${method}${gallery}${videos}${extra}${tags}${links}
+    ${metrics}${method}${embed}${gallery}${videos}${extra}${tags}${links}
   `;
+}
+
+/* ============================================================
+   EMBEDDED SECTIONS
+   Two full sections now live inside project cards rather than in the page:
+   #atlas (Thesis Coverage) inside the thesis card, #thermal (Multi-City
+   Surface Temperature) inside the temp card.
+
+   The node is MOVED, not cloned. Cloning would duplicate ~100 lines of markup
+   and, worse, duplicate every `id` and `data-i18n` in it — the translation
+   engine and `getElementById` would then both pick whichever copy came first.
+   Moving keeps one copy that stays translated and stays in the document for a
+   crawler, at the cost of having to put it back on close.
+   ============================================================ */
+const EMBEDS = {
+  atlas: { id: 'atlas', load: () => import('./atlas.js').then((m) => m.initAtlas) },
+  thermal: { id: 'thermal', load: () => import('./thermal.js').then((m) => m.initThermal) },
+};
+
+let liveEmbed = null;   // { node, home, destroy }
+
+async function mountEmbed(name, slot) {
+  const spec = EMBEDS[name];
+  if (!spec) return;
+  const node = document.getElementById(spec.id);
+  if (!node || !slot) return;
+
+  // Remember exactly where it came from, so close() can put it back in the
+  // same place rather than appending it to the end of the body.
+  const home = { parent: node.parentNode, next: node.nextSibling };
+  slot.appendChild(node);
+  node.hidden = false;
+
+  let destroy = null;
+  try {
+    const init = await spec.load();
+    // The module may return a teardown. atlas.js must — it holds a WebGL
+    // context, and browsers reclaim the oldest once a handful are live.
+    destroy = init(node) || null;
+  } catch (err) {
+    console.warn(`[modal] embed "${name}" failed to start`, err);
+  }
+  liveEmbed = { node, home, destroy };
+}
+
+function unmountEmbed() {
+  if (!liveEmbed) return;
+  const { node, home, destroy } = liveEmbed;
+  liveEmbed = null;
+  try { destroy?.(); } catch (err) { console.warn('[modal] embed teardown failed', err); }
+  node.hidden = true;
+  home.parent?.insertBefore(node, home.next);
 }
 
 export function initModal() {
@@ -71,6 +128,10 @@ export function initModal() {
   const open = (id) => {
     const data = projects[id];
     if (!data) return;
+    // Guard against opening over an already-open modal: without this the old
+    // embed's node is destroyed by the innerHTML wipe below while `liveEmbed`
+    // still points at it, and it never gets put back.
+    if (!modal.hidden) unmountEmbed();
     lastFocus = document.activeElement;
     inner.innerHTML = render(data);
     inner.scrollTop = 0;
@@ -78,9 +139,15 @@ export function initModal() {
     requestAnimationFrame(() => modal.classList.add('is-open'));
     lock();
     modal.querySelector('.modal__close')?.focus();
+    if (data.embed) mountEmbed(data.embed, inner.querySelector('[data-embed-slot]'));
   };
 
   const close = () => {
+    // BEFORE the innerHTML wipe, and before the close animation. The embed is a
+    // borrowed node that lives elsewhere in the document; if `inner.innerHTML`
+    // is cleared while it is still parented here, the only copy of a whole
+    // section is destroyed and the card opens empty ever after.
+    unmountEmbed();
     modal.classList.remove('is-open');
     setTimeout(() => { modal.hidden = true; inner.innerHTML = ''; }, 420);
     unlock();

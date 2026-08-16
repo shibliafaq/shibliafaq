@@ -42,7 +42,14 @@ function noise(x, y) {
   );
 }
 
+/** The one live scene. Built on first open, then paused and resumed — see the
+    note beside `instance` at the bottom of this function. */
+let instance = null;
+
 export function initAtlas() {
+  // Reopening the card must not build a second renderer on the same canvas.
+  if (instance) { instance.resume(); return instance.pause; }
+
   const canvas = document.getElementById('atlasCanvas');
   const section = document.getElementById('atlas');
   const fallback = document.getElementById('atlasFallback');
@@ -194,16 +201,19 @@ export function initAtlas() {
 
   // Only burn frames while the section is actually on screen.
   let visible = false;
-  new IntersectionObserver(
+  const io = new IntersectionObserver(
     ([entry]) => { visible = entry.isIntersecting; },
     { rootMargin: '120px' }
-  ).observe(section);
+  );
+  io.observe(section);
 
   const clock = new THREE.Clock();
   let frame = 0;
+  let raf = 0, dead = false;
 
   function loop() {
-    requestAnimationFrame(loop);
+    if (dead) return;
+    raf = requestAnimationFrame(loop);
     if (!visible) return;
 
     const t = clock.getElapsedTime();
@@ -225,4 +235,21 @@ export function initAtlas() {
   }
 
   loop();
+
+  /* PAUSE, not destroy — and the difference was measured the hard way.
+     The first version disposed the renderer and called `forceContextLoss()` on
+     close, which is the correct way to hand a context back. But the canvas is a
+     fixed element in the markup, so the next open built a new renderer on the
+     SAME canvas — and a canvas whose context has been force-lost can never get
+     another. `gl.isContextLost()` came back true on the sixth open/close cycle
+     and the globe went black with no error in the console.
+
+     One context for the page lifetime is the right trade: the limit browsers
+     enforce is on simultaneous contexts, and there is only ever one here. So
+     closing the dialog stops the frame loop and nothing else. */
+  instance = {
+    pause() { dead = true; cancelAnimationFrame(raf); },
+    resume() { if (!dead) return; dead = false; loop(); },
+  };
+  return instance.pause;
 }

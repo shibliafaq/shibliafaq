@@ -160,16 +160,13 @@ node tools/sync-site-copy.mjs --write   # apply it
 ### thermal.5
 - <span class="thermal__dot" style="--c:#a5f3fc"></span>Reykjavík <em>64°N</em> <b>−3.7&thinsp;°C</b>
 
-### thermal.6
-- <span data-i18n="thermal.more">Full study</span> <span class="btn__arrow">↗</span>
-
 ## Projects
 
 ### projects.label
 - Research &amp; Projects
 
 ### projects.title
-- Six projects.<br><em>One direction.</em>
+- Seven projects.<br><em>One direction.</em>
 
 ### projects.lead
 - From architectural BIM to real-time satellite pipelines, all converging on one question: how do we make cities survive the climate crisis?

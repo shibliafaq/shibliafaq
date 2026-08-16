@@ -1470,3 +1470,95 @@
     );
   }
 }
+
+/* ============================================================
+   EMBEDDED SECTIONS INSIDE A PROJECT MODAL
+   #atlas and #thermal were written as full-page sections — 100svh tall,
+   sticky, full-bleed. Inside a dialog every one of those is wrong: `100svh`
+   overflows a panel that is already only 92vh, `position: sticky` has nothing
+   to stick to, and `320vh` of scroll runway makes the modal scroll for three
+   screens past a video that no longer scrubs.
+
+   Overriding here rather than editing the originals keeps one copy of each
+   section that still renders correctly if it is ever put back in the page.
+   ============================================================ */
+
+.membed {
+  margin: 1.5rem 0 .5rem;
+  border-radius: var(--r);
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+/* ---- Thesis Coverage (the globe) ---- */
+.modal .atlas {
+  /* Height follows the CONTENT, with a floor so the globe still reads as one.
+     A fixed clamp looked right until measured: the copy and the five-city list
+     come to 529px against a 468px box, and `overflow: hidden` on the section
+     silently ate NEOM off the bottom of the list. The canvas is
+     `position: absolute; inset: 0`, so it fills whatever height this resolves
+     to rather than dictating it. */
+  height: auto;
+  min-height: clamp(360px, 52vh, 560px);
+  padding: clamp(1.25rem, 3vh, 2rem) 0;
+  border-radius: inherit;
+}
+
+/* The page version rakes a hard gradient across the left 60% so the headline
+   sits on solid ink. In a panel the copy is narrower and centred lower, and
+   that gradient just hides the globe — softened to a floor wash. */
+.modal .atlas::after {
+  background:
+    linear-gradient(to bottom, transparent 55%, rgba(14, 14, 17, .92) 100%),
+    linear-gradient(to top, var(--ink-1) 1%, transparent 18%);
+}
+
+.modal .atlas .wrap { padding-inline: clamp(1rem, 3vw, 2rem); }
+.modal .atlas .sec-title { font-size: clamp(1.5rem, 3.4vw, 2.4rem); }
+.modal .atlas .atlas__lead { max-width: 46ch; }
+
+/* ---- Multi-City Surface Temperature (the three clips) ---- */
+.modal .thermal {
+  /* 320vh existed only to give the scrub somewhere to happen. The legend
+     drives it now, so the section is exactly as tall as its content. */
+  height: auto;
+  border-radius: inherit;
+}
+
+.modal .thermal__sticky {
+  position: static;
+  height: clamp(320px, 46vh, 520px);
+}
+
+.modal .thermal__hud { padding-inline: clamp(1rem, 3vw, 2rem); }
+.modal .thermal__title { font-size: clamp(1.4rem, 3.2vw, 2.2rem); margin: .5rem 0 .75rem; }
+.modal .thermal__caption { font-size: var(--fs-sm); max-width: 46ch; }
+.modal .thermal__legend { margin: 1.1rem 0 .25rem; gap: 1rem; }
+
+/* The legend is a control here, not a key. It has to look like one. */
+.modal .thermal__legend li {
+  padding: .4rem .7rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  transition: border-color var(--d-fast) var(--e-out), color var(--d-fast) var(--e-out);
+}
+
+.modal .thermal__legend li:hover { border-color: var(--amber-24); }
+.modal .thermal__legend li.is-active { border-color: var(--amber); }
+.modal .thermal__legend li:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+/* The page version crops the 490x250 clip with a radial mask and scales it to
+   118% to fill a viewport. In a panel that throws most of the frame away. */
+.modal .thermal__video {
+  width: 100%;
+  max-width: 100%;
+  -webkit-mask-image: none;
+  mask-image: none;
+  object-fit: contain;
+}
+
+@media (max-width: 700px) {
+  .modal .atlas { height: clamp(260px, 38vh, 380px); }
+  .modal .thermal__sticky { height: clamp(240px, 34vh, 380px); }
+  .modal .thermal__legend { gap: .5rem; }
+}

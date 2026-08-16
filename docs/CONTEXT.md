@@ -496,3 +496,66 @@ git push origin main:preview     # own preview URL, live untouched
 - The `IntersectionObserver` driving `setActive` in `experience.js` may be as
   dead as the one that had to be replaced in §11 — which would mean the walk
   never pauses off-screen. Costs battery, breaks nothing. Unverified.
+
+---
+
+## 15. Two sections moved inside project cards (2026-08-16)
+
+`#atlas` (Thesis Coverage — the three.js globe) now opens inside the **Smart
+Digital Twin** card, and `#thermal` (Multi-City Surface Temperature — the three
+Kepler recordings) inside the **Multi-City Surface Temperature Analysis** card.
+Neither is a page section any more.
+
+A modal system already existed (`modal.js` + `data/projects.js`, keyed by
+`data-modal`), so the work was relocation and lifecycle, not new UI.
+
+### The node is MOVED, not cloned
+
+Cloning would duplicate ~100 lines of markup and, worse, every `id` and
+`data-i18n` inside it — after which `getElementById` and the translation engine
+both silently pick whichever copy comes first. So the live node is appended into
+the dialog on open and put back on close, which also means it stays translated
+and stays in the document for a crawler. `modal.js` records `{parent, next}`
+before moving so it returns to the same place, not the end of `<body>`.
+
+`unmountEmbed()` runs **before** `inner.innerHTML = ''`. Clearing the dialog
+while a borrowed node is still parented inside it destroys the only copy of a
+whole section, and the card opens empty from then on.
+
+### Scroll-driven had to become click-driven
+
+`thermal.js` was a 320vh pin that scrubbed each clip frame by frame from scroll
+progress. A dialog has no scroll runway, so the legend became the control:
+three buttons, one clip playing and looping at a time. The comparison survives
+because it was never in the scrubbing — it is in the three numbers, 31.5, 9.6
+and −3.7, and a tab strip puts those side by side more directly than a scroll
+position did. The legend entries are real buttons with `aria-pressed`, since the
+amber dot only says which is active to people who can see it.
+
+### The WebGL fix, which was wrong first
+
+`atlas.js` had no teardown, so the first version disposed the renderer and
+called `forceContextLoss()` on close — textbook correct, and wrong here. The
+canvas is a fixed element in the markup, so the next open built a new renderer
+on the SAME canvas, and **a canvas whose context has been force-lost can never
+get another**. Measured: `gl.isContextLost()` returned true on the sixth
+open/close cycle and the globe went black with no console error.
+
+The scene is now built once and merely paused and resumed. Browsers limit
+*simultaneous* contexts and there is only ever one here. Verified over eight
+cycles plus alternating between the two embeds: context never lost, both
+sections returned home and hidden every time.
+
+### Smaller things found on the way
+
+- The thermal section carried a "Full study" button with `data-modal="temp"` —
+  which would now reopen the dialog it sits inside. Removed.
+- `preload="none"` plus an immediate `play()` rejects silently: the clip
+  switched and the title updated while the frame stayed on the poster. It now
+  waits for `canplay` when there is no data yet, and sets `loop`.
+- `.modal .atlas` was first given a fixed `height` clamp. Measured, the copy and
+  the five-city list come to 529px against a 468px box and `overflow: hidden`
+  ate NEOM off the list. Height follows content with a floor instead.
+- The Projects heading said "Six projects" against seven cards. Corrected.
+- `main.js` no longer imports either module, and the three.js chunk is no longer
+  fetched until someone opens the globe.

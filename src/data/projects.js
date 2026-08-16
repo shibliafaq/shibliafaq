@@ -11,6 +11,8 @@ const VID = '/assets/video';
 
 export const projects = {
   thesis: {
+    // The Thesis Coverage globe (#atlas) is relocated into this card's modal.
+    embed: 'atlas',
     cat: 'M.Sc. Thesis · KFUPM · Architecture & City Design · Under Development',
     title: 'Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting & Mitigation',
     desc: 'Currently under active development. Built on Design Science Research methodology, this near-real-time digital twin platform ingests multi-satellite feeds via Google Earth Engine, runs city-specific Prophet ML forecasting models, and outputs an equity-weighted Heat Vulnerability Index — all served through a Streamlit + Kepler.gl dashboard. Five Saudi cities. One framework. &lt;10-min satellite-to-screen latency.',
@@ -72,6 +74,8 @@ export const projects = {
   },
 
   temp: {
+    // The Multi-City Surface Temperature section (#thermal) opens inside this card.
+    embed: 'thermal',
     cat: 'ICS 574: Big Data Analytics · KFUPM · Fall 2025 · Co-author: Sultan Aldhafeeri',
     title: 'Multi-City Surface Temperature Analysis — 3 Cities · 3 Continents',
     desc: '25,905 real NASA MODIS/061/MOD11A1 measurements across Dammam (26°N), Dublin (53°N), and Reykjavik (64°N) over 14 days. Near-perfect latitude–temperature correlation: r = −0.995, R² = 0.990. Every 10° northward = 9.1°C colder. GPU-accelerated Kepler.gl 3D hexbin maps at 60 FPS. The 3D clips below are direct recordings of the live Kepler.gl visualisation.',

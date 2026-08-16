@@ -8,7 +8,6 @@ import './styles/i18n.css';
 import { initScroll, ScrollTrigger } from './modules/scroll.js';
 import { initReveals } from './modules/reveals.js';
 import { initHero } from './modules/hero.js';
-import { initThermal } from './modules/thermal.js';
 import { initProjects } from './modules/projects.js';
 import { initSkills } from './modules/skills.js';
 import { initExperience } from './modules/experience.js';
@@ -24,7 +23,6 @@ initNav();
 initCursor();
 initHero();
 initReveals();
-initThermal();
 initProjects();
 // Runs on load rather than near-viewport: it swaps the tag list for the canvas,
 // and doing that late would show the list and then visibly replace it. The rAF
@@ -55,15 +53,10 @@ idleInit(() => {
   }
 });
 
-// The atlas sits well below the fold — load it only when the reader nears it.
-const atlas = document.getElementById('atlas');
-if (atlas) {
-  new IntersectionObserver((entries, obs) => {
-    if (!entries[0].isIntersecting) return;
-    obs.disconnect();
-    import('./modules/atlas.js').then((m) => m.initAtlas());
-  }, { rootMargin: '600px' }).observe(atlas);
-}
+// The atlas and the thermal sequence are no longer page sections — they are
+// relocated into their project cards and mounted by modal.js when the card is
+// opened. Nothing to preload here: three.js is the heaviest thing on the page
+// and there is no reason to pay for it before someone asks for the globe.
 
 // Web fonts change metrics, which changes every pinned section's height.
 if (document.fonts?.ready) {
