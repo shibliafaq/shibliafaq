@@ -71,6 +71,59 @@ export function initProjects() {
   mobile.addEventListener('change', () => ScrollTrigger.refresh());
 
   tiltPosters(cards);
+  coverVideos();
+}
+
+/**
+ * Cover videos on the poster cards.
+ *
+ * Three jobs, and each exists for a measured reason:
+ *
+ *  - LOAD LATE. The clip is 1.1 MB and the card sits four screens down, so the
+ *    element ships with `preload="none"` and no `src` at all. The source is
+ *    attached the first time the card comes near the viewport.
+ *  - PLAY ONLY WHEN SEEN. A looping video decodes frames whether or not anyone
+ *    is looking at it, which on a phone is a real battery cost for a decoration.
+ *  - NEVER UNDER REDUCED MOTION. A 10-second loop behind a headline is exactly
+ *    the ambient movement that preference is asking to stop. The `poster`
+ *    attribute means doing nothing still leaves a picture there — no fallback
+ *    branch needed.
+ *
+ * A scroll listener and a rect test rather than an IntersectionObserver: an
+ * observer on this page failed silently once already (CONTEXT §16), and these
+ * cards additionally move under a GSAP transform while the section is pinned,
+ * which is the case observers are worst at.
+ */
+function coverVideos() {
+  const vids = [...document.querySelectorAll('.pcard__video[data-src]')];
+  if (!vids.length) return;
+
+  const near = (el, factor) => {
+    const r = el.getBoundingClientRect();
+    const pad = window.innerHeight * factor;
+    return r.bottom > -pad && r.top < window.innerHeight + pad;
+  };
+
+  let queued = false;
+  const check = () => {
+    queued = false;
+    for (const v of vids) {
+      if (near(v, 1.5) && !v.src) v.src = v.dataset.src;   // attach once
+      if (reducedMotion) continue;                          // poster stands in
+      if (near(v, 0.25)) { if (v.paused) v.play?.().catch(() => {}); }
+      else if (!v.paused) v.pause();
+    }
+  };
+  const onScroll = () => { if (!queued) { queued = true; requestAnimationFrame(check); } };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  ScrollTrigger.addEventListener('refresh', onScroll);
+  /* Deliberately NOT on gsap.ticker. The horizontal track is scrub-driven, so
+     it only ever moves while the page is scrolling — the scroll listener
+     already covers it. Ticking every frame would run getBoundingClientRect
+     sixty times a second and force a layout each time, to learn nothing. */
+  check();
 }
 
 /**

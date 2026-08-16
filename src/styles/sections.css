@@ -1825,3 +1825,21 @@
   .pcard--poster { aspect-ratio: 4 / 5; width: min(86vw, 460px); }
   .pcard--poster .pcard__title { font-size: clamp(1.2rem, 5.5vw, 1.7rem); max-width: none; }
 }
+
+/* The poster card's cover can be a video. Same box as the image it replaces —
+   absolutely filling the card, cropped to cover, under the same scrim. */
+.pcard__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(1.02);
+  filter: saturate(.9) contrast(1.06) brightness(.92);
+  transition: transform var(--d-slow) var(--e-out), filter var(--d) var(--e-out);
+}
+
+.pcard--poster:hover .pcard__video,
+.pcard--poster:focus-visible .pcard__video {
+  transform: scale(1.06);
+  filter: saturate(1.02) contrast(1.06) brightness(1);
+}

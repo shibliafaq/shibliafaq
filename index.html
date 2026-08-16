@@ -232,7 +232,16 @@
 
       <article class="pcard pcard--poster" data-modal="thesis" tabindex="0" role="button" aria-label="Open: Smart Digital Twin Framework">
         <div class="pcard__media">
-          <img src="/assets/img/hero-thesis.webp" alt="Smart Digital Twin · UHI Monitoring &amp; Forecasting" loading="lazy" width="2400" height="1340">
+          <!-- `poster` is the whole fallback chain in one attribute: it paints
+               before a byte of video arrives, it is what shows if autoplay is
+               refused, and it is what stays under prefers-reduced-motion, where
+               projects.js never calls play(). `preload="none"` keeps the 1.1 MB
+               off the initial load — the card is four screens down. -->
+          <video class="pcard__video" data-src="/assets/video/thesis-cover.mp4"
+                 poster="/assets/img/thesis-cover-poster.webp"
+                 muted loop playsinline preload="none"
+                 width="1280" height="720"
+                 aria-label="Smart Digital Twin · UHI monitoring and forecasting"></video>
         </div>
 
         <div class="pcard__plate">
