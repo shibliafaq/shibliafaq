@@ -716,3 +716,30 @@ Two changes, both needed:
 Verified: the original repro restores all six elements to opacity 1, plus five
 rapid up/down thrashes, a deep scroll and jump home, and a resize mid-scroll
 followed by a jump home.
+
+---
+
+## 19. The relocated Thesis Coverage section was still on the page (2026-08-16)
+
+Reported as the section appearing twice. It was: `#atlas` carried the `hidden`
+attribute after §15 moved it into the project card, but measured
+`display: grid` and **941px tall**, so the globe rendered once in the flow and
+once inside the card.
+
+**`hidden` is only a UA rule of `display: none`, and any stylesheet declaration
+outranks it.** `.atlas { display: grid }` did. `.thermal` never showed the fault
+because it sets no display of its own — which is what made it easy to miss:
+one was checked, looked right, and both were assumed fine.
+
+Guard added on the class the two relocated sections share, so it covers
+`#thermal` too if its CSS ever gains a display:
+
+    .is-embed[hidden] { display: none; }
+
+The same trap is recorded at `.skills[hidden]` from an earlier session. **State
+it as a rule: anything hidden with the `hidden` attribute needs its own
+`[hidden] { display: none }` if its class sets display at all.** An audit over
+every element that ships with the attribute found nothing else exposed.
+
+Page height dropped 24,080 -> 23,139. Verified the card still mounts it (583px),
+and closing returns it hidden at 0px.

@@ -1538,6 +1538,19 @@
   border: 1px solid var(--line);
 }
 
+/* A relocated section is `hidden` until a card borrows it — but `hidden` is a
+   UA rule of `display: none`, and ANY display declaration in a stylesheet beats
+   it. `.atlas` sets `display: grid`, so it stayed on the page at full height:
+   the Thesis Coverage globe rendered twice, once in the flow and once inside
+   the project card. `.thermal` never showed the fault because it sets no
+   display of its own, which is exactly what made it easy to miss.
+
+   The same trap is recorded at `.skills[hidden]` a few hundred lines up. It is
+   worth stating as a rule: any element this project hides with the `hidden`
+   attribute needs its own `[hidden] { display: none }` if its class sets
+   display at all. */
+.is-embed[hidden] { display: none; }
+
 /* ---- Thesis Coverage (the globe) ---- */
 .modal .atlas {
   /* Height follows the CONTENT, with a floor so the globe still reads as one.
