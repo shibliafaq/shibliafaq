@@ -624,6 +624,16 @@
   text-align: center;
 }
 
+/* The lead follows its heading. `.lead` carries `max-width: var(--measure)`,
+   which left it ranged against the column edge under a centred title — the two
+   sat on different axes. Keeping the measure and centring the block is what
+   holds the line length readable AND on the title's axis. */
+#background .lead {
+  margin-inline: auto;
+  text-align: center;
+  margin-top: clamp(.85rem, 2vh, 1.35rem);
+}
+
 /* Size is Skills' alone — the brain is the page's biggest figure and carries
    a display-scale title. Background's is left at the section default. */
 #skills .sec-title { font-size: clamp(3.25rem, 9vw, 8.5rem); }

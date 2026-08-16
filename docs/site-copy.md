@@ -575,6 +575,9 @@ node tools/sync-site-copy.mjs --write   # apply it
 ### bg.title
 - Experience &amp; <em>Education</em>
 
+### bg.lead
+- Let me walk you through the Journey so far.
+
 ### background.1
 - <span data-i18n="bg.hint">Keep scrolling — he walks the map</span>
 
