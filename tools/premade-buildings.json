@@ -1,0 +1,57 @@
+{
+  "_comment": [
+    "Complete artist-drawn buildings, cut out of the multi-building source sheets",
+    "that were sitting unused in public/assets/pixel/premade/.",
+    "",
+    "Each source is a 2x2 grid of ~128px cells, but the buildings do NOT fill",
+    "their cells — they sit centred with uneven padding, so cutting on the grid",
+    "leaves dead space that breaks bottom-centre anchoring. Every rect below is",
+    "the tight content bounding box reported by:",
+    "",
+    "  node tools/index-atlas.mjs <sheet>.png --gap=3 --min=400",
+    "",
+    "Regenerate with:  node tools/crop-sprites.mjs --manifest=tools/premade-buildings.json --sheet"
+  ],
+
+  "sources": {
+    "churches": "public/assets/pixel/premade/churches.webp",
+    "museums": "public/assets/pixel/premade/museums.webp",
+    "manors": "public/assets/pixel/premade/noblemanors.webp",
+    "stalls": "public/assets/pixel/premade/marketstalls.webp",
+    "plands": "public/assets/pixel/premade/pixellands.webp"
+  },
+
+  "outDir": "public/assets/pixel/pmx",
+
+  "sprites": [
+    { "_": "--- churches: civic landmarks, the tallest silhouettes available ---" },
+    { "name": "church_stone", "src": "churches", "rect": [17, 5, 94, 115] },
+    { "name": "church_white", "src": "churches", "rect": [146, 3, 92, 115] },
+    { "name": "church_brick", "src": "churches", "rect": [21, 130, 95, 120] },
+    { "name": "church_log",   "src": "churches", "rect": [146, 132, 92, 115] },
+
+    { "_": "--- museums: institutional, with signage. The closest thing in any",
+      "__": "    pack to a university or an office block. ---" },
+    { "name": "museum_teal",   "src": "museums", "rect": [3, 6, 122, 109] },
+    { "name": "museum_purple", "src": "museums", "rect": [131, 6, 122, 108] },
+    { "name": "museum_log",    "src": "museums", "rect": [3, 133, 122, 117] },
+    { "name": "museum_clock",  "src": "museums", "rect": [137, 129, 110, 121] },
+
+    { "_": "--- noble manors: large houses, good for the bigger practices ---" },
+    { "name": "manor_cream",  "src": "manors", "rect": [10, 6, 108, 107] },
+    { "name": "manor_turret", "src": "manors", "rect": [142, 6, 100, 105] },
+    { "name": "manor_timber", "src": "manors", "rect": [142, 134, 100, 104] },
+    { "name": "manor_gabled", "src": "manors", "rect": [12, 136, 104, 107] },
+
+    { "_": "--- market stalls: the prop density a plaza needs ---" },
+    { "name": "stall_market",  "src": "stalls", "rect": [14, 12, 101, 100] },
+    { "name": "stall_bakery",  "src": "stalls", "rect": [145, 9, 94, 107] },
+    { "name": "stall_pottery", "src": "stalls", "rect": [9, 139, 116, 95] },
+    { "name": "stall_fish",    "src": "stalls", "rect": [142, 139, 96, 95] },
+
+    { "_": "--- pixellands: three more large buildings ---" },
+    { "name": "pl_hall",    "src": "plands", "rect": [161, 29, 158, 131] },
+    { "name": "pl_tower",   "src": "plands", "rect": [33, 37, 94, 123] },
+    { "name": "pl_terrace", "src": "plands", "rect": [17, 181, 190, 123] }
+  ]
+}

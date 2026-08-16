@@ -1,0 +1,572 @@
+/* ============================================================
+   CHROME — progress, cursor, nav, footer
+   ============================================================ */
+
+.progress {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  z-index: calc(var(--z-nav) + 5);
+  background: rgba(255, 255, 255, .05);
+  pointer-events: none;
+}
+
+.progress__bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--heat);
+  transform-origin: left;
+}
+
+/* Custom cursor — pointer devices only; touch keeps the native one. */
+.cursor, .cursor-dot { display: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  .cursor {
+    display: block;
+    position: fixed;
+    top: 0; left: 0;
+    width: 380px; height: 380px;
+    z-index: var(--z-cursor);
+    pointer-events: none;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--amber-12), transparent 62%);
+    opacity: .8;
+    will-change: transform;
+  }
+
+  .cursor-dot {
+    display: block;
+    position: fixed;
+    top: 0; left: 0;
+    width: 7px; height: 7px;
+    z-index: calc(var(--z-cursor) + 1);
+    pointer-events: none;
+    border-radius: 50%;
+    background: var(--amber);
+    transition: width var(--d-fast) var(--e-out),
+                height var(--d-fast) var(--e-out),
+                opacity var(--d-fast) var(--e-out);
+    will-change: transform;
+  }
+
+  .cursor-dot.is-hot { width: 34px; height: 34px; opacity: .35; }
+}
+
+/* ---- NAV --------------------------------------------------- */
+
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: var(--z-nav);
+  height: 74px;
+  padding-inline: var(--pad-x);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  transition: background var(--d) var(--e-out),
+              backdrop-filter var(--d) var(--e-out),
+              border-color var(--d) var(--e-out);
+  border-bottom: 1px solid transparent;
+}
+
+.nav.is-solid {
+  background: rgba(9, 9, 11, .72);
+  backdrop-filter: blur(22px) saturate(140%);
+  border-bottom-color: var(--line);
+}
+
+.nav.is-hidden { transform: translateY(-100%); }
+
+.nav__logo {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: -.03em;
+}
+
+.nav__logo em {
+  font-family: var(--f-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.3rem;
+  color: var(--amber);
+}
+
+.nav__links {
+  display: flex;
+  gap: 2.2rem;
+  margin-left: auto;
+}
+
+.nav__links a {
+  position: relative;
+  font-family: var(--f-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--t-2);
+  transition: color var(--d-fast) var(--e-out);
+}
+
+.nav__links a::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -6px;
+  width: 100%; height: 1px;
+  background: var(--amber);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--d-fast) var(--e-out);
+}
+
+.nav__links a:hover { color: var(--t); }
+.nav__links a:hover::after,
+.nav__links a.is-current::after { transform: scaleX(1); transform-origin: left; }
+.nav__links a.is-current { color: var(--t); }
+
+.nav__cta { padding: .6rem 1.15rem; }
+
+.nav__burger {
+  display: none;
+  width: 42px; height: 42px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.nav__burger span {
+  display: block;
+  width: 15px; height: 1.5px;
+  background: var(--t);
+  transition: transform var(--d-fast) var(--e-out), opacity var(--d-fast);
+}
+
+.nav__burger[aria-expanded="true"] span:first-child { transform: translateY(3.25px) rotate(45deg); }
+.nav__burger[aria-expanded="true"] span:last-child  { transform: translateY(-3.25px) rotate(-45deg); }
+
+.navmenu {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-nav) - 1);
+  background: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: .5rem;
+  padding: 0 var(--pad-x);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--d) var(--e-out), visibility var(--d);
+}
+
+.navmenu.is-open { opacity: 1; visibility: visible; }
+
+.navmenu a {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 9vw, 3.5rem);
+  letter-spacing: var(--ls-display);
+  color: var(--t-2);
+  transition: color var(--d-fast) var(--e-out);
+}
+
+.navmenu a:hover { color: var(--amber); }
+
+/* ---- SECTION TITLES ---------------------------------------- */
+
+.section--raised { background: var(--ink-1); }
+
+.sec-title {
+  font-size: var(--fs-h2);
+  margin: .5rem 0 clamp(2rem, 5vh, 4rem);
+  max-width: 18ch;
+}
+
+/* Per-word reveal — main.js wraps each word in .word > span. */
+.word { display: inline-block; overflow: hidden; vertical-align: bottom; }
+.word > span { display: inline-block; will-change: transform; }
+
+/* Generic reveal. JS adds .is-in; without JS the @media rule below
+   makes everything visible so content is never trapped invisible. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity var(--d-slow) var(--e-out), transform var(--d-slow) var(--e-out);
+}
+
+[data-reveal].is-in { opacity: 1; transform: none; }
+
+.no-js [data-reveal],
+.no-js .word > span { opacity: 1 !important; transform: none !important; }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: 0 var(--pad-x) clamp(1.5rem, 4vh, 3rem);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero__media { position: absolute; inset: 0; z-index: -2; background: #05060a; }
+
+/* Placeholder and no-WebGL fallback: deep space with a horizon glow roughly
+   where the globe's limb lands, so the swap is not a jump cut. */
+.hero__space {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Matches the globe's white haze, so the swap from placeholder to canvas is
+     not a colour jump. */
+  background:
+    radial-gradient(92% 62% at 50% 122%, rgba(226, 232, 240, .34), rgba(120, 140, 170, .14) 46%, transparent 72%),
+    radial-gradient(50% 34% at 74% 96%, rgba(255, 95, 31, .08), transparent 60%),
+    #05060a;
+}
+
+.hero__globe {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  opacity: 0;
+  transition: opacity 1.4s var(--e-out);
+  will-change: transform, opacity;
+}
+
+.hero__globe.is-ready { opacity: 1; }
+
+/* Drag is handled on the whole hero, so the grab cursor belongs there too —
+   except over links and buttons, which stay clickable. */
+.hero.is-draggable { cursor: grab; touch-action: pan-y; }
+.hero.is-draggable a,
+.hero.is-draggable button { cursor: pointer; }
+body.is-grabbing .hero.is-draggable { cursor: grabbing; }
+
+/* The globe fills the lower two thirds and space is black above it, so the
+   scrim is bottom-and-left weighted: it buys ground for the name without
+   burying the limb or the atmosphere. */
+/* Ground under the centred copy, plus a floor that fades the globe into the
+   section below. Soft-edged on purpose — the planet should still read through
+   rather than sit behind a flat panel. */
+.hero__scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 44% at 50% 46%, rgba(9, 9, 11, .66), rgba(9, 9, 11, .3) 58%, transparent 84%),
+    linear-gradient(to top, var(--ink) 3%, rgba(9, 9, 11, .74) 24%, rgba(9, 9, 11, .16) 60%, transparent 82%);
+}
+
+/* Warm rim light along the limb — the one place amber belongs over a blue
+   planet. Much weaker than the wash the orange portrait needed. */
+.hero__heat {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(58% 38% at 50% 92%, rgba(255, 95, 31, .15), transparent 68%);
+  mix-blend-mode: screen;
+  animation: heatBreath 18s var(--e-soft) infinite alternate;
+}
+
+@keyframes heatBreath {
+  from { opacity: .35; transform: scale(1); }
+  to   { opacity: .7;  transform: scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__heat { animation: none; }
+}
+
+.hero__body {
+  align-self: end;
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+  text-align: center;
+  padding-bottom: clamp(2rem, 6vh, 4.5rem);
+}
+
+.hero__hey {
+  color: var(--t-1);
+  margin-bottom: 1rem;
+  justify-content: center;
+  text-shadow: 0 2px 18px rgba(9, 9, 11, .9);
+}
+
+/* No leading rule on the hero eyebrow — centred text reads cleaner without it. */
+.hero__hey::before { content: none; }
+
+/* Set on one line, so the scale is driven by how wide "Shibli Afaq" runs rather
+   than by the two-line stack the hero used to have. */
+.hero__name {
+  /* The floor has to clear the narrowest common phone: at 360px the padded
+     measure is 320px, and "Shibli Afaq" set nowrap needs to fit inside it. */
+  font-size: clamp(2.15rem, 9.6vw, 10rem);
+  margin-bottom: clamp(.75rem, 2vh, 1.5rem);
+  white-space: nowrap;
+}
+
+.hero__name-line { display: inline; }
+
+.hero__name-line--2 {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--amber);
+}
+
+.hero__role {
+  font-family: var(--f-mono);
+  font-size: clamp(.8rem, 1.5vw, 1.05rem);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  min-height: 1.6em;
+  margin-bottom: 1.5rem;
+}
+
+.hero__caret {
+  display: inline-block;
+  width: 9px; height: 1.05em;
+  margin-left: 3px;
+  background: var(--amber);
+  vertical-align: text-bottom;
+  animation: caret 1.05s steps(2) infinite;
+}
+
+@keyframes caret { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+
+.hero__desc {
+  max-width: 58ch;
+  margin-inline: auto;
+  font-size: var(--fs-body);
+  color: var(--t-2);
+  margin-bottom: 2rem;
+}
+
+.hero__desc strong { color: var(--t); font-weight: 600; }
+
+.hero__actions { display: flex; flex-wrap: wrap; gap: .7rem; justify-content: center; }
+
+.hero__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+  padding-top: clamp(1.25rem, 3vh, 2rem);
+  border-top: 1px solid var(--line);
+}
+
+.hstat { display: flex; gap: .85rem; align-items: flex-start; }
+
+.hstat__idx {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  color: var(--t-4);
+  padding-top: .45rem;
+}
+
+.hstat__val {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 3vw, 2.6rem);
+  letter-spacing: -.04em;
+  line-height: 1;
+  color: var(--amber);
+  font-variant-numeric: tabular-nums;
+}
+
+.hstat__lbl {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  margin-top: .3rem;
+}
+
+/* ============================================================
+   MARQUEE
+   ============================================================ */
+
+.marquee {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1rem, 2.5vh, 1.75rem) 0;
+  border-block: 1px solid var(--line);
+  background: var(--ink-1);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.marquee__track {
+  display: flex;
+  gap: 3.5rem;
+  width: max-content;
+  will-change: transform;
+}
+
+.marquee__item {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(1rem, 2.2vw, 1.75rem);
+  letter-spacing: -.02em;
+  color: var(--t-4);
+  white-space: nowrap;
+  transition: color var(--d-fast) var(--e-out);
+}
+
+.marquee__item::after {
+  content: "◆";
+  margin-left: 3.5rem;
+  font-size: .4em;
+  vertical-align: middle;
+  color: var(--amber-40);
+}
+
+.marquee:hover .marquee__item { color: var(--t-3); }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem 2rem;
+  padding: 3rem var(--pad-x);
+  border-top: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .06em;
+  color: var(--t-3);
+  text-align: center;
+}
+
+.footer__arch { color: var(--t-2); transition: color var(--d-fast); }
+.footer__arch:hover { color: var(--t); }
+.footer__resume { color: var(--amber); }
+
+/* Asset credits sit on their own line rather than wrapping into the middle of
+   the row — the flex-basis is what forces the break. Quieter than the rest of
+   the footer: it is an obligation being met, not a thing to read. */
+.footer__credits {
+  flex-basis: 100%;
+  font-size: var(--fs-label);
+  letter-spacing: .04em;
+  color: var(--t-4);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1024px) {
+  .hero__stats { grid-template-columns: repeat(2, 1fr); row-gap: 1.5rem; }
+}
+
+@media (max-width: 860px) {
+  .nav__links, .nav__cta { display: none; }
+  .nav__burger { display: flex; }
+  .hero__name-line--2 { padding-left: clamp(1rem, 6vw, 3rem); }
+  .hero__photo { object-position: 66% center; }
+  .hero__scrim {
+    background:
+      linear-gradient(to top, var(--ink) 14%, rgba(9, 9, 11, .55) 52%, rgba(9, 9, 11, .3)),
+      linear-gradient(100deg, rgba(9, 9, 11, .75), transparent 70%);
+  }
+}
+
+/* ============================================================
+   PHONES
+   Sizes here are set outright rather than inherited from the fluid clamps.
+   The clamps are tuned for the desktop composition, and at 375px they leave
+   the description competing with the name and the buttons wrapping unevenly.
+   ============================================================ */
+
+@media (max-width: 560px) {
+  :root {
+    --fs-body:  .95rem;
+    --fs-lead:  1rem;
+    --fs-sm:    .86rem;
+    --fs-xs:    .74rem;
+    --fs-label: .66rem;
+    --ls-label: .14em;
+    --sec-y:    clamp(4.5rem, 11vh, 6.5rem);
+  }
+
+  /* The hero carries a paragraph, four CTAs and a stats bar. Forcing that into
+     100svh pushes its top up behind the nav, so on phones it runs to content. */
+  .hero {
+    min-height: auto;
+    padding-top: 88px;
+    padding-bottom: 1.75rem;
+  }
+
+  .hero__body { padding-bottom: 2rem; }
+  .hero__hey { font-size: .62rem; margin-bottom: .7rem; }
+  .hero__role { font-size: .7rem; margin-bottom: 1rem; }
+
+  .hero__desc {
+    font-size: .88rem;
+    line-height: 1.62;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Two even columns beats flex-wrap here: with four labels of very different
+     widths, wrapping leaves a ragged last row. */
+  .hero__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .5rem;
+  }
+
+  .hero__actions .btn {
+    justify-content: center;
+    padding: .78rem .5rem;   /* keeps the tap target above 44px */
+    font-size: .66rem;
+    letter-spacing: .05em;
+    gap: .35rem;
+  }
+
+  .hero__stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.1rem .75rem;
+    padding-top: 1.25rem;
+  }
+
+  .hstat { gap: .5rem; }
+  .hstat__idx { font-size: .6rem; padding-top: .3rem; }
+  .hstat__val { font-size: 1.35rem; }
+  .hstat__lbl { font-size: .6rem; letter-spacing: .06em; margin-top: .2rem; }
+
+  /* On a phone the copy fills nearly the whole hero, so the desktop scrim's
+     centred ellipse leaves the description sitting on bright terrain. A single
+     top-weighted veil covers it without flattening the planet entirely. */
+  .hero__scrim {
+    background:
+      linear-gradient(to bottom,
+        rgba(9, 9, 11, .92) 0%,
+        rgba(9, 9, 11, .66) 30%,
+        rgba(9, 9, 11, .52) 56%,
+        rgba(9, 9, 11, .72) 86%,
+        var(--ink) 100%);
+  }
+
+  .sec-title { max-width: none; margin-bottom: 1.75rem; }
+  .nav { height: 64px; }
+  .marquee__item { font-size: 1rem; }
+  .marquee__track { gap: 2rem; }
+  .marquee__item::after { margin-left: 2rem; }
+  .footer { gap: .5rem 1.25rem; padding: 2.25rem var(--pad-x); }
+}

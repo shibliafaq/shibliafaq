@@ -1,0 +1,189 @@
+/* ============================================================
+   LANGUAGE SWITCHER
+   ============================================================ */
+
+.nav__lang { position: relative; display: flex; align-items: center; }
+
+.lang { position: relative; }
+
+.lang__btn {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .5rem .7rem;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  color: var(--t-2);
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .1em;
+  transition: color var(--d-fast) var(--e-out), border-color var(--d-fast) var(--e-out);
+}
+
+.lang__btn:hover { color: var(--t); border-color: var(--line-3); }
+.lang__code { line-height: 1; }
+
+.lang__menu {
+  position: absolute;
+  top: calc(100% + .6rem);
+  inset-inline-end: 0;
+  min-width: 13rem;
+  padding: .4rem;
+  background: rgba(14, 14, 17, .96);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .55);
+  z-index: 20;
+}
+
+.lang__menu[hidden] { display: none; }
+
+.lang__item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: .55rem .7rem;
+  border-radius: var(--r-sm);
+  text-align: start;
+  color: var(--t-1);
+  font-size: var(--fs-sm);
+  transition: background var(--d-fast) var(--e-out), color var(--d-fast) var(--e-out);
+}
+
+.lang__item:hover { background: rgba(255, 255, 255, .06); color: var(--t); }
+.lang__item.is-current { color: var(--amber); }
+
+.lang__label {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--t-4);
+}
+
+/* ============================================================
+   THE OFFER + THE DISCLAIMER
+   ============================================================ */
+
+.langtoast {
+  position: fixed;
+  inset-block-end: clamp(1rem, 3vh, 2rem);
+  inset-inline-end: clamp(1rem, 3vw, 2rem);
+  z-index: calc(var(--z-modal) + 5);
+  width: min(92vw, 24rem);
+  padding: 1.35rem 1.5rem;
+  background: rgba(14, 14, 17, .97);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, .6);
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity var(--d) var(--e-out), transform var(--d) var(--e-out);
+}
+
+.langtoast.is-in { opacity: 1; transform: none; }
+
+.langtoast__offer {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--t);
+  margin-bottom: .45rem;
+}
+
+.langtoast__note {
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+  color: var(--t-2);
+  margin-bottom: 1.1rem;
+}
+
+.langtoast__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.langtoast__actions .btn { padding: .6rem 1rem; font-size: .66rem; }
+
+/* Shown when the reader picks a language themselves. */
+.langnote {
+  position: fixed;
+  inset-block-end: clamp(1rem, 3vh, 2rem);
+  inset-inline-start: 50%;
+  transform: translate(-50%, 16px);
+  z-index: calc(var(--z-modal) + 5);
+  max-width: min(92vw, 30rem);
+  padding: .8rem 1.25rem;
+  background: rgba(14, 14, 17, .96);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--amber-24);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  color: var(--t-1);
+  text-align: center;
+  opacity: 0;
+  transition: opacity var(--d) var(--e-out), transform var(--d) var(--e-out);
+}
+
+.langnote.is-in { opacity: 1; transform: translate(-50%, 0); }
+
+@media (max-width: 860px) {
+  /* The desktop nav collapses to a burger, so the switcher moves next to it. */
+  .nav__lang { margin-inline-start: auto; }
+  .lang__btn { padding: .45rem .6rem; }
+}
+
+/* ============================================================
+   RIGHT-TO-LEFT (Arabic)
+   Most of the layout is already logical (padding-inline, inset-inline).
+   These are the places that had to stay physical.
+   ============================================================ */
+
+.is-rtl .eyebrow::before { transform: scaleX(-1); }
+
+.is-rtl .pull {
+  padding-left: 0;
+  padding-right: clamp(1.25rem, 3vw, 2.25rem);
+  border-left: 0;
+  border-right: 2px solid var(--amber);
+}
+
+.is-rtl .timeline {
+  padding-left: 0;
+  padding-right: clamp(1.5rem, 4vw, 3rem);
+  border-left: 0;
+  border-right: 1px solid var(--line);
+}
+
+.is-rtl .tli::before {
+  left: auto;
+  right: calc(clamp(1.5rem, 4vw, 3rem) * -1 - 4.5px);
+}
+
+.is-rtl .dcard::before { inset: 0 0 0 auto; }
+.is-rtl .mmethod { border-left: 0; border-right: 2px solid var(--amber); }
+.is-rtl .atlas__list em { margin-left: 0; margin-right: auto; }
+.is-rtl .modal__close { right: auto; left: 1rem; }
+.is-rtl .arch__close { right: auto; left: 1.25rem; }
+.is-rtl .projects__hint { right: auto; left: var(--pad-x); }
+
+/* The horizontal project track is driven by a GSAP transform in px, which has
+   no notion of direction. Forcing LTR on that one subtree keeps the travel
+   working while the rest of the page mirrors. */
+.is-rtl .projects__pin { direction: ltr; }
+.is-rtl .pcard { direction: rtl; }
+
+/* Same case, same cause: the marquee loop animates x in px from a left-edge
+   origin. Under RTL the flex track lays out from the container's right edge,
+   so the whole strip sits off-screen and the marquee renders empty. Its items
+   are Latin technical terms that are never translated, so LTR is the correct
+   reading order for them anyway — no inner override needed. */
+.is-rtl .marquee { direction: ltr; }
+
+/* Arabic numerals and Latin technical terms inside RTL text need isolating or
+   they reorder around punctuation. */
+.is-rtl .tag,
+.is-rtl .pcard__result,
+.is-rtl .pub__meta,
+.is-rtl .hstat__val,
+.is-rtl .m-v,
+.is-rtl .mmv { unicode-bidi: isolate; }

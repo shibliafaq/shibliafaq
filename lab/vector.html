@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vector vs raster scaling</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d0d10; color: #e6e6ea; font-family: "Jost", system-ui, sans-serif; padding: 1rem 1.2rem; }
+  h1 { font-size: 1rem; font-weight: 600; }
+  .sub { color: #9a9aa3; font-size: .74rem; margin: .3rem 0 1rem; max-width: 100ch; line-height: 1.6; }
+  .bar { display: flex; gap: .6rem; align-items: center; margin-bottom: 1rem; font-size: .72rem; }
+  select, button { background: #1c1c22; color: #e6e6ea; border: 1px solid #2c2c35; border-radius: 5px;
+                   padding: .3rem .6rem; font: inherit; font-size: .72rem; cursor: pointer; }
+  .grid { display: grid; grid-template-columns: repeat(3, max-content); gap: 1.4rem 1.6rem; align-items: end; }
+  .cell h3 { font-size: .6rem; letter-spacing: .13em; text-transform: uppercase; color: #f59e0b; margin-bottom: .3rem; }
+  .cell p { font-size: .62rem; color: #6d6d77; margin-top: .3rem; max-width: 30ch; line-height: 1.45; }
+  canvas { display: block; background: #2f2a1c; border-radius: 3px; }
+  .np { image-rendering: pixelated; }
+  .stat { font-size: .66rem; color: #6d6d77; margin-top: 1rem; }
+</style>
+</head>
+<body>
+
+<h1>Vector vs raster scaling</h1>
+<p class="sub">
+  The same sprite drawn three ways at the same size. <b>Nearest-neighbour</b> is what
+  the editor did originally. <b>Scale2x + resample</b> is what it does now. <b>Vector</b>
+  converts the sprite to filled geometry once — one path per colour, built from pixel
+  boundaries — then draws it under a scale transform, so nothing is ever dropped or
+  doubled at any size. Try a fractional scale; that is where they diverge.
+</p>
+
+<div class="bar">
+  <label>Sprite</label><select id="which"></select>
+  <label>Scale</label><select id="scale">
+    <option>0.5</option><option>0.75</option><option selected>1.5</option>
+    <option>2</option><option>2.5</option><option>3</option><option>4</option>
+  </select>
+  <span id="info"></span>
+</div>
+
+<div class="grid" id="grid"></div>
+<p class="stat" id="stat"></p>
+
+<script type="module">
+import { loadAll, SPRITES } from '/src/modules/pixel/valley.js';
+import { scaledSprite } from '/src/modules/pixel/scaler.js';
+import { vectorise, drawVector } from '/src/modules/pixel/vector.js';
+
+const sheets = await loadAll();
+const BUILDINGS = Object.keys(SPRITES)
+  .filter((n) => /^(inst|off|church|museum|manor|stall|pl|farmHouse|house|cfHouse)/.test(n)).sort();
+
+const sel = document.getElementById('which');
+sel.innerHTML = BUILDINGS.map((n) => `<option ${n === 'instAcademic' ? 'selected' : ''}>${n}</option>`).join('');
+
+function cell(title, note) {
+  const d = document.createElement('div');
+  d.className = 'cell';
+  d.innerHTML = `<h3>${title}</h3>`;
+  const cv = document.createElement('canvas');
+  d.appendChild(cv);
+  d.insertAdjacentHTML('beforeend', `<p>${note}</p>`);
+  return { el: d, cv };
+}
+
+function render() {
+  const name = sel.value;
+  const k = parseFloat(document.getElementById('scale').value);
+  const [sw, sh] = SPRITES[name];
+  const dw = Math.round(sw * k), dh = Math.round(sh * k);
+  const img = sheets[name];
+
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  // 1 — nearest neighbour
+  const a = cell('Nearest neighbour',
+    'Some source pixels get two device pixels and some get one, so edges wobble and 1px details double or vanish. Below 1× whole rows are dropped.');
+  a.cv.width = dw; a.cv.height = dh; a.cv.className = 'np';
+  const actx = a.cv.getContext('2d');
+  actx.imageSmoothingEnabled = false;
+  actx.drawImage(img, 0, 0, sw, sh, 0, 0, dw, dh);
+  grid.appendChild(a.el);
+
+  // 2 — the current pipeline
+  const b = cell('Scale2x + resample',
+    'Edges reconstructed before resampling, so diagonals stay clean. Still a raster resample at the end, and still loses the finest details when shrinking.');
+  b.cv.width = dw; b.cv.height = dh; b.cv.className = 'np';
+  const bctx = b.cv.getContext('2d');
+  bctx.imageSmoothingEnabled = false;
+  const alt = scaledSprite(img, sw, sh, dw, dh, name);
+  if (alt) bctx.drawImage(alt, 0, 0, alt.width, alt.height, 0, 0, dw, dh);
+  else bctx.drawImage(img, 0, 0, sw, sh, 0, 0, dw, dh);
+  grid.appendChild(b.el);
+
+  // 3 — vector
+  const t0 = performance.now();
+  const vec = vectorise(img, sw, sh, name);
+  const traced = performance.now() - t0;
+  const c = cell('Vector geometry',
+    'Filled shapes, not samples. Every pixel is a rectangle in a path, so nothing is dropped at any scale and no edge is snapped. Anti-aliased, so slightly softer than the tiles around it.');
+  c.cv.width = dw; c.cv.height = dh;
+  const cctx = c.cv.getContext('2d');
+  drawVector(cctx, vec, 0, 0, dw, dh);
+  grid.appendChild(c.el);
+
+  document.getElementById('info').textContent =
+    `${name} — source ${sw}×${sh}, drawn ${dw}×${dh}`;
+  document.getElementById('stat').textContent =
+    `Vector: ${vec.layers.length} colour layers, ${vec.rects} rectangles, traced in ${traced.toFixed(1)}ms (cached after the first time).`;
+}
+
+sel.onchange = render;
+document.getElementById('scale').onchange = render;
+render();
+console.log('vector lab ready');
+</script>
+</body>
+</html>

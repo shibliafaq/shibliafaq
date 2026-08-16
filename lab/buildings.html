@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Building composer — every building at its real footprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09090b; color: #dcdce0; font-family: "Jost", system-ui, sans-serif; padding: 1.5rem; }
+  h1 { font-size: 1.05rem; font-weight: 600; }
+  .sub { color: #9a9aa3; font-size: .76rem; margin: .35rem 0 1.5rem; max-width: 92ch; line-height: 1.6; }
+  .sub b { color: #f59e0b; font-weight: 600; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-end; margin-bottom: 2.5rem; }
+  .cell { text-align: center; }
+  .cell canvas { display: block; image-rendering: pixelated; background: #2f2a1c; border-radius: 3px; }
+  .cell .n { font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: #f59e0b; margin-top: .45rem; font-weight: 600; }
+  .cell .m { font-size: .58rem; color: #6d6d77; margin-top: .1rem; }
+  h2 { font-size: .68rem; letter-spacing: .18em; text-transform: uppercase; color: #9a9aa3; margin: 0 0 .9rem; }
+</style>
+</head>
+<body>
+
+<h1>Building composer — every building at its real footprint</h1>
+<p class="sub">
+  <b>drawBuilding()</b> from <code>src/modules/pixel/building.js</code>, run over all
+  nineteen buildings in <code>journey.js</code> at the exact footprint, wall material
+  and roof each one is already assigned. The point of this page is that a building
+  can be wrong here without taking the map down with it. Roof is always its natural
+  47&nbsp;px; the wall tiles upward from the ground, so <b>height reads as storeys</b>.
+  Zoom 3, graded exactly as the map grades it.
+</p>
+
+<h2>The seven milestones</h2>
+<div class="row" id="stops"></div>
+
+<h2>The twelve fillers</h2>
+<div class="row" id="fillers"></div>
+
+<h2>Every material against every roof — 6 walls × 4 roofs at 8×6</h2>
+<div class="row" id="matrix"></div>
+
+<script type="module">
+import { TILE, loadAll, Scene } from '/src/modules/pixel/cutefantasy.js';
+import { gradeSheets, SITE_GRADE } from '/src/modules/pixel/recolour.js';
+import { drawBuilding, WALLS, ROOFS } from '/src/modules/pixel/building.js';
+import { STOPS, FILLERS } from '/src/modules/pixel/journey.js';
+
+const ZOOM = 3;
+const sheets = gradeSheets(await loadAll(), SITE_GRADE);
+
+/** One building, drawn into its own canvas sized to its footprint plus a margin. */
+function cell(host, b, label, meta) {
+  const [fw, fh] = b.footprint;
+  const pad = 1;
+  const scene = new Scene(fw + pad * 2, fh + pad * 2);
+  // Re-anchor to the local canvas: bottom-left at (pad, fh + pad - 1).
+  drawBuilding(scene, { ...b, anchor: [pad, fh + pad - 1] });
+
+  const c = document.createElement('canvas');
+  c.width = (fw + pad * 2) * TILE;
+  c.height = (fh + pad * 2) * TILE;
+  c.style.width = `${c.width * ZOOM}px`;
+  c.style.height = `${c.height * ZOOM}px`;
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  scene.render(ctx, sheets);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'cell';
+  wrap.appendChild(c);
+  wrap.insertAdjacentHTML('beforeend',
+    `<div class="n">${label}</div><div class="m">${meta}</div>`);
+  host.appendChild(wrap);
+}
+
+for (const s of STOPS) {
+  cell(document.getElementById('stops'), s, s.id,
+    `${s.footprint[0]}×${s.footprint[1]} · ${s.walls} · ${s.roof}`);
+}
+for (const f of FILLERS) {
+  cell(document.getElementById('fillers'), f, f.id.replace(/^_/, ''),
+    `${f.footprint[0]}×${f.footprint[1]} · ${f.walls} · ${f.roof}`);
+}
+
+// The full cross-product, so a bad material/roof pairing is visible before it is
+// assigned to a building rather than after.
+for (const w of Object.keys(WALLS)) {
+  for (const r of Object.keys(ROOFS)) {
+    cell(document.getElementById('matrix'),
+      { anchor: [0, 0], footprint: [8, 6], walls: w, roof: r }, `${w}`, r);
+  }
+}
+
+console.log('composer ok', { stops: STOPS.length, fillers: FILLERS.length });
+</script>
+</body>
+</html>

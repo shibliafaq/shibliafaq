@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel map — detail test vs reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #09090b; color: #dcdce0;
+    font-family: "Jost", system-ui, sans-serif;
+    padding: 2rem clamp(1rem, 3vw, 2.5rem) 4rem;
+  }
+  h1 { font-size: 1.35rem; font-weight: 600; letter-spacing: -.02em; margin-bottom: .3rem; }
+  .sub { color: #9a9aa3; font-size: .85rem; max-width: 70ch; margin-bottom: 2rem; line-height: 1.6; }
+  .row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start; }
+  figure { margin: 0; }
+  figcaption {
+    margin-top: .7rem; font-size: .68rem; letter-spacing: .16em;
+    text-transform: uppercase; color: #f59e0b;
+  }
+  .frame { padding: 8px; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; background: #0e0e11; }
+  canvas, img { display: block; image-rendering: pixelated; }
+</style>
+</head>
+<body>
+
+<h1>Detail test — generated vs reference</h1>
+<p class="sub">
+  Left: sprites from the procedural generators, muted palette, authored at ref-5
+  resolution (~70px houses instead of 24px). Right: an unscaled crop of ref 5 at
+  the same zoom, for an honest side-by-side.
+</p>
+
+<div class="row" id="row"></div>
+
+<script type="module">
+import { MUTED } from '/src/modules/pixel/palettes.js';
+import { drawSprite, fillTiles, makePixelCanvas } from '/src/modules/pixel/render.js';
+import {
+  makeGrass, makePath, makeWater, makeBank,
+  makeHouse, makeBlock, makeTree, makeBush, makeBridge, makeHero,
+} from '/src/modules/pixel/build.js';
+
+const W = 240, H = 300, SCALE = 2;
+const pal = MUTED;
+
+const GRASS = makeGrass(32, 7);
+const PATH  = makePath(32, 11);
+const WATER = makeWater(32, 23);
+const BANK  = makeBank(W, 31);
+const HOUSE = makeHouse({ seed: 3 });
+const HOUSE2 = makeHouse({ wallW: 38, wallH: 22, roofH: 22, windows: 1, seed: 9 });
+const BLOCK = makeBlock({ seed: 5 });
+const TREE  = makeTree({ seed: 13 });
+const TREE2 = makeTree({ w: 28, canopyH: 24, trunkH: 10, seed: 21 });
+const BUSH  = makeBush({ seed: 17 });
+const BRIDGE = makeBridge();
+const HERO  = makeHero();
+
+const { canvas, ctx } = makePixelCanvas(W, H, SCALE);
+
+// ground
+fillTiles(ctx, GRASS, 0, 0, W, H, pal);
+
+// river with stone banks
+fillTiles(ctx, WATER, 0, 196, W, 46, pal);
+drawSprite(ctx, BANK, 0, 188, pal);
+(function bottomBank() {
+  // mirror the bank for the far side by drawing it flipped through a buffer
+  const b = document.createElement('canvas');
+  b.width = W; b.height = 10;
+  const bx = b.getContext('2d');
+  bx.imageSmoothingEnabled = false;
+  drawSprite(bx, BANK, 0, 0, pal);
+  ctx.save();
+  ctx.translate(0, 242 + 10);
+  ctx.scale(1, -1);
+  ctx.drawImage(b, 0, 0);
+  ctx.restore();
+})();
+
+// path down the map, bridging the river
+fillTiles(ctx, PATH, 100, 0, 34, 196, pal);
+fillTiles(ctx, PATH, 100, 242, 34, H - 242, pal);
+drawSprite(ctx, BRIDGE, 96, 190, pal);
+
+// side path
+fillTiles(ctx, PATH, 40, 120, 62, 24, pal);
+
+// buildings
+drawSprite(ctx, BLOCK, 140, 22, pal);
+drawSprite(ctx, HOUSE, 8, 66, pal);
+drawSprite(ctx, HOUSE2, 152, 120, pal);
+
+// vegetation
+drawSprite(ctx, TREE, 6, 8, pal);
+drawSprite(ctx, TREE2, 62, 20, pal);
+drawSprite(ctx, TREE2, 200, 158, pal);
+drawSprite(ctx, TREE, 4, 246, pal);
+drawSprite(ctx, BUSH, 74, 96, pal);
+drawSprite(ctx, BUSH, 176, 250, pal);
+drawSprite(ctx, BUSH, 44, 176, pal);
+
+// hero on the path
+drawSprite(ctx, HERO[1], 110, 258, pal);
+
+const row = document.getElementById('row');
+
+function fig(node, label) {
+  const f = document.createElement('figure');
+  const fr = document.createElement('div');
+  fr.className = 'frame';
+  fr.appendChild(node);
+  f.appendChild(fr);
+  const c = document.createElement('figcaption');
+  c.textContent = label;
+  f.appendChild(c);
+  row.appendChild(f);
+}
+
+fig(canvas, 'Generated — muted palette');
+
+const ref = document.createElement('img');
+ref.src = '/assets/Pixel Art/efaccf0ab3349ec95d9c972292c93361.jpg';
+ref.width = 240 * SCALE;
+ref.style.width = `${240 * SCALE}px`;
+ref.style.height = 'auto';
+fig(ref, 'Reference 5 — same zoom');
+</script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Compose the overworld from the itch.io kit</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0a0a;color:#eee;font:13px/1.5 system-ui;padding:56px 10px 10px}
+  .bar{position:fixed;top:0;left:0;right:0;background:#181818;padding:8px 12px;z-index:9;
+       display:flex;gap:8px;align-items:center;border-bottom:1px solid #333;flex-wrap:wrap}
+  button{background:#f59e0b;border:0;color:#111;font-weight:700;padding:6px 12px;border-radius:5px;cursor:pointer}
+  button.alt{background:#333;color:#eee}
+  button:disabled{opacity:.5;cursor:wait}
+  label{display:inline-flex;align-items:center;gap:4px;color:#bbb}
+  input[type=number]{width:60px;background:#222;border:1px solid #444;color:#eee;padding:3px 6px;border-radius:3px}
+  input[type=range]{width:120px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .col{background:#000;border:1px solid #222;border-radius:4px;overflow:hidden}
+  .col h3{background:#111;padding:6px 10px;border-bottom:1px solid #222;font-size:12px;color:#bbb}
+  .canvasWrap{overflow:auto;max-height:calc(100vh - 130px)}
+  canvas,img.map{display:block;image-rendering:pixelated;background:#000}
+  #log{position:fixed;right:10px;bottom:10px;width:420px;max-height:200px;overflow:auto;
+       background:#000;color:#7f7;font:11px/1.4 ui-monospace,monospace;padding:8px;
+       border:1px solid #333;border-radius:4px;white-space:pre-wrap}
+  .swatch{display:inline-block;width:12px;height:12px;border:1px solid #333;vertical-align:middle}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:#aaa;margin-top:4px}
+</style></head><body>
+<div class="bar">
+  <button id="run">Recompose</button>
+  <label>stage <select id="stage"><option value="terrain">1 terrain</option><option value="buildings">2 +buildings</option><option value="trees">3 +trees</option><option value="all" selected>4 +props (all)</option></select></label>
+  <label>tile <input type="number" id="tile" value="16" min="8" max="32" step="8"></label>
+  <label>clusters <input type="number" id="k" value="12" min="4" max="16"></label>
+  <label>bldg thresh <input type="range" id="bth" min="0" max="100" value="45"></label>
+  <label>trees <input type="range" id="trees" min="0" max="100" value="55"></label>
+  <label>rocks <input type="range" id="rocks" min="0" max="100" value="6"></label>
+  <label><input type="checkbox" id="show_labels"> label overlay</label>
+  <label><input type="checkbox" id="show_grid"> grid</label>
+  <span id="status" style="color:#888">idle</span>
+</div>
+
+<div class="cols">
+  <div class="col">
+    <h3>Original (Gemini reference)</h3>
+    <div class="canvasWrap"><img class="map" src="/assets/pixel/final/base_map.png" style="width:688px"></div>
+  </div>
+  <div class="col">
+    <h3>Composed from itch.io kit — <span id="stats">not run yet</span></h3>
+    <div class="canvasWrap">
+      <canvas id="out" width="688" height="1536"></canvas>
+    </div>
+    <div class="legend" id="legend"></div>
+  </div>
+</div>
+
+<div id="log">ready. click Recompose.</div>
+
+<script type="module">
+const $ = (id) => document.getElementById(id);
+const log = (m) => { const el = $('log'); el.textContent += "\n" + m; el.scrollTop = el.scrollHeight; };
+$('run').onclick = async () => {
+  $('run').disabled = true; $('status').textContent = 'running…';
+  const q = new URLSearchParams({
+    tile: $('tile').value, k: $('k').value, stage: $('stage').value,
+    bth: $('bth').value, trees: $('trees').value, rocks: $('rocks').value,
+    labels: $('show_labels').checked ? '1' : '0',
+    grid:   $('show_grid').checked ? '1' : '0',
+    t: Date.now(),   // cache-buster on the reply
+  });
+  const t0 = performance.now();
+  const r = await fetch('/__compose?' + q.toString());
+  if (!r.ok) { log('ERROR ' + r.status); $('run').disabled = false; return; }
+  const info = await r.json();
+  log(`composed in ${Math.round(performance.now() - t0)}ms — ${info.tilesW}x${info.tilesH} tiles, ${info.buildings} buildings, ${info.trees} trees, ${info.rocks} rocks`);
+  $('stats').textContent = `${info.tilesW}x${info.tilesH} tiles · stage ${info.stage}`;
+  // legend
+  const leg = $('legend'); leg.innerHTML = '';
+  for (const [lbl, hex] of info.legend) {
+    const s = document.createElement('span');
+    s.innerHTML = `<span class="swatch" style="background:${hex}"></span> ${lbl}`;
+    leg.appendChild(s);
+  }
+  // paint the returned PNG (also written to disk for reference)
+  const img = new Image();
+  img.onload = () => {
+    const c = $('out'); c.width = img.width; c.height = img.height;
+    const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+    x.drawImage(img, 0, 0);
+    // fit to the same visual width as the reference (688px)
+    c.style.width = '688px';
+  };
+  img.src = '/lab/composed_map.png?' + Date.now();
+  $('run').disabled = false; $('status').textContent = 'done';
+};
+</script>
+</body></html>

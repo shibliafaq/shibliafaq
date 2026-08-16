@@ -1,0 +1,18 @@
+{
+  "cell": [
+    18,
+    41
+  ],
+  "cols": 8,
+  "rows": 4,
+  "frames": 32,
+  "anchor": "bottom-centre",
+  "note": "feet sit on the cell's bottom edge; x centred",
+  "figure_height": 41,
+  "derived_from": "door 48px on base_map.png, adult = 0.85 x door",
+  "source_cell": [
+    256,
+    580
+  ],
+  "scale": 0.07069
+}

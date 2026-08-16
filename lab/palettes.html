@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel map — palette comparison</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #09090b;
+    color: #dcdce0;
+    font-family: "Jost", system-ui, sans-serif;
+    padding: 2.5rem clamp(1rem, 4vw, 3rem) 4rem;
+  }
+  h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; margin-bottom: .4rem; }
+  .sub { color: #9a9aa3; font-size: .9rem; max-width: 62ch; margin-bottom: 2.5rem; line-height: 1.6; }
+  .row { display: flex; flex-wrap: wrap; gap: clamp(1rem, 3vw, 2.5rem); align-items: flex-start; }
+  figure { margin: 0; }
+  figcaption {
+    margin-top: .85rem;
+    font-size: .7rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: #f59e0b;
+  }
+  .note { font-size: .78rem; color: #8b8b93; margin-top: .3rem; max-width: 34ch; line-height: 1.55; }
+  .frame { padding: 10px; border: 1px solid rgba(255,255,255,.1); border-radius: 10px; display: inline-block; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+
+<h1>Experience map — palette comparison</h1>
+<p class="sub">
+  Identical artwork in all three. The sprites are character grids; only the
+  colour lookup changes. Same scene, same pixels, three schemes.
+</p>
+
+<div class="row" id="row"></div>
+
+<script type="module">
+import { GRASS, PATH, WATER, TREE, BUSH, HOUSE, CAMPUS, HERO_DOWN } from '/src/modules/pixel/sprites.js';
+import { PALETTES } from '/src/modules/pixel/palettes.js';
+import { drawSprite, fillTiles, makePixelCanvas } from '/src/modules/pixel/render.js';
+
+const W = 168;
+const H = 248;
+const SCALE = 3;
+
+const NOTES = {
+  site:  'Ink ground, amber structures. Sits in the page as our own artwork.',
+  game:  'Faithful to ref 5. Reads as a game; hard tonal break from the page.',
+  muted: 'Desaturated, amber kept for paths and lit windows.',
+};
+
+/** One scene, drawn identically for every palette. */
+function scene(ctx, pal) {
+  // ground
+  fillTiles(ctx, GRASS, 0, 0, W, H, pal);
+
+  // river across the lower third, with the path bridging it
+  fillTiles(ctx, WATER, 0, 176, W, 26, pal);
+
+  // path runs top to bottom — the compositional device the references use
+  fillTiles(ctx, PATH, 72, 0, 22, H, pal);
+  fillTiles(ctx, PATH, 30, 96, 64, 16, pal);
+
+  // buildings: one institutional, one small — the two scales the map needs
+  drawSprite(ctx, CAMPUS, 96, 20, pal);
+  drawSprite(ctx, HOUSE, 12, 84, pal);
+  drawSprite(ctx, HOUSE, 104, 120, pal);
+
+  // vegetation
+  drawSprite(ctx, TREE, 8, 16, pal);
+  drawSprite(ctx, TREE, 32, 30, pal);
+  drawSprite(ctx, TREE, 132, 78, pal);
+  drawSprite(ctx, TREE, 6, 140, pal);
+  drawSprite(ctx, BUSH, 56, 68, pal);
+  drawSprite(ctx, BUSH, 118, 160, pal);
+  drawSprite(ctx, BUSH, 40, 208, pal);
+
+  // hero on the path
+  drawSprite(ctx, HERO_DOWN[0], 77, 208, pal);
+}
+
+const row = document.getElementById('row');
+
+for (const key of ['site', 'game', 'muted']) {
+  const entry = PALETTES[key];
+  const { canvas, ctx } = makePixelCanvas(W, H, SCALE);
+
+  ctx.fillStyle = entry.bg;
+  ctx.fillRect(0, 0, W, H);
+  scene(ctx, entry.pal);
+
+  const fig = document.createElement('figure');
+  const frame = document.createElement('div');
+  frame.className = 'frame';
+  frame.appendChild(canvas);
+  fig.appendChild(frame);
+
+  const cap = document.createElement('figcaption');
+  cap.textContent = entry.label;
+  fig.appendChild(cap);
+
+  const note = document.createElement('p');
+  note.className = 'note';
+  note.textContent = NOTES[key];
+  fig.appendChild(note);
+
+  row.appendChild(fig);
+}
+</script>
+</body>
+</html>

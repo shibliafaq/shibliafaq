@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tileset index — Overworld</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #09090b; color: #dcdce0;
+    font-family: "Jost", system-ui, sans-serif;
+    padding: 1.5rem;
+  }
+  h1 { font-size: 1.2rem; font-weight: 600; margin-bottom: .3rem; }
+  .sub { color: #9a9aa3; font-size: .82rem; margin-bottom: 1.2rem; }
+  .bar { display: flex; gap: .5rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
+  button, select {
+    background: #16161b; color: #dcdce0; border: 1px solid rgba(255,255,255,.14);
+    border-radius: 7px; padding: .4rem .8rem; font: inherit; font-size: .78rem; cursor: pointer;
+  }
+  button:hover { border-color: #f59e0b; }
+  #out { font-size: .8rem; color: #f59e0b; min-height: 1.4em; font-variant-numeric: tabular-nums; }
+  canvas { display: block; image-rendering: pixelated; border: 1px solid rgba(255,255,255,.1); border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<h1>Tileset index — Overworld (16px tiles)</h1>
+<p class="sub">Click a tile to log its coordinate. Shift-click to add to a run; the run prints as an array ready to paste.</p>
+
+<div class="bar">
+  <select id="quad">
+    <option value="0">Quadrant 1 — cols 0-19, rows 0-17</option>
+    <option value="1">Quadrant 2 — cols 20-39, rows 0-17</option>
+    <option value="2">Quadrant 3 — cols 0-19, rows 18-35</option>
+    <option value="3">Quadrant 4 — cols 20-39, rows 18-35</option>
+  </select>
+  <button id="clear">Clear run</button>
+  <span id="out"></span>
+</div>
+
+<canvas id="c"></canvas>
+
+<script type="module">
+const TILE = 16, SCALE = 3, COLS = 20, ROWS = 18;
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+canvas.width = COLS * TILE * SCALE;
+canvas.height = ROWS * TILE * SCALE;
+ctx.imageSmoothingEnabled = false;
+
+const img = new Image();
+img.src = '/assets/pixel/overworld.webp';
+
+let quad = 0;
+const run = [];
+
+function originFor(q) {
+  return { cx: (q % 2) * COLS, cy: Math.floor(q / 2) * ROWS };
+}
+
+function draw() {
+  const { cx, cy } = originFor(quad);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#101014';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.drawImage(
+    img,
+    cx * TILE, cy * TILE, COLS * TILE, ROWS * TILE,
+    0, 0, canvas.width, canvas.height
+  );
+
+  // grid
+  ctx.strokeStyle = 'rgba(255,40,128,.4)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= COLS; i++) {
+    ctx.beginPath(); ctx.moveTo(i * TILE * SCALE + .5, 0); ctx.lineTo(i * TILE * SCALE + .5, canvas.height); ctx.stroke();
+  }
+  for (let j = 0; j <= ROWS; j++) {
+    ctx.beginPath(); ctx.moveTo(0, j * TILE * SCALE + .5); ctx.lineTo(canvas.width, j * TILE * SCALE + .5); ctx.stroke();
+  }
+
+  // coordinates
+  ctx.font = '9px monospace';
+  ctx.textBaseline = 'top';
+  for (let j = 0; j < ROWS; j++) {
+    for (let i = 0; i < COLS; i++) {
+      const label = `${cx + i},${cy + j}`;
+      const x = i * TILE * SCALE + 2;
+      const y = j * TILE * SCALE + 2;
+      ctx.fillStyle = 'rgba(0,0,0,.65)';
+      ctx.fillRect(x - 1, y - 1, ctx.measureText(label).width + 3, 11);
+      ctx.fillStyle = '#ffe066';
+      ctx.fillText(label, x, y);
+    }
+  }
+
+  // selection highlight
+  ctx.strokeStyle = '#00ffcc';
+  ctx.lineWidth = 2;
+  for (const [tx, ty] of run) {
+    if (tx < cx || tx >= cx + COLS || ty < cy || ty >= cy + ROWS) continue;
+    ctx.strokeRect((tx - cx) * TILE * SCALE, (ty - cy) * TILE * SCALE, TILE * SCALE, TILE * SCALE);
+  }
+}
+
+img.onload = draw;
+document.getElementById('quad').addEventListener('change', (e) => { quad = +e.target.value; draw(); });
+document.getElementById('clear').addEventListener('click', () => { run.length = 0; draw(); document.getElementById('out').textContent = ''; });
+
+canvas.addEventListener('click', (e) => {
+  const r = canvas.getBoundingClientRect();
+  const { cx, cy } = originFor(quad);
+  const tx = cx + Math.floor((e.clientX - r.left) / (TILE * SCALE));
+  const ty = cy + Math.floor((e.clientY - r.top) / (TILE * SCALE));
+  if (e.shiftKey) run.push([tx, ty]);
+  else { run.length = 0; run.push([tx, ty]); }
+  draw();
+  document.getElementById('out').textContent =
+    run.length === 1 ? `[${run[0][0]}, ${run[0][1]}]` : JSON.stringify(run);
+});
+
+// Exposed so the page can be driven from the console / automation.
+window.tileAt = (tx, ty) => { run.length = 0; run.push([tx, ty]); draw(); return [tx, ty]; };
+</script>
+</body>
+</html>

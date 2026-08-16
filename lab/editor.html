@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valley editor</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0d0d10; --panel:#15151a; --panel2:#1c1c22; --line:#2c2c35;
+    --t:#e6e6ea; --t2:#9a9aa3; --t3:#6d6d77; --amber:#f59e0b; --sel:#4ade80;
+  }
+  html,body { height:100%; }
+  body { background:var(--bg); color:var(--t); font-family:"Jost",system-ui,sans-serif;
+         display:grid; grid-template-columns:236px 1fr 250px; grid-template-rows:44px 1fr 26px;
+         grid-template-areas:"tb tb tb" "pal stage insp" "sb sb sb"; overflow:hidden; }
+
+  /* ---- toolbar ---- */
+  .tb { grid-area:tb; display:flex; align-items:center; gap:.4rem; padding:0 .7rem;
+        background:var(--panel); border-bottom:1px solid var(--line); }
+  .tb .sep { width:1px; height:22px; background:var(--line); margin:0 .35rem; }
+  button, select, input[type=text] {
+    background:var(--panel2); color:var(--t); border:1px solid var(--line); border-radius:5px;
+    padding:.3rem .55rem; font:inherit; font-size:.72rem; cursor:pointer; }
+  button:hover { border-color:#44444f; }
+  button.on { border-color:var(--amber); color:var(--amber); }
+  button.warn { color:#f87171; }
+  .title { font-weight:600; font-size:.82rem; margin-right:.5rem; }
+  .title b { color:var(--amber); }
+
+  /* ---- palette ---- */
+  .pal { grid-area:pal; background:var(--panel); border-right:1px solid var(--line);
+         overflow-y:auto; padding:.5rem; }
+  .pal h3 { font-size:.6rem; letter-spacing:.14em; text-transform:uppercase; color:var(--t3);
+            margin:.7rem 0 .35rem; }
+  .pal h3:first-child { margin-top:0; }
+  .swatches { display:grid; grid-template-columns:repeat(4,1fr); gap:3px; }
+  .sw { background:var(--panel2); border:1px solid var(--line); border-radius:4px; height:46px;
+        display:flex; align-items:center; justify-content:center; overflow:hidden; cursor:pointer;
+        position:relative; }
+  .sw canvas { image-rendering:pixelated; }
+  .sw:hover { border-color:#55555f; }
+  .sw.on { border-color:var(--amber); box-shadow:0 0 0 1px var(--amber); }
+  .terr { display:grid; grid-template-columns:repeat(2,1fr); gap:3px; }
+  .terr button { text-align:left; }
+  #search { width:100%; margin-bottom:.4rem; cursor:text; }
+
+  /* ---- stage ---- */
+  .stage { grid-area:stage; overflow:hidden; position:relative; background:#08080a;
+           cursor:crosshair; }
+  .stage canvas { position:absolute; image-rendering:pixelated; transform-origin:0 0;
+                  box-shadow:0 0 0 1px rgba(255,255,255,.18); }
+  #overlay { pointer-events:none; box-shadow:none; }
+  /* A black panel with nothing in it is indistinguishable from a crash, so say
+     which it is. */
+  #boot { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+          text-align:center; padding:2rem; color:var(--t2); font-size:.78rem; line-height:1.6; }
+  #boot b { color:#f87171; }
+  #boot code { color:var(--amber); }
+
+  /* ---- inspector ---- */
+  .insp { grid-area:insp; background:var(--panel); border-left:1px solid var(--line);
+          overflow-y:auto; padding:.6rem; font-size:.72rem; }
+  .insp h3 { font-size:.6rem; letter-spacing:.14em; text-transform:uppercase; color:var(--t3);
+             margin:.8rem 0 .35rem; }
+  .insp h3:first-child { margin-top:0; }
+  .row { display:flex; align-items:center; gap:.35rem; margin-bottom:.3rem; }
+  .row label { color:var(--t2); width:52px; flex:none; }
+  .row input, .row select { flex:1; min-width:0; }
+  .num { width:52px; background:var(--panel2); color:var(--t); border:1px solid var(--line);
+         border-radius:4px; padding:.22rem .3rem; font:inherit; font-size:.72rem; }
+  .hint { color:var(--t3); font-size:.66rem; line-height:1.5; }
+  .hint b { color:var(--t2); font-weight:600; }
+  .chk { display:flex; align-items:center; gap:.4rem; margin-bottom:.25rem; color:var(--t2); }
+
+  /* ---- status ---- */
+  .sb { grid-area:sb; background:var(--panel); border-top:1px solid var(--line);
+        display:flex; align-items:center; gap:1rem; padding:0 .7rem;
+        font-size:.66rem; color:var(--t3); }
+  .sb b { color:var(--t2); font-weight:600; }
+  .ok { color:var(--sel); } .bad { color:#f87171; }
+</style>
+</head>
+<body>
+
+<div class="tb">
+  <span class="title">Valley <b>editor</b></span>
+  <button id="tSelect" class="on">Select</button>
+  <button id="tPlace">Place</button>
+  <button id="tPaint">Paint</button>
+  <button id="tRoute">Route</button>
+  <span class="sep"></span>
+  <button id="undo">Undo</button><button id="redo">Redo</button>
+  <span class="sep"></span>
+  <button id="zoomOut">−</button><span id="zoomLbl" style="font-size:.7rem;color:var(--t2);width:38px;text-align:center">2×</span><button id="zoomIn">+</button>
+  <button id="fit">Fit</button>
+  <select id="jump" title="Jump to a milestone"><option value="">Go to…</option></select>
+  <span class="sep"></span>
+  <button id="grade" class="on">Amber</button>
+  <button id="grid">Grid</button>
+  <button id="vec" class="on">Vector</button>
+  <span class="sep"></span>
+  <button id="save">Save</button>
+  <button id="exportBtn">Export JSON</button>
+  <button id="importBtn">Import</button>
+  <button id="toDisk">Save to disk</button>
+  <button id="restore">Restore backup</button>
+  <select id="hist" title="Restore an earlier save"><option value="">History…</option></select>
+  <input type="file" id="importFile" accept="application/json" hidden>
+  <button id="regen" class="warn">Regenerate</button>
+</div>
+
+<div class="pal">
+  <input type="text" id="search" placeholder="Filter sprites…">
+  <h3>Terrain brush</h3>
+  <div class="terr" id="terrList"></div>
+  <div class="row" style="margin-top:.4rem">
+    <label>Brush</label>
+    <input class="num" type="number" id="brush" value="1" min="1" max="9">
+  </div>
+  <div id="spriteGroups"></div>
+</div>
+
+<div class="stage" id="stage">
+  <div id="boot">Loading sheets and generating the map…</div>
+  <canvas id="map"></canvas>
+  <canvas id="overlay"></canvas>
+</div>
+
+<script>
+  // Module scripts fail silently — a bad import or a rejected top-level await
+  // just leaves an empty page. Surface it in the stage instead.
+  const bootEl = document.getElementById('boot');
+  const fail = (what, err) => {
+    bootEl.innerHTML = `<div><b>${what}</b><br>${String(err && err.message || err)
+      }<br><br>Serve this page through the dev server (<code>npm run dev</code>) —
+      opening the file directly cannot load <code>/src/…</code> or <code>/assets/…</code>.</div>`;
+  };
+  addEventListener('error', (e) => { if (bootEl.isConnected) fail('Script error', e.message); });
+  addEventListener('unhandledrejection', (e) => { if (bootEl.isConnected) fail('Failed to start', e.reason); });
+  setTimeout(() => { if (bootEl.isConnected) fail('Still loading after 15s', 'the map never finished building'); }, 15000);
+</script>
+
+<div class="insp">
+  <h3>Selection</h3>
+  <div id="selBody" class="hint">Nothing selected.</div>
+
+  <h3>Routes</h3>
+  <div id="routeBody" class="hint">Pick the <b>Route</b> tool.</div>
+
+  <h3>Layers</h3>
+  <label class="chk"><input type="checkbox" id="lTerrain" checked> Terrain</label>
+  <label class="chk"><input type="checkbox" id="lDecor" checked> Decor</label>
+  <label class="chk"><input type="checkbox" id="lObjects" checked> Objects</label>
+
+  <h3>Keys</h3>
+  <div class="hint">
+    <b>1/2/3</b> select · place · paint<br>
+    <b>drag</b> move selection<br>
+    <b>arrows</b> nudge 1 tile<br>
+    <b>Del</b> delete · <b>D</b> duplicate<br>
+    <b>drag handles</b> resize · <b>alt</b> free ratio<br>
+    <b>shift</b> no snap · <b>+</b>/<b>−</b> step resize<br>
+    <b>[</b> / <b>]</b> send back / bring front<br>
+    <b>wheel</b> scroll · <b>shift+wheel</b> sideways<br>
+    <b>ctrl+wheel</b> zoom at cursor<br>
+    <b>space+drag</b> or <b>middle-drag</b> pan<br>
+    <b>Ctrl+Z</b> / <b>Ctrl+Shift+Z</b> undo/redo<br>
+    <b>Esc</b> deselect
+  </div>
+
+  <h3>Document</h3>
+  <div id="docStats" class="hint"></div>
+</div>
+
+<div class="sb">
+  <span>cell <b id="cell">–</b></span>
+  <span>objects <b id="nObj">0</b></span>
+  <span>decor <b id="nDec">0</b></span>
+  <span id="checks"></span>
+  <span id="focal"></span>
+  <span id="saved" style="margin-left:auto"></span>
+</div>
+
+<script type="module">
+import { TILE, loadAll, SPRITES, DECOR, VALLEY_GRADE, COLS, ROWS, setVectorScaling,
+  STOPS as STOP_SPEC } from '/src/modules/pixel/valley.js';
+import { gradeSheets } from '/src/modules/pixel/recolour.js';
+import { makeDoc, renderDoc, objBox, objRect, setObjRect, pickAt, xs, ys,
+  T, TERRAIN_LABEL, serialise, deserialise } from '/src/modules/pixel/valleydoc.js';
+
+const LS_KEY = 'valley-doc-v1';
+const LS_BAK = 'valley-doc-v1.bak';   // previous save, kept so one bad write is recoverable
+const LS_WHEN = 'valley-doc-v1.when';
+const LS_HIST = 'valley-doc-v1.hist';   // last N saves, newest first
+
+/**
+ * Is this a whole document?
+ *
+ * Applied to EVERY source — disk, localStorage, history, import — because the
+ * failure that mattered was a malformed document being adopted and then written
+ * back over a good one. migrateDoc pads a short terrain array out to the current
+ * size, so a truncated file looks healthy after migration; it has to be judged
+ * before that, against the dimensions it declares about itself.
+ */
+function isSaneDoc(d) {
+  return !!d && Array.isArray(d.terrain) && Array.isArray(d.objects)
+    && Number.isFinite(d.cols) && Number.isFinite(d.rows)
+    && d.terrain.length === d.cols * d.rows;
+}
+
+/* ---------- sheets ---------- */
+const raw = await loadAll();
+const graded = gradeSheets(raw, VALLEY_GRADE);
+let useGrade = true;
+const sheets = () => (useGrade ? graded : raw);
+
+/* ---------- document ---------- */
+let doc, loadedFrom = '';
+try {
+  const stored = localStorage.getItem(LS_KEY);
+  const parsed = stored ? JSON.parse(stored) : null;
+  if (parsed && !isSaneDoc(parsed)) {
+    console.warn('stored document is malformed, ignoring it', parsed.cols, parsed.rows, parsed.terrain?.length);
+    doc = makeDoc();
+  } else {
+    doc = parsed ? deserialise(parsed) : makeDoc();
+  }
+  loadedFrom = stored ? 'your last save' : 'a fresh generate';
+} catch (e) {
+  console.warn('stored doc unreadable, regenerating', e);
+  doc = makeDoc(); loadedFrom = 'a fresh generate (the stored copy was unreadable)';
+}
+
+/* ---------- undo ---------- */
+const undoStack = [], redoStack = [];
+// Routes, start and end are part of the document, so they are part of the undo
+// snapshot too. Leaving them out is not "no undo for routes" — it is worse:
+// undoing a building move would silently roll routes back to whatever they were
+// when the snapshot was taken, or drop them entirely on restore().
+const snapshot = () => JSON.stringify({ terrain: doc.terrain, objects: doc.objects,
+  decors: doc.decors, routes: doc.routes, start: doc.start, end: doc.end });
+function commit() {
+  edited = true;
+  undoStack.push(snapshot());
+  if (undoStack.length > 60) undoStack.shift();
+  redoStack.length = 0;
+}
+function restore(json) {
+  const s = JSON.parse(json);
+  doc.terrain = s.terrain; doc.objects = s.objects; doc.decors = s.decors;
+  doc.routes = s.routes || []; doc.start = s.start || null; doc.end = s.end || null;
+  activeRoute = doc.routes.find((x) => x.id === activeRouteId) || null;
+  // The selection pointed into the OLD arrays, which have just been replaced,
+  // so it has to be dropped — and the inspector redrawn with it, or it goes on
+  // showing the position the undo just reverted.
+  selection = null; dirty = true; redraw(); inspect();
+}
+
+/* ---------- view ---------- */
+const stage = document.getElementById('stage');
+const map = document.getElementById('map');
+const overlay = document.getElementById('overlay');
+const mctx = map.getContext('2d');
+const octx = overlay.getContext('2d');
+map.width = overlay.width = COLS * TILE;
+map.height = overlay.height = ROWS * TILE;
+
+// The map is 544x2240 px. At 2x that is 4480px tall against a ~700px stage, so
+// the opening view showed the top 8% of it and everything else was unreachable
+// without knowing the space-drag shortcut. Zoom now starts fitted, the wheel
+// scrolls, and there is a Fit button and a jump menu.
+const ZOOMS = [0.25, 0.5, 0.75, 1, 2, 3, 4, 6];
+let zoom = 0.5, panX = 24, panY = 24;
+let tool = 'select', selection = null, brushTerrain = T.PATH, brushSize = 1, placeSprite = null;
+let showGrid = false, dirty = true;
+const layers = { terrain: true, decor: true, objects: true };
+
+function applyView() {
+  for (const cv of [map, overlay]) {
+    cv.style.transform = `translate(${panX}px,${panY}px) scale(${zoom})`;
+  }
+  document.getElementById('zoomLbl').textContent = `${zoom}×`;
+}
+
+/**
+ * Whole map in view.
+ *
+ * Returns false if the stage has not been laid out yet. That guard is the whole
+ * point: called before layout settles it measures a zero-height stage, computes
+ * a negative zoom, clamps to the floor, and draws the map 54px wide in the
+ * corner of a black panel — which looks exactly like "the map is missing"
+ * rather than like a sizing bug.
+ */
+function fitView() {
+  const r = stage.getBoundingClientRect();
+  if (r.width < 60 || r.height < 60) return false;
+  const z = Math.min((r.width - 24) / (COLS * TILE), (r.height - 24) / (ROWS * TILE));
+  if (!Number.isFinite(z) || z <= 0) return false;
+  zoom = Math.max(0.2, Math.round(z * 100) / 100);
+  panX = Math.max(8, (r.width - COLS * TILE * zoom) / 2);
+  panY = 8;
+  applyView();
+  return true;
+}
+
+/** Centre the view on a map cell, keeping the current zoom. */
+function centreOn(c, r) {
+  const rect = stage.getBoundingClientRect();
+  panX = rect.width / 2 - c * TILE * zoom;
+  panY = rect.height / 2 - r * TILE * zoom;
+  applyView();
+}
+
+/** Zoom about a screen point, so the cell under the cursor stays put. */
+function zoomAt(dir, clientX, clientY) {
+  const rect = stage.getBoundingClientRect();
+  const sx = (clientX ?? rect.left + rect.width / 2) - rect.left;
+  const sy = (clientY ?? rect.top + rect.height / 2) - rect.top;
+  const wx = (sx - panX) / zoom, wy = (sy - panY) / zoom;
+  const i = ZOOMS.indexOf(zoom);
+  const next = i === -1
+    ? (dir > 0 ? ZOOMS.find((z) => z > zoom) ?? ZOOMS.at(-1) : [...ZOOMS].reverse().find((z) => z < zoom) ?? ZOOMS[0])
+    : ZOOMS[Math.max(0, Math.min(ZOOMS.length - 1, i + dir))];
+  zoom = next;
+  panX = sx - wx * zoom; panY = sy - wy * zoom;
+  applyView();
+}
+
+// Wheel scrolls the map; shift scrolls sideways; ctrl zooms at the cursor.
+stage.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  if (e.ctrlKey) { zoomAt(e.deltaY > 0 ? -1 : 1, e.clientX, e.clientY); return; }
+  if (e.shiftKey) panX -= e.deltaY; else { panX -= e.deltaX; panY -= e.deltaY; }
+  applyView();
+}, { passive: false });
+
+function redraw() {
+  if (dirty) {
+    mctx.clearRect(0, 0, map.width, map.height);
+    const filtered = {
+      ...doc,
+      decors: layers.decor ? doc.decors : [],
+      objects: layers.objects ? doc.objects : [],
+      terrain: layers.terrain ? doc.terrain : new Array(doc.terrain.length).fill(T.GRASS),
+    };
+    renderDoc(filtered).render(mctx, sheets());
+    dirty = false;
+  }
+  drawOverlay();
+  document.getElementById('nObj').textContent = doc.objects.length;
+  document.getElementById('nDec').textContent = doc.decors.length;
+}
+
+const HANDLE = 9;   // screen px, divided by zoom so handles stay a constant size
+const HANDLE_IDS = ['nw','n','ne','e','se','s','sw','w'];
+
+/** The eight handle centres, in map pixels, in HANDLE_IDS order. */
+function handlePoints(q) {
+  const { x, y, dw, dh } = q;
+  const mx = x + dw / 2, my = y + dh / 2;
+  return [[x,y],[mx,y],[x+dw,y],[x+dw,my],[x+dw,y+dh],[mx,y+dh],[x,y+dh],[x,my]];
+}
+
+/** Which handle is under a map-pixel point, or null. */
+function handleAt(px, py) {
+  if (!selection || !doc.objects.includes(selection)) return null;
+  const q = objRect(selection);
+  const tol = (HANDLE + 3) / zoom / 2;
+  const pts = handlePoints(q);
+  for (let i = 0; i < pts.length; i++) {
+    if (Math.abs(px - pts[i][0]) <= tol && Math.abs(py - pts[i][1]) <= tol) return HANDLE_IDS[i];
+  }
+  return null;
+}
+
+const HANDLE_CURSOR = { nw:'nwse-resize', se:'nwse-resize', ne:'nesw-resize', sw:'nesw-resize',
+  n:'ns-resize', s:'ns-resize', e:'ew-resize', w:'ew-resize' };
+
+function drawOverlay() {
+  octx.clearRect(0, 0, overlay.width, overlay.height);
+  if (showGrid) {
+    octx.strokeStyle = 'rgba(255,255,255,.07)'; octx.lineWidth = 1;
+    for (let c = 0; c <= COLS; c++) { octx.beginPath(); octx.moveTo(c*TILE+.5,0); octx.lineTo(c*TILE+.5, ROWS*TILE); octx.stroke(); }
+    for (let r = 0; r <= ROWS; r++) { octx.beginPath(); octx.moveTo(0, r*TILE+.5); octx.lineTo(COLS*TILE, r*TILE+.5); octx.stroke(); }
+  }
+  /* Routes. Every route is drawn dim; the one being edited is drawn bright with
+     its points visible, because you cannot place the next corner accurately
+     without seeing the last one. */
+  const mid = (p) => [p[0] * TILE + TILE / 2, p[1] * TILE + TILE / 2];
+  doc.routes.forEach((rt, i) => {
+    if (rt.points.length < 1) return;
+    const live = rt === activeRoute && tool === 'route';
+    octx.strokeStyle = routeColour(i);
+    octx.globalAlpha = live ? 1 : 0.35;
+    octx.lineWidth = (live ? 3 : 2) / zoom;
+    octx.lineJoin = 'round'; octx.lineCap = 'round';
+    octx.beginPath();
+    rt.points.forEach((p, j) => { const [x, y] = mid(p); j ? octx.lineTo(x, y) : octx.moveTo(x, y); });
+    octx.stroke();
+    if (live) {
+      rt.points.forEach((p, j) => {
+        const [x, y] = mid(p);
+        octx.fillStyle = j === rt.points.length - 1 ? '#fff' : routeColour(i);
+        octx.beginPath(); octx.arc(x, y, 3.5 / zoom, 0, Math.PI * 2); octx.fill();
+      });
+    }
+    octx.globalAlpha = 1;
+  });
+
+  /* Journey endpoints. Drawn as rings so they read as places rather than as
+     another route point. */
+  for (const [cell, colour, label] of [[doc.start, '#4ade80', 'START'], [doc.end, '#f87171', 'END']]) {
+    if (!cell) continue;
+    const [x, y] = mid(cell);
+    octx.strokeStyle = colour; octx.lineWidth = 2.5 / zoom;
+    octx.beginPath(); octx.arc(x, y, 9 / zoom, 0, Math.PI * 2); octx.stroke();
+    octx.beginPath(); octx.arc(x, y, 3 / zoom, 0, Math.PI * 2); octx.stroke();
+    octx.fillStyle = colour;
+    octx.font = `${Math.max(7, 10 / zoom)}px Jost, sans-serif`;
+    octx.textAlign = 'center';
+    octx.fillText(label, x, y - 13 / zoom);
+  }
+
+  /* Focal points, always drawn. A mark you cannot see is a mark you assign
+     twice — and the whole reason these exist is that position stopped being
+     evidence of which building was which. */
+  for (const o of doc.objects) {
+    if (!o.stop) continue;
+    const q = objRect(o);
+    octx.strokeStyle = '#f59e0b'; octx.lineWidth = 2 / zoom;
+    octx.strokeRect(q.x, q.y, q.dw, q.dh);
+    octx.fillStyle = '#f59e0b';
+    octx.beginPath();
+    octx.arc(o.c * TILE + TILE / 2, o.r * TILE + TILE / 2, 5 / zoom, 0, Math.PI * 2);
+    octx.fill();
+    octx.font = `${Math.max(7, 11 / zoom)}px Jost, sans-serif`;
+    octx.textAlign = 'center';
+    octx.fillText(o.stop, o.c * TILE + TILE / 2, q.y - 4 / zoom);
+  }
+  if (selection && doc.objects.includes(selection)) {
+    // Outline the DRAWN rect, not the tile box — the handles have to sit on the
+    // sprite's real edges or dragging them does not match what you see.
+    const q = objRect(selection);
+    octx.strokeStyle = '#4ade80'; octx.lineWidth = 1 / zoom;
+    octx.strokeRect(q.x, q.y, q.dw, q.dh);
+    for (const [hx, hy] of handlePoints(q)) {
+      const s = HANDLE / zoom;
+      octx.fillStyle = '#0d0d10';
+      octx.fillRect(hx - s/2, hy - s/2, s, s);
+      octx.strokeStyle = '#4ade80'; octx.lineWidth = 1 / zoom;
+      octx.strokeRect(hx - s/2, hy - s/2, s, s);
+    }
+  } else if (selection) {
+    octx.strokeStyle = '#4ade80'; octx.lineWidth = 1.5;
+    octx.strokeRect(selection.c*TILE, selection.r*TILE, TILE, TILE);
+  }
+}
+
+/* ---------- pointer ---------- */
+const cellFromEvent = (e) => {
+  const rect = stage.getBoundingClientRect();
+  const x = (e.clientX - rect.left - panX) / zoom;
+  const y = (e.clientY - rect.top - panY) / zoom;
+  return { c: Math.floor(x / TILE), r: Math.floor(y / TILE) };
+};
+
+let dragging = null, panning = null, spaceDown = false, painted = null, resizing = null;
+
+/** Pointer position in MAP pixels (not cells) — resizing works at pixel accuracy. */
+const mapPoint = (e) => {
+  const rect = stage.getBoundingClientRect();
+  return { x: (e.clientX - rect.left - panX) / zoom, y: (e.clientY - rect.top - panY) / zoom };
+};
+
+stage.addEventListener('pointerdown', (e) => {
+  const { c, r } = cellFromEvent(e);
+  if (e.button === 1 || spaceDown) {
+    panning = { x: e.clientX - panX, y: e.clientY - panY };
+    stage.setPointerCapture(e.pointerId);
+    return;
+  }
+  if (tool === 'select') {
+    // A handle takes priority over picking a new object, or you can never grab
+    // a handle that overlaps another sprite.
+    const mp = mapPoint(e);
+    const h = handleAt(mp.x, mp.y);
+    if (h) {
+      commit();
+      resizing = { h, start: objRect(selection), obj: selection };
+      stage.setPointerCapture(e.pointerId);
+      return;
+    }
+    const hit = pickAt(doc, c, r);
+    selection = hit;
+    if (hit) {
+      commit();
+      dragging = { obj: hit, dc: hit.c - c, dr: hit.r - r, moved: false };
+      stage.setPointerCapture(e.pointerId);
+    }
+    inspect(); drawOverlay();
+  } else if (tool === 'place' && placeSprite) {
+    commit();
+    if (SPRITES[placeSprite]) doc.objects.push({ id: 'o' + Date.now(), name: placeSprite, c, r });
+    else doc.decors.push({ id: 'd' + Date.now(), name: placeSprite, c, r });
+    dirty = true; redraw();
+  } else if (tool === 'paint') {
+    commit(); painted = new Set(); paintAt(c, r);
+    stage.setPointerCapture(e.pointerId);
+  } else if (tool === 'route') {
+    // Commit only when the click will actually change something. Committing
+    // first is the obvious way to write this and it quietly ruins undo: a
+    // click that adds nothing still pushes a snapshot, so the next Undo
+    // restores an identical state and looks broken.
+    if (routeMode === 'start') { commit(); doc.start = [c, r]; routeMode = 'draw'; }
+    else if (routeMode === 'end') { commit(); doc.end = [c, r]; routeMode = 'draw'; }
+    else if (activeRoute) {
+      // Clicking the last point again is a no-op rather than a stacked
+      // duplicate — a doubled point is a zero-length segment, which leaves
+      // direction undefined for whatever walks it.
+      const last = activeRoute.points[activeRoute.points.length - 1];
+      if (!last || last[0] !== c || last[1] !== r) { commit(); activeRoute.points.push([c, r]); }
+    }
+    routePanel(); drawOverlay();
+  }
+});
+
+stage.addEventListener('pointermove', (e) => {
+  const { c, r } = cellFromEvent(e);
+  document.getElementById('cell').textContent = `${c}, ${r}`;
+  if (panning) { panX = e.clientX - panning.x; panY = e.clientY - panning.y; applyView(); return; }
+  if (resizing) {
+    const mp = mapPoint(e);
+    const st = resizing.start;
+    let { x, y, dw, dh } = st;
+    const h = resizing.h;
+    // Move only the edges the grabbed handle owns; the opposite edge stays put,
+    // which is what makes it feel like a vector editor rather than a scale field.
+    if (h.includes('w')) { const nx = Math.min(mp.x, st.x + st.dw - 4); dw = st.x + st.dw - nx; x = nx; }
+    if (h.includes('e')) { dw = Math.max(4, mp.x - st.x); x = st.x; }
+    if (h.includes('n')) { const ny = Math.min(mp.y, st.y + st.dh - 4); dh = st.y + st.dh - ny; y = ny; }
+    if (h.includes('s')) { dh = Math.max(4, mp.y - st.y); y = st.y; }
+    // Corners keep the aspect ratio unless you hold Alt; edges never do.
+    const corner = h.length === 2;
+    if (corner && !e.altKey) {
+      const k = Math.max(dw / st.dw, dh / st.dh);
+      const ndw = st.dw * k, ndh = st.dh * k;
+      if (h.includes('w')) x = st.x + st.dw - ndw; else x = st.x;
+      if (h.includes('n')) y = st.y + st.dh - ndh; else y = st.y;
+      dw = ndw; dh = ndh;
+    }
+    // Snap to whole and half multiples of the source size unless Shift is held —
+    // these are pixel sprites, and a non-integer factor destroys the pixel grid.
+    if (!e.shiftKey) {
+      const snap = (v, src) => {
+        const k = v / src, n = Math.round(k * 4) / 4;
+        return Math.abs(k - n) < 0.06 ? src * n : v;
+      };
+      const sdw = snap(dw, st.sw), sdh = snap(dh, st.sh);
+      if (h.includes('w')) x += dw - sdw;
+      if (h.includes('n')) y += dh - sdh;
+      dw = sdw; dh = sdh;
+    }
+    setObjRect(resizing.obj, x, y, dw, dh);
+    dirty = true; redraw(); inspect();
+    return;
+  }
+  if (!dragging && !panning && !painted && tool === 'select') {
+    const mp = mapPoint(e);
+    const h = handleAt(mp.x, mp.y);
+    stage.style.cursor = h ? HANDLE_CURSOR[h] : (spaceDown ? 'grab' : 'crosshair');
+  }
+  if (dragging) {
+    const nc = c + dragging.dc, nr = r + dragging.dr;
+    if (nc !== dragging.obj.c || nr !== dragging.obj.r) {
+      dragging.obj.c = nc; dragging.obj.r = nr; dragging.moved = true;
+      dirty = true; redraw(); inspect();
+    }
+    return;
+  }
+  if (painted) paintAt(c, r);
+});
+
+addEventListener('pointerup', () => {
+  if (dragging && !dragging.moved) undoStack.pop();  // a click that moved nothing is not an edit
+  dragging = null; panning = null; painted = null; resizing = null;
+});
+
+function paintAt(c, r) {
+  const h = Math.floor(brushSize / 2);
+  for (let dc = -h; dc <= h; dc++)
+    for (let dr = -h; dr <= h; dr++) {
+      const cc = c + dc, rr = r + dr;
+      if (cc < 0 || rr < 0 || cc >= COLS || rr >= ROWS) continue;
+      const k = rr * COLS + cc;
+      if (painted.has(k)) continue;
+      painted.add(k);
+      doc.terrain[k] = brushTerrain;
+    }
+  dirty = true; redraw();
+}
+
+/* ---------- keys ---------- */
+addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space') { spaceDown = true; stage.style.cursor = 'grab'; e.preventDefault(); return; }
+  const k = e.key.toLowerCase();
+  if (e.ctrlKey && k === 'z') { e.preventDefault(); e.shiftKey ? doRedo() : doUndo(); return; }
+  if (k === '1') setTool('select');
+  if (k === '2') setTool('place');
+  if (k === '3') setTool('paint');
+  if (k === '4') setTool('route');
+  // Backspace drops the last point of the route being drawn. Del is already
+  // "delete the selected object" and must not start eating route points too.
+  if (k === 'backspace' && tool === 'route' && activeRoute?.points.length) {
+    commit(); activeRoute.points.pop(); routePanel(); drawOverlay(); e.preventDefault();
+  }
+  if (k === 'escape') { selection = null; inspect(); drawOverlay(); }
+  if (!selection) return;
+  const list = doc.objects.includes(selection) ? doc.objects : doc.decors;
+  const i = list.indexOf(selection);
+  if (k === 'delete' || k === 'backspace') {
+    commit(); list.splice(i, 1); selection = null; dirty = true; redraw(); inspect();
+  } else if (k === 'd') {
+    commit();
+    const copy = { ...selection, id: 'o' + Date.now(), c: selection.c + 2, r: selection.r + 2 };
+    list.push(copy); selection = copy; dirty = true; redraw(); inspect();
+  } else if (k === '[') {
+    commit(); list.splice(i, 1); list.unshift(selection); dirty = true; redraw();
+  } else if (k === ']') {
+    commit(); list.splice(i, 1); list.push(selection); dirty = true; redraw();
+  } else if ((k === '+' || k === '=' || k === '-') && doc.objects.includes(selection)) {
+    commit();
+    const d = k === '-' ? -0.25 : 0.25;
+    selection.sx = Math.max(0.05, xs(selection) + d);
+    selection.sy = Math.max(0.05, ys(selection) + d);
+    delete selection.scale;
+    dirty = true; redraw(); inspect();
+  } else if (e.key.startsWith('Arrow')) {
+    e.preventDefault(); commit();
+    if (e.key === 'ArrowLeft') selection.c--; if (e.key === 'ArrowRight') selection.c++;
+    if (e.key === 'ArrowUp') selection.r--; if (e.key === 'ArrowDown') selection.r++;
+    dirty = true; redraw(); inspect();
+  }
+});
+addEventListener('keyup', (e) => {
+  if (e.code === 'Space') { spaceDown = false; stage.style.cursor = 'crosshair'; }
+});
+
+function doUndo() { if (!undoStack.length) return; redoStack.push(snapshot()); restore(undoStack.pop()); }
+function doRedo() { if (!redoStack.length) return; undoStack.push(snapshot()); restore(redoStack.pop()); }
+
+/* ---------- inspector ---------- */
+/* ============================================================ ROUTES
+   Hand-drawn, not derived.
+
+   The first version of this searched the painted road with Dijkstra and produced
+   three plausible routes. It was replaced because a searched route is only ever
+   the CHEAPEST way across the road, and that is not what a journey through
+   someone's career is — the interesting route is the one that goes past the
+   right things, and no cost function knows which those are.
+
+   So routes are drawn. Each is an ordered list of cells; the walk interpolates
+   between them. What the tooling still does is CHECK them: on-road, start and
+   end reached, every focal point passed. Authoring by hand and verifying by
+   machine, which is the split that has worked everywhere else in this map.
+
+   `routeMode` is what the next click means: 'draw' appends a point to the active
+   route, 'start'/'end' drop the single journey endpoints and revert to 'draw'.
+   ============================================================ */
+let activeRouteId = null;
+let activeRoute = null;
+let routeMode = 'draw';
+const ROUTE_COLOURS = ['#38bdf8', '#f472b6', '#a3e635', '#fb923c', '#c084fc', '#2dd4bf'];
+const routeColour = (i) => ROUTE_COLOURS[i % ROUTE_COLOURS.length];
+
+function newRoute() {
+  commit();
+  const n = doc.routes.length + 1;
+  const rt = { id: 'route' + n, name: 'Route ' + n, points: [] };
+  doc.routes.push(rt);
+  activeRouteId = rt.id; activeRoute = rt;
+  routePanel(); drawOverlay();
+}
+
+function routePanel() {
+  const el = document.getElementById('routeBody');
+  if (!el) return;
+  if (tool !== 'route') {
+    el.className = 'hint';
+    el.innerHTML = `Pick the <b>Route</b> tool (<b>4</b>) to draw.<br>`
+      + `${doc.routes.length} route${doc.routes.length === 1 ? '' : 's'} · `
+      + `start ${doc.start ? doc.start.join(',') : '—'} · end ${doc.end ? doc.end.join(',') : '—'}`;
+    return;
+  }
+  el.className = '';
+  const list = doc.routes.map((rt, i) =>
+    `<option value="${rt.id}" ${rt.id === activeRouteId ? 'selected' : ''}>${rt.name} · ${rt.points.length} pts</option>`).join('');
+  el.innerHTML = `
+    <div class="row" style="gap:.25rem">
+      <button id="rtStart" style="flex:1;padding:.2rem" class="${routeMode === 'start' ? 'on' : ''}">Set start</button>
+      <button id="rtEnd" style="flex:1;padding:.2rem" class="${routeMode === 'end' ? 'on' : ''}">Set end</button>
+    </div>
+    <div class="hint" style="margin-bottom:.4rem">
+      start <b>${doc.start ? doc.start.join(', ') : '— not set —'}</b> ·
+      end <b>${doc.end ? doc.end.join(', ') : '— not set —'}</b></div>
+    <div class="row"><label>Route</label><select id="rtPick">${list || '<option>— none —</option>'}</select></div>
+    ${activeRoute ? `
+    <div class="row"><label>Name</label><input type="text" id="rtName" value="${activeRoute.name}"></div>
+    <div class="row" style="gap:.25rem">
+      <button id="rtUndo" style="flex:1;padding:.2rem">Undo point</button>
+      <button id="rtClear" style="flex:1;padding:.2rem">Clear</button>
+      <button id="rtDel" style="flex:1;padding:.2rem" class="warn">Delete</button>
+    </div>` : ''}
+    <div class="row"><button id="rtNew" style="flex:1;padding:.2rem">+ New route</button></div>
+    <div class="hint">
+      ${activeRoute ? `<b>${activeRoute.points.length}</b> points drawn.` : 'Make a route to start drawing.'}
+      Click the map to add a point. <b>Backspace</b> removes the last one.<br>
+      Points are corners — the walk runs straight between them, so a curve needs
+      a point at each bend, not at every tile.</div>`;
+
+  document.getElementById('rtNew').onclick = newRoute;
+  document.getElementById('rtStart').onclick = () => { routeMode = routeMode === 'start' ? 'draw' : 'start'; routePanel(); };
+  document.getElementById('rtEnd').onclick = () => { routeMode = routeMode === 'end' ? 'draw' : 'end'; routePanel(); };
+  const pick = document.getElementById('rtPick');
+  if (pick) pick.onchange = (ev) => {
+    activeRouteId = ev.target.value;
+    activeRoute = doc.routes.find((x) => x.id === activeRouteId) || null;
+    routePanel(); drawOverlay();
+  };
+  if (!activeRoute) return;
+  document.getElementById('rtName').onchange = (ev) => { commit(); activeRoute.name = ev.target.value; routePanel(); };
+  document.getElementById('rtUndo').onclick = () => { commit(); activeRoute.points.pop(); routePanel(); drawOverlay(); };
+  document.getElementById('rtClear').onclick = () => { commit(); activeRoute.points.length = 0; routePanel(); drawOverlay(); };
+  document.getElementById('rtDel').onclick = () => {
+    commit();
+    doc.routes = doc.routes.filter((x) => x !== activeRoute);
+    activeRoute = doc.routes[0] || null; activeRouteId = activeRoute?.id ?? null;
+    routePanel(); drawOverlay();
+  };
+}
+
+function inspect() {
+  const el = document.getElementById('selBody');
+  if (!selection) { el.className = 'hint'; el.textContent = 'Nothing selected.'; return; }
+  el.className = '';
+  const isObj = doc.objects.includes(selection);
+  const options = Object.keys(isObj ? SPRITES : DECOR).sort()
+    .map((n) => `<option ${n === selection.name ? 'selected' : ''}>${n}</option>`).join('');
+  const src = SPRITES[selection.name];
+  const kx = xs(selection), ky = ys(selection);
+  const drawn = isObj && src
+    ? `${Math.round(src[0]*kx)}×${Math.round(src[1]*ky)} px &nbsp;<span style="color:var(--t3)">source ${src[0]}×${src[1]}</span>`
+    : 'decor tile · 16×16';
+  const odd = isObj && ((kx * 4) % 1 !== 0 || (ky * 4) % 1 !== 0);
+  el.innerHTML = `
+    <div class="row"><label>Sprite</label><select id="selName">${options}</select></div>
+    <div class="row"><label>Col</label><input class="num" type="number" id="selC" value="${selection.c}">
+      <label style="width:26px">Row</label><input class="num" type="number" id="selR" value="${selection.r}"></div>
+    ${isObj ? `
+    <div class="row"><label>Scale X</label><input class="num" type="number" id="selKX" step="0.25" min="0.05" value="${Math.round(kx*100)/100}"></div>
+    <div class="row"><label>Scale Y</label><input class="num" type="number" id="selKY" step="0.25" min="0.05" value="${Math.round(ky*100)/100}"></div>
+    <div class="row" style="gap:.25rem">
+      <button id="selReset" style="flex:1;padding:.2rem">Reset 1×</button>
+      <button id="selFlipK" style="flex:1;padding:.2rem">Match X↔Y</button>
+    </div>` : ''}
+    ${isObj ? `
+    <div class="row"><label>Focal pt</label><select id="selStop">
+      <option value="">— none —</option>
+      ${STOP_SPEC.map((s) => `<option value="${s.id}" ${s.id === selection.stop ? 'selected' : ''}
+        >${s.id} · ${s.org.split('·')[0].trim()}</option>`).join('')}
+    </select></div>` : ''}
+    <div class="hint">${drawn} · anchored bottom-centre<br>
+      <b>Drag the green handles</b> on the map to resize. Corners keep the ratio
+      (Alt frees it); edges stretch one axis. Snaps to quarter steps — hold Shift
+      for free.${odd ? '<br><span style="color:#f59e0b">Off the quarter grid — source pixels land unevenly, so the sprite loses its pixel grid.</span>' : ''}</div>`;
+  document.getElementById('selName').onchange = (ev) => {
+    commit(); selection.name = ev.target.value; dirty = true; redraw(); inspect();
+  };
+  for (const [id, key] of [['selC', 'c'], ['selR', 'r']]) {
+    document.getElementById(id).onchange = (ev) => {
+      commit(); selection[key] = +ev.target.value; dirty = true; redraw(); drawOverlay();
+    };
+  }
+  if (!isObj) return;
+  /**
+   * Assigning a focal point.
+   *
+   * A stop id identifies ONE building — it carries that job's dates, role and
+   * description — so the assignment is exclusive: taking an id removes it from
+   * whatever held it before. Without that rule the same id ends up on two
+   * buildings after any duplicate, and the route derivation silently picks
+   * whichever it met first.
+   *
+   * This is why the ids live in the document at all. They used to be inferred by
+   * matching sprite name against an expected row, and editing broke it
+   * completely: jaiswal's building had drifted seventy-two rows, chadda's sprite
+   * existed in six copies, and the KFUPM building had been deleted outright.
+   * A mark is a fact; a guess about position is not.
+   */
+  document.getElementById('selStop').onchange = (ev) => {
+    commit();
+    const id = ev.target.value;
+    if (id) for (const o of doc.objects) if (o !== selection && o.stop === id) delete o.stop;
+    if (id) selection.stop = id; else delete selection.stop;
+    dirty = true; redraw(); drawOverlay(); stats(); inspect();
+  };
+  const setK = (nx, ny) => {
+    commit();
+    selection.sx = Math.max(0.05, nx); selection.sy = Math.max(0.05, ny);
+    delete selection.scale;
+    dirty = true; redraw(); inspect();
+  };
+  document.getElementById('selKX').onchange = (ev) => setK(+ev.target.value, ys(selection));
+  document.getElementById('selKY').onchange = (ev) => setK(xs(selection), +ev.target.value);
+  document.getElementById('selReset').onclick = () => setK(1, 1);
+  document.getElementById('selFlipK').onclick = () => setK(xs(selection), xs(selection));
+}
+
+
+/* ---------- palette ---------- */
+function swatch(name, isDecor) {
+  const d = document.createElement('div');
+  d.className = 'sw'; d.title = name; d.dataset.name = name;
+  const cv = document.createElement('canvas');
+  const [w, h] = isDecor ? [TILE, TILE] : (SPRITES[name] || [TILE, TILE]);
+  const s = Math.min(44 / w, 44 / h, 2);
+  cv.width = w; cv.height = h;
+  cv.style.width = `${Math.max(6, w * s)}px`; cv.style.height = `${Math.max(6, h * s)}px`;
+  const cx = cv.getContext('2d'); cx.imageSmoothingEnabled = false;
+  const img = sheets()[isDecor ? 'decor' : name];
+  if (img) {
+    if (isDecor) { const p = DECOR[name]; cx.drawImage(img, p[0]*TILE, p[1]*TILE, TILE, TILE, 0, 0, TILE, TILE); }
+    else cx.drawImage(img, 0, 0);
+  }
+  d.appendChild(cv);
+  d.onclick = () => {
+    placeSprite = name; setTool('place');
+    document.querySelectorAll('.sw').forEach((x) => x.classList.toggle('on', x === d));
+  };
+  return d;
+}
+
+const GROUPS = [
+  // First in the list because these are the two places the map is actually
+  // about, and hunting for them among 180 generic swatches is not navigation.
+  ['Milestones — the real buildings', (n) => /^(bitMesra|kfupm)$/.test(n)],
+  ['Buildings', (n) => /^(inst|off|house|cfHouse|plHall|plTower|plTerrace|farmHouse)/.test(n)],
+  ['Churches & museums', (n) => /^(church|museum)/.test(n)],
+  ['Manors', (n) => /^manor/.test(n)],
+  ['Stalls & market', (n) => /^(stall|mstall)/.test(n)],
+  ['Water features', (n) => /^(pond|well)/.test(n)],
+  ['Doors & windows', (n) => /^(door|win|chimney)/.test(n)],
+  ['Trees', (n) => /^(tree|conifer|maple|farmMaple|farmSapling)/.test(n)],
+  ['Bushes & rocks', (n) => /^(bush|kbush|rock|hedge)/.test(n)],
+  ['People & animals', (n) => /^(villager|animal|scarecrow)/.test(n)],
+  ['Wildlife', (n) => /^wild/.test(n)],
+  ['Farmyard', (n) => /^farm(Cow|Hen|Chick|Chest)/.test(n)],
+  ['Props', (n) => /^(bench|planter)/.test(n)],
+  // Desert pack. Kept as its own set of groups rather than mixed into Trees and
+  // Bushes: it is a different climate, and when you are dressing the desert
+  // chapter you want the palms together, not sorted in among the conifers.
+  ['Desert buildings', (n) => /^(dsBuild|dsPyramid)/.test(n)],
+  ['Desert plants', (n) => /^(dsPalm|dsBaobab|dsDead|dsSaguaro|dsCactus|dsShrub|dsScrub|dsGrassTuft|dsBush)/.test(n)],
+  ['Desert rocks', (n) => /^(dsRock|dsBoulder|dsOutcrop|dsMesa|dsCliff)/.test(n)],
+  ['Desert props', (n) => /^(dsTent|dsCrate|dsBoat|dsWagon|dsBarrel|dsSignpost|dsCamp|dsOasis)/.test(n)],
+  // Kept, but demoted. These are ground, and ground is painted — there are now
+  // brushes for all seven. The swatches stay only so the ones already placed as
+  // objects can still be selected and deleted; laying new ground with them means
+  // one click per 16px cell.
+  ['Desert ground — use the Paint brushes', (n) => /^(dsSand|dsDune|dsGravel|dsCracked|dsBg|dsRoad)/.test(n)],
+];
+
+function buildPalette(filter = '') {
+  const host = document.getElementById('spriteGroups');
+  host.innerHTML = '';
+  const f = filter.toLowerCase();
+  const used = new Set();
+  for (const [label, test] of GROUPS) {
+    const names = Object.keys(SPRITES).filter((n) => test(n) && n.toLowerCase().includes(f));
+    names.forEach((n) => used.add(n));
+    if (!names.length) continue;
+    host.insertAdjacentHTML('beforeend', `<h3>${label}</h3>`);
+    const g = document.createElement('div'); g.className = 'swatches';
+    names.forEach((n) => g.appendChild(swatch(n, false)));
+    host.appendChild(g);
+  }
+  const rest = Object.keys(SPRITES).filter((n) => !used.has(n) && n.toLowerCase().includes(f));
+  if (rest.length) {
+    host.insertAdjacentHTML('beforeend', '<h3>Other</h3>');
+    const g = document.createElement('div'); g.className = 'swatches';
+    rest.forEach((n) => g.appendChild(swatch(n, false)));
+    host.appendChild(g);
+  }
+  const dec = Object.keys(DECOR).filter((n) => n.toLowerCase().includes(f));
+  if (dec.length) {
+    host.insertAdjacentHTML('beforeend', '<h3>Decor tiles</h3>');
+    const g = document.createElement('div'); g.className = 'swatches';
+    dec.forEach((n) => g.appendChild(swatch(n, true)));
+    host.appendChild(g);
+  }
+}
+
+const terrHost = document.getElementById('terrList');
+for (const [id, label] of Object.entries(TERRAIN_LABEL)) {
+  const b = document.createElement('button');
+  b.textContent = label; b.dataset.t = id;
+  b.classList.toggle('on', +id === brushTerrain);
+  b.onclick = () => {
+    brushTerrain = +id; setTool('paint');
+    terrHost.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+  };
+  terrHost.appendChild(b);
+}
+
+/* ---------- toolbar ---------- */
+function setTool(t) {
+  tool = t;
+  for (const [id, name] of [['tSelect','select'],['tPlace','place'],['tPaint','paint'],['tRoute','route']])
+    document.getElementById(id).classList.toggle('on', name === t);
+  routePanel();
+  drawOverlay();
+}
+document.getElementById('tSelect').onclick = () => setTool('select');
+document.getElementById('tPlace').onclick = () => setTool('place');
+document.getElementById('tPaint').onclick = () => setTool('paint');
+document.getElementById('tRoute').onclick = () => setTool('route');
+document.getElementById('undo').onclick = doUndo;
+document.getElementById('redo').onclick = doRedo;
+document.getElementById('zoomIn').onclick = () => zoomAt(1);
+document.getElementById('zoomOut').onclick = () => zoomAt(-1);
+document.getElementById('fit').onclick = fitView;
+document.getElementById('grid').onclick = (e) => { showGrid = !showGrid; e.target.classList.toggle('on', showGrid); drawOverlay(); };
+document.getElementById('vec').onclick = (e) => {
+  const on = !e.target.classList.contains('on');
+  e.target.classList.toggle('on', on);
+  e.target.textContent = on ? 'Vector' : 'Nearest';
+  setVectorScaling(on);
+  dirty = true; redraw();
+};
+document.getElementById('grade').onclick = (e) => {
+  useGrade = !useGrade; e.target.classList.toggle('on', useGrade);
+  e.target.textContent = useGrade ? 'Amber' : 'Raw';
+  dirty = true; redraw(); buildPalette(document.getElementById('search').value);
+};
+document.getElementById('brush').oninput = (e) => { brushSize = Math.max(1, +e.target.value || 1); };
+document.getElementById('search').oninput = (e) => buildPalette(e.target.value);
+
+for (const [id, key] of [['lTerrain','terrain'],['lDecor','decor'],['lObjects','objects']]) {
+  document.getElementById(id).onchange = (e) => { layers[key] = e.target.checked; dirty = true; redraw(); };
+}
+
+/* ============================================================
+   DISK PERSISTENCE, THROUGH THE DEV SERVER
+
+   The first attempt used the File System Access API. It does not work here:
+   showSaveFilePicker happily creates the file, then queryPermission returns
+   "denied" and createWritable throws NotAllowedError — which is exactly why the
+   linked file came out zero bytes. Nothing in the page can recover from that,
+   because the permission is the embedder's decision, not ours.
+
+   Posting to the dev server needs no browser permission, always succeeds or
+   reports why, and writes the map into the repo at
+   public/assets/pixel/valley-map.json — somewhere visible that survives cache
+   clears, reloads and code changes. localStorage stays on as a fast secondary.
+   ============================================================ */
+
+const SERVER_FILE = '/assets/pixel/valley-map.json';
+let lastDiskSave = null;
+
+/**
+ * The server refuses a save that halves the map, because that is what a
+ * replaced document looks like and it is how this map was lost twice. The
+ * refusal is not an error to swallow — the whole point is that the person at
+ * the keyboard sees it and decides. One repeat within 30s counts as the
+ * decision, so a genuine mass deletion is two clicks, not a dead end.
+ */
+let forceUntil = 0;
+
+async function saveToDisk() {
+  const force = Date.now() < forceUntil;
+  try {
+    const r = await fetch('/__save-valley' + (force ? '?force=1' : ''),
+      { method: 'POST', body: serialise(doc) });
+    const j = await r.json();
+    if (!j.ok) {
+      if (j.needsForce) {
+        forceUntil = Date.now() + 30000;
+        const el = document.getElementById('saved');
+        if (el) {
+          el.textContent = `REFUSED — ${j.prevObjects} → ${j.objects} objects. `
+            + `Nothing written. Click Save again within 30s to confirm.`;
+          el.className = 'bad';
+        }
+        console.warn('[map] save refused, would drop', j.prevObjects, '→', j.objects);
+        lastDiskSave = null;
+        return null;
+      }
+      throw new Error(j.error || 'server refused');
+    }
+    forceUntil = 0;
+    lastDiskSave = { bytes: j.bytes, objects: j.objects, at: new Date(), snapshot: j.snapshot };
+    if (j.snapshot) console.log('[map] previous version kept as .map-history/' + j.snapshot);
+    return j;
+  } catch (e) {
+    console.warn('disk save failed', e);
+    lastDiskSave = null;
+    return null;
+  }
+}
+
+/**
+ * The on-disk copy, if the server has one. Outranks localStorage at boot.
+ *
+ * Validated BEFORE migration, not after. migrateDoc pads a short terrain array
+ * out to the current size, so a truncated or wrong-shaped file would sail
+ * through looking healthy — which is how a 90-byte test file replaced a real
+ * document and then got saved back over it. A document whose terrain does not
+ * match its own declared dimensions is not a document.
+ */
+async function loadFromDisk() {
+  try {
+    const r = await fetch(SERVER_FILE + '?t=' + Date.now());
+    if (!r.ok) return null;
+    const text = await r.text();
+    if (text.length < 2000) return null;
+    const d = JSON.parse(text);
+    if (!isSaneDoc(d)) {
+      console.warn('valley-map.json rejected: terrain is', d.terrain?.length,
+        'cells but it declares', d.cols, 'x', d.rows);
+      return null;
+    }
+    return deserialise(d);
+  } catch (e) { console.warn('valley-map.json unreadable', e); return null; }
+}
+
+/**
+ * Save history, not a single backup slot.
+ *
+ * A one-deep backup is useless against the failure that actually happened: the
+ * document was replaced wholesale, the 20-second autosave then wrote the
+ * replacement, and the next autosave rolled that replacement into the backup
+ * too. Both slots ended up holding the same fresh generate. Two rules fix it:
+ *
+ *  1. NOTHING IS WRITTEN UNLESS THE DOCUMENT WAS ACTUALLY EDITED this session.
+ *     Merely opening the editor can no longer overwrite stored work — which is
+ *     what turned one bad load into permanent loss.
+ *  2. Ten timestamped snapshots are kept, so recovery is not "the last write"
+ *     but "any of the last ten", and a bad save cannot push out more than one.
+ */
+const MAX_HIST = 10;
+let edited = false;   // set by commit(); the gate on every write
+let lastSaved = null;
+
+function showSavedTime() {
+  const el = document.getElementById('saved');
+  if (!el) return;
+  if (!lastSaved) { el.textContent = 'not saved yet'; el.className = ''; return; }
+  el.textContent = 'saved ' + lastSaved.toLocaleTimeString()
+    + (lastDiskSave ? ` → disk ${(lastDiskSave.bytes/1024).toFixed(0)}KB` : ' (localStorage only)');
+  el.className = 'ok';
+}
+
+function history() {
+  try { return JSON.parse(localStorage.getItem(LS_HIST) || '[]'); } catch { return []; }
+}
+function pushHistory(json) {
+  const h = history();
+  if (h[0] && h[0].json === json) return;      // nothing changed, do not churn
+  h.unshift({ t: new Date().toISOString(), n: doc.objects.length, json });
+  while (h.length > MAX_HIST) h.pop();
+  try { localStorage.setItem(LS_HIST, JSON.stringify(h)); }
+  catch (e) {                                   // quota — keep fewer, never lose all
+    while (h.length > 3) h.pop();
+    try { localStorage.setItem(LS_HIST, JSON.stringify(h)); } catch {}
+  }
+  buildHistoryMenu();
+}
+function buildHistoryMenu() {
+  const sel = document.getElementById('hist');
+  if (!sel) return;
+  const h = history();
+  sel.innerHTML = '<option value="">History…</option>' + h.map((e, i) =>
+    `<option value="${i}">${new Date(e.t).toLocaleTimeString()} · ${e.n} objects</option>`).join('');
+}
+
+function save(quiet) {
+  const el = document.getElementById('saved');
+  // Rule 1: an untouched session never writes.
+  if (!edited) { if (!quiet) { el.textContent = 'nothing to save'; el.className = ''; } return; }
+  try {
+    const json = serialise(doc);
+    const prev = localStorage.getItem(LS_KEY);
+    if (prev) localStorage.setItem(LS_BAK, prev);
+    pushHistory(json);
+    localStorage.setItem(LS_KEY, json);
+    saveToDisk();        // the durable copy; localStorage is only a cache
+    localStorage.setItem(LS_WHEN, new Date().toISOString());
+    lastSaved = new Date();
+    showSavedTime();
+  } catch (e) {
+    el.textContent = 'SAVE FAILED: ' + e.name; el.className = 'bad';
+    console.error('save failed', e);
+  }
+}
+document.getElementById('toDisk').onclick = async () => {
+  edited = true;                       // an explicit click always writes
+  const j = await saveToDisk();
+  const el = document.getElementById('saved');
+  if (j) { el.textContent = `written ${(j.bytes/1024).toFixed(0)}KB → ${j.path}`; el.className = 'ok'; }
+  else { el.textContent = 'DISK SAVE FAILED — is the dev server running?'; el.className = 'bad'; }
+};
+document.getElementById('save').onclick = () => save(false);
+setInterval(() => save(true), 20000);
+// Also save when the tab is hidden or closed — a reload should never lose more
+// than the last few edits.
+addEventListener('beforeunload', () => save(true));
+document.addEventListener('visibilitychange', () => { if (document.hidden) save(true); });
+
+document.getElementById('hist').onchange = (e) => {
+  if (e.target.value === '') return;
+  const entry = history()[+e.target.value];
+  e.target.value = '';
+  if (!entry) return;
+  if (!confirm(`Restore the save from ${new Date(entry.t).toLocaleTimeString()} (${entry.n} objects)?`)) return;
+  try { commit(); doc = deserialise(entry.json); selection = null; dirty = true; redraw(); stats(); inspect(); }
+  catch (err) { alert('That snapshot is unreadable: ' + err.message); }
+};
+
+document.getElementById('restore').onclick = () => {
+  const bak = localStorage.getItem(LS_BAK);
+  if (!bak) { alert('No backup stored yet.'); return; }
+  if (!confirm('Replace the current map with the previous save?')) return;
+  try { commit(); doc = deserialise(bak); selection = null; dirty = true; redraw(); stats(); inspect(); }
+  catch (e) { alert('Backup unreadable: ' + e.message); }
+};
+
+document.getElementById('exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify(doc, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'valley-map.json'; a.click();
+  URL.revokeObjectURL(a.href);
+};
+document.getElementById('importBtn').onclick = () => document.getElementById('importFile').click();
+
+/* Drag-and-drop import. The hidden <input type=file> is the normal path, but a
+   file picker can be blocked by the embedder exactly as the File System Access
+   API was — so dropping a .json onto the stage is a route that cannot be. */
+['dragover', 'drop'].forEach((t) => stage.addEventListener(t, (e) => e.preventDefault()));
+stage.addEventListener('drop', async (e) => {
+  const f = e.dataTransfer?.files?.[0];
+  if (!f) return;
+  try {
+    commit();
+    doc = deserialise(await f.text());
+    loadedFrom = `dropped file ${f.name}`;
+    selection = null; dirty = true; redraw(); stats(); inspect();
+    const el = document.getElementById('saved');
+    el.textContent = `imported ${f.name}`; el.className = 'ok';
+  } catch (err) { alert('Not a valley document: ' + err.message); }
+});
+document.getElementById('importFile').onchange = async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  try { doc = deserialise(await f.text()); selection = null; dirty = true; redraw(); stats(); }
+  catch (err) { alert('Not a valley document: ' + err.message); }
+};
+document.getElementById('regen').onclick = () => {
+  if (!confirm('Discard all edits and regenerate? The current map is copied to the backup slot first, so "Restore backup" brings it back.')) return;
+  try { localStorage.setItem(LS_BAK, serialise(doc)); } catch {}
+  commit(); doc = makeDoc(); selection = null; dirty = true; redraw(); stats();
+};
+
+function stats() {
+  const w = localStorage.getItem(LS_WHEN);
+  if (w) { lastSaved = new Date(w); showSavedTime(); }
+  const c = doc.check || {};
+  document.getElementById('docStats').innerHTML =
+    `${doc.cols}×${doc.rows} tiles<br>${doc.objects.length} objects · ${doc.decors.length} decor`
+    + (loadedFrom ? `<br><span style="color:var(--t2)">loaded from ${loadedFrom}</span>` : '');
+  const el = document.getElementById('checks');
+  if (!c.pathGaps && !(c.buildingsOnWater || []).length) {
+    el.innerHTML = '<span class="ok">generated clean</span>';
+  } else {
+    el.innerHTML = `<span class="bad">gen: ${c.pathGaps} gaps, ${(c.buildingsOnWater||[]).length} on water</span>`;
+  }
+  // Which of the seven are pinned. The route cannot be derived until all seven
+  // are, so the count belongs where it is visible rather than in a console.
+  const marked = new Set(doc.objects.filter((o) => o.stop).map((o) => o.stop));
+  const missing = STOP_SPEC.filter((s) => !marked.has(s.id)).map((s) => s.id);
+  const fp = document.getElementById('focal');
+  if (fp) {
+    fp.innerHTML = missing.length
+      ? `<span class="bad">focal points ${marked.size}/${STOP_SPEC.length}</span>`
+        + `<span style="color:var(--t3)"> — need ${missing.join(', ')}</span>`
+      : `<span class="ok">all ${STOP_SPEC.length} focal points pinned</span>`;
+  }
+}
+
+// Jump menu — the milestones are the things you actually navigate between, and
+// finding them by dragging a 2240px-tall map is not navigation.
+const jump = document.getElementById('jump');
+for (const o of doc.objects) {
+  if (!/^(inst|offManor|offCottage|offFarmhouse|offLshape)/.test(o.name)) continue;
+  jump.insertAdjacentHTML('beforeend',
+    `<option value="${o.c},${o.r}">${o.name} · row ${o.r}</option>`);
+}
+jump.onchange = (e) => {
+  if (!e.target.value) return;
+  const [c, r] = e.target.value.split(',').map(Number);
+  if (zoom < 1) { zoom = 1; }
+  centreOn(c, r);
+  e.target.value = '';
+};
+
+// Documents saved before routes existed carry none of these fields, and neither
+// does a fresh generate. Default them once, on whatever document we ended up
+// with, rather than guarding every read site — a missing array here is a crash
+// in drawOverlay on the first frame.
+doc.routes = doc.routes || []; doc.start = doc.start || null; doc.end = doc.end || null;
+activeRoute = doc.routes[0] || null; activeRouteId = activeRoute?.id ?? null;
+
+document.getElementById('boot').remove();   // we got here, so it works
+// The on-disk copy outranks localStorage — it is the one the user can see.
+loadFromDisk().then((fromDisk) => {
+  if (!fromDisk || !fromDisk.objects) return;
+  doc = fromDisk;
+  doc.routes = doc.routes || []; doc.start = doc.start || null; doc.end = doc.end || null;
+  window.__doc = doc;          // the debug handle must follow, or it goes stale
+  loadedFrom = 'valley-map.json on disk';
+  selection = null; dirty = true; redraw(); stats();
+});
+
+buildPalette();
+buildHistoryMenu();
+routePanel();
+stats();
+redraw();
+
+// Fit once the stage genuinely has a size. Fonts, the grid layout and the
+// palette all settle after the module runs, so a single call at load is a race —
+// and losing it leaves a black panel. Retry on the next frame, and keep a
+// ResizeObserver until the first successful fit so a late layout still lands.
+let fitted = fitView();
+if (!fitted) requestAnimationFrame(() => { fitted = fitView(); });
+const ro = new ResizeObserver(() => {
+  if (!fitted) fitted = fitView();
+});
+ro.observe(stage);
+console.log('editor ready', { objects: doc.objects.length, decors: doc.decors.length });
+window.__doc = doc;
+</script>
+</body>
+</html>

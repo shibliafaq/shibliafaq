@@ -1,0 +1,120 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Desert kit</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #16181c; color: #cfd3da;
+         font: 13px/1.5 ui-monospace, Menlo, Consolas, monospace; }
+  header { padding: 14px 18px; border-bottom: 1px solid #2a2e35; }
+  h1 { margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #e8ebef; }
+  p  { margin: 0; color: #8b929d; max-width: 92ch; }
+  b  { color: #d7a86a; font-weight: 600; }
+  .wrap { padding: 18px; overflow-x: auto; }
+  canvas { image-rendering: pixelated; display: block; border: 1px solid #2a2e35; }
+  .row { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+  .bad { color: #e0736d; }
+</style>
+
+<header>
+  <h1>Desert kit — converted Craftpix pack, drawn by the valley's own renderer</h1>
+  <p>Left: a desert scene built from the new sprites and the three new ground brushes.
+     Right: the same renderer drawing the valley's existing sprites, at the same zoom,
+     so the two styles can be compared honestly rather than described.
+     <b id="note"></b></p>
+</header>
+<div class="wrap"><div class="row">
+  <canvas id="desert"></canvas>
+  <canvas id="valley"></canvas>
+</div></div>
+
+<script type="module">
+import { Scene, TILE, loadAll } from '/src/modules/pixel/valley.js';
+
+const Z = 2;
+const note = document.getElementById('note');
+
+function paint(id, cols, rows, build) {
+  const cv = document.getElementById(id);
+  cv.width = cols * TILE * Z; cv.height = rows * TILE * Z;
+  const ctx = cv.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.scale(Z, Z);
+  const sc = new Scene(cols, rows);
+  build(sc);
+  return { sc, ctx };
+}
+
+// A desert street: dune ground, a gravel road, buildings on one side, an oasis
+// and planting on the other. Laid out by hand rather than generated, because the
+// point is to see every kind of piece at map scale, not to make a map.
+const COLS = 34, ROWS = 26;
+const d = paint('desert', COLS, ROWS, (sc) => {
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) sc.tile('dsDune', 0, 0, c, r);
+  for (let c = 0; c < 8; c++)
+    for (let r = 20; r < ROWS; r++) sc.tile('dsCracked', 0, 0, c, r);
+  // The two nine-slice paving sets, blobbed exactly as the map does it — a
+  // north-south road, and a square of grey paving branching off it.
+  sc.blob('dsRoadWarm', (c, r) => c >= 14 && c <= 17 && r >= 0 && r < ROWS);
+  sc.blob('dsRoadGrey', (c, r) => c >= 7 && c <= 12 && r >= 15 && r <= 19);
+
+  sc.sprite('dsBuildTall',  5, 7,  1);
+  sc.sprite('dsBuildDome', 11, 6,  1);
+  sc.sprite('dsBuildHall',  6, 14, 1);
+  sc.sprite('dsBuildTwo',  11, 19, 1);
+  sc.sprite('dsBuildGable', 5, 23, 1);
+
+  sc.sprite('dsMesa',      26, 6,  1);
+  sc.sprite('dsOutcrop',   21, 11, 1);
+  sc.sprite('dsOasis',     25, 17, 1);
+  sc.sprite('dsBoat',      25, 17, 1);
+  sc.sprite('dsPalmTwin',  21, 16, 1);
+  sc.sprite('dsPalm',      29, 16, 1);
+  sc.sprite('dsPalmTall',  23, 19, 1);
+  sc.sprite('dsBaobab',    31, 12, 1);
+
+  sc.sprite('dsSaguaro',   19, 22, 1);
+  sc.sprite('dsCactusBig', 22, 23, 1);
+  sc.sprite('dsCactusThin',25, 24, 1);
+  sc.sprite('dsShrub',     28, 22, 1);
+  sc.sprite('dsScrub',     31, 24, 1);
+  sc.sprite('dsDeadTall',  19, 9,  1);
+
+  sc.sprite('dsTent',       2, 11, 1);
+  sc.sprite('dsCamp',       9, 11, 1);
+  sc.sprite('dsWagon',     12, 24, 1);
+  sc.sprite('dsPyramid',    2, 18, 1);
+  sc.sprite('dsSignpost',  13, 8,  1);
+  sc.sprite('dsBarrel',    18, 5,  1);
+  sc.sprite('dsCrate',     19, 6,  1);
+  sc.sprite('dsRockPair',  20, 3,  1);
+  sc.sprite('dsBoulder',   30, 4,  1);
+});
+
+// The same renderer, the same zoom, the valley's own art.
+const v = paint('valley', 18, 26, (sc) => {
+  for (let r = 0; r < 26; r++)
+    for (let c = 0; c < 18; c++) sc.tile('grass', 1, 1, c, r);
+  sc.blob('path', (c) => c >= 7 && c <= 10);
+  sc.sprite('churchStone', 3,  6,  1);
+  sc.sprite('houseRed',    3,  13, 1);
+  sc.sprite('cfHouse',     4,  21, 1);
+  sc.sprite('manorCream', 14,  7,  1);
+  sc.sprite('stallMarket',14,  14, 1);
+  sc.sprite('treeAutumn', 13,  20, 1);
+  sc.sprite('conifer',    16,  22, 1);
+  sc.sprite('rockBig',    12,  24, 1);
+  sc.sprite('bushRustLg', 16,  17, 1);
+});
+
+const sheets = await loadAll();
+d.sc.render(d.ctx, sheets);
+v.sc.render(v.ctx, sheets);
+
+const missing = [...new Set([...d.sc.ops, ...v.sc.ops].map((o) => o.sheet))]
+  .filter((s) => !sheets[s]);
+note.textContent = missing.length
+  ? `MISSING SHEETS: ${missing.join(', ')}`
+  : `${Object.keys(sheets).length} sheets loaded, none missing.`;
+if (missing.length) note.className = 'bad';
+</script>

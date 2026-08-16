@@ -1,0 +1,757 @@
+# Front page copy
+
+Every word on the front page except the Background timeline, which has its
+own document (`timeline-copy.md`) because its seven entries have six fields
+each.
+
+**Edit the text after each `- ` and run:**
+
+```bash
+node tools/sync-site-copy.mjs           # show what would change
+node tools/sync-site-copy.mjs --write   # apply it
+```
+
+## Rules
+
+- **One line per string.** A wrapped line breaks the parser — let it run long.
+- **Do not touch the `### key` headings.** That is what ties the text to its
+  place in the page. Renaming one makes the tool stop rather than guess.
+- **HTML is allowed and entities are literal.** `&amp;` stays `&amp;`.
+  `<em class="serif">…</em>` works and is used for thesis titles.
+- **To delete a string, empty it** — leave the `- ` and the heading. Removing
+  the heading makes the tool refuse the whole run.
+- Keys beginning `about.`, `atlas.` etc. are also i18n keys: editing here
+  changes the English. Other languages come from `src/i18n/strings.js` and
+  fall back to whatever is in the markup.
+
+---
+
+## Hero
+
+### hero.hey
+- Hey, I’m
+
+### hero.1
+- <span class="hero__name-line">Shibli</span> <span class="hero__name-line hero__name-line--2">Afaq</span>
+
+### hero.desc
+- Architect evolving into an <strong>urban data scientist</strong>, driven by a passion for building climate-resilient cities through spatial data. Expanding my toolkit to include GIS, machine learning, and remote sensing — currently finishing my M.Sc. at KFUPM (GPA&nbsp;4.0/4.0). <strong>Open to innovative smart city roles, research collaborations, and fully funded PhD opportunities.</strong>
+
+### hero.2
+- <span data-i18n="hero.cta.research">View Research</span> <span class="btn__arrow">↓</span>
+
+### hero.3
+- GitHub <span class="btn__arrow">↗</span>
+
+### hero.4
+- <span data-i18n="hero.cta.demo">Live Demo</span> <span class="btn__arrow">↗</span>
+
+### hero.5
+- ⇩ <span data-i18n="hero.cta.resume">Resume</span>
+
+### hero.6
+- #01
+
+### hero.7
+- #02
+
+### hero.8
+- #03
+
+### hero.9
+- #04
+
+## About
+
+### about.label
+- About
+
+### about.title
+- The <em>problem</em><br>I’m solving
+
+### about.p1
+- I’m a licensed architect with <strong>4+ years across professional design and project delivery</strong> who made a deliberate pivot. After managing architectural projects across India and leading a $720K portfolio spanning commercial, educational, and residential spaces, I realised that the escalating urban and climate crises I witnessed could not be solved at the building scale alone.
+
+### about.pull
+- “To effectively tackle the climate crisis in our cities, I needed a deeper understanding of city-scale informatics — so I set out to build it.”
+
+### about.p2
+- Now completing an <strong>M.Sc. in Smart and Sustainable Cities at KFUPM</strong> (GPA 4.0/4.0), I combine architectural spatial thinking with satellite remote sensing, GIS, and machine learning to build evidence-based heat adaptation tools for the Arabian Peninsula.
+
+### about.p3
+- Whether driving innovation in a research lab, a spatial data consultancy, or a municipal smart city team, I bridge the gap between <strong>technical data science and the physical realities of urban design</strong>.
+
+### about.1
+- <span class="acard__icon">🎓</span><div><p class="acard__t" data-i18n="about.c1">M.Sc. Smart &amp; Sustainable Cities</p><p class="acard__s">KFUPM · GPA 4.0/4.0 · 2025–2026</p></div>
+
+### about.2
+- <span class="acard__icon">🧠</span><div><p class="acard__t" data-i18n="about.c2">Research — UHI, Digital Twins &amp; ML</p><p class="acard__s">Remote Sensing · Climate Analytics · PostGIS</p></div>
+
+### about.3
+- <span class="acard__icon">🏛️</span><div><p class="acard__t" data-i18n="about.c3">B.Arch. Architecture — First Class with Distinction</p><p class="acard__s">BIT Mesra · CGPA 7.61/10 · 2016–2021</p></div>
+
+### about.4
+- <span class="acard__icon">🏅</span><div><p class="acard__t" data-i18n="about.c4">Licensed Architect &amp; Professional Member</p><p class="acard__s">Council of Architecture (IN) · Associate Member IIA</p></div>
+
+### about.5
+- <span class="acard__icon">📍</span><div><p class="acard__t" data-i18n="about.c5">Dhahran, Saudi Arabia</p><p class="acard__s">Open to Smart City Roles, Research &amp; PhDs</p></div>
+
+## Research direction
+
+### direction.label
+- Research Direction
+
+### direction.title
+- Why <em>climate</em><br>drives everything
+
+### direction.p1
+- There's a reason all my work circles back to the same thing: the planet is getting hotter, and cities are making it worse. Urban Heat Islands aren't a niche academic curiosity — they are a measurable, preventable cause of heat deaths, worsening air quality, and mounting energy demand in some of the world's most vulnerable communities. That bothers me. A lot.
+
+### direction.pull
+- “I don't want to spend my career describing a problem. I want to build the tools that let cities actually fix it.”
+
+### direction.p2
+- Everything I've built — the satellite pipelines, the GIS vulnerability frameworks, the IoT dashboards — is oriented toward one goal: making urban climate data <strong>actionable</strong>, not just publishable. That means getting it to the right resolution, the right people, and in time for it to matter.
+
+### direction.c1l
+- PhD Target
+
+### direction.c1t
+- Urban Climate Informatics — Digital Twins for Heat Adaptation at City Scale
+
+### direction.c1s
+- Seeking funded positions with supervisors working at the intersection of remote sensing, urban climate modelling, and spatial data science
+
+### direction.c2l
+- Geographic Focus
+
+### direction.c2t
+- Arabian Peninsula &amp; Global South arid cities
+
+### direction.c2s
+- Where extreme heat stress is most acute and urban climate data is most scarce — and where good tools could save the most lives
+
+### direction.c3l
+- Open To
+
+### direction.c3t
+- Fully funded PhD · Smart city research roles · GIS analytics consultancy
+
+### direction.c3s
+- Based in Dhahran — open to relocation globally for the right opportunity
+
+## Thermal sequence
+
+### thermal.label
+- Multi-City Surface Temperature
+
+### thermal.1
+- Three cities.<br><em>Three continents.</em>
+
+### thermal.2
+- 25,905 real NASA MODIS measurements. Every 10° northward, 9.1&thinsp;°C colder.
+
+### thermal.3
+- <span class="thermal__dot" style="--c:#f59e0b"></span>Dammam <em>26°N</em> <b>31.5&thinsp;°C</b>
+
+### thermal.4
+- <span class="thermal__dot" style="--c:#4ade80"></span>Dublin <em>53°N</em> <b>9.6&thinsp;°C</b>
+
+### thermal.5
+- <span class="thermal__dot" style="--c:#a5f3fc"></span>Reykjavík <em>64°N</em> <b>−3.7&thinsp;°C</b>
+
+### thermal.6
+- <span data-i18n="thermal.more">Full study</span> <span class="btn__arrow">↗</span>
+
+## Projects
+
+### projects.label
+- Research &amp; Projects
+
+### projects.title
+- Six projects.<br><em>One direction.</em>
+
+### projects.lead
+- From architectural BIM to real-time satellite pipelines, all converging on one question: how do we make cities survive the climate crisis?
+
+### projects.1
+- <span class="badge__dot"></span>Under Development
+
+### projects.2
+- M.Sc. Thesis
+
+### projects.3
+- KFUPM · Dept. Architecture &amp; City Design
+
+### projects.4
+- A Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation
+
+### projects.5
+- Built on a <strong>Design Science methodology</strong>, this near-real-time digital twin platform transforms retrospective urban climate studies into live decision-support tools. Monitors multi-city thermal variations across five Saudi climate zones and urban typologies across <strong>Riyadh, Jeddah, Dammam, Makkah, and NEOM</strong>, combining satellite feeds with demographic layers to deploy an equity-focused Heat Vulnerability Index that prioritises interventions in underserved residential communities.
+
+### projects.6
+- &lt;10 min
+
+### projects.7
+- Pipeline latency
+
+### projects.8
+- &lt;1.5°C
+
+### projects.9
+- Forecast RMSE
+
+### projects.10
+- 17M (70%)
+
+### projects.11
+- Population coverage
+
+### projects.12
+- 3 Zones
+
+### projects.13
+- Climatic variety
+
+### projects.14
+- Google Earth Engine
+
+### projects.15
+- Apache Kafka
+
+### projects.16
+- Spark Streaming
+
+### projects.17
+- PostgreSQL + PostGIS
+
+### projects.18
+- Facebook Prophet
+
+### projects.19
+- Streamlit
+
+### projects.20
+- Kepler.gl 3D
+
+### projects.21
+- Docker Compose
+
+### projects.22
+- Click to view full details →
+
+### projects.23
+- CRP 583 · Urban Informatics · KFUPM
+
+### projects.24
+- GIS &amp; Remote Sensing UHI Assessment — Dammam Metro Area
+
+### projects.25
+- NDBI Dominance (R²=0.511) · 57.3 km² Urgent Exposure Zone · 4.18× Hotspot Scale Multiplier
+
+### projects.26
+- ArcGIS Pro 3.6
+
+### projects.27
+- Landsat 8/9 &amp; Sentinel-2
+
+### projects.28
+- Getis-Ord Gi*
+
+### projects.29
+- HVI
+
+### projects.30
+- Spatial SQL
+
+### projects.31
+- ICS 574 · Big Data Analytics · KFUPM <span class="live">Live</span>
+
+### projects.32
+- Real-Time Smart City IoT Monitoring Pipeline
+
+### projects.33
+- Sub-2-Second Ingestion · 5-Minute Tumbling Windows · 10 Simulated Urban Zones
+
+### projects.34
+- Apache Kafka
+
+### projects.35
+- PySpark Streaming
+
+### projects.36
+- PostgreSQL + PostGIS
+
+### projects.37
+- MQTT (Mosquitto)
+
+### projects.38
+- Docker Compose
+
+### projects.39
+- ICS 574 · Big Data Analytics · KFUPM
+
+### projects.40
+- Multi-City Surface Temperature Analysis — 3 Continents
+
+### projects.41
+- r=−0.995 Near-Perfect Correlation · R²=0.990 · 25,905 Valid MODIS Measurements
+
+### projects.42
+- MODIS (Terra)
+
+### projects.43
+- Google Earth Engine
+
+### projects.44
+- Kepler.gl
+
+### projects.45
+- GeoPandas
+
+### projects.46
+- Spatial Regression
+
+### projects.47
+- CE 584 · Intelligent Transportation Systems · KFUPM
+
+### projects.48
+- ITS-Based Congestion Management — Aramco Stadium Corridor, Al Khobar
+
+### projects.49
+- Alternative C Recommended · 20–35% Travel Time Reduction · SAR 28–47M Plan
+
+### projects.50
+- Adaptive Signal Control (ATSC)
+
+### projects.51
+- ATMS / TMC
+
+### projects.52
+- Smart Parking
+
+### projects.53
+- Multi-Criteria Matrix
+
+### projects.54
+- ARC 514 · Sustainable Urbanism · KFUPM · Under Review
+
+### projects.55
+- A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments
+
+### projects.56
+- 1,011 records screened · ITAP framework · PRISMA 2020
+
+### projects.57
+- PRISMA 2020
+
+### projects.58
+- Thermal Comfort
+
+### projects.59
+- Soundscape
+
+### projects.60
+- B.Arch Thesis · BIT Mesra · 2021
+
+### projects.61
+- Twin Tower Complex — Net-Zero Mixed-Use Development
+
+### projects.62
+- 69 storeys · Net-zero energy · Diagrid structure · Full BIM
+
+### projects.63
+- Revit BIM
+
+### projects.64
+- Net-Zero
+
+### projects.65
+- Diagrid
+
+### projects.66
+- AutoCAD
+
+### projects.67
+- 01 / 07
+
+## Atlas
+
+### atlas.label
+- Thesis Coverage
+
+### atlas.title
+- Five cities.<br><em>One framework.</em>
+
+### atlas.lead
+- Riyadh, Jeddah, Dammam, Makkah, and NEOM — three climate zones, 17 million residents, one near-real-time heat monitoring pipeline.
+
+### atlas.1
+- <span class="atlas__n">01</span> Riyadh <em>Hot desert · BWh</em>
+
+### atlas.2
+- <span class="atlas__n">02</span> Jeddah <em>Coastal arid · BWh</em>
+
+### atlas.3
+- <span class="atlas__n">03</span> Dammam <em>Gulf coastal · BWh</em>
+
+### atlas.4
+- <span class="atlas__n">04</span> Makkah <em>Mountain arid · BWh</em>
+
+### atlas.5
+- <span class="atlas__n">05</span> NEOM <em>Red Sea · BWh/BSh</em>
+
+### atlas.6
+- Interactive map unavailable on this device
+
+## Publications
+
+### pubs.label
+- Publications
+
+### pubs.title
+- Research <em>Output</em>
+
+### pubs.lead
+- Three papers produced in one M.Sc. year — building toward a peer-reviewed publication record for doctoral research.
+
+### publications.1
+- <span class="pub__n display">01</span> <div class="pub__body"> <h3 class="pub__title">A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments</h3> <p class="pub__meta">Shibli Afaq · Advisors: Dr. Yusuf A. Adenle &amp; Dr. Muhammad Aamir Basheer · 2025 · Target: Landscape and Urban Planning / Urban Climate</p> <span class="pub__status pub__status--review">⏳ Under Review</span> <p class="pub__abs">Systematic review of 22 articles (2005–2025) examining how soundscape design affects thermal comfort in hot-arid cities. Findings show soundscapes can reduce perceived heat stress and support psychological recovery through green and blue infrastructure, yielding evidence-based recommendations for walkable public spaces aligned with Vision 2030.</p> </div>
+
+### publications.2
+- <span class="pub__n display">02</span> <div class="pub__body"> <h3 class="pub__title">GIS and Remote Sensing-Based Assessment of Urban Heat Island in the Dammam Metropolitan Area, Saudi Arabia</h3> <p class="pub__meta">Shibli Afaq, Sultan Aldhafeeri · Supervisor: Dr. Baqer Al-Ramadan · 2026 · Target: Urban Climate / Sustainable Cities and Society</p> <span class="pub__status pub__status--prep">✍️ Manuscript in Preparation</span> <p class="pub__abs">Five-step GIS and remote sensing model assessing LST and heat vulnerability across the Dammam Metropolitan Area using Landsat 8/9, Sentinel-2, and WorldPop over a 500&nbsp;m fishnet (12,954 cells). NDBI is the strongest LST predictor (r&nbsp;=&nbsp;0.715). Composite HVI classified 92.6% of cells as High vulnerability, with the HVI hot spot 4.18× larger than temperature-only mapping, revealing planning priorities hidden by single-factor analysis.</p> </div>
+
+### publications.3
+- <span class="pub__n display">03</span> <div class="pub__body"> <h3 class="pub__title">ITS-Based Congestion Management for Event Corridors in Arid Cities: A Case Study of the Aramco Stadium Corridor, Al Khobar</h3> <p class="pub__meta">Shibli Afaq, H. Alnasser, H. Alghamdi, S. Aldhafeeri · Instructor: Dr. Muhammad Abdullah · 2026 · Target: Journal of Intelligent Transportation Systems / Transportation Research Part C</p> <span class="pub__status pub__status--prep">✍️ Manuscript in Preparation</span> <p class="pub__abs">Al Khobar's Aramco Stadium corridor (47,000-seat capacity) suffers 48.5% evening congestion, set to worsen before the 2034 FIFA World Cup. Four cumulative ITS alternatives were evaluated via weighted multi-criteria analysis, ranging from adaptive signal control to demand-management pricing. The optimal strategy projects 20–35% travel time reduction within a SAR 28–47M plan, piloting Vision 2030 smart mobility.</p> </div>
+
+## Skills
+
+### skills.label
+- Skills
+
+### skills.title
+- Tools &amp; <em>Methods</em>
+
+### skills.hint
+- Push them around · click to scatter
+
+### skills.g1
+- Spatial &amp; GIS
+
+### skills.1
+- ArcGIS Pro 3.6
+
+### skills.2
+- Google Earth Engine
+
+### skills.3
+- Kepler.gl (3D Analytics)
+
+### skills.4
+- Landsat 8/9 &amp; Sentinel-2
+
+### skills.5
+- MODIS (Daily Thermal)
+
+### skills.6
+- NDVI / NDBI Extraction
+
+### skills.7
+- WorldPop (100m Demographics)
+
+### skills.8
+- Spatial Analysis
+
+### skills.9
+- deck.gl (WebGL Layers)
+
+### skills.g2
+- Data Pipelines &amp; Analytics
+
+### skills.10
+- Python (pandas / scikit-learn)
+
+### skills.11
+- Apache Kafka (3-Broker Cluster)
+
+### skills.12
+- PySpark Structured Streaming
+
+### skills.13
+- PostgreSQL + PostGIS (Spatial SQL)
+
+### skills.14
+- Facebook Prophet Time-Series
+
+### skills.15
+- Streamlit &amp; Plotly Dashboards
+
+### skills.16
+- FastAPI Microservices
+
+### skills.17
+- MQTT (Mosquitto Bridge)
+
+### skills.18
+- Docker &amp; Docker Compose
+
+### skills.19
+- GitHub Version Control
+
+### skills.20
+- React (Front-End UI)
+
+### skills.21
+- Claude Code (AI Pair Programming)
+
+### skills.g3
+- Architecture &amp; Design
+
+### skills.22
+- AutoCAD (2D Documentation)
+
+### skills.23
+- Revit (BIM)
+
+### skills.24
+- Rhino &amp; SketchUp 3D
+
+### skills.25
+- V-Ray &amp; Lumion Visualization
+
+### skills.26
+- Adobe Photoshop
+
+### skills.27
+- Adobe InDesign
+
+### skills.28
+- Adobe Premiere Pro
+
+### skills.29
+- Adobe After Effects
+
+### skills.g4
+- Research Methods
+
+### skills.30
+- PRISMA 2020 Protocol
+
+### skills.31
+- Design Science Framework
+
+### skills.32
+- Thematic Content Analysis
+
+### skills.33
+- Pearson Correlation &amp; Regression
+
+### skills.g5
+- Creative &amp; Personal
+
+### skills.34
+- Photography
+
+### skills.35
+- Videography
+
+### skills.36
+- Cinematography
+
+### skills.37
+- Storytelling
+
+### skills.38
+- Sketching
+
+### skills.39
+- Travelling
+
+### skills.40
+- Relaxing
+
+## Background — headings and chrome
+
+### bg.label
+- Background
+
+### bg.title
+- Experience &amp; <em>Education</em>
+
+### background.1
+- <span data-i18n="bg.hint">Keep scrolling — he walks the map</span>
+
+### background.2
+- <p class="tli__period">Aug 2025 – Aug 2026 (Expected)</p> <h3 class="tli__role" data-i18n="bg.role.kfupm">Master of Science in Smart &amp; Sustainable Cities</h3> <p class="tli__org">King Fahd University of Petroleum &amp; Minerals (KFUPM), Dhahran, KSA</p> <p class="tli__desc"><strong class="tli__stat">Cumulative GPA: 4.0/4.0 · Specialisation in Urban Informatics &amp; Sustainability</strong> Thesis: <em class="serif">Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation</em>. Coursework: Big Data Analytics, Smart City Systems &amp; IoT, GIS &amp; Spatial Analysis, Environmental Economics, Urban Informatics, Circular Economy.</p> <p class="tli__note" data-i18n="bg.note.kfupm" hidden><strong class="tli__stat">GPA 4.0/4.0 · Specialisation in Urban Informatics &amp; Sustainability</strong> Thesis: <em class="serif">Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation</em>. Coursework: Big Data Analytics, Smart City Systems &amp; IoT, GIS &amp; Spatial Analysis, Environmental Economics, Urban Informatics, Circular Economy.</p> <p class="tli__says" data-i18n="bg.says.kfupm" hidden>I decided to pursue an M.Sc in Smart and Sustainable Cities at KFUPM, Dhahran.</p> <span class="tli__badge">GPA 4.0 / 4.0</span>
+
+### background.3
+- <p class="tli__period">Mar 2022 – Aug 2025</p> <h3 class="tli__role" data-i18n="bg.role.metarch2">Project Architect</h3> <p class="tli__org">Metarch Studios · Ranchi, India</p> <p class="tli__desc">Led the full project lifecycle for a $720K commercial, educational, and residential portfolio with 100% on-time and on-budget delivery. Managed multi-disciplinary teams across 4 concurrent projects, reducing construction change orders by 8% and coordination delays by 10%. Boosted team drawing delivery speed by 15% through workflow standardisation and pioneered BIM/3D visualisation pipelines, increasing client satisfaction by 20%.</p> <p class="tli__note" data-i18n="bg.note.metarch2" hidden>Led the full project lifecycle for a $720K commercial, educational, and residential portfolio with 100% on-time and on-budget delivery. Managed multi-disciplinary teams across 4 concurrent projects, reducing construction change orders by 8% and coordination delays by 10%. Boosted team drawing delivery speed by 15% through workflow standardisation and pioneered BIM/3D visualisation pipelines, increasing client satisfaction by 20%.</p> <p class="tli__says" data-i18n="bg.says.metarch2" hidden>I rejoined Metarch Studios, this time leading every project.</p>
+
+### background.4
+- <p class="tli__period">May 2021 – Apr 2022</p> <h3 class="tli__role" data-i18n="bg.role.medicfibers">Graphic Designer</h3> <p class="tli__org">Medicfibers · New Delhi, India</p> <p class="tli__desc">Crafted strategic investment pitch decks and visual brand assets supporting capital funding campaigns. Developed and executed a comprehensive social media strategy expanding online audience engagement by 3× and increasing overall brand visibility by 40%.</p> <p class="tli__note" data-i18n="bg.note.medicfibers" hidden>Crafted strategic investment pitch decks and visual brand assets supporting capital funding campaigns. Developed and executed a comprehensive social media strategy expanding online audience engagement by 3× and increasing overall brand visibility by 40%.</p> <p class="tli__says" data-i18n="bg.says.medicfibers" hidden>I joined this office for a detour into design because of the pandemic.</p>
+
+### background.5
+- <p class="tli__period">Jan 2021 – May 2021</p> <h3 class="tli__role" data-i18n="bg.role.intern">Architectural Intern</h3> <p class="tli__org">Jaiswal &amp; Associates · New Delhi, India</p> <p class="tli__desc">Produced comprehensive 3D models, renders, floor plans, sections, & elevations for 10+ diverse projects (residences, group housing, factories) using industry-standard software. Developed a high-profile kiosk for MS Dhoni’s organic farm business, adhering to branding guidelines and exceeding client expectations.</p> <p class="tli__note" data-i18n="bg.note.jaiswal" hidden>Produced comprehensive 3D models, renders, floor plans, sections, & elevations for 10+ diverse projects (residences, group housing, factories) using industry-standard software. Developed a high-profile kiosk for MS Dhoni’s organic farm business, adhering to branding guidelines and exceeding client expectations.</p> <p class="tli__says" data-i18n="bg.says.jaiswal" hidden>I went to Delhi for a five-month internship, and I learned a lot there.</p>
+
+### background.6
+- <p class="tli__period">May 2019 – Jun 2019</p> <h3 class="tli__role" data-i18n="bg.role.intern">Architectural Intern</h3> <p class="tli__org">Metarch Studios · Ranchi, India</p> <p class="tli__desc">Gained professional studio experience producing precise working drawings and 3D models/renderings for interior and exterior design projects.</p> <p class="tli__note" data-i18n="bg.note.metarch1" hidden>Gained professional studio experience producing precise working drawings and 3D models/renderings for interior and exterior design projects.</p> <p class="tli__says" data-i18n="bg.says.metarch1" hidden>The second summer internship in my favorite office.</p>
+
+### background.7
+- <p class="tli__period">May 2018 – Jun 2018</p> <h3 class="tli__role" data-i18n="bg.role.intern">Architectural Intern</h3> <p class="tli__org">Chadda and Associates · Ranchi, India</p> <p class="tli__desc">Contributed directly to real-world infrastructure projects by drafting floor plans, building sections, elevations, and structural drawings for municipal permitting and private development initiatives.</p> <p class="tli__note" data-i18n="bg.note.chadda" hidden>Contributed directly to real-world infrastructure projects by drafting floor plans, building sections, elevations, and structural drawings for municipal permitting and private development initiatives.</p> <p class="tli__says" data-i18n="bg.says.chadda" hidden>My first real office; it was hard learning the professional dynamics.</p>
+
+### background.8
+- <p class="tli__period">Jul 2016 – Jun 2021</p> <h3 class="tli__role" data-i18n="bg.role.barch">Bachelor of Architecture (B.Arch.) — First Class with Distinction</h3> <p class="tli__org">Birla Institute of Technology (BIT), Mesra · Ranchi, India · CGPA: 7.61/10</p> <p class="tli__desc"><strong class="tli__stat">Cumulative GPA: 7.61/10.0 · First Class with Distinction</strong> Thesis: <em class="serif">Twin Tower Complex – Mixed-Use Net-Zero Energy High-Rise Development</em>. Leadership: Vice President of the Student Society of Architecture (orchestrated events for 300+ members and led the Vajra Pavilion build); Executive Member of the National Service Scheme (managed welfare initiatives for 10 villages). Awards: 1st Place Interior Design Trophy (Zonasa 2019) · 2nd Place Café Design (NASA 2017) · National Top 66 Finalist (ANDC Embark 2019) · Shortlisted Main Design Trophy (Zonasa 2018).</p> <p class="tli__note" data-i18n="bg.note.barch" hidden><strong class="tli__stat">Cumulative GPA: 7.61/10.0 · First Class with Distinction</strong> Awards: 1st Place Interior Design Trophy (Zonasa 2019); 2nd Place Café Design (NASA 2017); Shortlisted Main Design Trophy (Zonasa 2018); National Top 66: Embark Competition (ANDC 2019).</p> <p class="tli__says" data-i18n="bg.says.barch" hidden>I spent five years here and learned the basics of design.</p> <span class="tli__badge">First Class with Distinction</span>
+
+## Contact
+
+### contact.label
+- Contact
+
+### contact.title
+- Let’s talk <em>research</em>
+
+### contact.lead
+- I’m actively looking for <strong>fully funded PhD positions</strong> in urban climate informatics, smart city analytics, and GIS-based climate adaptation, particularly in the UK, EU, North America, and the GCC. If you’re working on heat resilience, digital twins, or spatial data for sustainable cities, I’d love to connect. Also open to smart city research roles and GIS consultancy in KSA.
+
+### contact.1
+- shibliafaq4@gmail.com
+
+### contact.form
+- Send a message
+
+### contact.2
+- <span data-i18n="contact.send">Send message</span> <span class="btn__arrow">→</span>
+
+### contact.ok
+- ✓ Message sent — thank you.
+
+### contact.3
+- LinkedIn <span class="btn__arrow">↗</span>
+
+### contact.4
+- GitHub <span class="btn__arrow">↗</span>
+
+### contact.5
+- Instagram <span class="btn__arrow">↗</span>
+
+### contact.6
+- Live Demo <span class="btn__arrow">↗</span>
+
+## Navigation and footer
+
+### _nav.1
+- Skip to content
+
+### _nav.2
+- Shibli <em>Afaq</em>
+
+### _nav.3
+- <a href="#about" data-i18n="nav.about">About</a>
+
+### _nav.4
+- <a href="#projects" data-i18n="nav.research">Research</a>
+
+### _nav.5
+- <a href="#publications" data-i18n="nav.publications">Publications</a>
+
+### _nav.6
+- <a href="#background" data-i18n="nav.background">Background</a>
+
+### _nav.7
+- <span data-i18n="nav.contact">Get in touch</span> <span class="btn__arrow">↗</span>
+
+### nav.about
+- About
+
+### nav.direction
+- Direction
+
+### nav.research
+- Research
+
+### nav.publications
+- Publications
+
+### nav.skills
+- Skills
+
+### nav.background
+- Background
+
+### nav.contact
+- Contact
+
+### _nav.8
+- Urban Heat Islands
+
+### _nav.9
+- GIS &amp; Remote Sensing
+
+### _nav.10
+- Smart Cities
+
+### _nav.11
+- ArcGIS Pro
+
+### _nav.12
+- Google Earth Engine
+
+### _nav.13
+- Apache Kafka
+
+### _nav.14
+- Machine Learning
+
+### _nav.15
+- Digital Twin
+
+### _nav.16
+- MODIS Satellite
+
+### _nav.17
+- Kepler.gl
+
+### _nav.18
+- Climate Resilience
+
+### _nav.19
+- Apache Spark
+
+### _nav.20
+- © 2026 Shibli Afaq
+
+### _nav.21
+- KFUPM · M.Sc. Smart &amp; Sustainable Cities
+
+### _nav.22
+- shibliafaq.vercel.app
+
+### footer.arch
+- 🏛 Architecture Portfolio
+
+### footer.resume
+- ⇩ Download Resume
+
+### _nav.23
+- Built with Vite · GSAP · three.js
+
+### _nav.24
+- <span data-i18n="footer.art">Pixel art</span>: Cute&nbsp;Fantasy (Kenmi) · Pixel&nbsp;Crawler (Anokolisa) · Mystic&nbsp;Woods (Game&nbsp;Endeavor) · Pixel&nbsp;16 · FREE_Adventurer · 2D&nbsp;RPG&nbsp;Desert (CraftPix)
+
+### _nav.25
+- ✕
+
+### _nav.26
+- ✕
+
+### _nav.27
+- ←
+
+### _nav.28
+- <b id="archCur">1</b> / <span id="archTot">18</span>
+
+### _nav.29
+- →
+
+### _nav.30
+- Click anywhere to close

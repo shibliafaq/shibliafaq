@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Experience map — first composition</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09090b; color: #dcdce0; font-family: "Jost", system-ui, sans-serif; padding: 1.5rem; }
+  h1 { font-size: 1.2rem; font-weight: 600; margin-bottom: .3rem; }
+  .sub { color: #9a9aa3; font-size: .82rem; margin-bottom: 1.2rem; max-width: 70ch; line-height: 1.55; }
+  .row { display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: flex-start; }
+  figure { margin: 0; }
+  figcaption { margin-top: .6rem; font-size: .68rem; letter-spacing: .16em; text-transform: uppercase; color: #f59e0b; }
+  canvas { display: block; image-rendering: pixelated; border: 1px solid rgba(255,255,255,.12); border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<h1>Experience &amp; Education — first composition</h1>
+<p class="sub">
+  Cute Fantasy tileset. Seven buildings, one per timeline entry, clustered by
+  place: Mesra/Ranchi at the top, New Delhi in the middle, the crossing, then
+  Dhahran. Ungraded and graded, side by side.
+</p>
+
+<div class="row" id="row"></div>
+
+<script type="module">
+import { Scene, TILE, loadAll, inRect, any } from '/src/modules/pixel/cutefantasy.js';
+import { gradeSheets, SITE_GRADE } from '/src/modules/pixel/recolour.js';
+
+const COLS = 34, ROWS = 60, SCALE = 1;
+const scene = new Scene(COLS, ROWS);
+
+scene.fillGrass();
+
+// ---- water: the crossing between India and Saudi ----
+const sea = inRect(0, 33, COLS, 6);
+scene.blob('water', sea);
+
+// ---- the path: a single route the character walks, top to bottom ----
+const path = any(
+  inRect(15, 0, 3, 12),    // down from KFUPM... (map runs oldest at top)
+  inRect(6, 10, 12, 3),    // west to BIT Mesra
+  inRect(6, 12, 3, 10),    // south
+  inRect(6, 21, 14, 3),    // east to Delhi cluster
+  inRect(17, 23, 3, 11),   // south to the coast
+  inRect(17, 38, 3, 22),   // continues after the sea
+);
+scene.blob('path', path);
+
+// ---- buildings, bottom-left anchored ----
+const places = [
+  { c: 8,  r: 10, label: 'BIT Mesra' },
+  { c: 3,  r: 20, label: 'Chadda & Associates' },
+  { c: 12, r: 20, label: 'Metarch Studios' },
+  { c: 21, r: 23, label: 'Jaiswal & Associates' },
+  { c: 26, r: 30, label: 'Medicfibers' },
+  { c: 9,  r: 46, label: 'Metarch (return)' },
+  { c: 22, r: 52, label: 'KFUPM' },
+];
+for (const p of places) scene.sprite('house', p.c, p.r);
+
+// ---- vegetation, seeded so the map is identical every load ----
+let s = 12345;
+const rnd = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+const clear = (c, r) => !path(c, r) && !sea(c, r);
+
+for (let i = 0; i < 46; i++) {
+  const c = Math.floor(rnd() * COLS), r = Math.floor(rnd() * ROWS);
+  if (!clear(c, r)) continue;
+  scene.sprite(rnd() > 0.45 ? 'tree' : 'treeSmall', c, r);
+}
+const bits = ['tuft1', 'tuft2', 'tuft3', 'flowerYellow', 'flowerWhite', 'rockSmall', 'rocks1', 'stump', 'mushroom'];
+for (let i = 0; i < 150; i++) {
+  const c = Math.floor(rnd() * COLS), r = Math.floor(rnd() * ROWS);
+  if (!clear(c, r)) continue;
+  scene.decor(bits[Math.floor(rnd() * bits.length)], c, r);
+}
+
+// ---- render ----
+const sheets = await loadAll();
+const row = document.getElementById('row');
+// Two different mechanisms, deliberately shown together:
+//   `css`   — one filter over the whole output canvas (what this page used to
+//             do). Cheap, but it cannot move the grass without also moving the
+//             roofs, which is the entire reason recolour.js exists.
+//   `sheet` — recolour.js grading each sheet separately at load. The real one.
+const VIEWS = [
+  ['Ungraded', null, 'none'],
+  ['Muted — whole-canvas CSS', null, 'saturate(.66) brightness(.84) contrast(1.06) hue-rotate(-8deg) sepia(.12)'],
+  ['Site grade — per sheet', SITE_GRADE, 'none'],
+];
+
+for (const [name, sheetGrade, filter] of VIEWS) {
+  const canvas = document.createElement('canvas');
+  canvas.width = COLS * TILE;
+  canvas.height = ROWS * TILE;
+  canvas.style.width = `${COLS * TILE * SCALE}px`;
+  canvas.style.filter = filter;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  scene.render(ctx, sheetGrade ? gradeSheets(sheets, sheetGrade) : sheets);
+
+  const fig = document.createElement('figure');
+  fig.appendChild(canvas);
+  const cap = document.createElement('figcaption');
+  cap.textContent = name;
+  fig.appendChild(cap);
+  row.appendChild(fig);
+}
+</script>
+</body>
+</html>

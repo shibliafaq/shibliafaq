@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Shibli Afaq — Smart Cities Researcher, Urban Data Scientist & Architect at KFUPM.">
+<title>Shibli Afaq · Smart Cities Researcher</title>
+
+<meta property="og:title" content="Shibli Afaq · Smart Cities Researcher &amp; Urban Data Scientist">
+<meta property="og:description" content="M.Sc. researcher at KFUPM applying GIS, satellite remote sensing, and machine learning to Urban Heat Islands across Saudi Arabia. GPA 4.0/4.0. Open to PhD opportunities and smart city roles.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://shibliafaq.vercel.app">
+<meta property="og:image" content="https://shibliafaq.vercel.app/assets/img/hero-thesis@1x.webp">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Shibli Afaq · Smart Cities Researcher">
+<meta name="twitter:description" content="Architect turned urban data scientist. GIS, remote sensing, machine learning for climate-resilient cities.">
+<meta name="theme-color" content="#09090b">
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2309090b'/%3E%3Crect x='1' y='1' width='30' height='30' rx='5' fill='none' stroke='%23f59e0b' stroke-width='1.5'/%3E%3Ctext x='16' y='21' font-family='system-ui,sans-serif' font-weight='800' font-size='14' fill='%23f59e0b' text-anchor='middle'%3ESA%3C/text%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Jost, variable, upright 300–800 plus italics. One family for the whole site. -->
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300..800;1,300..500&display=swap" rel="stylesheet">
+
+<link rel="preload" as="image" href="/assets/img/herobg.webp">
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+<a data-copy="_nav.1" href="#main" class="skip-link">Skip to content</a>
+
+<div class="progress" aria-hidden="true"><span class="progress__bar" id="progressBar"></span></div>
+
+<div class="cursor" id="cursorGlow" aria-hidden="true"></div>
+<div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+
+<!-- ══ NAV ══════════════════════════════════════════════════ -->
+<nav class="nav" id="nav">
+  <a data-copy="_nav.2" href="#hero" class="nav__logo">Shibli <em>Afaq</em></a>
+  <ul class="nav__links">
+    <li data-copy="_nav.3"><a href="#about" data-i18n="nav.about">About</a></li>
+    <li data-copy="_nav.4"><a href="#projects" data-i18n="nav.research">Research</a></li>
+    <li data-copy="_nav.5"><a href="#publications" data-i18n="nav.publications">Publications</a></li>
+    <li data-copy="_nav.6"><a href="#background" data-i18n="nav.background">Background</a></li>
+  </ul>
+  <a data-copy="_nav.7" href="#contact" class="btn btn--solid nav__cta"><span data-i18n="nav.contact">Get in touch</span> <span class="btn__arrow">↗</span></a>
+  <div class="nav__lang" id="langMount"></div>
+  <button class="nav__burger" id="navBurger" aria-label="Open menu" aria-expanded="false"><span></span><span></span></button>
+</nav>
+
+<div class="navmenu" id="navMenu" aria-hidden="true">
+  <a href="#about" data-i18n="nav.about">About</a>
+  <a href="#direction" data-i18n="nav.direction">Direction</a>
+  <a href="#projects" data-i18n="nav.research">Research</a>
+  <a href="#publications" data-i18n="nav.publications">Publications</a>
+  <a href="#skills" data-i18n="nav.skills">Skills</a>
+  <a href="#background" data-i18n="nav.background">Background</a>
+  <a href="#contact" data-i18n="nav.contact">Contact</a>
+</div>
+
+<main id="main">
+
+<!-- ══ HERO ═════════════════════════════════════════════════ -->
+<section id="hero" class="hero">
+  <div class="hero__media">
+    <!-- Painted immediately so the hero is never empty; the WebGL globe fades
+         in over it and this stays as the fallback if WebGL is unavailable. -->
+    <div class="hero__space"></div>
+    <canvas class="hero__globe" id="heroGlobe" aria-hidden="true"></canvas>
+    <div class="hero__scrim"></div>
+    <div class="hero__heat"></div>
+  </div>
+
+  <div class="hero__body">
+    <p class="eyebrow hero__hey" data-i18n="hero.hey">Hey, I’m</p>
+    <h1 data-copy="hero.1" class="display hero__name" id="heroName">
+      <span class="hero__name-line">Shibli</span> <span class="hero__name-line hero__name-line--2">Afaq</span>
+    </h1>
+    <p class="hero__role"><span id="tw"></span><span class="hero__caret" aria-hidden="true"></span></p>
+    <p class="hero__desc" data-i18n="hero.desc">
+      Architect evolving into an <strong>urban data scientist</strong>, driven by a passion for building climate-resilient cities through spatial data. Expanding my toolkit to include GIS, machine learning, and remote sensing — currently finishing my M.Sc. at KFUPM (GPA&nbsp;4.0/4.0). <strong>Open to innovative smart city roles, research collaborations, and fully funded PhD opportunities.</strong>
+    </p>
+    <div class="hero__actions">
+      <a data-copy="hero.2" href="#projects" class="btn btn--solid"><span data-i18n="hero.cta.research">View Research</span> <span class="btn__arrow">↓</span></a>
+      <a data-copy="hero.3" href="https://github.com/shibliafaq" target="_blank" rel="noopener" class="btn">GitHub <span class="btn__arrow">↗</span></a>
+      <a data-copy="hero.4" href="https://shibliafaq-iot-dashboard.streamlit.app" target="_blank" rel="noopener" class="btn"><span data-i18n="hero.cta.demo">Live Demo</span> <span class="btn__arrow">↗</span></a>
+      <a data-copy="hero.5" href="/assets/doc/Shibli_Afaq_Resume.pdf" download class="btn">⇩ <span data-i18n="hero.cta.resume">Resume</span></a>
+    </div>
+  </div>
+
+  <div class="hero__stats">
+    <div class="hstat">
+      <span data-copy="hero.6" class="hstat__idx">#01</span>
+      <div>
+        <div class="hstat__val" data-target="4.0" data-dec="1" data-suf="/4.0">4.0</div>
+        <div class="hstat__lbl" data-i18n="hero.stat.gpa">GPA · KFUPM</div>
+      </div>
+    </div>
+    <div class="hstat">
+      <span data-copy="hero.7" class="hstat__idx">#02</span>
+      <div>
+        <div class="hstat__val" data-target="4" data-dec="0" data-suf="+ yrs">4+</div>
+        <div class="hstat__lbl" data-i18n="hero.stat.exp">Industry Experience</div>
+      </div>
+    </div>
+    <div class="hstat">
+      <span data-copy="hero.8" class="hstat__idx">#03</span>
+      <div>
+        <div class="hstat__val" data-target="6" data-dec="0" data-suf="">6</div>
+        <div class="hstat__lbl" data-i18n="hero.stat.projects">Research Projects</div>
+      </div>
+    </div>
+    <div class="hstat">
+      <span data-copy="hero.9" class="hstat__idx">#04</span>
+      <div>
+        <div class="hstat__val" data-target="3" data-dec="0" data-suf="">3</div>
+        <div class="hstat__lbl" data-i18n="hero.stat.papers">Papers</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MARQUEE ══════════════════════════════════════════════ -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__track" id="marqueeTrack">
+    <span data-copy="_nav.8" class="marquee__item">Urban Heat Islands</span><span data-copy="_nav.9" class="marquee__item">GIS &amp; Remote Sensing</span><span data-copy="_nav.10" class="marquee__item">Smart Cities</span><span data-copy="_nav.11" class="marquee__item">ArcGIS Pro</span><span data-copy="_nav.12" class="marquee__item">Google Earth Engine</span><span data-copy="_nav.13" class="marquee__item">Apache Kafka</span><span data-copy="_nav.14" class="marquee__item">Machine Learning</span><span data-copy="_nav.15" class="marquee__item">Digital Twin</span><span data-copy="_nav.16" class="marquee__item">MODIS Satellite</span><span data-copy="_nav.17" class="marquee__item">Kepler.gl</span><span data-copy="_nav.18" class="marquee__item">Climate Resilience</span><span data-copy="_nav.19" class="marquee__item">Apache Spark</span>
+  </div>
+</div>
+
+<!-- ══ ABOUT ════════════════════════════════════════════════ -->
+<section id="about" class="section">
+  <div class="wrap">
+    <p class="eyebrow" data-reveal data-i18n="about.label">About</p>
+    <h2 class="display sec-title" data-reveal data-split data-i18n="about.title">The <em>problem</em><br>I’m solving</h2>
+
+    <div class="about__grid">
+      <div class="prose about__text">
+        <p data-reveal data-i18n="about.p1">I’m a licensed architect with <strong>4+ years across professional design and project delivery</strong> who made a deliberate pivot. After managing architectural projects across India and leading a $720K portfolio spanning commercial, educational, and residential spaces, I realised that the escalating urban and climate crises I witnessed could not be solved at the building scale alone.</p>
+        <blockquote class="pull" data-reveal data-i18n="about.pull">“To effectively tackle the climate crisis in our cities, I needed a deeper understanding of city-scale informatics — so I set out to build it.”</blockquote>
+        <p data-reveal data-i18n="about.p2">Now completing an <strong>M.Sc. in Smart and Sustainable Cities at KFUPM</strong> (GPA 4.0/4.0), I combine architectural spatial thinking with satellite remote sensing, GIS, and machine learning to build evidence-based heat adaptation tools for the Arabian Peninsula.</p>
+        <p data-reveal data-i18n="about.p3">Whether driving innovation in a research lab, a spatial data consultancy, or a municipal smart city team, I bridge the gap between <strong>technical data science and the physical realities of urban design</strong>.</p>
+      </div>
+
+      <ul class="about__cards">
+        <li data-copy="about.1" class="acard" data-reveal><span class="acard__icon">🎓</span><div><p class="acard__t" data-i18n="about.c1">M.Sc. Smart &amp; Sustainable Cities</p><p class="acard__s">KFUPM · GPA 4.0/4.0 · 2025–2026</p></div></li>
+        <li data-copy="about.2" class="acard" data-reveal><span class="acard__icon">🧠</span><div><p class="acard__t" data-i18n="about.c2">Research — UHI, Digital Twins &amp; ML</p><p class="acard__s">Remote Sensing · Climate Analytics · PostGIS</p></div></li>
+        <li data-copy="about.3" class="acard" data-reveal><span class="acard__icon">🏛️</span><div><p class="acard__t" data-i18n="about.c3">B.Arch. Architecture — First Class with Distinction</p><p class="acard__s">BIT Mesra · CGPA 7.61/10 · 2016–2021</p></div></li>
+        <li data-copy="about.4" class="acard" data-reveal><span class="acard__icon">🏅</span><div><p class="acard__t" data-i18n="about.c4">Licensed Architect &amp; Professional Member</p><p class="acard__s">Council of Architecture (IN) · Associate Member IIA</p></div></li>
+        <li data-copy="about.5" class="acard" data-reveal><span class="acard__icon">📍</span><div><p class="acard__t" data-i18n="about.c5">Dhahran, Saudi Arabia</p><p class="acard__s">Open to Smart City Roles, Research &amp; PhDs</p></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══ RESEARCH DIRECTION ═══════════════════════════════════ -->
+<section id="direction" class="section section--raised">
+  <div class="wrap">
+    <p class="eyebrow" data-reveal data-i18n="direction.label">Research Direction</p>
+    <h2 class="display sec-title" data-reveal data-split data-i18n="direction.title">Why <em>climate</em><br>drives everything</h2>
+
+    <div class="direction__grid">
+      <div class="prose">
+        <p data-reveal data-i18n="direction.p1">There's a reason all my work circles back to the same thing: the planet is getting hotter, and cities are making it worse. Urban Heat Islands aren't a niche academic curiosity — they are a measurable, preventable cause of heat deaths, worsening air quality, and mounting energy demand in some of the world's most vulnerable communities. That bothers me. A lot.</p>
+        <blockquote class="pull" data-reveal data-i18n="direction.pull">“I don't want to spend my career describing a problem. I want to build the tools that let cities actually fix it.”</blockquote>
+        <p data-reveal data-i18n="direction.p2">Everything I've built — the satellite pipelines, the GIS vulnerability frameworks, the IoT dashboards — is oriented toward one goal: making urban climate data <strong>actionable</strong>, not just publishable. That means getting it to the right resolution, the right people, and in time for it to matter.</p>
+      </div>
+
+      <div class="dcards">
+        <article class="dcard" data-reveal>
+          <p class="dcard__label" data-i18n="direction.c1l">PhD Target</p>
+          <p class="dcard__t" data-i18n="direction.c1t">Urban Climate Informatics — Digital Twins for Heat Adaptation at City Scale</p>
+          <p class="dcard__s" data-i18n="direction.c1s">Seeking funded positions with supervisors working at the intersection of remote sensing, urban climate modelling, and spatial data science</p>
+        </article>
+        <article class="dcard" data-reveal>
+          <p class="dcard__label" data-i18n="direction.c2l">Geographic Focus</p>
+          <p class="dcard__t" data-i18n="direction.c2t">Arabian Peninsula &amp; Global South arid cities</p>
+          <p class="dcard__s" data-i18n="direction.c2s">Where extreme heat stress is most acute and urban climate data is most scarce — and where good tools could save the most lives</p>
+        </article>
+        <article class="dcard" data-reveal>
+          <p class="dcard__label" data-i18n="direction.c3l">Open To</p>
+          <p class="dcard__t" data-i18n="direction.c3t">Fully funded PhD · Smart city research roles · GIS analytics consultancy</p>
+          <p class="dcard__s" data-i18n="direction.c3s">Based in Dhahran — open to relocation globally for the right opportunity</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ THERMAL — scroll-scrubbed three-city sequence ════════ -->
+<section id="thermal" class="thermal">
+  <div class="thermal__sticky">
+    <div class="thermal__stage">
+      <video class="thermal__video is-active" data-city="dammam" muted playsinline preload="none"
+             poster="/assets/img/thermal-dammam-poster.webp" src="/assets/video/thermal-dammam.mp4"></video>
+      <video class="thermal__video" data-city="dublin" muted playsinline preload="none"
+             poster="/assets/img/thermal-dublin-poster.webp" src="/assets/video/thermal-dublin.mp4"></video>
+      <video class="thermal__video" data-city="reykjavik" muted playsinline preload="none"
+             poster="/assets/img/thermal-reykjavik-poster.webp" src="/assets/video/thermal-reykjavik.mp4"></video>
+      <div class="thermal__vignette"></div>
+    </div>
+
+    <div class="thermal__hud">
+      <p class="eyebrow" data-i18n="thermal.label">Multi-City Surface Temperature</p>
+      <h2 data-copy="thermal.1" class="display thermal__title" id="thermalTitle">Three cities.<br><em>Three continents.</em></h2>
+      <p data-copy="thermal.2" class="thermal__caption" id="thermalCaption">25,905 real NASA MODIS measurements. Every 10° northward, 9.1&thinsp;°C colder.</p>
+
+      <ol class="thermal__legend">
+        <li data-copy="thermal.3" class="is-active" data-city="dammam"><span class="thermal__dot" style="--c:#f59e0b"></span>Dammam <em>26°N</em> <b>31.5&thinsp;°C</b></li>
+        <li data-copy="thermal.4" data-city="dublin"><span class="thermal__dot" style="--c:#4ade80"></span>Dublin <em>53°N</em> <b>9.6&thinsp;°C</b></li>
+        <li data-copy="thermal.5" data-city="reykjavik"><span class="thermal__dot" style="--c:#a5f3fc"></span>Reykjavík <em>64°N</em> <b>−3.7&thinsp;°C</b></li>
+      </ol>
+
+      <button data-copy="thermal.6" class="btn thermal__more" data-modal="temp"><span data-i18n="thermal.more">Full study</span> <span class="btn__arrow">↗</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROJECTS — pinned horizontal travel ══════════════════ -->
+<section id="projects" class="projects">
+  <div class="projects__intro wrap">
+    <p class="eyebrow" data-reveal data-i18n="projects.label">Research &amp; Projects</p>
+    <h2 class="display sec-title" data-reveal data-split data-i18n="projects.title">Six projects.<br><em>One direction.</em></h2>
+    <p class="lead" data-reveal data-i18n="projects.lead">From architectural BIM to real-time satellite pipelines, all converging on one question: how do we make cities survive the climate crisis?</p>
+  </div>
+
+  <div class="projects__pin" id="projectsPin">
+    <div class="projects__track" id="projectsTrack">
+
+      <article class="pcard pcard--wide" data-modal="thesis" tabindex="0" role="button" aria-label="Open: Smart Digital Twin Framework">
+        <div class="pcard__media">
+          <img src="/assets/img/hero-thesis.webp" alt="Smart Digital Twin · UHI Monitoring &amp; Forecasting" loading="lazy" width="2400" height="1340">
+        </div>
+        <div class="pcard__body">
+          <div class="pcard__badges">
+            <span data-copy="projects.1" class="badge badge--dev"><span class="badge__dot"></span>Under Development</span>
+            <span data-copy="projects.2" class="badge">M.Sc. Thesis</span>
+            <span data-copy="projects.3" class="badge badge--muted">KFUPM · Dept. Architecture &amp; City Design</span>
+          </div>
+          <h3 data-copy="projects.4" class="pcard__title">A Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation</h3>
+          <p data-copy="projects.5" class="pcard__desc">Built on a <strong>Design Science methodology</strong>, this near-real-time digital twin platform transforms retrospective urban climate studies into live decision-support tools. Monitors multi-city thermal variations across five Saudi climate zones and urban typologies across <strong>Riyadh, Jeddah, Dammam, Makkah, and NEOM</strong>, combining satellite feeds with demographic layers to deploy an equity-focused Heat Vulnerability Index that prioritises interventions in underserved residential communities.</p>
+          <div class="pcard__metrics">
+            <div><span data-copy="projects.6" class="m-v">&lt;10 min</span><span data-copy="projects.7" class="m-l">Pipeline latency</span></div>
+            <div><span data-copy="projects.8" class="m-v">&lt;1.5°C</span><span data-copy="projects.9" class="m-l">Forecast RMSE</span></div>
+            <div><span data-copy="projects.10" class="m-v">17M (70%)</span><span data-copy="projects.11" class="m-l">Population coverage</span></div>
+            <div><span data-copy="projects.12" class="m-v">3 Zones</span><span data-copy="projects.13" class="m-l">Climatic variety</span></div>
+          </div>
+          <div class="tags">
+            <span data-copy="projects.14" class="tag tag--amber">Google Earth Engine</span><span data-copy="projects.15" class="tag tag--amber">Apache Kafka</span><span data-copy="projects.16" class="tag tag--amber">Spark Streaming</span><span data-copy="projects.17" class="tag tag--amber">PostgreSQL + PostGIS</span><span data-copy="projects.18" class="tag">Facebook Prophet</span><span data-copy="projects.19" class="tag tag--amber">Streamlit</span><span data-copy="projects.20" class="tag tag--amber">Kepler.gl 3D</span><span data-copy="projects.21" class="tag">Docker Compose</span>
+          </div>
+          <span data-copy="projects.22" class="pcard__cta">Click to view full details →</span>
+        </div>
+      </article>
+
+      <article class="pcard" data-modal="gis" tabindex="0" role="button" aria-label="Open: GIS &amp; Remote Sensing UHI Assessment">
+        <div class="pcard__media"><img src="/assets/img/hero-gis@1x.webp" alt="GIS &amp; Remote Sensing · Dammam UHI Assessment" loading="lazy" width="1200" height="670"></div>
+        <div class="pcard__body">
+          <p data-copy="projects.23" class="pcard__course">CRP 583 · Urban Informatics · KFUPM</p>
+          <h3 data-copy="projects.24" class="pcard__title">GIS &amp; Remote Sensing UHI Assessment — Dammam Metro Area</h3>
+          <p data-copy="projects.25" class="pcard__result">NDBI Dominance (R²=0.511) · 57.3 km² Urgent Exposure Zone · 4.18× Hotspot Scale Multiplier</p>
+          <div class="tags"><span data-copy="projects.26" class="tag tag--amber">ArcGIS Pro 3.6</span><span data-copy="projects.27" class="tag tag--amber">Landsat 8/9 &amp; Sentinel-2</span><span data-copy="projects.28" class="tag tag--amber">Getis-Ord Gi*</span><span data-copy="projects.29" class="tag tag--amber">HVI</span><span data-copy="projects.30" class="tag">Spatial SQL</span></div>
+        </div>
+      </article>
+
+      <article class="pcard" data-modal="iot" tabindex="0" role="button" aria-label="Open: Real-Time Smart City IoT Monitoring Pipeline">
+        <div class="pcard__media"><img src="/assets/img/hero-iot@1x.webp" alt="Real-Time IoT Monitoring Pipeline" loading="lazy" width="1200" height="670"></div>
+        <div class="pcard__body">
+          <p data-copy="projects.31" class="pcard__course">ICS 574 · Big Data Analytics · KFUPM <span class="live">Live</span></p>
+          <h3 data-copy="projects.32" class="pcard__title">Real-Time Smart City IoT Monitoring Pipeline</h3>
+          <p data-copy="projects.33" class="pcard__result">Sub-2-Second Ingestion · 5-Minute Tumbling Windows · 10 Simulated Urban Zones</p>
+          <div class="tags"><span data-copy="projects.34" class="tag tag--amber">Apache Kafka</span><span data-copy="projects.35" class="tag tag--amber">PySpark Streaming</span><span data-copy="projects.36" class="tag tag--amber">PostgreSQL + PostGIS</span><span data-copy="projects.37" class="tag">MQTT (Mosquitto)</span><span data-copy="projects.38" class="tag">Docker Compose</span></div>
+        </div>
+      </article>
+
+      <article class="pcard" data-modal="temp" tabindex="0" role="button" aria-label="Open: Multi-City Surface Temperature Analysis">
+        <div class="pcard__media"><img src="/assets/img/hero-temp@1x.webp" alt="Multi-City Surface Temperature · MODIS Analysis" loading="lazy" width="1200" height="670"></div>
+        <div class="pcard__body">
+          <p data-copy="projects.39" class="pcard__course">ICS 574 · Big Data Analytics · KFUPM</p>
+          <h3 data-copy="projects.40" class="pcard__title">Multi-City Surface Temperature Analysis — 3 Continents</h3>
+          <p data-copy="projects.41" class="pcard__result">r=−0.995 Near-Perfect Correlation · R²=0.990 · 25,905 Valid MODIS Measurements</p>
+          <div class="tags"><span data-copy="projects.42" class="tag tag--amber">MODIS (Terra)</span><span data-copy="projects.43" class="tag tag--amber">Google Earth Engine</span><span data-copy="projects.44" class="tag tag--amber">Kepler.gl</span><span data-copy="projects.45" class="tag tag--amber">GeoPandas</span><span data-copy="projects.46" class="tag">Spatial Regression</span></div>
+        </div>
+      </article>
+
+      <article class="pcard" data-modal="its" tabindex="0" role="button" aria-label="Open: ITS-Based Congestion Management">
+        <div class="pcard__media"><img src="/assets/img/hero-its@1x.webp" alt="ITS Congestion Management · Al Khobar" loading="lazy" width="1200" height="670"></div>
+        <div class="pcard__body">
+          <p data-copy="projects.47" class="pcard__course">CE 584 · Intelligent Transportation Systems · KFUPM</p>
+          <h3 data-copy="projects.48" class="pcard__title">ITS-Based Congestion Management — Aramco Stadium Corridor, Al Khobar</h3>
+          <p data-copy="projects.49" class="pcard__result">Alternative C Recommended · 20–35% Travel Time Reduction · SAR 28–47M Plan</p>
+          <div class="tags"><span data-copy="projects.50" class="tag">Adaptive Signal Control (ATSC)</span><span data-copy="projects.51" class="tag">ATMS / TMC</span><span data-copy="projects.52" class="tag">Smart Parking</span><span data-copy="projects.53" class="tag">Multi-Criteria Matrix</span></div>
+        </div>
+      </article>
+
+      <article class="pcard" data-modal="sound" tabindex="0" role="button" aria-label="Open: Soundscape and Thermal Comfort systematic review">
+        <div class="pcard__media"><img src="/assets/img/hero-sound@1x.webp" alt="Soundscape &amp; Thermal Comfort Systematic Review" loading="lazy" width="1200" height="655"></div>
+        <div class="pcard__body">
+          <p data-copy="projects.54" class="pcard__course">ARC 514 · Sustainable Urbanism · KFUPM · Under Review</p>
+          <h3 data-copy="projects.55" class="pcard__title">A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments</h3>
+          <p data-copy="projects.56" class="pcard__result">1,011 records screened · ITAP framework · PRISMA 2020</p>
+          <div class="tags"><span data-copy="projects.57" class="tag">PRISMA 2020</span><span data-copy="projects.58" class="tag">Thermal Comfort</span><span data-copy="projects.59" class="tag">Soundscape</span></div>
+        </div>
+      </article>
+
+      <article class="pcard" data-modal="arch" tabindex="0" role="button" aria-label="Open: Twin Tower Complex">
+        <div class="pcard__media"><img src="/assets/img/hero-arch@1x.webp" alt="Twin Tower Complex — Net-Zero Mixed-Use Development" loading="lazy" width="1200" height="600"></div>
+        <div class="pcard__body">
+          <p data-copy="projects.60" class="pcard__course">B.Arch Thesis · BIT Mesra · 2021</p>
+          <h3 data-copy="projects.61" class="pcard__title">Twin Tower Complex — Net-Zero Mixed-Use Development</h3>
+          <p data-copy="projects.62" class="pcard__result">69 storeys · Net-zero energy · Diagrid structure · Full BIM</p>
+          <div class="tags"><span data-copy="projects.63" class="tag">Revit BIM</span><span data-copy="projects.64" class="tag">Net-Zero</span><span data-copy="projects.65" class="tag">Diagrid</span><span data-copy="projects.66" class="tag">AutoCAD</span></div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+
+  <div class="projects__hint mono" aria-hidden="true"><span data-copy="projects.67" id="projectsCount">01 / 07</span> — scroll to travel</div>
+</section>
+
+<!-- ══ ATLAS — WebGL anchor ═════════════════════════════════ -->
+<section id="atlas" class="atlas">
+  <canvas class="atlas__canvas" id="atlasCanvas" aria-hidden="true"></canvas>
+  <div class="atlas__body wrap">
+    <p class="eyebrow" data-reveal data-i18n="atlas.label">Thesis Coverage</p>
+    <h2 class="display sec-title" data-reveal data-split data-i18n="atlas.title">Five cities.<br><em>One framework.</em></h2>
+    <p class="lead" data-reveal data-i18n="atlas.lead">Riyadh, Jeddah, Dammam, Makkah, and NEOM — three climate zones, 17 million residents, one near-real-time heat monitoring pipeline.</p>
+    <ul class="atlas__list" id="atlasList">
+      <li data-copy="atlas.1" data-city="riyadh"><span class="atlas__n">01</span> Riyadh <em>Hot desert · BWh</em></li>
+      <li data-copy="atlas.2" data-city="jeddah"><span class="atlas__n">02</span> Jeddah <em>Coastal arid · BWh</em></li>
+      <li data-copy="atlas.3" data-city="dammam"><span class="atlas__n">03</span> Dammam <em>Gulf coastal · BWh</em></li>
+      <li data-copy="atlas.4" data-city="makkah"><span class="atlas__n">04</span> Makkah <em>Mountain arid · BWh</em></li>
+      <li data-copy="atlas.5" data-city="neom"><span class="atlas__n">05</span> NEOM <em>Red Sea · BWh/BSh</em></li>
+    </ul>
+  </div>
+  <p data-copy="atlas.6" class="atlas__fallback mono" id="atlasFallback" hidden>Interactive map unavailable on this device</p>
+</section>
+
+<!-- ══ PUBLICATIONS ═════════════════════════════════════════ -->
+<section id="publications" class="section">
+  <div class="wrap">
+    <p class="eyebrow" data-reveal data-i18n="pubs.label">Publications</p>
+    <h2 class="display sec-title" data-reveal data-split data-i18n="pubs.title">Research <em>Output</em></h2>
+    <p class="lead" data-reveal data-i18n="pubs.lead">Three papers produced in one M.Sc. year — building toward a peer-reviewed publication record for doctoral research.</p>
+
+    <ol class="pubs">
+      <li data-copy="publications.1" class="pub" data-reveal>
+        <span class="pub__n display">01</span>
+        <div class="pub__body">
+          <h3 class="pub__title">A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments</h3>
+          <p class="pub__meta">Shibli Afaq · Advisors: Dr. Yusuf A. Adenle &amp; Dr. Muhammad Aamir Basheer · 2025 · Target: Landscape and Urban Planning / Urban Climate</p>
+          <span class="pub__status pub__status--review">⏳ Under Review</span>
+          <p class="pub__abs">Systematic review of 22 articles (2005–2025) examining how soundscape design affects thermal comfort in hot-arid cities. Findings show soundscapes can reduce perceived heat stress and support psychological recovery through green and blue infrastructure, yielding evidence-based recommendations for walkable public spaces aligned with Vision 2030.</p>
+        </div>
+      </li>
+
+      <li data-copy="publications.2" class="pub" data-reveal>
+        <span class="pub__n display">02</span>
+        <div class="pub__body">
+          <h3 class="pub__title">GIS and Remote Sensing-Based Assessment of Urban Heat Island in the Dammam Metropolitan Area, Saudi Arabia</h3>
+          <p class="pub__meta">Shibli Afaq, Sultan Aldhafeeri · Supervisor: Dr. Baqer Al-Ramadan · 2026 · Target: Urban Climate / Sustainable Cities and Society</p>
+          <span class="pub__status pub__status--prep">✍️ Manuscript in Preparation</span>
+          <p class="pub__abs">Five-step GIS and remote sensing model assessing LST and heat vulnerability across the Dammam Metropolitan Area using Landsat 8/9, Sentinel-2, and WorldPop over a 500&nbsp;m fishnet (12,954 cells). NDBI is the strongest LST predictor (r&nbsp;=&nbsp;0.715). Composite HVI classified 92.6% of cells as High vulnerability, with the HVI hot spot 4.18× larger than temperature-only mapping, revealing planning priorities hidden by single-factor analysis.</p>
+        </div>
+      </li>
+
+      <li data-copy="publications.3" class="pub" data-reveal>
+        <span class="pub__n display">03</span>
+        <div class="pub__body">
+          <h3 class="pub__title">ITS-Based Congestion Management for Event Corridors in Arid Cities: A Case Study of the Aramco Stadium Corridor, Al Khobar</h3>
+          <p class="pub__meta">Shibli Afaq, H. Alnasser, H. Alghamdi, S. Aldhafeeri · Instructor: Dr. Muhammad Abdullah · 2026 · Target: Journal of Intelligent Transportation Systems / Transportation Research Part C</p>
+          <span class="pub__status pub__status--prep">✍️ Manuscript in Preparation</span>
+          <p class="pub__abs">Al Khobar's Aramco Stadium corridor (47,000-seat capacity) suffers 48.5% evening congestion, set to worsen before the 2034 FIFA World Cup. Four cumulative ITS alternatives were evaluated via weighted multi-criteria analysis, ranging from adaptive signal control to demand-management pricing. The optimal strategy projects 20–35% travel time reduction within a SAR 28–47M plan, piloting Vision 2030 smart mobility.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ══ SKILLS ═══════════════════════════════════════════════ -->
+<section id="skills" class="section section--raised">
+  <div class="wrap">
+    <p class="eyebrow" data-reveal data-i18n="skills.label">Skills</p>
+    <h2 class="display sec-title" data-reveal data-split data-i18n="skills.title">Tools &amp; <em>Methods</em></h2>
+
+    <!-- The physics field is built from the list below, then the list is
+         hidden. Keeping the list as the source means the full skill names stay
+         in the DOM for search, and the section still works with no JS or with
+         reduced motion, where the field never initialises. -->
+    <div class="skillfield" id="skillField" hidden>
+      <canvas class="skillfield__canvas" id="skillCanvas"></canvas>
+      <ul class="skillkey" id="skillKey" aria-hidden="true"></ul>
+      <p class="skillfield__hint" data-i18n="skills.hint">Push them around · click to scatter</p>
+    </div>
+
+    <div class="skills" id="skillList">
+      <div class="sgroup" data-reveal>
+        <h3 class="sgroup__t" data-i18n="skills.g1">Spatial &amp; GIS</h3>
+        <div class="tags">
+          <span data-copy="skills.1" class="tag tag--amber" data-ball="ArcGIS Pro">ArcGIS Pro 3.6</span><span data-copy="skills.2" class="tag tag--amber" data-ball="Earth Engine">Google Earth Engine</span><span data-copy="skills.3" class="tag tag--amber" data-ball="Kepler.gl">Kepler.gl (3D Analytics)</span><span data-copy="skills.4" class="tag tag--amber" data-ball="Landsat + Sentinel">Landsat 8/9 &amp; Sentinel-2</span><span data-copy="skills.5" class="tag tag--amber" data-ball="MODIS">MODIS (Daily Thermal)</span><span data-copy="skills.6" class="tag tag--amber" data-ball="NDVI / NDBI">NDVI / NDBI Extraction</span><span data-copy="skills.7" class="tag tag--amber" data-ball="WorldPop">WorldPop (100m Demographics)</span><span data-copy="skills.8" class="tag tag--amber" data-ball="Spatial Analysis">Spatial Analysis</span><span data-copy="skills.9" class="tag tag--amber" data-ball="deck.gl">deck.gl (WebGL Layers)</span>
+        </div>
+      </div>
+      <div class="sgroup" data-reveal>
+        <h3 class="sgroup__t" data-i18n="skills.g2">Data Pipelines &amp; Analytics</h3>
+        <div class="tags">
+          <span data-copy="skills.10" class="tag" data-ball="Python">Python (pandas / scikit-learn)</span><span data-copy="skills.11" class="tag" data-ball="Kafka">Apache Kafka (3-Broker Cluster)</span><span data-copy="skills.12" class="tag" data-ball="PySpark">PySpark Structured Streaming</span><span data-copy="skills.13" class="tag" data-ball="PostGIS">PostgreSQL + PostGIS (Spatial SQL)</span><span data-copy="skills.14" class="tag" data-ball="Prophet">Facebook Prophet Time-Series</span><span data-copy="skills.15" class="tag" data-ball="Streamlit">Streamlit &amp; Plotly Dashboards</span><span data-copy="skills.16" class="tag" data-ball="FastAPI">FastAPI Microservices</span><span data-copy="skills.17" class="tag" data-ball="MQTT">MQTT (Mosquitto Bridge)</span><span data-copy="skills.18" class="tag" data-ball="Docker">Docker &amp; Docker Compose</span><span data-copy="skills.19" class="tag" data-ball="GitHub">GitHub Version Control</span><span data-copy="skills.20" class="tag" data-ball="React">React (Front-End UI)</span><span data-copy="skills.21" class="tag" data-ball="Claude Code">Claude Code (AI Pair Programming)</span>
+        </div>
+      </div>
+      <div class="sgroup" data-reveal>
+        <h3 class="sgroup__t" data-i18n="skills.g3">Architecture &amp; Design</h3>
+        <div class="tags">
+          <span data-copy="skills.22" class="tag" data-ball="AutoCAD">AutoCAD (2D Documentation)</span><span data-copy="skills.23" class="tag" data-ball="Revit">Revit (BIM)</span><span data-copy="skills.24" class="tag" data-ball="Rhino + SketchUp">Rhino &amp; SketchUp 3D</span><span data-copy="skills.25" class="tag" data-ball="V-Ray + Lumion">V-Ray &amp; Lumion Visualization</span><span data-copy="skills.26" class="tag" data-ball="Photoshop">Adobe Photoshop</span><span data-copy="skills.27" class="tag" data-ball="InDesign">Adobe InDesign</span><span data-copy="skills.28" class="tag" data-ball="Premiere Pro">Adobe Premiere Pro</span><span data-copy="skills.29" class="tag" data-ball="After Effects">Adobe After Effects</span>
+        </div>
+      </div>
+      <div class="sgroup" data-reveal>
+        <h3 class="sgroup__t" data-i18n="skills.g4">Research Methods</h3>
+        <div class="tags">
+          <span data-copy="skills.30" class="tag" data-ball="PRISMA 2020">PRISMA 2020 Protocol</span><span data-copy="skills.31" class="tag" data-ball="Design Science">Design Science Framework</span><span data-copy="skills.32" class="tag" data-ball="Thematic Analysis">Thematic Content Analysis</span><span data-copy="skills.33" class="tag" data-ball="Regression">Pearson Correlation &amp; Regression</span>
+        </div>
+      </div>
+      <!-- Green — the one group off the thermal ramp, because it is not
+           research work. A full category like the other four. -->
+      <div class="sgroup" data-reveal>
+        <h3 class="sgroup__t" data-i18n="skills.g5">Creative &amp; Personal</h3>
+        <div class="tags">
+          <span data-copy="skills.34" class="tag" data-ball="Photography">Photography</span><span data-copy="skills.35" class="tag" data-ball="Videography">Videography</span><span data-copy="skills.36" class="tag" data-ball="Cinematography">Cinematography</span><span data-copy="skills.37" class="tag" data-ball="Storytelling">Storytelling</span><span data-copy="skills.38" class="tag" data-ball="Sketching">Sketching</span><span data-copy="skills.39" class="tag" data-ball="Travelling">Travelling</span><span data-copy="skills.40" class="tag" data-ball="Relaxing">Relaxing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ BACKGROUND ═══════════════════════════════════════════ -->
+<section id="background" class="section">
+  <div class="wrap">
+    <p class="eyebrow" data-reveal data-i18n="bg.label">Background</p>
+    <h2 class="display sec-title" data-reveal data-split data-i18n="bg.title">Experience &amp; <em>Education</em></h2>
+  </div>
+
+  <!-- The pixel-art overworld. Mounted by src/modules/experience.js, which
+       hides the timeline below and takes the section over. It stays hidden with
+       no JS, under prefers-reduced-motion, below 900px, and if any sheet fails
+       to load — in every one of those cases the <ol> below IS the section. -->
+  <!-- The bleed lives on the wrapper, NOT on #journeyStage. ScrollTrigger reads
+       the pinned element's width before it wraps it in a pin-spacer and moves
+       the margin there, so a negative margin on the stage itself gets recorded
+       pre-bleed and pins it 144px narrow inside a full-width spacer. -->
+  <div class="journey-bleed">
+    <div class="journey" id="journeyStage" hidden>
+      <canvas class="journey__canvas" id="journeyCanvas" aria-hidden="true"></canvas>
+      <div class="journey__scrim" aria-hidden="true"></div>
+      <div class="journey__cards" data-cards></div>
+      <nav class="journey__rail" id="journeyRail" aria-label="Chapters"></nav>
+      <!-- data-i18n sits on the span, not the <p>: the engine replaces the
+           tagged element's innerHTML, so a chip styled on the <p> would need the
+           text to be its only child. The span is the chip. -->
+      <p data-copy="background.1" class="journey__hint"><span data-i18n="bg.hint">Keep scrolling — he walks the map</span></p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- data-stop links each entry to a stop on the map: the arrival cards are
+         built from these elements, so the copy has exactly one source and the
+         i18n engine translates both views at once. .tli__note is the condensed
+         version sized for a card beside a building; it never shows in the list. -->
+    <ol class="timeline" id="experienceList">
+      <li data-copy="background.2" class="tli" data-reveal data-stop="kfupm">
+        <p class="tli__period">Aug 2025 – Aug 2026 (Expected)</p>
+        <h3 class="tli__role" data-i18n="bg.role.kfupm">Master of Science in Smart &amp; Sustainable Cities</h3>
+        <p class="tli__org">King Fahd University of Petroleum &amp; Minerals (KFUPM), Dhahran, KSA</p>
+        <p class="tli__desc"><strong class="tli__stat">Cumulative GPA: 4.0/4.0 · Specialisation in Urban Informatics &amp; Sustainability</strong> Thesis: <em class="serif">Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation</em>. Coursework: Big Data Analytics, Smart City Systems &amp; IoT, GIS &amp; Spatial Analysis, Environmental Economics, Urban Informatics, Circular Economy.</p>
+        <p class="tli__note" data-i18n="bg.note.kfupm" hidden><strong class="tli__stat">GPA 4.0/4.0 · Specialisation in Urban Informatics &amp; Sustainability</strong> Thesis: <em class="serif">Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation</em>. Coursework: Big Data Analytics, Smart City Systems &amp; IoT, GIS &amp; Spatial Analysis, Environmental Economics, Urban Informatics, Circular Economy.</p>
+        <p class="tli__says" data-i18n="bg.says.kfupm" hidden>I decided to pursue an M.Sc in Smart and Sustainable Cities at KFUPM, Dhahran.</p>
+        <span class="tli__badge">GPA 4.0 / 4.0</span>
+      </li>
+
+      <li data-copy="background.3" class="tli" data-reveal data-stop="metarch2">
+        <p class="tli__period">Mar 2022 – Aug 2025</p>
+        <h3 class="tli__role" data-i18n="bg.role.metarch2">Project Architect</h3>
+        <p class="tli__org">Metarch Studios · Ranchi, India</p>
+        <p class="tli__desc">Led the full project lifecycle for a $720K commercial, educational, and residential portfolio with 100% on-time and on-budget delivery. Managed multi-disciplinary teams across 4 concurrent projects, reducing construction change orders by 8% and coordination delays by 10%. Boosted team drawing delivery speed by 15% through workflow standardisation and pioneered BIM/3D visualisation pipelines, increasing client satisfaction by 20%.</p>
+        <p class="tli__note" data-i18n="bg.note.metarch2" hidden>Led the full project lifecycle for a $720K commercial, educational, and residential portfolio with 100% on-time and on-budget delivery. Managed multi-disciplinary teams across 4 concurrent projects, reducing construction change orders by 8% and coordination delays by 10%. Boosted team drawing delivery speed by 15% through workflow standardisation and pioneered BIM/3D visualisation pipelines, increasing client satisfaction by 20%.</p>
+        <p class="tli__says" data-i18n="bg.says.metarch2" hidden>I rejoined Metarch Studios, this time leading every project.</p>
+      </li>
+
+      <li data-copy="background.4" class="tli" data-reveal data-stop="medicfibers">
+        <p class="tli__period">May 2021 – Apr 2022</p>
+        <h3 class="tli__role" data-i18n="bg.role.medicfibers">Graphic Designer</h3>
+        <p class="tli__org">Medicfibers · New Delhi, India</p>
+        <p class="tli__desc">Crafted strategic investment pitch decks and visual brand assets supporting capital funding campaigns. Developed and executed a comprehensive social media strategy expanding online audience engagement by 3× and increasing overall brand visibility by 40%.</p>
+        <p class="tli__note" data-i18n="bg.note.medicfibers" hidden>Crafted strategic investment pitch decks and visual brand assets supporting capital funding campaigns. Developed and executed a comprehensive social media strategy expanding online audience engagement by 3× and increasing overall brand visibility by 40%.</p>
+        <p class="tli__says" data-i18n="bg.says.medicfibers" hidden>I joined this office for a detour into design because of the pandemic.</p>
+      </li>
+
+      <li data-copy="background.5" class="tli" data-reveal data-stop="jaiswal">
+        <p class="tli__period">Jan 2021 – May 2021</p>
+        <h3 class="tli__role" data-i18n="bg.role.intern">Architectural Intern</h3>
+        <p class="tli__org">Jaiswal &amp; Associates · New Delhi, India</p>
+        <p class="tli__desc">Produced comprehensive 3D models, renders, floor plans, sections, & elevations for 10+ diverse projects (residences, group housing, factories) using industry-standard software. Developed  a high-profile kiosk for MS Dhoni’s organic farm business, adhering to branding guidelines and exceeding client expectations.</p>
+        <p class="tli__note" data-i18n="bg.note.jaiswal" hidden>Produced comprehensive 3D models, renders, floor plans, sections, & elevations for 10+ diverse projects (residences, group housing, factories) using industry-standard software. Developed  a high-profile kiosk for MS Dhoni’s organic farm business, adhering to branding guidelines and exceeding client expectations.</p>
+        <p class="tli__says" data-i18n="bg.says.jaiswal" hidden>I went to Delhi for a five-month internship, and I learned a lot there.</p>
+      </li>
+
+      <li data-copy="background.6" class="tli" data-reveal data-stop="metarch1">
+        <p class="tli__period">May 2019 – Jun 2019</p>
+        <h3 class="tli__role" data-i18n="bg.role.intern">Architectural Intern</h3>
+        <p class="tli__org">Metarch Studios · Ranchi, India</p>
+        <p class="tli__desc">Gained professional studio experience producing precise working drawings and 3D models/renderings for interior and exterior design projects.</p>
+        <p class="tli__note" data-i18n="bg.note.metarch1" hidden>Gained professional studio experience producing precise working drawings and 3D models/renderings for interior and exterior design projects.</p>
+        <p class="tli__says" data-i18n="bg.says.metarch1" hidden>The second summer internship in my favorite office.</p>
+      </li>
+
+      <li data-copy="background.7" class="tli" data-reveal data-stop="chadda">
+        <p class="tli__period">May 2018 – Jun 2018</p>
+        <h3 class="tli__role" data-i18n="bg.role.intern">Architectural Intern</h3>
+        <p class="tli__org">Chadda and Associates · Ranchi, India</p>
+        <p class="tli__desc">Contributed directly to real-world infrastructure projects by drafting floor plans, building sections, elevations, and structural drawings for municipal permitting and private development initiatives.</p>
+        <p class="tli__note" data-i18n="bg.note.chadda" hidden>Contributed directly to real-world infrastructure projects by drafting floor plans, building sections, elevations, and structural drawings for municipal permitting and private development initiatives.</p>
+        <p class="tli__says" data-i18n="bg.says.chadda" hidden>My first real office; it was hard learning the professional dynamics.</p>
+      </li>
+
+      <li data-copy="background.8" class="tli" data-reveal data-stop="barch">
+        <p class="tli__period">Jul 2016 – Jun 2021</p>
+        <h3 class="tli__role" data-i18n="bg.role.barch">Bachelor of Architecture (B.Arch.) — First Class with Distinction</h3>
+        <p class="tli__org">Birla Institute of Technology (BIT), Mesra · Ranchi, India · CGPA: 7.61/10</p>
+        <p class="tli__desc"><strong class="tli__stat">Cumulative GPA: 7.61/10.0 · First Class with Distinction</strong> Thesis: <em class="serif">Twin Tower Complex – Mixed-Use Net-Zero Energy High-Rise Development</em>. Leadership: Vice President of the Student Society of Architecture (orchestrated events for 300+ members and led the Vajra Pavilion build); Executive Member of the National Service Scheme (managed welfare initiatives for 10 villages). Awards: 1st Place Interior Design Trophy (Zonasa 2019) · 2nd Place Café Design (NASA 2017) · National Top 66 Finalist (ANDC Embark 2019) · Shortlisted Main Design Trophy (Zonasa 2018).</p>
+        <p class="tli__note" data-i18n="bg.note.barch" hidden><strong class="tli__stat">Cumulative GPA: 7.61/10.0 · First Class with Distinction</strong> Awards: 1st Place Interior Design Trophy (Zonasa 2019); 2nd Place Café Design (NASA 2017); Shortlisted Main Design Trophy (Zonasa 2018); National Top 66: Embark Competition (ANDC 2019).</p>
+        <p class="tli__says" data-i18n="bg.says.barch" hidden>I spent five years here and learned the basics of design.</p>
+        <span class="tli__badge">First Class with Distinction</span>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ══ CONTACT ══════════════════════════════════════════════ -->
+<section id="contact" class="section contact">
+  <!-- The portrait moved here from the hero. Planet at the top of the page,
+       person at the bottom — the page opens on the subject and closes on him. -->
+  <div class="contact__media" aria-hidden="true">
+    <img src="/assets/img/herobg.webp" alt="" loading="lazy" width="1456" height="816">
+    <div class="contact__scrim"></div>
+  </div>
+
+  <div class="wrap contact__inner">
+    <p class="eyebrow" data-reveal data-i18n="contact.label">Contact</p>
+    <h2 class="display sec-title" data-reveal data-split data-i18n="contact.title">Let’s talk <em>research</em></h2>
+    <p class="lead contact__lead" data-reveal data-i18n="contact.lead">I’m actively looking for <strong>fully funded PhD positions</strong> in urban climate informatics, smart city analytics, and GIS-based climate adaptation, particularly in the UK, EU, North America, and the GCC. If you’re working on heat resilience, digital twins, or spatial data for sustainable cities, I’d love to connect. Also open to smart city research roles and GIS consultancy in KSA.</p>
+
+    <a data-copy="contact.1" href="mailto:shibliafaq4@gmail.com" class="contact__email display" data-reveal>shibliafaq4@gmail.com</a>
+
+    <form class="cform" id="cform" data-reveal novalidate>
+      <p class="cform__label" data-i18n="contact.form">Send a message</p>
+      <input id="cf-name" name="name" type="text" placeholder="Your name" autocomplete="name" required data-i18n-attr="placeholder:contact.name">
+      <input id="cf-email" name="email" type="email" placeholder="Email address" autocomplete="email" required data-i18n-attr="placeholder:contact.email">
+      <textarea id="cf-msg" name="message" rows="4" placeholder="PhD enquiries, collaboration ideas, or just hello" required data-i18n-attr="placeholder:contact.msg"></textarea>
+      <button data-copy="contact.2" type="submit" class="btn btn--solid cform__send" id="cf-send"><span data-i18n="contact.send">Send message</span> <span class="btn__arrow">→</span></button>
+      <p class="cform__ok" id="cf-ok" hidden data-i18n="contact.ok">✓ Message sent — thank you.</p>
+    </form>
+
+    <div class="contact__links" data-reveal>
+      <a data-copy="contact.3" href="https://www.linkedin.com/in/shibliafaq" target="_blank" rel="noopener">LinkedIn <span class="btn__arrow">↗</span></a>
+      <a data-copy="contact.4" href="https://github.com/shibliafaq" target="_blank" rel="noopener">GitHub <span class="btn__arrow">↗</span></a>
+      <a data-copy="contact.5" href="https://www.instagram.com/shibli_afaq" target="_blank" rel="noopener">Instagram <span class="btn__arrow">↗</span></a>
+      <a data-copy="contact.6" href="https://shibliafaq-iot-dashboard.streamlit.app" target="_blank" rel="noopener">Live Demo <span class="btn__arrow">↗</span></a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <span data-copy="_nav.20">© 2026 Shibli Afaq</span>
+  <span data-copy="_nav.21">KFUPM · M.Sc. Smart &amp; Sustainable Cities</span>
+  <span data-copy="_nav.22">shibliafaq.vercel.app</span>
+  <button type="button" id="archOpen" class="footer__arch" data-i18n="footer.arch">🏛 Architecture Portfolio</button>
+  <a href="/assets/doc/Shibli_Afaq_Resume.pdf" download class="footer__resume" data-i18n="footer.resume">⇩ Download Resume</a>
+  <span data-copy="_nav.23">Built with Vite · GSAP · three.js</span>
+  <!-- Every pack whose art actually ships in the Experience map. Anokolisa's
+       and the Adventurer's terms both say credit is appreciated; the other two
+       ask for nothing, and are credited anyway. -->
+  <span data-copy="_nav.24" class="footer__credits"><span data-i18n="footer.art">Pixel art</span>: Cute&nbsp;Fantasy (Kenmi) · Pixel&nbsp;Crawler (Anokolisa) · Mystic&nbsp;Woods (Game&nbsp;Endeavor) · Pixel&nbsp;16 · FREE_Adventurer · 2D&nbsp;RPG&nbsp;Desert (CraftPix)</span>
+</footer>
+
+<!-- ══ PROJECT MODAL ════════════════════════════════════════ -->
+<div class="modal" id="modal" hidden>
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button data-copy="_nav.25" class="modal__close" data-close aria-label="Close">✕</button>
+    <!-- data-lenis-prevent: Lenis preventDefaults wheel events document-wide,
+         which would stop this panel scrolling natively even while paused. -->
+    <div class="modal__inner" id="modalInner" data-lenis-prevent></div>
+  </div>
+</div>
+
+<!-- ══ ARCHITECTURE PORTFOLIO ═══════════════════════════════ -->
+<div class="arch" id="archModal" hidden>
+  <button data-copy="_nav.26" class="arch__close" id="archClose" aria-label="Close portfolio">✕</button>
+  <div class="arch__stage" id="archStage"></div>
+  <div class="arch__bar">
+    <button data-copy="_nav.27" class="arch__nav" id="archPrev" aria-label="Previous">←</button>
+    <span data-copy="_nav.28" class="arch__count mono"><b id="archCur">1</b> / <span id="archTot">18</span></span>
+    <button data-copy="_nav.29" class="arch__nav" id="archNext" aria-label="Next">→</button>
+  </div>
+  <div class="arch__dots" id="archDots"></div>
+</div>
+
+<div class="lightbox" id="lightbox" hidden>
+  <img id="lightboxImg" src="" alt="">
+  <span data-copy="_nav.30" class="lightbox__hint mono">Click anywhere to close</span>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

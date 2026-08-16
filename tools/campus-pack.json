@@ -1,0 +1,48 @@
+{
+  "_comment": [
+    "The two real milestone buildings the user drew/commissioned and added on",
+    "2026-08-15: BIT Mesra and KFUPM. These are the places the Experience map is",
+    "actually about, so unlike every other pack here they are not stand-ins.",
+    "",
+    "SAME PROBLEM AS THE DESERT PACK, DIFFERENT CAUSE. They look like pixel art",
+    "and are not: BIT Mesra is 2400x1792 with 79,965 distinct colours, KFUPM is",
+    "3776x1120 with 46,547, and a 1:1 crop shows smooth gradients across a wall",
+    "with no pixel grid anywhere. Colour-run length is 1.26 and 1.28 against a",
+    "valley band of 2.0-4.1. They go through tools/desert-pixelate.py for exactly",
+    "the reasons its docstring gives.",
+    "",
+    "ONE DIFFERENCE: THERE IS NO DROP SHADOW. The semi-transparent alpha band on",
+    "these two has a mean luma of 74 and 85 — that is edge anti-aliasing, not a",
+    "shadow (the desert pack's band measured 2-16, i.e. black). SHADOW_CUT still",
+    "does the right thing here: it hardens the anti-aliased edge and trims to the",
+    "content box, which is what pixel art wants.",
+    "",
+    "SIZES. Both are landmark-scale, pitched against instAcademic (245x107), the",
+    "largest thing already on the map. Widths are set from how much of the 44-tile",
+    "map each should command and heights follow the source aspect ratio, so",
+    "neither is squashed:",
+    "  BIT Mesra  2280x1314 content, aspect 1.74 -> 256x148  (16 x 9.3 tiles)",
+    "  KFUPM      3776x1120 content, aspect 3.37 -> 320x95   (20 x 5.9 tiles)",
+    "KFUPM is deliberately the widest thing on the map. The real campus reads as a",
+    "long low arcade and shrinking it to house scale would lose the one silhouette",
+    "that identifies it.",
+    "",
+    "NO flatten. These are architectural: window mullions, arcade columns and",
+    "stair treads are one or two pixels wide at these sizes and a median filter",
+    "eats them. 20 colours holds the masonry without smearing the detail.",
+    "",
+    "LICENCE: the user's own assets. Nothing to resolve, unlike the packs in",
+    "HANDOFF §9.10.",
+    "",
+    "Regenerate: python tools/desert-pixelate.py --manifest=tools/campus-pack.json --sheet --compare"
+  ],
+
+  "srcDir": "assets/tilesets/incoming/_x",
+  "outDir": "public/assets/pixel/campus",
+  "colours": 20,
+
+  "sprites": [
+    { "name": "bitMesra", "src": "BIT MEsra building", "w": 256, "h": 148, "colours": 20 },
+    { "name": "kfupm",    "src": "KFUPMBuilding",      "w": 320, "h": 95,  "colours": 20 }
+  ]
+}

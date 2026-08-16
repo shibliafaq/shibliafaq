@@ -1,0 +1,11 @@
+{
+  "cell": [
+    256,
+    580
+  ],
+  "cols": 8,
+  "rows": 4,
+  "frames": 32,
+  "anchor": "bottom-centre",
+  "note": "feet sit on the cell's bottom edge; x centred"
+}

@@ -1,0 +1,130 @@
+/* ============================================================
+   DESIGN TOKENS
+   v1 ran four co-equal accents (amber / cyan / violet / green),
+   which is what made it read as a dashboard. v2 commits to one
+   accent — amber, the heat colour the research is actually about —
+   over a warm-neutral ground, with cyan reserved for live states.
+   ============================================================ */
+
+:root {
+  /* ---- ground ------------------------------------------------
+     Neutral-warm black rather than v1's blue-black (#060810).
+     Amber sits on neutral far better than it sits on navy.      */
+  --ink:        #09090b;
+  --ink-1:      #0e0e11;
+  --ink-2:      #141418;
+  --ink-3:      #1c1c21;
+  --ink-card:   #101014;
+
+  /* ---- accent ------------------------------------------------
+     amber -> ember is the same ramp as a thermal raster, which
+     is why it belongs on this particular site.                  */
+  --amber:      #f59e0b;
+  --amber-hi:   #fbbf24;
+  --ember:      #ff5f1f;
+  --amber-06:   rgba(245, 158, 11, .06);
+  --amber-12:   rgba(245, 158, 11, .12);
+  --amber-24:   rgba(245, 158, 11, .24);
+  --amber-40:   rgba(245, 158, 11, .40);
+  --heat:       linear-gradient(100deg, var(--ember), var(--amber) 55%, var(--amber-hi));
+
+  /* ---- secondary ---------------------------------------------
+     Cyan is now rare on purpose: live/streaming states only.    */
+  --cyan:       #22d3ee;
+  --cyan-12:    rgba(34, 211, 238, .12);
+  --cyan-24:    rgba(34, 211, 238, .24);
+
+  /* ---- text --------------------------------------------------
+     Neutral greys, not blue-tinted, so nothing competes.        */
+  /* Nudged up across the board: Jost's strokes are lighter than Plex's at the
+     same size, so the old greys read as washed out on the dark ground. */
+  --t:          #fafafa;
+  --t-1:        #dcdce0;
+  --t-2:        #9a9aa3;
+  --t-3:        #6d6d77;
+  --t-4:        #45454e;
+
+  /* ---- lines -------------------------------------------------- */
+  --line:       rgba(255, 255, 255, .07);
+  --line-2:     rgba(255, 255, 255, .13);
+  --line-3:     rgba(255, 255, 255, .22);
+
+  /* ---- type --------------------------------------------------
+     v1 capped section headings at 2.85rem. The single biggest
+     lever on "cinematic" is letting display type get very large
+     and letting it bleed past the measure.                      */
+  /* One family, four roles. The tokens stay separate so any single role can be
+     reassigned later without touching the ~50 places that consume them.
+     Because there is no monospace or serif in the system any more, the
+     distinction between roles now comes from weight, tracking and case —
+     see --ls-label and the .eyebrow/.mono treatments. */
+  --f-display:  "Jost", ui-sans-serif, system-ui, sans-serif;
+  --f-body:     "Jost", ui-sans-serif, system-ui, sans-serif;
+  --f-mono:     "Jost", ui-sans-serif, system-ui, sans-serif;
+  --f-serif:    "Jost", ui-sans-serif, system-ui, sans-serif;
+
+  --fs-hero:    clamp(4.5rem, 10.5vw, 15rem);
+  --fs-h2:      clamp(2.75rem, 7.5vw, 7rem);
+  --fs-h3:      clamp(1.6rem, 3.2vw, 2.75rem);
+  --fs-h4:      clamp(1.1rem, 1.7vw, 1.45rem);
+  /* Jost has a noticeably smaller x-height than IBM Plex Sans, so everything
+     below display size is set a step larger than it was to read the same. */
+  --fs-lead:    clamp(1.1rem, 1.6vw, 1.45rem);
+  --fs-body:    clamp(1rem, 1.1vw, 1.12rem);
+  --fs-sm:      .9rem;
+  --fs-xs:      .79rem;
+  --fs-label:   .73rem;
+
+  --lh-display: .92;
+  --lh-tight:   1.14;
+  --lh-body:    1.68;
+
+  /* Jost is geometric: round, wide counters. The tight tracking that suited
+     Syne collides the O/G/C bowls here, so display tracking is eased off and
+     label tracking is opened up to carry the "instrumentation" read that the
+     monospace used to do on its own. */
+  --ls-display: -.028em;
+  --ls-label:   .2em;
+
+  /* ---- rhythm ------------------------------------------------
+     v1 used a flat 88px between sections. v2 breathes: sections
+     are measured in viewport height, not pixels.                */
+  --pad-x:      clamp(1.25rem, 5vw, 6rem);
+  --sec-y:      clamp(7rem, 17vh, 13rem);
+  --gap:        clamp(1.5rem, 3vw, 3.5rem);
+  --measure:    62ch;
+  --max:        1560px;
+
+  /* ---- shape -------------------------------------------------- */
+  --r-sm:       8px;
+  --r:          14px;
+  --r-lg:       22px;
+  --r-xl:       32px;
+  --r-pill:     999px;
+
+  /* ---- motion ------------------------------------------------
+     Long, slow-tailed eases. Short snappy eases read as "UI";
+     long ones read as "film".                                   */
+  --e-out:      cubic-bezier(.16, 1, .3, 1);
+  --e-in-out:   cubic-bezier(.76, 0, .24, 1);
+  --e-soft:     cubic-bezier(.33, 1, .68, 1);
+  --d-fast:     .35s;
+  --d:          .7s;
+  --d-slow:     1.2s;
+
+  --z-nav:      200;
+  --z-modal:    900;
+  --z-cursor:   9990;
+  --z-grain:    9999;
+}
+
+/* Anyone who has asked their OS to calm down gets a static site
+   that still reads correctly — every transform lands at its end
+   state instead of animating there. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --d-fast: .01ms;
+    --d:      .01ms;
+    --d-slow: .01ms;
+  }
+}

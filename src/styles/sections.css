@@ -1,0 +1,1472 @@
+/* ============================================================
+   ABOUT
+   ============================================================ */
+
+.about__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr);
+  gap: clamp(2.5rem, 6vw, 7rem);
+  align-items: start;
+}
+
+.pull {
+  margin: 2.5rem 0;
+  padding-left: clamp(1.25rem, 3vw, 2.25rem);
+  border-left: 2px solid var(--amber);
+  font-family: var(--f-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.25rem, 2.4vw, 1.95rem);
+  line-height: 1.42;
+  color: var(--t);
+  max-width: 30ch;
+}
+
+.about__cards { display: grid; gap: .75rem; }
+
+.acard {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1.15rem 1.35rem;
+  background: var(--ink-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  transition: border-color var(--d-fast) var(--e-out),
+              transform var(--d-fast) var(--e-out);
+}
+
+.acard:hover { border-color: var(--amber-24); transform: translateX(4px); }
+
+.acard__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px; height: 38px;
+  border-radius: var(--r-sm);
+  background: var(--amber-06);
+  font-size: 1.05rem;
+}
+
+.acard__t { font-size: var(--fs-sm); font-weight: 600; color: var(--t); line-height: 1.4; }
+.acard__s { font-family: var(--f-mono); font-size: var(--fs-label); color: var(--t-3); margin-top: .3rem; letter-spacing: .04em; }
+
+/* ============================================================
+   RESEARCH DIRECTION
+   ============================================================ */
+
+.direction__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(2.5rem, 6vw, 6rem);
+  align-items: start;
+}
+
+.dcards { display: grid; gap: 1rem; }
+
+.dcard {
+  padding: 1.5rem 1.75rem;
+  background: var(--ink-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.dcard::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--heat);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform var(--d) var(--e-out);
+}
+
+.dcard:hover::before { transform: scaleY(1); }
+
+.dcard__label {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: .65rem;
+}
+
+.dcard__t { font-size: var(--fs-h4); font-weight: 600; color: var(--t); line-height: 1.35; }
+.dcard__s { font-size: var(--fs-sm); color: var(--t-3); margin-top: .5rem; line-height: 1.55; }
+
+/* ============================================================
+   THERMAL — pinned three-city sequence
+   ============================================================ */
+
+.thermal {
+  position: relative;
+  /* 300vh of scroll drives one sticky viewport. */
+  height: 320vh;
+  background: var(--ink);
+}
+
+.thermal__sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.thermal__stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.thermal__video {
+  position: absolute;
+  width: min(118%, 1500px);
+  max-width: none;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity var(--d-slow) var(--e-out), transform var(--d-slow) var(--e-out);
+  will-change: opacity, transform;
+  /* The clip is 490x250, so letterboxing it leaves a hard edge against the
+     black. Feathering beats scaling it up to cover — these are 3D hexbins and
+     they need to stay legible. */
+  -webkit-mask-image: radial-gradient(78% 88% at 50% 50%, #000 48%, transparent 96%);
+  mask-image: radial-gradient(78% 88% at 50% 50%, #000 48%, transparent 96%);
+}
+
+.thermal__video.is-active { opacity: 1; transform: scale(1); }
+
+.thermal__vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(76% 66% at 50% 45%, transparent, rgba(9, 9, 11, .58) 96%),
+    linear-gradient(to top, var(--ink) 2%, transparent 26%),
+    linear-gradient(to bottom, var(--ink) 1%, transparent 20%);
+  pointer-events: none;
+}
+
+.thermal__hud {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+  pointer-events: none;
+}
+
+.thermal__hud > * { pointer-events: auto; }
+
+.thermal__title {
+  font-size: clamp(2.25rem, 6vw, 5.5rem);
+  margin: .75rem 0 1rem;
+  text-shadow: 0 6px 60px rgba(9, 9, 11, .85);
+}
+
+.thermal__caption {
+  max-width: 42ch;
+  color: var(--t-1);
+  font-size: var(--fs-body);
+  text-shadow: 0 2px 24px rgba(9, 9, 11, .9);
+}
+
+.thermal__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 2rem 0 1.75rem;
+  font-family: var(--f-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: .06em;
+}
+
+.thermal__legend li {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  color: var(--t-3);
+  transition: color var(--d) var(--e-out);
+}
+
+.thermal__legend li.is-active { color: var(--t); }
+.thermal__legend em { font-style: normal; color: var(--t-4); }
+.thermal__legend li.is-active em { color: var(--t-2); }
+.thermal__legend b { color: var(--amber); font-weight: 500; }
+
+.thermal__dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--c);
+  opacity: .3;
+  transition: opacity var(--d) var(--e-out), box-shadow var(--d) var(--e-out);
+}
+
+.thermal__legend li.is-active .thermal__dot {
+  opacity: 1;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 18%, transparent);
+}
+
+/* ============================================================
+   PROJECTS — pinned horizontal travel
+   ============================================================ */
+
+.projects { position: relative; background: var(--ink); }
+
+.projects__intro { padding: var(--sec-y) var(--pad-x) clamp(2rem, 5vh, 4rem); }
+
+.projects__pin {
+  position: relative;
+  height: 100svh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.projects__track {
+  display: flex;
+  /* Centre, don't stretch — otherwise every card inherits the height of the
+     tallest one and the short ones fill with dead space. */
+  align-items: center;
+  gap: clamp(1.25rem, 2.5vw, 2.5rem);
+  padding-inline: var(--pad-x);
+  will-change: transform;
+}
+
+.pcard {
+  flex: none;
+  width: min(78vw, 460px);
+  max-height: 86svh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ink-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--d) var(--e-out), transform var(--d) var(--e-out);
+}
+
+/* The featured card carries far more copy than the rest. Laid out as a column
+   it is taller than the pinned viewport, so above the swipe breakpoint it runs
+   as a split instead: image on the left, everything else on the right. */
+.pcard--wide {
+  width: min(94vw, 1180px);
+  flex-direction: row;
+}
+
+.pcard--wide .pcard__media {
+  width: 44%;
+  flex: none;
+  aspect-ratio: auto;
+  align-self: stretch;
+}
+
+/* Scrollable only as a safety valve on short viewports. No overscroll
+   containment — that would swallow the wheel and stall the pinned section. */
+.pcard--wide .pcard__body {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.pcard:hover, .pcard:focus-visible { border-color: var(--amber-24); transform: translateY(-6px); }
+
+/* Image dominant, text as caption — the inversion of v1's cards. */
+.pcard__media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--ink-2);
+}
+
+.pcard--wide .pcard__media { aspect-ratio: 21 / 9; }
+
+.pcard__media img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform var(--d-slow) var(--e-out), filter var(--d) var(--e-out);
+  filter: saturate(.85) contrast(1.04);
+}
+
+.pcard:hover .pcard__media img { transform: scale(1.05); filter: saturate(1) contrast(1.04); }
+
+.pcard__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(9, 9, 11, .75), transparent 45%);
+}
+
+.pcard__body { padding: 1.5rem 1.6rem 1.75rem; display: flex; flex-direction: column; gap: .7rem; }
+.pcard--wide .pcard__body { padding: 2rem 2.25rem 2.25rem; }
+
+.pcard__badges { display: flex; flex-wrap: wrap; gap: .4rem; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .28rem .7rem;
+  border: 1px solid var(--amber-24);
+  border-radius: var(--r-pill);
+  background: var(--amber-06);
+  font-family: var(--f-mono);
+  font-size: .62rem;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.badge--muted { color: var(--t-3); border-color: var(--line-2); background: transparent; }
+.badge--dev { color: var(--ember); border-color: rgba(255, 95, 31, .3); background: rgba(255, 95, 31, .08); }
+
+.badge__dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 2s var(--e-soft) infinite;
+}
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+
+.pcard__course {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .12rem .45rem;
+  border-radius: var(--r-pill);
+  background: var(--cyan-12);
+  color: var(--cyan);
+  font-size: .58rem;
+}
+
+.live::before {
+  content: "";
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 1.6s var(--e-soft) infinite;
+}
+
+.pcard__title {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(1.05rem, 1.5vw, 1.35rem);
+  letter-spacing: -.02em;
+  line-height: 1.24;
+  color: var(--t);
+}
+
+.pcard--wide .pcard__title { font-size: clamp(1.4rem, 2.4vw, 2.1rem); }
+
+.pcard__desc { font-size: var(--fs-sm); color: var(--t-2); line-height: 1.62; }
+.pcard__desc strong { color: var(--t-1); font-weight: 600; }
+
+.pcard__result {
+  font-family: var(--f-mono);
+  font-size: .7rem;
+  line-height: 1.6;
+  color: var(--amber);
+  letter-spacing: .02em;
+}
+
+.pcard__metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  padding: 1.15rem 0;
+  border-block: 1px solid var(--line);
+}
+
+.m-v {
+  display: block;
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(1.05rem, 1.7vw, 1.5rem);
+  letter-spacing: -.03em;
+  color: var(--amber);
+}
+
+.m-l {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  margin-top: .25rem;
+}
+
+.pcard__cta {
+  font-family: var(--f-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-top: .25rem;
+}
+
+.projects__hint {
+  position: absolute;
+  bottom: clamp(1.25rem, 4vh, 2.5rem);
+  right: var(--pad-x);
+  color: var(--t-4);
+  display: flex;
+  gap: .6rem;
+}
+
+.projects__hint span { color: var(--amber); }
+
+/* ============================================================
+   ATLAS — WebGL anchor
+   ============================================================ */
+
+.atlas {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  align-items: center;
+  padding: var(--sec-y) 0;
+  overflow: hidden;
+  background: var(--ink-1);
+}
+
+.atlas__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+}
+
+/* Scrim between the plate and the copy. Without it the bar field runs straight
+   under the headline and nothing is readable. */
+.atlas::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(100deg, var(--ink-1) 26%, rgba(14, 14, 17, .93) 44%, rgba(14, 14, 17, .55) 62%, transparent 84%),
+    linear-gradient(to bottom, var(--ink-1) 1%, transparent 14%),
+    linear-gradient(to top, var(--ink-1) 1%, transparent 16%);
+}
+
+.atlas__body { position: relative; z-index: 2; padding-inline: var(--pad-x); }
+
+.atlas__list {
+  display: grid;
+  gap: .1rem;
+  margin-top: clamp(2rem, 5vh, 3.5rem);
+  /* Kept narrow so the right-aligned climate labels stay inside the scrim
+     rather than sitting on top of the bar field. */
+  max-width: 26rem;
+}
+
+.atlas__list li {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: .85rem 0;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: var(--fs-sm);
+  color: var(--t-2);
+  cursor: default;
+  transition: color var(--d-fast) var(--e-out), padding-left var(--d-fast) var(--e-out);
+}
+
+.atlas__list li:hover, .atlas__list li.is-active { color: var(--t); padding-left: .75rem; }
+.atlas__n { color: var(--amber); font-size: var(--fs-label); }
+.atlas__list em { margin-left: auto; font-style: normal; font-size: var(--fs-label); color: var(--t-4); letter-spacing: .06em; text-transform: uppercase; }
+
+.atlas__fallback {
+  position: absolute;
+  bottom: 2rem; left: 50%;
+  transform: translateX(-50%);
+  color: var(--t-4);
+}
+
+/* ============================================================
+   PUBLICATIONS
+   ============================================================ */
+
+.pubs { display: grid; gap: 0; margin-top: clamp(2rem, 5vh, 4rem); }
+
+.pub {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  gap: clamp(1.5rem, 5vw, 5rem);
+  padding: clamp(2.5rem, 6vh, 4.5rem) 0;
+  border-top: 1px solid var(--line);
+  align-items: start;
+}
+
+.pub:last-child { border-bottom: 1px solid var(--line); }
+
+.pub__n {
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--line-3);
+  transition: -webkit-text-stroke-color var(--d) var(--e-out);
+}
+
+.pub:hover .pub__n { -webkit-text-stroke-color: var(--amber); }
+
+.pub__title {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(1.15rem, 2.1vw, 1.85rem);
+  letter-spacing: -.025em;
+  line-height: 1.25;
+  color: var(--t);
+  max-width: 30ch;
+}
+
+.pub__meta {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  line-height: 1.7;
+  color: var(--t-3);
+  margin: .9rem 0;
+  letter-spacing: .04em;
+}
+
+.pub__status {
+  display: inline-block;
+  padding: .3rem .8rem;
+  border-radius: var(--r-pill);
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .06em;
+  border: 1px solid;
+}
+
+.pub__status--review { color: var(--amber); border-color: var(--amber-24); background: var(--amber-06); }
+.pub__status--prep   { color: var(--t-2);  border-color: var(--line-2);  background: rgba(255, 255, 255, .03); }
+
+.pub__abs { font-size: var(--fs-sm); line-height: 1.72; color: var(--t-2); margin-top: 1.1rem; max-width: 68ch; }
+
+/* ============================================================
+   SKILLS
+   ============================================================ */
+
+.skills {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  margin-top: clamp(2rem, 5vh, 3.5rem);
+}
+
+.sgroup {
+  padding: 1.75rem;
+  background: var(--ink-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+
+.sgroup__t {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 1.15rem;
+  padding-bottom: .85rem;
+  border-bottom: 1px solid var(--line);
+}
+
+/* .skills sets display:grid, which outranks the UA [hidden] rule — without
+   this the tag list stays visible underneath the field. */
+.skills[hidden] { display: none; }
+.sgroup[hidden] { display: none; }
+
+/* The two section heads that centre. Both sit above a symmetrical figure —
+   the brain, and the full-bleed journey map — so a left-aligned title hangs
+   off the axis of the thing it is introducing. Every other head stays ranged
+   left against its column of prose.
+
+   The rule kills the eyebrow's leading dash as well. It is a horizontal lead-in
+   drawn by `.eyebrow::before`, and a lead-in pointing at centred text has
+   nothing to lead in from: it just pushes the word off the axis it is meant
+   to sit on. */
+#skills .eyebrow,
+#background .eyebrow { display: block; text-align: center; }
+
+#skills .eyebrow::before,
+#background .eyebrow::before { display: none; }
+
+#skills .sec-title,
+#background .sec-title {
+  max-width: none;
+  margin-inline: auto;
+  text-align: center;
+}
+
+/* Size is Skills' alone — the brain is the page's biggest figure and carries
+   a display-scale title. Background's is left at the section default. */
+#skills .sec-title { font-size: clamp(3.25rem, 9vw, 8.5rem); }
+
+/* ============================================================
+   SKILLS FIELD
+   Balls drifting in zero gravity, coloured along a thermal scale.
+   Built by skills.js from the tag list above; never shown without it.
+   ============================================================ */
+
+.skillfield {
+  position: relative;
+  width: min(100%, 1180px);
+  margin: clamp(1.5rem, 4vh, 3rem) auto 0;
+}
+
+.skillfield[hidden] { display: none; }
+
+/* No border or panel here on purpose — the brain outline drawn on the canvas
+   is the container, so a rectangle around it would fight it. */
+.skillfield__canvas {
+  display: block;
+  width: 100%;
+  /* The brain is 1000x870 and is fitted into this box preserving its aspect,
+     so any box taller than that ratio is dead ink. On a 375px phone the old
+     fixed height gave a 335x617 canvas holding a 335x291 brain — 326px of
+     empty black, more than the illustration itself, split above and below.
+     Driving height from the aspect removes it exactly. The clamp survives as
+     a CEILING for wide screens, where the box is height-constrained instead
+     and the leftover space falls either side of the brain, where it belongs. */
+  aspect-ratio: 1000 / 870;
+  height: auto;
+  max-height: clamp(480px, 76vh, 780px);
+  background: none;
+  /* Taps and drags still reach the canvas, but a vertical swipe scrolls the
+     page — losing the ability to scroll past this section on a phone would be
+     a far worse trade than losing drag there. */
+  touch-action: pan-y;
+}
+
+/* The full skill name, since the ball only carries a short label. */
+.skillfield__tip {
+  position: absolute;
+  z-index: 3;
+  transform: translate(-50%, -100%);
+  padding: .45rem .8rem;
+  background: rgba(14, 14, 17, .97);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-pill);
+  font-family: var(--f-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: .04em;
+  color: var(--t);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--d-fast) var(--e-out);
+}
+
+.skillfield__tip.is-in { opacity: 1; }
+
+/* Flipped under the ball when there is no room above it. */
+.skillfield__tip.is-below { transform: translate(-50%, 0); }
+
+/* The legend — the same hot-to-cold key that sits beside a thermal raster. */
+.skillkey {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .7rem 1.9rem;
+  margin-top: 1.6rem;
+  list-style: none;
+}
+
+.skillkey__i {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--t-2);
+}
+
+/* Zero-height full-width item: forces the wrap point so the keys read 3 then 2
+   in every language, instead of breaking wherever the text happens to run out. */
+.skillkey__break {
+  flex-basis: 100%;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.skillkey__dot {
+  width: .58rem;
+  height: .58rem;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 14px var(--c);
+}
+
+.skillfield__hint {
+  margin-top: .9rem;
+  text-align: center;
+  font-family: var(--f-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--t-4);
+}
+
+/* ============================================================
+   EXPERIENCE MAP — the pixel-art overworld
+
+   A 100vh stage, pinned by ScrollTrigger while the character crosses the map
+   (src/modules/experience.js). Everything here is inert until that module
+   unhides #journeyStage, so with no JS the section is the timeline below.
+
+   Full-bleed: the negative inline margin exactly cancels .section's --pad-x.
+   A 100vh canvas with side gutters reads as an embedded widget rather than a
+   place. Not `100vw`, which would include the scrollbar and overflow the page.
+   It sits on the WRAPPER, not on the pinned stage — ScrollTrigger records the
+   pinned element's width before wrapping it in a spacer and relocating the
+   margin, so a bleed on the stage itself pins it 2 x --pad-x too narrow.
+   ============================================================ */
+
+/* Not edge to edge.
+   The full bleed was the right call when the map was the only thing on screen,
+   but a floating tab now sits over the artwork, and at full width it covers map
+   rather than covering margin. Pulling the stage in gives that tab somewhere to
+   land and reads as a framed picture instead of a background.
+
+   Kept as a NEGATIVE margin that is smaller than the page padding rather than a
+   positive inset, so the stage still grows past the text column on wide screens
+   without ever reaching the viewport edge. */
+.journey-bleed { margin-inline: calc(var(--pad-x) * -0.35); }
+
+@media (min-width: 1280px) {
+  /* Past the point where --pad-x stops growing, hold a fixed gutter instead. */
+  .journey-bleed { margin-inline: 0; padding-inline: clamp(1rem, 3vw, 3.5rem); }
+}
+
+.journey {
+  position: relative;
+  /* vh, not svh: the stage is pinned and its height is baked into the ramp
+     table, so a viewport unit that changes as browser chrome hides would
+     invalidate the scroll mapping mid-section. */
+  height: 100vh;
+  overflow: hidden;
+  background: var(--ink);
+  isolation: isolate;
+}
+
+.journey__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* Non-negotiable for this art. ZOOM is an integer and the browser's own
+     canvas-to-device-pixel step is nearest-neighbour under this rule, so one
+     source texel lands on exactly ZOOM x dpr aligned pixels and the tilemap
+     stops crawling. */
+  image-rendering: pixelated;
+}
+
+/* Vignette. The stage is a hard-edged rectangle of amber ground dropped into a
+   near-black page; without this the top and bottom edges read as an iframe. */
+.journey__scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, var(--ink) 0%, transparent 12%, transparent 88%, var(--ink) 100%),
+    radial-gradient(120% 80% at 50% 50%, transparent 55%, rgba(9, 9, 11, .5) 100%);
+}
+
+.journey__cards { position: absolute; inset: 0; pointer-events: none; }
+
+/* ---- the arrival card ---------------------------------------
+   A bottom sheet at every width rather than anchored beside the building. The
+   world is 34 tiles wide, so at ZOOM 2 it already fills ~1090px of the stage —
+   there is no gutter for four lines of prose, and anchoring would clamp against
+   a stage edge at nearly every stop. The camera parks the hero at 0.42–0.58 of
+   stage height, so a card down here never covers him: he is standing at the
+   door while it is up, which is what makes it read as arrival. */
+.journeycard {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(2rem, 7vh, 4.5rem);
+  transform: translate(-50%, 14px);
+  width: min(92%, 34rem);
+  padding: clamp(1rem, 2vh, 1.4rem) clamp(1.1rem, 2vw, 1.6rem);
+  background: color-mix(in srgb, var(--ink-1) 92%, transparent);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--amber-24);
+  border-radius: var(--r);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .62);
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity .18s var(--e-out), transform .18s var(--e-out);
+}
+
+.journeycard.is-in { opacity: 1; transform: translate(-50%, 0); }
+
+.journeycard__period {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: .45rem;
+}
+
+.journeycard__role {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(1rem, 1.5vw, 1.3rem);
+  letter-spacing: -.02em;
+  line-height: 1.28;
+  color: var(--t);
+}
+
+/* Same lift as .tli__org, one notch smaller — the card is a bottom sheet, not
+   a page column, so it takes the treatment but not the full size. */
+.journeycard__org {
+  font-size: .98rem;
+  font-weight: 600;
+  color: var(--t-1);
+  margin-top: .25rem;
+}
+
+.journeycard__note {
+  font-size: var(--fs-sm);
+  line-height: 1.66;
+  color: var(--t-3);
+  margin-top: .7rem;
+}
+
+.journeycard__note em { color: var(--t-2); }
+
+/* ---- the on-screen stick -------------------------------------
+   Touch only, and `pointer: coarse` rather than a width query: a narrow
+   desktop window has a keyboard and wants no stick, a large tablet has no
+   keyboard and needs one. walk.js gates construction on the same test, so the
+   element does not exist on a mouse device — this is not merely hidden.
+
+   `touch-action: none` is what makes it a control instead of a scroll handle:
+   without it the first drag scrolls the page out of the pinned section. */
+.journeystick {
+  position: absolute;
+  /* `right`, not `inset-inline-end`. Every other offset in this file is
+     logical so it mirrors under `.is-rtl` — correct for layout, wrong here.
+     This sits where a right thumb reaches, and a reader's handedness does not
+     flip when the page is set in Arabic. Physical property on purpose. */
+  right: clamp(.9rem, 4vw, 2rem);
+  bottom: clamp(1rem, 4vh, 2.5rem);
+  width: 7.5rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--amber-24);
+  display: grid;
+  place-items: center;
+  touch-action: none;
+  pointer-events: auto;
+  z-index: 4;
+  opacity: .55;
+  transition: opacity var(--d-fast) var(--e-out);
+}
+
+.journeystick.is-held { opacity: .95; }
+
+.journeystick__thumb {
+  width: 3.1rem;
+  height: 3.1rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--amber) 78%, transparent);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .5);
+  /* No transition on transform: it is driven every pointermove, and easing it
+     puts the thumb behind the finger. Only the spring back to centre eases. */
+}
+
+.journeystick:not(.is-held) .journeystick__thumb {
+  transition: transform .18s var(--e-out);
+}
+
+@media (pointer: coarse) {
+  /* Clear the stick. The card is 92% wide at this size, so a stick in the
+     bottom corner would sit under it rather than beside it. */
+  .journeycard { bottom: 9.5rem; }
+}
+
+/* Narrow: the card was eating the screen. Measured on a 375x812 phone it ran
+   from y=355 to y=700 — 42% of the viewport — and the camera parks the
+   character at 0.42-0.58 of stage height, so the card was sitting on top of
+   the person it is describing. Arrival stops reading as arrival when you
+   cannot see who arrived.
+
+   Three things shrink it, in order of how much they buy: the type comes down,
+   the note is capped and scrolls, and the whole box is bounded to 34vh. That
+   leaves the hero visible above it and the stick clear below.
+
+   The note is scrolled rather than truncated. `note` is meant to be the short
+   version of `desc` — several now carry the full paragraph (up to 433 chars),
+   and silently clipping a CV to fit a phone is worse than a scrollbar. */
+@media (max-width: 700px) {
+  .journeycard {
+    width: calc(100% - 1.5rem);
+    max-height: 34vh;
+    padding: .8rem .9rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .journeycard__period { font-size: .6rem; margin-bottom: .3rem; }
+  .journeycard__role { font-size: .98rem; line-height: 1.22; }
+  .journeycard__org { font-size: .82rem; margin-top: .15rem; }
+
+  .journeycard__note {
+    font-size: .78rem;
+    line-height: 1.5;
+    margin-top: .45rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;   /* scrolling the note must not scroll the page out of the pin */
+    min-height: 0;                  /* without this the flex child refuses to shrink and the cap does nothing */
+  }
+
+  /* The stat block is a heading inside the note here, not a second column. */
+  .journeycard__note .tli__stat { font-size: .78rem; margin-bottom: .3rem; }
+}
+
+/* ---- the chapter rail ---------------------------------------
+   Four ticks, one per region: where you are, and a way out. A six-screen pin
+   with no skip affordance is a trap. */
+/* The panel is not decoration. Dim mono type over a busy amber-and-canopy
+   tilemap is unreadable — measured by eye against the Mesra forest, where three
+   of the four ticks disappeared completely. */
+.journey__rail {
+  position: absolute;
+  inset-inline-start: clamp(1rem, 2.5vw, 2.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: .1rem;
+  padding: .3rem;
+  background: color-mix(in srgb, var(--ink) 80%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  z-index: 2;
+}
+
+.journey__tick {
+  display: block;
+  padding: .45rem .7rem;
+  border: 0;
+  border-inline-start: 2px solid var(--line-3);
+  background: none;
+  text-align: start;
+  cursor: pointer;
+  opacity: .6;
+  transition: opacity var(--d-fast) var(--e-out), border-color var(--d-fast) var(--e-out);
+}
+
+.journey__tick:hover { opacity: .9; }
+
+.journey__tick.is-here {
+  opacity: 1;
+  border-inline-start-color: var(--amber);
+}
+
+.journey__tick b {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--t-2);
+}
+
+.journey__tick.is-here b { color: var(--amber); }
+
+/* Narrow: the rail is a skip affordance, and at its full size it eats ~44% of
+   a 390px screen. The years go, the place names stay — the name is what you
+   navigate by, the date is confirmation you do not need mid-tap. Padding grows
+   rather than shrinks on the block axis: this becomes a touch target here, and
+   a 4px-tall tick is unhittable however narrow the screen is. */
+.journey__tick i {
+  display: block;
+  font-style: normal;
+  font-family: var(--f-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: .08em;
+  color: var(--t-4);
+  margin-top: .1rem;
+}
+
+/* AFTER `.journey__tick i`, not before it. A media query adds no specificity,
+   so the first version of this block sat above that rule and lost the cascade
+   to it on source order alone — the years stayed visible on a 375px screen and
+   the rail still ate 35% of it. */
+/* Narrow: the rail lies DOWN, along the top.
+   Two attempts failed before this one, both for the same reason — a vertical
+   rail on the inline-start edge is in the worst possible place on a phone. At
+   full size it took 35% of the width; collapsed to unlabelled bars it took 8%
+   but the place names were gone, and it still sat on top of the arrival card
+   and clipped the first characters of every line, because the rail is z-index 2
+   over `.journey__cards`. Horizontal along the top solves all three: the names
+   are back, nothing overlaps the card, and the map keeps its full width.
+   Below the 74px nav, which the stage sits under while pinned. */
+@media (max-width: 700px) {
+  .journey__rail {
+    inset-inline: .5rem;
+    top: 78px;
+    transform: none;
+    flex-direction: row;
+    gap: .15rem;
+    padding: .2rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    justify-content: flex-start;
+  }
+
+  .journey__rail::-webkit-scrollbar { display: none; }
+
+  /* The mark moves to the block-end edge so it underlines the name rather than
+     preceding it — an inline-start border on a row of chips reads as a divider
+     between them, not as "you are here". */
+  /* Share the strip five ways rather than sizing to content. Capping each
+     label still left 404px of chips in a 331px rail, and any tuned max-width
+     is one translation away from overflowing again — `bg.region.*` in Arabic
+     or German will not match the English metrics. `flex: 1 1 0` with
+     `min-width: 0` makes the five columns equal and self-fitting at any width,
+     so the last milestone can never fall off the end. */
+  .journey__tick {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: .3rem .25rem;
+    border-inline-start: 0;
+    border-block-end: 2px solid var(--line-3);
+    min-height: 38px;
+  }
+
+  .journey__tick.is-here { border-block-end-color: var(--amber); }
+  .journey__tick i { display: none; }
+
+  /* All five milestones on screen at once, no scrolling.
+     Measured at 375px: the chips wanted 443px of a 333px strip, so "Dhahran ·
+     KSA" sat off the end — and a chapter rail you have to discover by swiping
+     is not a skip affordance, it is a hidden menu. `nowrap` was what cost the
+     width; two short lines are far cheaper than one long one, because the
+     labels break at their own separator. Centred so the two lines stack tidily
+     over the tick. `overflow-x: auto` stays on the rail as a safety net for a
+     narrower screen or a longer translation. */
+  .journey__tick b {
+    font-size: .55rem;
+    letter-spacing: .03em;
+    white-space: normal;
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: anywhere;   /* a long single word must break, not overflow */
+  }
+}
+
+/* Clear of the fixed nav (74px). While the section is pinned the stage top IS
+   the viewport top, so anything higher than this sits underneath the nav and is
+   simply invisible — which is what happened the moment the pin engaged. */
+.journey__hint {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(74px + clamp(.75rem, 2vh, 1.5rem));
+  text-align: center;
+  pointer-events: none;
+  transition: opacity .4s var(--e-out);
+}
+
+.journey__hint span {
+  display: inline-block;
+  padding: .3rem .8rem;
+  background: color-mix(in srgb, var(--ink) 80%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  font-family: var(--f-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--t-3);
+}
+
+/* Spent as soon as the first card arrives. */
+.journey.is-walking .journey__hint { opacity: 0; }
+
+/* ============================================================
+   TIMELINE
+   ============================================================ */
+
+.timeline {
+  position: relative;
+  margin-top: clamp(2rem, 5vh, 4rem);
+  padding-left: clamp(1.5rem, 4vw, 3rem);
+  border-left: 1px solid var(--line);
+}
+
+.tli { position: relative; padding: 0 0 clamp(2.5rem, 6vh, 4rem); }
+.tli:last-child { padding-bottom: 0; }
+
+.tli::before {
+  content: "";
+  position: absolute;
+  left: calc(clamp(1.5rem, 4vw, 3rem) * -1 - 4.5px);
+  top: .55rem;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 1.5px solid var(--line-3);
+  transition: border-color var(--d) var(--e-out), box-shadow var(--d) var(--e-out);
+}
+
+.tli:hover::before { border-color: var(--amber); box-shadow: 0 0 0 5px var(--amber-12); }
+
+.tli__period {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: .5rem;
+}
+
+.tli__role {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(1.1rem, 1.9vw, 1.5rem);
+  letter-spacing: -.02em;
+  color: var(--t);
+  line-height: 1.3;
+}
+
+/* The institution and the place. Lifted a step in all three of size, weight and
+   colour, because these are the proper nouns a reader scans for — but kept
+   under .tli__role on every one of those axes so the hierarchy holds: role is
+   700 at up to 1.5rem in --t, this is 600 at up to 1.08rem in --t-1. */
+.tli__org {
+  font-size: clamp(.95rem, 1.15vw, 1.08rem);
+  font-weight: 600;
+  color: var(--t-1);
+  margin-top: .3rem;
+}
+
+.tli__desc {
+  font-size: var(--fs-sm);
+  line-height: 1.72;
+  color: var(--t-3);
+  margin-top: .85rem;
+  max-width: 76ch;
+  /* Justified, with hyphenation on. Justifying without it opens rivers of
+     white space once the measure narrows, and these paragraphs carry long
+     unbreakable nouns (photorealistic, multi-disciplinary, standardisation). */
+  text-align: justify;
+  hyphens: auto;
+}
+.tli__desc em { color: var(--t-2); }
+
+/* The academic stat line — GPA, classification, specialisation. Its own line
+   inside the paragraph rather than its own field, so it needs no change to
+   sync-copy.mjs's six fields and travels into the map card for free (the card
+   copies the li's innerHTML, so the class comes with it).
+
+   Placed a step ABOVE .tli__desc and a step BELOW .tli__org, holding the same
+   ramp the rest of the entry uses: org is 600/--t-1 at 1.08rem, this is
+   600/--t-1 at .95rem, the prose under it stays 400/--t-3.
+
+   `text-align: start` is not decoration: .tli__desc is justified, and a short
+   block that wraps to two lines would have its first line stretched edge to
+   edge with enormous word gaps. */
+.tli__stat {
+  display: block;
+  /* .92, not .95: .tli__org clamps to a .95rem FLOOR, so at narrow widths the
+     two rendered identically and the institution stopped out-ranking the
+     metric. This keeps org > stat > desc strictly, at every viewport. */
+  font-size: .92rem;
+  font-weight: 600;
+  color: var(--t-1);
+  text-align: start;
+  hyphens: manual;
+  margin-bottom: .45rem;
+}
+
+.tli__badge {
+  display: inline-block;
+  margin-top: .9rem;
+  padding: .28rem .75rem;
+  border: 1px solid var(--amber-24);
+  border-radius: var(--r-pill);
+  background: var(--amber-06);
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .06em;
+  color: var(--amber);
+}
+
+/* ============================================================
+   CONTACT
+   ============================================================ */
+
+.contact {
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* The portrait that used to be the hero. It sits behind the whole section as
+   atmosphere rather than as a headshot — the silhouette and its warm glow read
+   through, the detail does not compete with the form. */
+/* Banded to the top of the section rather than covering it. The section runs
+   ~1200px tall, and covering that with a 16:9 frame zooms the portrait to ~1.5x
+   and crops it to a face-sized sliver. A band keeps it near native scale. */
+.contact__media {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: min(100%, 880px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.contact__media img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: 62% 22%;
+  filter: saturate(.92) contrast(1.05);
+}
+
+.contact__scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(64% 58% at 42% 42%, rgba(9, 9, 11, .9), rgba(9, 9, 11, .66) 58%, rgba(9, 9, 11, .42)),
+    linear-gradient(to bottom, var(--ink) 1%, transparent 18%, transparent 58%, var(--ink) 97%);
+}
+
+.contact__inner { display: grid; justify-items: center; }
+.contact .eyebrow::before { display: none; }
+.contact .sec-title { max-width: none; }
+.contact__lead { max-width: 62ch; }
+
+.contact__email {
+  display: inline-block;
+  font-size: clamp(1.15rem, 3.4vw, 2.6rem);
+  letter-spacing: -.03em;
+  color: var(--amber);
+  margin: clamp(2rem, 5vh, 3.5rem) 0;
+  background-image: linear-gradient(var(--amber), var(--amber));
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size var(--d) var(--e-out);
+  word-break: break-word;
+}
+
+.contact__email:hover { background-size: 100% 1px; }
+
+.cform {
+  width: 100%;
+  max-width: 34rem;
+  display: grid;
+  gap: .7rem;
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+  background: var(--ink-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  text-align: left;
+}
+
+.cform__label {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: .5rem;
+}
+
+.cform input, .cform textarea {
+  width: 100%;
+  padding: .8rem 1.05rem;
+  background: var(--ink-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+  color: var(--t);
+  transition: border-color var(--d-fast) var(--e-out);
+  resize: vertical;
+}
+
+.cform input::placeholder, .cform textarea::placeholder { color: var(--t-4); }
+.cform input:focus, .cform textarea:focus { outline: none; border-color: var(--amber); }
+.cform input[aria-invalid="true"], .cform textarea[aria-invalid="true"] { border-color: var(--ember); }
+
+.cform__send { justify-content: center; margin-top: .3rem; }
+.cform__send[disabled] { opacity: .6; pointer-events: none; }
+
+.cform__ok {
+  font-family: var(--f-mono);
+  font-size: var(--fs-xs);
+  color: var(--amber);
+  text-align: center;
+  padding-top: .3rem;
+}
+
+.contact__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.75rem;
+  margin-top: clamp(2rem, 5vh, 3rem);
+}
+
+.contact__links a {
+  font-family: var(--f-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--t-2);
+  transition: color var(--d-fast) var(--e-out);
+}
+
+.contact__links a:hover { color: var(--amber); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 960px) {
+  .about__grid, .direction__grid { grid-template-columns: 1fr; }
+  .pub { grid-template-columns: 1fr; gap: 1rem; }
+  .pub__n { font-size: 2.5rem; }
+}
+
+@media (max-width: 900px) {
+  /* Plate is centred behind the copy at this size, so the scrim has to work
+     vertically rather than from the left. */
+  .atlas::after {
+    background:
+      linear-gradient(to bottom, var(--ink-1) 8%, rgba(14, 14, 17, .78) 42%, rgba(14, 14, 17, .3) 68%, transparent),
+      linear-gradient(to top, var(--ink-1) 2%, transparent 18%);
+  }
+}
+
+@media (max-width: 760px) {
+  .thermal { height: 300vh; }
+  .thermal__video { width: 150%; }
+  .thermal__legend { flex-direction: column; gap: .7rem; }
+  .pcard { width: 84vw; max-height: none; }
+  .pcard--wide { width: 88vw; flex-direction: column; }
+  .pcard--wide .pcard__media { width: 100%; aspect-ratio: 16 / 9; }
+  .pcard--wide .pcard__body { overflow: visible; }
+  .projects__hint { display: none; }
+}
+
+/* ── SPEECH BUBBLE ───────────────────────────────────────────────────────
+   A comic bubble at the character's shoulder. Separate from `.journeycard`:
+   the card is the record and sits at the bottom of the stage, this is the one
+   line he says on arriving and has to be next to him or it is just another
+   caption.
+
+   Positioned from --hero-x / --hero-y, which the walk writes each frame in
+   stage pixels — the character is painted into a canvas and this is a DOM
+   element, so a shared coordinate is the only way the two can agree.
+
+   It sits ABOVE and slightly RIGHT of him by default, and the clamp keeps it
+   inside the stage when he is near an edge. The tail is drawn from his position
+   rather than the bubble's, so it still points at him after the body has been
+   pushed sideways. */
+.saybubble {
+  --say-w: min(19rem, 42vw);
+  --tail: 10px;
+
+  position: absolute;
+  z-index: 3;
+  left: clamp(
+    calc(var(--say-w) / 2 + .75rem),
+    calc(var(--hero-x, 50%) + 2.5rem),
+    calc(100% - var(--say-w) / 2 - .75rem)
+  );
+  /* Clear of his head, not on top of it. His feet are --hero-y and the sprite
+     is ~34px drawn, so at ZOOM 2 he occupies roughly 68px above that; the
+     bubble's own translate lifts it a further 100% of its height. 5.75rem puts
+     the tail just above his hat instead of across his chest. */
+  top: calc(var(--hero-y, 50%) - 5.75rem);
+  width: max-content;
+  max-width: var(--say-w);
+
+  padding: .6rem .85rem;
+  background: var(--t);
+  color: var(--ink);
+  border-radius: 12px;
+  font-size: var(--fs-sm);
+  line-height: 1.42;
+  font-weight: 500;
+  text-wrap: pretty;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, calc(-100% - 4px)) scale(.94);
+  transform-origin: 50% 100%;
+  transition: opacity .16s var(--e-out), transform .16s var(--e-out);
+}
+
+/* A small overshoot on the way in — a bubble that fades is a tooltip, a bubble
+   that pops is speech. */
+.saybubble.is-in {
+  opacity: 1;
+  transform: translate(-50%, calc(-100% - 10px)) scale(1);
+}
+
+.saybubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: var(--tail) solid transparent;
+  border-top-color: var(--t);
+  border-bottom: 0;
+}
+
+/* Narrow: he is small and the stage is tight, so it goes above his head rather
+   than beside him, where there is no room. */
+@media (max-width: 1100px) {
+  .saybubble {
+    --say-w: min(16rem, 72vw);
+    left: clamp(
+      calc(var(--say-w) / 2 + .5rem),
+      var(--hero-x, 50%),
+      calc(100% - var(--say-w) / 2 - .5rem)
+    );
+  }
+}

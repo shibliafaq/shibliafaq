@@ -1,0 +1,975 @@
+{
+ "terrain": [
+  {
+   "path": "map-kit/01-terrain-tiles/beach.png",
+   "w": 80,
+   "h": 48
+  },
+  {
+   "path": "map-kit/01-terrain-tiles/bridge.png",
+   "w": 144,
+   "h": 64
+  },
+  {
+   "path": "map-kit/01-terrain-tiles/cliff.png",
+   "w": 48,
+   "h": 96
+  },
+  {
+   "path": "map-kit/01-terrain-tiles/decor.png",
+   "w": 112,
+   "h": 192
+  },
+  {
+   "path": "map-kit/01-terrain-tiles/farm.png",
+   "w": 48,
+   "h": 48
+  },
+  {
+   "path": "map-kit/01-terrain-tiles/fences.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/01-terrain-tiles/grass.png",
+   "w": 16,
+   "h": 16
+  },
+  {
+   "path": "map-kit/01-terrain-tiles/path.png",
+   "w": 48,
+   "h": 96
+  },
+  {
+   "path": "map-kit/01-terrain-tiles/water.png",
+   "w": 48,
+   "h": 96
+  },
+  {
+   "path": "v2/assets/tilesets/incoming/_x/cute/Cute_Fantasy_Free/Tiles/Beach_Tile.png",
+   "w": 80,
+   "h": 48
+  },
+  {
+   "path": "v2/assets/tilesets/incoming/_x/cute/Cute_Fantasy_Free/Tiles/Cliff_Tile.png",
+   "w": 48,
+   "h": 96
+  },
+  {
+   "path": "v2/assets/tilesets/incoming/_x/cute/Cute_Fantasy_Free/Tiles/FarmLand_Tile.png",
+   "w": 48,
+   "h": 48
+  },
+  {
+   "path": "v2/assets/tilesets/incoming/_x/cute/Cute_Fantasy_Free/Tiles/Grass_Middle.png",
+   "w": 16,
+   "h": 16
+  },
+  {
+   "path": "v2/assets/tilesets/incoming/_x/cute/Cute_Fantasy_Free/Tiles/Path_Middle.png",
+   "w": 16,
+   "h": 16
+  },
+  {
+   "path": "v2/assets/tilesets/incoming/_x/cute/Cute_Fantasy_Free/Tiles/Path_Tile.png",
+   "w": 48,
+   "h": 96
+  },
+  {
+   "path": "v2/assets/tilesets/incoming/_x/cute/Cute_Fantasy_Free/Tiles/Water_Middle.png",
+   "w": 16,
+   "h": 16
+  },
+  {
+   "path": "v2/assets/tilesets/incoming/_x/cute/Cute_Fantasy_Free/Tiles/Water_Tile.png",
+   "w": 48,
+   "h": 96
+  }
+ ],
+ "buildings": [
+  {
+   "path": "map-kit/02-buildings/used-on-map/house_blue.png",
+   "w": 115,
+   "h": 69
+  },
+  {
+   "path": "map-kit/02-buildings/used-on-map/house_cutefantasy.png",
+   "w": 96,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/used-on-map/house_red.png",
+   "w": 72,
+   "h": 101
+  },
+  {
+   "path": "map-kit/02-buildings/used-on-map/inst_academic.png",
+   "w": 245,
+   "h": 107
+  },
+  {
+   "path": "map-kit/02-buildings/used-on-map/inst_research.png",
+   "w": 235,
+   "h": 107
+  },
+  {
+   "path": "map-kit/02-buildings/used-on-map/off_cottage.png",
+   "w": 104,
+   "h": 136
+  },
+  {
+   "path": "map-kit/02-buildings/used-on-map/off_lshape.png",
+   "w": 164,
+   "h": 140
+  },
+  {
+   "path": "map-kit/02-buildings/used-on-map/off_manor1.png",
+   "w": 108,
+   "h": 107
+  },
+  {
+   "path": "map-kit/02-buildings/used-on-map/off_manor2.png",
+   "w": 100,
+   "h": 105
+  },
+  {
+   "path": "map-kit/02-buildings/used-on-map/off_manor3.png",
+   "w": 104,
+   "h": 107
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/church1.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/church2.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/church3.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/church4.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/market-stall1.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/market-stall2.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/market-stall3.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/market-stall4.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/museum1.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/museum2.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/museum3.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/museum4.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/noble-manor1.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/noble-manor2.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/noble-manor3.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/noble-manor4.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/off_farmhouse.png",
+   "w": 196,
+   "h": 130
+  },
+  {
+   "path": "map-kit/02-buildings/available-unused/pixel16-village-sheet-Pixel 16 v2 village free.png",
+   "w": 282,
+   "h": 276
+  }
+ ],
+ "trees": [
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/cutefantasy_oak.png",
+   "w": 64,
+   "h": 80
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/cutefantasy_oak_small.png",
+   "w": 96,
+   "h": 48
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/kibyra_bush12.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/kibyra_bush19.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/kibyra_bush2.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/kibyra_bush7.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/kibyra_maple14.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/kibyra_maple3.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/kibyra_maple4.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/kibyra_maple5.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/kibyra_maple6.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/kibyra_maple7.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/pixelcrawler_conifer.png",
+   "w": 54,
+   "h": 103
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/pixelcrawler_conifer2.png",
+   "w": 54,
+   "h": 103
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/pixelcrawler_conifer_small.png",
+   "w": 37,
+   "h": 76
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/pixelcrawler_tree_amber.png",
+   "w": 73,
+   "h": 126
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/used-on-map/pixelcrawler_tree_autumn.png",
+   "w": 73,
+   "h": 126
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush1.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush10.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush11.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush12.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush13.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush14.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush15.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush16.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush17.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush18.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush19.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush2.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush20.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush21.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush22.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush23.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush24.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush25.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush26.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush27.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush28.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush29.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush3.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush30.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush31.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush32.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush33.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush34.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush35.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush36.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush37.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush38.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush39.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush4.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush40.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush41.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush42.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush43.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush44.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush45.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush46.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush47.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush48.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush49.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush5.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush50.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush51.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush52.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush53.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush54.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush55.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush56.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush57.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush58.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush59.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush6.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush60.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush61.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush62.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush63.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush64.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush7.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush8.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grass-plant-bush9.png",
+   "w": 32,
+   "h": 32
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_grasses-plants-bushes.png",
+   "w": 256,
+   "h": 256
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree1.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree10.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree11.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree12.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree13.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree14.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree15.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree16.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree2.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree3.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree4.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree5.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree6.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree7.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree8.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-tree9.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/kibyra_maple-trees.png",
+   "w": 256,
+   "h": 256
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/pixelcrawler_tree_Size_02.png",
+   "w": 128,
+   "h": 160
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/pixelcrawler_tree_Size_03.png",
+   "w": 192,
+   "h": 288
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/pixelcrawler_tree_Size_04.png",
+   "w": 400,
+   "h": 416
+  },
+  {
+   "path": "map-kit/03-trees-and-plants/available-unused/pixelcrawler_tree_Size_05.png",
+   "w": 384,
+   "h": 512
+  }
+ ],
+ "props": [
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_fishpond1.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_fishpond2.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_fishpond3.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_fishpond4.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_fishponds.png",
+   "w": 256,
+   "h": 256
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_mstall1.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_mstall2.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_mstall3.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_pond1.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_pond3.png",
+   "w": 128,
+   "h": 128
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well1.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well10.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well11.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well12.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well13.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well14.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well15.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well16.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well2.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well3.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well4.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well5.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well6.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well7.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well8.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_well9.png",
+   "w": 64,
+   "h": 64
+  },
+  {
+   "path": "map-kit/Final assets/04-props/kibyra_wells.png",
+   "w": 256,
+   "h": 256
+  },
+  {
+   "path": "map-kit/Final assets/04-props/pixelcrawler_farm_SHEET.png",
+   "w": 400,
+   "h": 400
+  },
+  {
+   "path": "map-kit/Final assets/04-props/pixelcrawler_resources_SHEET.png",
+   "w": 400,
+   "h": 400
+  },
+  {
+   "path": "map-kit/Final assets/04-props/pixelcrawler_rocks_SHEET.png",
+   "w": 208,
+   "h": 304
+  },
+  {
+   "path": "map-kit/Final assets/04-props/pixelcrawler_shadows_SHEET.png",
+   "w": 400,
+   "h": 400
+  },
+  {
+   "path": "map-kit/Final assets/04-props/pixelcrawler_vegetation_SHEET.png",
+   "w": 400,
+   "h": 432
+  },
+  {
+   "path": "map-kit/Final assets/04-props/resurrected_Grass 2 layer.png",
+   "w": 1024,
+   "h": 512
+  },
+  {
+   "path": "map-kit/Final assets/04-props/resurrected_Grass.png",
+   "w": 1024,
+   "h": 512
+  },
+  {
+   "path": "map-kit/Final assets/04-props/resurrected_Plants.png",
+   "w": 1024,
+   "h": 1024
+  },
+  {
+   "path": "map-kit/Final assets/04-props/resurrected_PlantShadow.png",
+   "w": 512,
+   "h": 512
+  },
+  {
+   "path": "map-kit/Final assets/04-props/resurrected_Props.png",
+   "w": 512,
+   "h": 512
+  },
+  {
+   "path": "map-kit/Final assets/04-props/resurrected_Wall.png",
+   "w": 2048,
+   "h": 1024
+  },
+  {
+   "path": "map-kit/Final assets/04-props/rock_big.png",
+   "w": 28,
+   "h": 43
+  },
+  {
+   "path": "map-kit/Final assets/04-props/rock_mid.png",
+   "w": 26,
+   "h": 27
+  },
+  {
+   "path": "map-kit/Final assets/04-props/rock_sm.png",
+   "w": 15,
+   "h": 10
+  },
+  {
+   "path": "map-kit/Final assets/04-props/rocks.png",
+   "w": 208,
+   "h": 304
+  },
+  {
+   "path": "map-kit/Final assets/04-props/scarecrow.png",
+   "w": 24,
+   "h": 47
+  },
+  {
+   "path": "map-kit/Final assets/04-props/stall.png",
+   "w": 43,
+   "h": 40
+  },
+  {
+   "path": "map-kit/Final assets/04-props/vegetation.png",
+   "w": 400,
+   "h": 432
+  }
+ ]
+}

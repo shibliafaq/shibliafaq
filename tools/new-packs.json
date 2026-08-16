@@ -1,0 +1,71 @@
+{
+  "_comment": [
+    "Two packs the user added on 2026-08-15: 'Farm RPG FREE 16x16 - Tiny Asset",
+    "Pack' and 'MinifolksForestAnimals'. Both ship ANIMATION SHEETS, not sprites,",
+    "so every entry below is one frame lifted out of a grid.",
+    "",
+    "Minifolks sheets are uniform 32x32 frame grids — every sheet width and all",
+    "but one height divides by 32, and index-atlas puts each animal's content",
+    "inside the first 32x32 cell. Frame (0,0) of each is taken. MiniBird is 64x48",
+    "so its grid is 32x24.",
+    "",
+    "Farm RPG rects are tight content boxes from index-atlas --gap=2. Its House",
+    "sheet holds TWO complete houses plus loose door/window/chimney props, and its",
+    "Maple Tree sheet holds two trees plus a sapling and a stump.",
+    "",
+    "LICENCE: neither pack ships a licence file — checked, there is no .txt or",
+    "readme in either. Same gap HANDOFF §9.10 records for Pixel 16 and",
+    "TopDownFantasy_Forest. Worth saving the download URLs before this is",
+    "forgotten.",
+    "",
+    "Regenerate: node tools/crop-sprites.mjs --manifest=tools/new-packs.json --sheet"
+  ],
+
+  "sources": {
+    "bear":   "assets/tilesets/incoming/_x/MinifolksForestAnimals/Without outline/MiniBear.png",
+    "bird":   "assets/tilesets/incoming/_x/MinifolksForestAnimals/Without outline/MiniBird.png",
+    "boar":   "assets/tilesets/incoming/_x/MinifolksForestAnimals/Without outline/MiniBoar.png",
+    "bunny":  "assets/tilesets/incoming/_x/MinifolksForestAnimals/Without outline/MiniBunny.png",
+    "deer1":  "assets/tilesets/incoming/_x/MinifolksForestAnimals/Without outline/MiniDeer1.png",
+    "deer2":  "assets/tilesets/incoming/_x/MinifolksForestAnimals/Without outline/MiniDeer2.png",
+    "fox":    "assets/tilesets/incoming/_x/MinifolksForestAnimals/Without outline/MiniFox.png",
+    "wolf":   "assets/tilesets/incoming/_x/MinifolksForestAnimals/Without outline/MiniWolf.png",
+
+    "fhouse": "assets/tilesets/incoming/_x/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Objects/House.png",
+    "fmaple": "assets/tilesets/incoming/_x/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Objects/Maple Tree.png",
+    "fchest": "assets/tilesets/incoming/_x/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Objects/chest.png",
+    "fcowf":  "assets/tilesets/incoming/_x/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm Animals/Female Cow Brown.png",
+    "fcowm":  "assets/tilesets/incoming/_x/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm Animals/Male Cow Brown.png",
+    "fchickr":"assets/tilesets/incoming/_x/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm Animals/Chicken Red.png",
+    "fchickg":"assets/tilesets/incoming/_x/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm Animals/Chicken Blonde  Green.png",
+    "fchick": "assets/tilesets/incoming/_x/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm RPG FREE 16x16 - Tiny Asset Pack/Farm Animals/Baby Chicken Yellow.png"
+  },
+
+  "outDir": "public/assets/pixel/wild",
+
+  "sprites": [
+    { "_": "--- forest animals: frame (0,0) of each 32x32 grid ---" },
+    { "name": "wild_bear",  "src": "bear",  "rect": [0, 0, 32, 32] },
+    { "name": "wild_bird",  "src": "bird",  "rect": [0, 0, 16, 24] },
+    { "name": "wild_boar",  "src": "boar",  "rect": [0, 0, 32, 32] },
+    { "name": "wild_bunny", "src": "bunny", "rect": [0, 32, 32, 32] },
+    { "name": "wild_deer",  "src": "deer1", "rect": [0, 0, 32, 32] },
+    { "name": "wild_stag",  "src": "deer2", "rect": [0, 0, 32, 32] },
+    { "name": "wild_fox",   "src": "fox",   "rect": [0, 0, 32, 32] },
+    { "name": "wild_wolf",  "src": "wolf",  "rect": [0, 0, 32, 32] },
+
+    { "_": "--- farm animals ---" },
+    { "name": "farm_cow_f",     "src": "fcowf",   "rect": [0, 0, 32, 32] },
+    { "name": "farm_cow_m",     "src": "fcowm",   "rect": [0, 0, 32, 32] },
+    { "name": "farm_hen_red",   "src": "fchickr", "rect": [0, 0, 16, 16] },
+    { "name": "farm_hen_green", "src": "fchickg", "rect": [0, 0, 16, 16] },
+    { "name": "farm_chick",     "src": "fchick",  "rect": [0, 0, 16, 16] },
+
+    { "_": "--- two more complete houses, plus trees and a chest ---" },
+    { "name": "farm_house_a", "src": "fhouse", "rect": [4, 3, 72, 86] },
+    { "name": "farm_house_b", "src": "fhouse", "rect": [148, 3, 72, 95] },
+    { "name": "farm_maple",   "src": "fmaple", "rect": [96, 1, 32, 46] },
+    { "name": "farm_sapling", "src": "fmaple", "rect": [71, 14, 20, 33] },
+    { "name": "farm_chest",   "src": "fchest", "rect": [0, 0, 32, 16] }
+  ]
+}

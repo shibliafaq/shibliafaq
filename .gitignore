@@ -1,0 +1,34 @@
+# Dependencies and build output — Vercel installs and builds these itself.
+node_modules/
+dist/
+.vite/
+
+# Map safety. `/__save-valley` snapshots the map here before every write, names
+# carrying milliseconds. Local history, not source: the map itself lives at
+# public/assets/pixel/valley-map.json and IS committed.
+.map-history/
+
+# Source art. The itch.io packs, the CraftPix desert tileset, the raw scans and
+# the PSDs — about 412 MB, and none of it is needed to build or run the site.
+# Everything the page actually serves has already been converted into
+# public/assets/pixel/. Kept out of the repo deliberately; the originals live
+# beside this folder in the working copy.
+#
+# The LEADING SLASH is load-bearing. Written as `assets/` this matches a
+# directory of that name at ANY depth — which silently excluded
+# `public/assets/` too, i.e. every sprite, sheet and the valley map itself.
+# Staged file count went from 101 to the real number once this was anchored.
+/assets/
+
+# Lab scratch renders. The lab pages themselves are committed — they are the
+# map editor and the tracing tools — but the PNGs they spit out are not.
+lab/*.png
+lab/*.jpg
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.local
+.vercel

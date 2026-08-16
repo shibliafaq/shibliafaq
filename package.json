@@ -1,0 +1,20 @@
+{
+  "name": "shibli-afaq-portfolio",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shibli Afaq — Smart Cities Researcher, Urban Data Scientist & Architect",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "gsap": "^3.13.0",
+    "lenis": "^1.3.11",
+    "three": "^0.181.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.14"
+  }
+}

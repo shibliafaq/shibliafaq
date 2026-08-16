@@ -1,0 +1,89 @@
+{
+  "_comment": [
+    "Sprite rects for the Pixel Crawler modular building kit, plus the vegetation",
+    "fixes. Run `node tools/crop-sprites.mjs` to regenerate public/assets/pixel/pcb/.",
+    "",
+    "HOW THESE WERE DERIVED — do not re-eyeball them off a screenshot (HANDOFF 9.5).",
+    "Walls.png and Roofs.png defeat both blob detection and projection profiling",
+    "because the parts BUTT DIRECTLY against each other with no transparent seam:",
+    "index-atlas.mjs returns one 672-wide box for Walls at --gap=0. What settles it",
+    "is that the layout is a regular 96px grid — occupancy at x=0,96,192,... is",
+    "131-147 of 169 rows at every boundary, i.e. full, which is the signature of",
+    "abutting blocks rather than of one wide sprite. Row bands come from a row",
+    "occupancy profile and are exact. Roof and prop rects were then read off a",
+    "drawn 16px grid and CHECKED by cropping and looking (lab/buildings.html).",
+    "",
+    "The wall runs are the load-bearing find: each is a 96x56 continuous FRONT",
+    "ELEVATION for one material, which is what makes an arbitrary-width facade",
+    "possible. The 96x169 frame blocks above them are hollow-rectangle demos of the",
+    "same material and are not used."
+  ],
+
+  "sources": {
+    "walls": "assets/tilesets/incoming/_x/pixelcrawler/Pixel Crawler - Free Pack/Environment/Structures/Buildings/Walls.png",
+    "roofs": "assets/tilesets/incoming/_x/pixelcrawler/Pixel Crawler - Free Pack/Environment/Structures/Buildings/Roofs.png",
+    "props": "assets/tilesets/incoming/_x/pixelcrawler/Pixel Crawler - Free Pack/Environment/Structures/Buildings/Props.png",
+    "veg": "assets/tilesets/incoming/_x/pixelcrawler/Pixel Crawler - Free Pack/Environment/Props/Static/Vegetation.png"
+  },
+
+  "outDir": "public/assets/pixel/pcb",
+
+  "sprites": [
+    { "_": "--- wall runs: 96x56 front elevations, y184-239 measured exactly ---" },
+    { "name": "wall_log",     "src": "walls", "rect": [0,   184, 96, 56] },
+    { "name": "wall_plank",   "src": "walls", "rect": [96,  184, 96, 56] },
+    { "name": "wall_board",   "src": "walls", "rect": [192, 184, 96, 56] },
+    { "name": "wall_timber",  "src": "walls", "rect": [288, 184, 96, 56] },
+    { "name": "wall_plaster", "src": "walls", "rect": [384, 184, 96, 56] },
+    { "name": "wall_brick",   "src": "walls", "rect": [480, 184, 96, 56] },
+
+    { "_": "--- glazed storefront runs: 96x52, y620-671 measured exactly ---" },
+    { "name": "wall_glazed",  "src": "walls", "rect": [0,   620, 96, 52] },
+    { "name": "wall_glazed2", "src": "walls", "rect": [96,  620, 96, 52] },
+    { "name": "wall_glazed3", "src": "walls", "rect": [192, 620, 96, 52] },
+    { "name": "wall_glazed4", "src": "walls", "rect": [288, 620, 96, 52] },
+
+    { "_": "--- THE ROOFS THAT ACTUALLY READ AS ROOFS: 127x94 gables, both",
+      "__": "    slopes meeting at a central ridge, seen front-top-down. Isolated",
+      "__2": "    by cropping each 127px column separately and indexing — a single",
+      "__3": "    index pass merges brown and green because they abut. The 64x47",
+      "__4": "    'slab' pieces below are the FLAT top face of a roof and were the",
+      "__5": "    mistake in the first composer: tiling them can only make a box. ---" },
+    { "name": "gable_wood",    "src": "roofs", "rect": [0,   6, 127, 94] },
+    { "name": "gable_shingle", "src": "roofs", "rect": [128, 6, 127, 94] },
+
+    { "_": "--- roof faces: 64x47 slabs, kept for flat-roofed blocks only ---" },
+    { "name": "roof_wood",    "src": "roofs", "rect": [32,  160, 64, 47] },
+    { "name": "roof_shingle", "src": "roofs", "rect": [160, 160, 64, 47] },
+    { "_": "the 'slate' piece is really a glazed/conservatory gable — fixed shape, not tileable" },
+    { "name": "roof_glass",   "src": "roofs", "rect": [272, 86,  97, 102] },
+    { "name": "roof_dormer",  "src": "roofs", "rect": [47,  207, 35, 34] },
+
+    { "_": "--- openings and fittings. The wall runs already carry their own",
+      "__": "    fenestration, so the composer needs a door and a chimney rather",
+      "__2": "    than a full window kit; the windows below are for accents. ---" },
+    { "name": "door_stone",   "src": "props", "rect": [70,  58, 26, 24] },
+    { "name": "door_plank",   "src": "props", "rect": [101, 43, 18, 35] },
+    { "name": "door_glazed",  "src": "props", "rect": [133, 40, 21, 38] },
+    { "name": "win_arch",     "src": "props", "rect": [69,  78, 24, 31] },
+    { "name": "win_arch_blue","src": "props", "rect": [100, 80, 20, 29] },
+    { "name": "win_four",     "src": "props", "rect": [133, 112, 20, 21] },
+    { "name": "chimney",      "src": "props", "rect": [6,   83, 20, 46] },
+    { "name": "bench_wood",   "src": "props", "rect": [82,  163, 61, 20] },
+    { "name": "planter",      "src": "props", "rect": [16,  152, 30, 17] },
+    { "name": "hedge",        "src": "props", "rect": [47,  148, 34, 21] },
+
+    { "_": "--- vegetation: SINGLE cells. Seams measured at y32 and y64 by row" },
+    { "_": "    profile; the installed bush_green.webp is 43x91, i.e. three cells" },
+    { "_": "    cropped as one sprite, and then hue-rotated on top of that. The" },
+    { "_": "    rust column (x146) and olive column (x98) already ARE autumn —" },
+    { "_": "    same lesson as the autumn trees in HANDOFF 9.10. Grade 'none'. ---" },
+    { "name": "bush_rust_lg",  "src": "veg", "rect": [146, 99, 43, 42] },
+    { "name": "bush_rust_md",  "src": "veg", "rect": [146, 64, 43, 32] },
+    { "name": "bush_rust_sm",  "src": "veg", "rect": [146, 5,  43, 27] },
+    { "name": "bush_olive_lg", "src": "veg", "rect": [98,  99, 43, 42] },
+    { "name": "bush_olive_md", "src": "veg", "rect": [98,  64, 43, 32] },
+    { "name": "bush_amber_lg", "src": "veg", "rect": [50,  99, 43, 42] },
+    { "name": "bush_amber_md", "src": "veg", "rect": [50,  64, 43, 32] }
+  ]
+}

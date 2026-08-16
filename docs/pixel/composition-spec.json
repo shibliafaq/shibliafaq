@@ -1,0 +1,288 @@
+{
+ "regions": [
+  {
+   "id": "mesra",
+   "rowBand": [
+    0,
+    38
+   ],
+   "barrier": "THE CAMPUS GATE (rows 1-2). A run of `cliff` tiles across cols 0-3 and cols 9-33 at rows 1-2, with a 3-tile opening at cols 5-7 where the road passes. A `lamp` decor at [4,2] and [8,2] as the piers. Above it, rows 0-1, a solid conifer band (see vegetation) so the map's top edge is closed forest and the first thing the walker does is pass THROUGH something. This is the only barrier that is not crossed on entry from a previous region — it is the opening frame.",
+   "landmark": "The BIT academic block: 10 tiles wide x 7 tall (cols 10-19, rows 6-12). Nothing else in the region exceeds 6 tiles in either dimension. Its front row (12) sits directly on the north edge of the quad, so the walker turning east at [6,17] has the full 160px façade above him for the whole 14-tile leg. Use plaster-and-beam walls + the wide brown wood roof from pc/roofs.webp.",
+   "vegetation": "FOUR MASSES, no scatter anywhere. (1) Top forest band rows 0-3, every col except 4-8: `tree` where c%2==0 and r in {0,2}, `treeSmall` where c%2==1 and r in {1,3} — a wall of canopy. (2) Grove NE cols 24-33, rows 4-14, fill 0.55 via a hash (e.g. (c*7+r*13)%100<55) with min spacing 2 — this backs the academic block so its roof reads against dark canopy. (3) Grove W cols 0-4, rows 14-21, fill 0.45, tying the hostel block into the map edge. (4) Forest corridor rows 18-22: cols 0-11 and 24-33 at fill 0.60, cols 12-23 at 0.15 — this is the travel stretch, and it must be closed on both sides so the town clearing below reads as arrival. INSIDE the town clearing (cols 8-27, rows 22-36) place exactly ONE tree, at [21,24], the village tree; zero others. Margin trees only at cols 0-7 and 28-33 for rows 23-36, fill 0.35. Rows 36-38: no trees at all, `reeds` at row 37 every 3rd col — the ground going soft before the river.",
+   "clusters": [
+    {
+     "centre": [
+      15,
+      15
+     ],
+     "shape": "Three-sided quad open to the south. The quad is a `path` blob at cols 9-21, rows 13-18 — the road's east-west leg at row 17 runs INSIDE it, so the road literally widens into the campus (rule 2). The academic block closes the quad's north edge with its façade; the workshop is flush against the quad's east edge with its front on the same row as the quad's bottom; the hostel sits west of the road at the map edge, cropped by the frame, with its own small apron (`path` cols 0-7, rows 13-15) merging into the road corridor. Doors: 2-tile `path` spurs at cols 14-15 rows 12-13 (academic block) and cols 24-25 rows 17-18 (workshop). Detail: `lamp` at [10,16] and [20,16], `rockMid` well at [15,15], `potRed`/`potYellow` at [11,13] and [18,13].",
+     "buildings": [
+      {
+       "stopId": "barch",
+       "col": 10,
+       "row": 12,
+       "footprint": [
+        10,
+        7
+       ],
+       "facing": "south, onto the quad — the dominant façade"
+      },
+      {
+       "stopId": "_hostel",
+       "col": 0,
+       "row": 12,
+       "footprint": [
+        5,
+        5
+       ],
+       "facing": "south, onto its own apron west of the road; deliberately cropped by the map edge"
+      },
+      {
+       "stopId": "_workshop",
+       "col": 22,
+       "row": 17,
+       "footprint": [
+        6,
+        5
+       ],
+       "facing": "south, flush to the quad's east edge, front row level with the quad's bottom"
+      }
+     ]
+    },
+    {
+     "centre": [
+      16,
+      28
+     ],
+     "shape": "A crossroads town, not a yard — two shared spaces linked by the road bend at [20,26]/[13,26]. Space 1, the APRON: `path` blob cols 12-21, rows 25-27 (the east-west leg widened). Space 2, the FORECOURT: `path` blob cols 15-21, rows 34-36 with a spur cols 13-15 at row 35 joining the spine. Chadda and the teahouse front the apron from the north; Metarch1 fronts the forecourt from the north; the shed sits west of the spine facing the road. Spurs: col 17 rows 23-25 (teahouse), cols 14-15 row 25 is already apron (chadda's door lands on it), cols 17-19 rows 34 (Metarch1). Fence a plot at cols 21-27, rows 28-33 on its west and south edges — the back land behind Metarch1. `lamp` at [12,26] and [21,26]; `stump`+`log` at [22,30].",
+     "buildings": [
+      {
+       "stopId": "_teahouse",
+       "col": 16,
+       "row": 22,
+       "footprint": [
+        3,
+        3
+       ],
+       "facing": "south, stepped one storey above chadda so the two roofs terrace"
+      },
+      {
+       "stopId": "chadda",
+       "col": 13,
+       "row": 24,
+       "footprint": [
+        4,
+        4
+       ],
+       "facing": "south, onto the apron — the smallest building on the map, dark log walls"
+      },
+      {
+       "stopId": "metarch1",
+       "col": 16,
+       "row": 33,
+       "footprint": [
+        5,
+        5
+       ],
+       "facing": "south, onto the forecourt — mid timber, the seed of the shape metarch2 grows into"
+      },
+      {
+       "stopId": "_shed",
+       "col": 8,
+       "row": 34,
+       "footprint": [
+        3,
+        3
+       ],
+       "facing": "south, west of the spine — a roadside store, gives the clearing a far side"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "delhi",
+   "rowBand": [
+    38,
+    64
+   ],
+   "barrier": "THE RIVER GORGE AND BRIDGE. Water blob rows 38-40, cols 0-33 (full width, no way round it), with `cliff` bank tiles at row 37 and row 41 except where the bridge lands. The `bridge` sheet at cols 12-14, rows 37-41. Then, a beat later, THE CITY WALL: `cliff` run at rows 43-44 across cols 0-11 and cols 15-33, gate opening cols 12-14, `lamp` at [11,44] and [15,44]. Two things crossed in eight rows is what makes the capital feel entered rather than reached.",
+   "landmark": "The wall tower: 4 wide x 11 tall (cols 29-32, rows 42-52). Delhi's landmark is dominant by HEIGHT, not spread — the only vertical on the map. Its base sits on the wall line (rows 43-44) so it reads as a gate/watch tower, and its top overhangs the river bank. Blue slate roof, brick walls.",
+   "vegetation": "ZERO trees inside the wall (rows 44-60). That absence is the whole point — it is what makes the region read as paved. Instead: (1) Riverbank willows, `treeSmall` only, rows 41-42, at cols 0,3,6,9 and 16,19,22,25,28,31 — a thin regular line, not a mass. (2) Green belt south of the plaza, rows 61-64, cols 0-7 and 26-33, fill 0.40 — the periphery. (3) Farm blobs at cols 0-8 rows 61-64 and cols 26-33 rows 61-64, wheat decor inside. (4) Inside the wall the only planting is `potRed`/`potYellow` at each building's front row, two per building at footprint x+1 and x+w-2, plus `lamp` at the plaza corners [2,59], [31,59], [2,52], [31,52] and flanking the gate street mouth at [11,51], [15,51].",
+   "clusters": [
+    {
+     "centre": [
+      16,
+      53
+     ],
+     "shape": "A walled square with a continuous north frontage — the only cluster on the map where buildings touch each other. The PLAZA is a `path` blob cols 2-31, rows 51-60, minus footprints. The GATE STREET is a `path` rect cols 12-14, rows 44-51, running from the wall gate down into the plaza; jaiswal and the civic hall face each other across it. Reading the north frontage west to east: terrace (1-3), jaiswal (5-10), street (12-14), civic hall (16-20), then medicfibers set forward into the plaza (22-27) and the tower closing the north-east (29-32). Market stalls along the plaza's south edge, rows 59-60, cols 6-20 — `fences` run plus alternating potRed/potYellow/wheat crates — so the square is enclosed on four sides without a building turning its back on it. The road's east-west leg at row 56 crosses the plaza's lower half; the walker sees every façade above him.",
+     "buildings": [
+      {
+       "stopId": "_terrace",
+       "col": 1,
+       "row": 51,
+       "footprint": [
+        3,
+        5
+       ],
+       "facing": "south onto the plaza, cropped by the map edge"
+      },
+      {
+       "stopId": "jaiswal",
+       "col": 5,
+       "row": 51,
+       "footprint": [
+        6,
+        7
+       ],
+       "facing": "south onto the plaza, west side of the gate street — brick walls, the tallest of the two offices"
+      },
+      {
+       "stopId": "_civic",
+       "col": 16,
+       "row": 49,
+       "footprint": [
+        5,
+        6
+       ],
+       "facing": "south, east side of the gate street, set two rows back so the street mouth flares"
+      },
+      {
+       "stopId": "medicfibers",
+       "col": 22,
+       "row": 54,
+       "footprint": [
+        6,
+        6
+       ],
+       "facing": "south, set forward INTO the plaza so it fronts the row-56 road leg directly — glazed storefront, the only shopfront on the map"
+      },
+      {
+       "stopId": "_tower",
+       "col": 29,
+       "row": 52,
+       "footprint": [
+        4,
+        11
+       ],
+       "facing": "south, closes the plaza's north-east corner"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ranchi",
+   "rowBand": [
+    64,
+    80
+   ],
+   "barrier": "THE TREE LINE. A solid conifer band at rows 64-66 spanning cols 0-22 and cols 26-33, with a 3-tile gap at cols 23-25 where the road passes. Dense: `tree` on even cols at rows 64 and 66, `treeSmall` on odd cols at row 65, fill ~0.80. You leave the city by walking into a wall of forest and coming out the other side into farmland. Cheap to implement, and it is exactly what ref-5 does at its top edge.",
+   "landmark": "The Metarch2 studio: 8 wide x 6 tall (cols 15-22, rows 66-71). It is metarch1's 5x5 timber shape grown — same roof type, same wall material, larger footprint and a taller ridge. It backs directly onto the conifer line, so its lit roof slope reads as a silhouette against black canopy. That contrast, not size alone, is what makes it dominant in a 16-row region.",
+   "vegetation": "NO free trees at all — every tree in this region is either the barrier line or a hedgerow. (1) The tree line, rows 64-66 (above). (2) Hedgerows: single-file `tree` along col 12, rows 67-74, and along col 26, rows 67-72 — these divide the fields from the road and give the region its grain. (3) An ORCHARD, formal grid: `treeSmall` at cols 28,30,32 x rows 77,79. (4) Zero vegetation inside the yard (cols 12-25, rows 72-77) — that emptiness is what makes it a working yard. Fields as four rectangles aligned to the road, never random: cols 0-11 rows 66-73; cols 27-33 rows 66-71; cols 14-24 rows 77-78; cols 0-10 rows 78-79. `wheat`/`wheat2` on alternating cells inside each, `fences` along each plot's road-facing edge. Beach strip rows 79-80, cols 0-33 — the Indian shore.",
+   "clusters": [
+    {
+     "centre": [
+      18,
+      74
+     ],
+     "shape": "A three-sided working compound open to the south, over the fields. The YARD is a `path` blob cols 12-25, rows 72-77; the road's east-west leg at row 76 runs inside it, so again the road IS the yard (rule 2). Studio closes the north, annexe the east, barn the west. Spur: `path` rect cols 11-12, rows 76-77 links the barn's front to the spine. Door spurs cols 18-19 rows 71-72 (studio) and cols 28-29 rows 75-76 (annexe). Detail: `log` and `stump` at [13,73] and [14,74], `rocks2` at [25,73], `lamp` at [13,76] and [25,76], a fence run cols 12-25 at row 78 closing the yard's south side except at cols 18-20.",
+     "buildings": [
+      {
+       "stopId": "metarch2",
+       "col": 15,
+       "row": 71,
+       "footprint": [
+        8,
+        6
+       ],
+       "facing": "south onto the yard — the dominant roof, backed onto the conifer line"
+      },
+      {
+       "stopId": "_annexe",
+       "col": 27,
+       "row": 75,
+       "footprint": [
+        4,
+        4
+       ],
+       "facing": "south, east of the yard, front row level with the yard's lower half"
+      },
+      {
+       "stopId": "_barn",
+       "col": 6,
+       "row": 77,
+       "footprint": [
+        5,
+        4
+       ],
+       "facing": "south, west of the road, its own spur into the spine"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dhahran",
+   "rowBand": [
+    86,
+    104
+   ],
+   "barrier": "THE SEA AND THE CAUSEWAY. Water blob rows 80-86, cols 0-33, crossed by `bridge` tiles at cols 12-14, rows 79-87 — a single timber causeway from shore to shore, nine rows long, with nothing on either side of it. This is the largest barrier on the map and it should be: it is the only one that changes continent. Landfall on sand rows 86-88. Then a second beat, THE DUNE RIDGE: `cliff` tiles at rows 89-90 across cols 0-11 and cols 15-33, with a cut at cols 12-14 where the road climbs through, and a gatehouse beside the cut.",
+   "landmark": "KFUPM main building: 12 wide x 8 tall (cols 17-28, rows 92-99) — the widest roof on the map, deliberately larger than the BIT block that opened it. Pale/white plaster walls, flat pale roof, no shingle. It terminates the path: the walker's last position, [23,102], is dead centre of its façade with the whole 192px front filling the view above him.",
+   "vegetation": "Almost nothing, and what there is is FORMAL — the contrast with the organic clusters above is the point. (1) Date palms (`tree`, graded) in a single row along the plaza's south edge at row 103, cols 8, 12, 16, 20, 24, 28 — even spacing, six of them. (2) Two palms flanking the ridge cut at [10,92] and [16,92]. (3) NO other trees anywhere in rows 86-104. (4) `tuft1/2/3` at fill 0.06 confined to cols 0-5 and cols 28-33, rows 91-104 — the outer margins only. (5) `rocks1/2/3` massed at the ridge foot, rows 91-92, cols 0-6 and cols 27-33, fill 0.35. (6) Rows 86-90 carry nothing but the shore, the ridge and the causeway — a genuinely empty approach, which is what makes the campus below read as arrival.",
+   "clusters": [
+    {
+     "centre": [
+      22,
+      98
+     ],
+     "shape": "Institutional symmetry — main block centred with a detached wing either side, the only cluster on the map that is not organic. The PLAZA is a `path` blob cols 4-33, rows 100-104, running to the bottom edge of the map. The road comes down col 13 through the gap between the west wing (ends col 10) and the main block (starts col 17): that gap IS the entry drive, which is why the west gap (cols 11-16) is wider than the east (col 29). Turn east at row 102 and terminate at [23,102]. Door spurs: cols 22-23 rows 99-100 (main), cols 7-8 rows 99-100 (west wing), cols 31-32 rows 99-100 (east wing). Detail: `lamp` at [5,101], [16,101], [29,101], [33,101]; `potYellow` at [18,100] and [27,100].",
+     "buildings": [
+      {
+       "stopId": "_gatehouse",
+       "col": 15,
+       "row": 91,
+       "footprint": [
+        3,
+        3
+       ],
+       "facing": "south, beside the ridge cut — a guard post at the campus boundary"
+      },
+      {
+       "stopId": "kfupm",
+       "col": 17,
+       "row": 99,
+       "footprint": [
+        12,
+        8
+       ],
+       "facing": "south onto the plaza — the terminal façade of the whole map"
+      },
+      {
+       "stopId": "_wing_w",
+       "col": 6,
+       "row": 99,
+       "footprint": [
+        5,
+        6
+       ],
+       "facing": "south, detached west wing"
+      },
+      {
+       "stopId": "_wing_e",
+       "col": 30,
+       "row": 99,
+       "footprint": [
+        4,
+        6
+       ],
+       "facing": "south, detached east wing, cropped by the map edge"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "globalNotes": "ANCHOR CONVENTION. Every `col`,`row` above is a BOTTOM-LEFT anchor in tiles, matching Scene.sprite(name, cx, cy) which places a sprite at cy*TILE - h + TILE. So a building with col=10, row=12, footprint [10,7] occupies cols 10..19 and rows 6..12, with row 12 being its front (façade) row. All footprints are the full drawn bounding box including roof overhang, not just the wall.\n\nTHE FACING RULE, AND WHY EVERYTHING IS \"SOUTH\". Cute Fantasy and the Pixel Crawler wall/roof parts only draw a front elevation facing the bottom of the screen. So \"doors face the approach\" (HANDOFF 9.9 rule 3) resolves to a hard geometric constraint: every shared space must lie SOUTH of the buildings that front it. Buildings therefore range along a yard's NORTH edge, or sit flush to its east/west edge with their front row level with the yard's bottom row. Nothing is ever placed directly south of a yard facing away from it — where a cluster needs a fourth side, it is closed with fences, market stalls or a decor run, never a building's back. The walker moves top-to-bottom throughout, so this also means he sees a façade the entire time he is inside a cluster.\n\nBAND CHANGES — I am proposing new bands, and PATH/STOPS[].at must be recomputed. New REGIONS rows: mesra [0,38], delhi [38,64], ranchi [64,80], dhahran [86,104], with the sea occupying 80-86 (SEA = { row: 80, height: 6 }). Reasons: (a) mesra now carries TWO clusters — the BIT campus and the Ranchi town where Chadda and Metarch1 actually were — plus a closed forest travel stretch between them, and 34 rows could not hold that; (b) old ranchi at 12 rows could not fit an 8x6 studio plus a yard plus fields, and it butted straight into the sea with no shore; (c) old dhahran got 28 rows for one building while delhi got 24 for a city — reversed. Also set delhi fields:0 (a walled capital has no farmland inside it; the two farm blobs are outside, rows 61-64) and raise ranchi fields to 0.55.\n\nNEW PATH (axis-aligned, replaces the current one):\n  [6,0], [6,17], [20,17], [20,26], [13,26], [13,56], [24,56], [24,76], [13,76], [13,102], [23,102]\nSegment lengths / cumulative starts: 17/0, 14/17, 9/31, 7/40, 30/47, 11/77, 20/88, 11/108, 26/119, 10/145. PATH_LENGTH = 155. Two bends per region maximum; the long col-13 run (rows 26-56) is what carries the river crossing and the city gate without a zigzag.\n\nNEW STOPS[].at (verified against the segments above, each landing level with its building's front or forecourt):\n  barch 25, chadda 45, metarch1 56, jaiswal 72, medicfibers 88, metarch2 114, kfupm 150.\nMinimum separation is 11 tiles (chadda→metarch1), so no two arrival cards can be on screen at once. Add a non-card beat at d≈2 for the campus gate if the banner system wants one.\n\nSTOPS[].side IS NOW WRONG AND SHOULD BE DROPPED. stopAnchor() derives a building position from pointAt(stop.at) + side*6, which is precisely the mechanism that produced the scatter — it can only make beads. Replace it with an explicit `anchor: [col,row]` and `footprint: [w,h]` per stop, taken from the tables above, and let the arrival card position itself from the building's bounding box (centre-x of the footprint, top edge minus 1 tile) rather than from `side`.\n\npathCells() STILL WORKS but is no longer sufficient. Keep it for the 3-wide spine, then union it with the explicit paved rects, which are what make the road serve the settlements (rule 2):\n  quad          cols 9-21,  rows 13-18\n  hostel apron  cols 0-7,   rows 13-15\n  town apron    cols 12-21, rows 25-27\n  forecourt     cols 15-21, rows 34-36  + spur cols 13-15, row 35\n  gate street   cols 12-14, rows 44-51\n  delhi plaza   cols 2-31,  rows 51-60\n  ranchi yard   cols 12-25, rows 72-77  + barn spur cols 11-12, rows 76-77\n  kfupm plaza   cols 4-33,  rows 100-104\nPlus the 1-2 tile door spurs listed per cluster. Blob the union in one pass so the nine-slice gives the plazas real edges; subtract building footprints first or the roofs will sit on path tiles at their eaves.\n\nDENSITY RHYTHM (rule 4), stated as row bands so it can be asserted in code. Dense (a cluster): rows 6-18, 22-36, 44-60, 66-77, 91-104. Open (travel): rows 0-5, 19-21, 37-43, 61-65, 78-90. No building anchor may fall in an open band, and tree fill in an open band must be either >0.5 (closed forest) or <0.1 (bare) — never the 0.2-0.4 middle, which is what reads as uniform scatter.\n\nVEGETATION MUST BE HASHED, NOT rnd(). The current loop calls rnd() per attempted placement over a whole region, which is the definition of uniform scatter. Replace with per-mass fill: for each named rectangle above, iterate its cells and place where ((c*73856093) ^ (r*19349663)) % 100 < fill*100, rejecting any cell within 2 tiles of an already-placed `tree` (the 64x80 sprite is 4x5 tiles, so closer than 2 means overlap, not a grove). Every tree on the map belongs to exactly one named mass.\n\nY-SORT IS LOAD-BEARING FOR THIS LAYOUT (HANDOFF 9.6 item 4). The NE grove at cols 24-33 rows 4-14 is specified to overlap the academic block's east eaves, and the conifer line at rows 64-66 to overlap metarch2's roof ridge — that overlap is what binds the layers (rule 8). Without sorting ops by (y + height) before render those canopies will draw behind the roofs and the whole scheme flattens.\n\nBUILDING VOCABULARY, so the seven read as seven institutions (extends the 9.6 item-1 suggestion with the sizes settled here):\n  barch       10x7  plaster-and-beam walls, wide brown wood roof   — the academic block\n  chadda       4x4  dark log walls, brown wood roof                — the smallest thing on the map\n  metarch1     5x5  plank/timber walls, green shingle roof\n  jaiswal      6x7  brick walls, blue slate roof                   — tallest of the two Delhi offices\n  medicfibers  6x6  glazed storefront, blue slate roof             — the only shopfront\n  metarch2     8x6  plank/timber walls, green shingle roof         — metarch1's exact vocabulary, grown\n  kfupm       12x8  white/pale plaster, flat pale roof             — no shingle anywhere on it\nThe metarch1 → metarch2 pairing is deliberate: identical materials, footprint up from 25 to 48 tiles. The return reads as a return without a label.\n\nFILLER BUILDINGS. Ids prefixed `_` (_hostel, _workshop, _teahouse, _shed, _terrace, _civic, _tower, _annexe, _barn, _gatehouse, _wing_w, _wing_e) carry no card and no `at`. They exist because a cluster needs buildings that are not events — eleven of them against seven stops is roughly the ratio ref-1 and ref-5 run at, and it is the single biggest difference between a place and a menu."
+}

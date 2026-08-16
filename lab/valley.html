@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Valley — new map</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d0d10; color: #dcdce0; font-family: "Jost", system-ui, sans-serif; padding: 1rem; }
+  h1 { font-size: 1rem; font-weight: 600; }
+  .sub { color: #9a9aa3; font-size: .74rem; margin: .3rem 0 1rem; max-width: 90ch; line-height: 1.55; }
+  .bar { display: flex; gap: 1rem; align-items: center; margin-bottom: .8rem; font-size: .72rem; }
+  .bar button { background: #1c1c21; color: #dcdce0; border: 1px solid #33333c; border-radius: 4px;
+                padding: .3rem .7rem; cursor: pointer; font: inherit; }
+  .bar button.on { border-color: #f59e0b; color: #f59e0b; }
+  .stage { position: relative; display: inline-block; }
+  canvas { display: block; image-rendering: pixelated; border: 1px solid rgba(255,255,255,.14); }
+  .rgn { position: absolute; left: 0; right: 0; border-top: 1px dashed rgba(245,158,11,.35); pointer-events: none; }
+  .rgn b { position: absolute; top: 2px; left: 4px; font-size: .52rem; font-weight: 700; letter-spacing: .14em;
+           text-transform: uppercase; color: #f59e0b; background: rgba(9,9,11,.8); padding: 1px 4px; border-radius: 2px; }
+  .pin { position: absolute; transform: translate(-50%, -100%); background: rgba(14,14,17,.95);
+         border: 1px solid rgba(245,158,11,.5); border-radius: 4px; padding: .2rem .4rem; width: 140px;
+         font-size: .52rem; line-height: 1.3; pointer-events: none; }
+  .pin em { display: block; font-style: normal; color: #f59e0b; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h1>The Valley — a new Experience map</h1>
+<p class="sub">
+  Built from scratch against the three usable references. A meandering river is the
+  spine; cliffs and bridges are the chapter breaks; vegetation masses at three sizes
+  and overlaps; every open cell carries ground cover; every focal building has a prop
+  apron. Seven focal points, same as before. Nothing here imports from the old map's
+  modules, so both can exist at once.
+</p>
+
+<div class="bar">
+  <button id="zoom" class="on">zoom 1×</button>
+  <button id="marks" class="on">region + stop marks</button>
+  <button id="grade" class="on">amber grade</button>
+  <span id="stat"></span>
+</div>
+
+<div class="stage" id="stage"></div>
+
+<script type="module">
+import { TILE, loadAll, REGIONS, STOPS, SPRITES, VALLEY_GRADE } from '/src/modules/pixel/valley.js';
+import { gradeSheets } from '/src/modules/pixel/recolour.js';
+import { buildValley } from '/src/modules/pixel/valleybuild.js';
+
+const raw = await loadAll();
+const graded = gradeSheets(raw, VALLEY_GRADE);
+const built = buildValley();
+const { scene, cols, rows, treeCount, ops, check, stops: placedStops } = built;
+console.log('valley', built);
+if (check.unplaced.length || check.buildingsOnWater.length || check.pathGaps)
+  console.warn('VALLEY CHECK FAILED', check);
+
+const canvas = document.createElement('canvas');
+canvas.width = cols * TILE;
+canvas.height = rows * TILE;
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+let useGrade = true;
+function paint() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  scene.render(ctx, useGrade ? graded : raw);
+}
+paint();
+
+const stage = document.getElementById('stage');
+stage.appendChild(canvas);
+
+let scale = 1, marks = true;
+function apply() {
+  canvas.style.width = `${cols * TILE * scale}px`;
+  canvas.style.height = `${rows * TILE * scale}px`;
+  stage.querySelectorAll('.rgn,.pin').forEach((e) => e.remove());
+  if (!marks) return;
+  const px = TILE * scale;
+  for (const g of REGIONS) {
+    const el = document.createElement('div');
+    el.className = 'rgn';
+    el.style.top = `${g.rows[0] * px}px`;
+    el.style.height = `${(g.rows[1] - g.rows[0]) * px}px`;
+    el.innerHTML = `<b>${g.label} · ${g.years}</b>`;
+    stage.appendChild(el);
+  }
+  for (const ps of placedStops) {
+    const s = STOPS.find((x) => x.id === ps.id);
+    const [, h] = SPRITES[s.sprite];
+    const el = document.createElement('div');
+    el.className = 'pin';
+    el.style.left = `${Math.min(Math.max(ps.anchor[0], 5), cols - 5) * px}px`;
+    el.style.top = `${(ps.anchor[1] + 1) * px - h * scale}px`;
+    el.innerHTML = `<em>${s.period}</em>${s.role}`;
+    stage.appendChild(el);
+  }
+}
+apply();
+
+document.getElementById('zoom').onclick = (e) => {
+  scale = scale === 1 ? 2 : 1;
+  e.target.textContent = `zoom ${scale}×`;
+  apply();
+};
+document.getElementById('marks').onclick = (e) => {
+  marks = !marks; e.target.classList.toggle('on', marks); apply();
+};
+document.getElementById('grade').onclick = (e) => {
+  useGrade = !useGrade;
+  e.target.classList.toggle('on', useGrade);
+  e.target.textContent = useGrade ? 'amber grade' : 'raw green';
+  paint();
+};
+document.getElementById('stat').textContent =
+  `${cols}×${rows} tiles · ${treeCount} plants · ${ops} draw ops`;
+console.log('valley', { cols, rows, treeCount, ops });
+window.__valley = { cols, rows, treeCount, ops };
+</script>
+</body>
+</html>

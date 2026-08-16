@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Experience map — the journey</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09090b; color: #dcdce0; font-family: "Jost", system-ui, sans-serif; padding: 1.25rem; }
+  h1 { font-size: 1.05rem; font-weight: 600; }
+  .sub { color: #9a9aa3; font-size: .76rem; margin: .3rem 0 1rem; max-width: 80ch; line-height: 1.55; }
+  .stage { position: relative; display: inline-block; }
+  canvas { display: block; image-rendering: pixelated; border: 1px solid rgba(255,255,255,.12); border-radius: 6px; }
+
+  .rgn { position: absolute; left: 0; right: 0; border-top: 1px dashed rgba(245,158,11,.3); pointer-events: none; }
+  .rgn b { position: absolute; top: 3px; left: 5px; font-size: .55rem; font-weight: 700; letter-spacing: .16em;
+           text-transform: uppercase; color: #f59e0b; background: rgba(9,9,11,.75); padding: 2px 5px; border-radius: 3px; }
+  .rgn i { position: absolute; top: 3px; right: 5px; font-style: normal; font-size: .52rem; letter-spacing: .1em;
+           color: #9a9aa3; background: rgba(9,9,11,.75); padding: 2px 5px; border-radius: 3px; }
+
+  .pin { position: absolute; transform: translate(-50%, -100%); background: rgba(14,14,17,.95);
+         border: 1px solid rgba(245,158,11,.45); border-radius: 5px; padding: .3rem .5rem; width: 160px;
+         font-size: .56rem; line-height: 1.35; pointer-events: none; }
+  .pin em { display: block; font-style: normal; color: #f59e0b; font-weight: 600; font-size: .52rem; letter-spacing: .07em; }
+  .pin span { color: #9a9aa3; }
+  .pin::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 1px; height: 6px; background: rgba(245,158,11,.6); }
+</style>
+</head>
+<body>
+
+<h1>Experience &amp; Education — the journey</h1>
+<p class="sub">
+  The whole map at once, with every card shown — a reference view for checking
+  the composition. The real section is <code>walk.html</code>, where the
+  character crosses this and one card arrives at a time. Both build the world
+  from the same <code>worldmap.js</code>, so they cannot drift apart.
+</p>
+
+<div class="stage" id="stage"></div>
+
+<script type="module">
+import { TILE, loadAll } from '/src/modules/pixel/cutefantasy.js';
+import { gradeSheets, SITE_GRADE } from '/src/modules/pixel/recolour.js';
+import { buildScene } from '/src/modules/pixel/worldmap.js';
+import { REGIONS, STOPS, MAP_COLS, cardAnchor } from '/src/modules/pixel/journey.js';
+
+const SCALE = 1;
+const { scene, cols, rows, treeCount, peopleCount, rockCount } = buildScene();
+
+const sheets = gradeSheets(await loadAll(), SITE_GRADE);
+const canvas = document.createElement('canvas');
+canvas.width = cols * TILE;
+canvas.height = rows * TILE;
+canvas.style.width = `${cols * TILE * SCALE}px`;
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+scene.render(ctx, sheets);
+
+const stage = document.getElementById('stage');
+stage.appendChild(canvas);
+
+const px = TILE * SCALE;
+for (const g of REGIONS) {
+  const el = document.createElement('div');
+  el.className = 'rgn';
+  el.style.top = `${g.rows[0] * px}px`;
+  el.style.height = `${(g.rows[1] - g.rows[0]) * px}px`;
+  el.innerHTML = `<b>${g.label} · ${g.chapter}</b><i>${g.years}</i>`;
+  stage.appendChild(el);
+}
+
+for (const stop of STOPS) {
+  const a = cardAnchor(stop);
+  const el = document.createElement('div');
+  el.className = 'pin';
+  const half = 85 / px;
+  el.style.left = `${Math.min(Math.max(a.col, half), MAP_COLS - half) * px}px`;
+  el.style.top = `${a.row * px}px`;
+  el.innerHTML = `<em>${stop.period}</em>${stop.role}<br><span>${stop.org}</span>`;
+  stage.appendChild(el);
+}
+
+console.log({ treeCount, peopleCount, rockCount, ops: scene.ops.length });
+window.__map = { treeCount, peopleCount, rockCount, ops: scene.ops.length };
+</script>
+</body>
+</html>

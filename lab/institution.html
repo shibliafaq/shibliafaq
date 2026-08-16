@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Institution — noble manors combined</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09090b; color: #dcdce0; font-family: "Jost", system-ui, sans-serif; padding: 1.5rem 2rem 4rem; }
+  h1 { font-size: 1.25rem; font-weight: 600; margin-bottom: .3rem; }
+  .sub { color: #9a9aa3; font-size: .84rem; margin-bottom: 1.4rem; max-width: 78ch; line-height: 1.6; }
+  h2 { font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: #f59e0b; margin: 2.2rem 0 .8rem; }
+  .note { font-size: .76rem; color: #8b8b93; margin-bottom: .9rem; max-width: 74ch; line-height: 1.5; }
+  .cell { background: #16161b; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; padding: 8px; display: inline-block; }
+  canvas { display: block; image-rendering: pixelated; }
+  figcaption { margin-top: .45rem; font-size: .68rem; color: #8b8b93; letter-spacing: .05em; }
+  figure { margin: 0 0 1.2rem; }
+  .row { display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: flex-end; }
+</style>
+</head>
+<body>
+
+<h1>Institution — noble manors combined</h1>
+<p class="sub">
+  Three ways of joining manors into one building. The thing that decides whether
+  it reads as an institution or as three houses in a row is <strong>overlap</strong>:
+  the wings have to sit far enough in that their roofs interlock, and every piece
+  has to share one ground line. Bounding boxes are measured from alpha at runtime,
+  not guessed — the sprites do not fill their 128px cells.
+</p>
+
+<div id="out"></div>
+
+<script type="module">
+const SRC = '/assets/pixel/premade/noblemanors.webp';
+const SZADI = '/assets/pixel/premade/szadi.webp';
+const CELL = 128;
+const ZOOM = 2;
+
+const load = (s) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = s; });
+
+/** Opaque bounds of one 128px cell, so pieces can butt tightly. */
+function bbox(img, cx, cy) {
+  const c = document.createElement('canvas');
+  c.width = CELL; c.height = CELL;
+  const x = c.getContext('2d', { willReadFrequently: true });
+  x.imageSmoothingEnabled = false;
+  x.drawImage(img, cx * CELL, cy * CELL, CELL, CELL, 0, 0, CELL, CELL);
+  const d = x.getImageData(0, 0, CELL, CELL).data;
+  let x0 = CELL, y0 = CELL, x1 = -1, y1 = -1;
+  for (let py = 0; py < CELL; py++) {
+    for (let px = 0; px < CELL; px++) {
+      if (d[(py * CELL + px) * 4 + 3] > 8) {
+        if (px < x0) x0 = px; if (px > x1) x1 = px;
+        if (py < y0) y0 = py; if (py > y1) y1 = py;
+      }
+    }
+  }
+  return { sx: cx * CELL + x0, sy: cy * CELL + y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+}
+
+const img = await load(SRC);
+// sheet is 2x2; manor1 = (0,0), manor2 = (1,0), manor3 = (0,1), manor4 = (1,1)
+const M = {
+  m1: bbox(img, 0, 0), m2: bbox(img, 1, 0), m3: bbox(img, 0, 1), m4: bbox(img, 1, 1),
+};
+
+/**
+ * Draw a composite. `parts` are [key, overlapFraction] — overlap is applied
+ * against the PREVIOUS part's width, and pieces are baseline-aligned so the
+ * whole thing stands on one ground line.
+ *
+ * Wings draw first, centre last, so the centre block's roof sits over the wings'
+ * — which is what makes the join read as one structure rather than a collision.
+ */
+function composite(parts, centreIndex) {
+  const boxes = parts.map(([k]) => M[k]);
+  const overlaps = parts.map(([, o]) => o);
+
+  const xs = [];
+  let cursor = 0;
+  boxes.forEach((b, i) => {
+    if (i > 0) cursor -= Math.round(boxes[i - 1].w * overlaps[i]);
+    xs.push(cursor);
+    cursor += b.w;
+  });
+
+  const totalW = Math.max(...xs.map((x, i) => x + boxes[i].w));
+  const maxH = Math.max(...boxes.map((b) => b.h));
+
+  const c = document.createElement('canvas');
+  c.width = totalW; c.height = maxH;
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+
+  // Wings first, then the centre on top.
+  const order = boxes.map((_, i) => i).filter((i) => i !== centreIndex).concat([centreIndex]);
+  for (const i of order) {
+    const b = boxes[i];
+    ctx.drawImage(img, b.sx, b.sy, b.w, b.h, xs[i], maxH - b.h, b.w, b.h);
+  }
+  return c;
+}
+
+const OPTIONS = [
+  { label: 'A — manor4 centre, manor1 wings', parts: [['m1', 0], ['m4', 0.34], ['m1', 0.34]], centre: 1,
+    note: 'Symmetric. The triple-gable centre outranks the wings, which is what an academic block looks like.' },
+  { label: 'B — manor2 turret left, manor4 centre, manor1 right', parts: [['m2', 0], ['m4', 0.30], ['m1', 0.32]], centre: 1,
+    note: 'Asymmetric, with the turret as a landmark. Reads more civic than academic.' },
+  { label: 'C — manor1 + manor3, two blocks', parts: [['m1', 0], ['m3', 0.28]], centre: 0,
+    note: 'Two-part only. Smaller footprint if the map cannot afford a three-wide institution.' },
+  { label: 'D — manor3 + manor4 + manor3 mirrored', parts: [['m3', 0], ['m4', 0.36], ['m3', 0.36]], centre: 1,
+    note: 'Widest and heaviest. Probably right for KFUPM if BIT Mesra takes option A.' },
+];
+
+const out = document.getElementById('out');
+
+const h2m = document.createElement('h2');
+h2m.textContent = 'Measured pieces';
+out.appendChild(h2m);
+const mrow = document.createElement('div');
+mrow.className = 'row';
+for (const [k, b] of Object.entries(M)) {
+  const c = document.createElement('canvas');
+  c.width = b.w; c.height = b.h;
+  c.style.width = `${b.w * ZOOM}px`;
+  const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+  x.drawImage(img, b.sx, b.sy, b.w, b.h, 0, 0, b.w, b.h);
+  const f = document.createElement('figure');
+  const box = document.createElement('div'); box.className = 'cell'; box.appendChild(c);
+  f.appendChild(box);
+  const cap = document.createElement('figcaption');
+  cap.textContent = `${k} · ${b.w}×${b.h}px · ${(b.w / 16).toFixed(1)}×${(b.h / 16).toFixed(1)} tiles`;
+  f.appendChild(cap);
+  mrow.appendChild(f);
+}
+out.appendChild(mrow);
+
+for (const o of OPTIONS) {
+  const h2 = document.createElement('h2');
+  h2.textContent = o.label;
+  out.appendChild(h2);
+  const p = document.createElement('p');
+  p.className = 'note';
+  p.textContent = o.note;
+  out.appendChild(p);
+
+  const c = composite(o.parts, o.centre);
+  c.style.width = `${c.width * ZOOM}px`;
+  const f = document.createElement('figure');
+  const box = document.createElement('div'); box.className = 'cell'; box.appendChild(c);
+  f.appendChild(box);
+  const cap = document.createElement('figcaption');
+  cap.textContent = `${c.width}×${c.height}px · ${(c.width / 16).toFixed(1)}×${(c.height / 16).toFixed(1)} tiles`;
+  f.appendChild(cap);
+  out.appendChild(f);
+}
+
+/* ---- Szadi office façades, for comparison ---- */
+const sz = await load(SZADI);
+const h2s = document.createElement('h2');
+h2s.textContent = 'Szadi art — office façades (public domain), three colourways';
+out.appendChild(h2s);
+const ps = document.createElement('p');
+ps.className = 'note';
+ps.textContent = 'Two-storey timber-framed fronts with arched windows and a porch run. These are the office candidates — period, urban, and distinctly not domestic.';
+out.appendChild(ps);
+const srow = document.createElement('div');
+srow.className = 'row';
+for (const x0 of [40, 330, 620]) {
+  const c = document.createElement('canvas');
+  c.width = 250; c.height = 180;
+  c.style.width = `${250 * ZOOM}px`;
+  const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+  x.drawImage(sz, x0, 660, 250, 180, 0, 0, 250, 180);
+  const box = document.createElement('div'); box.className = 'cell'; box.appendChild(c);
+  srow.appendChild(box);
+}
+out.appendChild(srow);
+</script>
+</body>
+</html>

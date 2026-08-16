@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Premade buildings — Kibyra + Pixel Lands</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09090b; color: #dcdce0; font-family: "Jost", system-ui, sans-serif; padding: 1.5rem 2rem 4rem; }
+  h1 { font-size: 1.25rem; font-weight: 600; margin-bottom: .3rem; }
+  .sub { color: #9a9aa3; font-size: .84rem; margin-bottom: 1.6rem; max-width: 76ch; line-height: 1.6; }
+  h2 { font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: #f59e0b; margin: 2rem 0 .9rem; }
+  .grid { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; }
+  figure { margin: 0; text-align: center; }
+  figcaption { margin-top: .5rem; font-size: .68rem; color: #8b8b93; letter-spacing: .06em; }
+  .cell { background: #16161b; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; padding: 6px; }
+  canvas { display: block; image-rendering: pixelated; }
+  .bar { display: flex; gap: .5rem; margin-bottom: 1rem; }
+  button { background: #16161b; color: #dcdce0; border: 1px solid rgba(255,255,255,.16); border-radius: 7px;
+           padding: .45rem .9rem; font: inherit; font-size: .78rem; cursor: pointer; }
+  button.on { border-color: #f59e0b; color: #f59e0b; }
+</style>
+</head>
+<body>
+
+<h1>Premade buildings — what's actually available</h1>
+<p class="sub">
+  Complete artist-drawn buildings, not composed from parts. Kibyra's are 128×128
+  (8×8 tiles); Pixel Lands' vary. Toggle the grade to see them in the map's amber
+  palette — that is how they would actually appear.
+</p>
+
+<div class="bar">
+  <button id="bUn" class="on">Ungraded</button>
+  <button id="bGr">Site grade</button>
+  <button id="bZ">Zoom ×3</button>
+</div>
+
+<div id="out"></div>
+
+<script type="module">
+const BASE = '/assets/pixel/premade';
+
+// Each Kibyra sheet is a 2x2 grid of 128px buildings.
+const SETS = [
+  { name: 'Noble manors — best fit for institutions and offices (no text on them)',
+    src: `${BASE}/noblemanors.webp`, cell: 128, cols: 2, rows: 2, tag: 'manor' },
+  { name: 'Museums — grand, but MUSEUM is painted on the signboard',
+    src: `${BASE}/museums.webp`, cell: 128, cols: 2, rows: 2, tag: 'museum' },
+  { name: 'Churches — CHURCH on three of four',
+    src: `${BASE}/churches.webp`, cell: 128, cols: 2, rows: 2, tag: 'church' },
+  { name: 'Market stalls — street filler, no text',
+    src: `${BASE}/marketstalls.webp`, cell: 128, cols: 2, rows: 2, tag: 'stall' },
+];
+
+// Pixel Lands ships three buildings loose on one 512 sheet; rects measured.
+const PL = {
+  name: 'Pixel Lands — three houses (different artist, lighter walls)',
+  src: `${BASE}/pixellands.webp`,
+  rects: [
+    { x: 28, y: 28, w: 104, h: 136, label: 'cottage' },
+    { x: 158, y: 24, w: 164, h: 140, label: 'L-shaped' },
+    { x: 14, y: 176, w: 196, h: 130, label: 'farmhouse' },
+  ],
+};
+
+const GRADE = 'saturate(1.15) brightness(.9) hue-rotate(-8deg) sepia(.1)';
+let graded = false, zoom = 2;
+
+const load = (src) => new Promise((res, rej) => {
+  const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src;
+});
+
+function cellCanvas(img, sx, sy, sw, sh, label) {
+  const c = document.createElement('canvas');
+  c.width = sw; c.height = sh;
+  c.style.width = `${sw * zoom}px`;
+  c.style.height = `${sh * zoom}px`;
+  c.style.filter = graded ? GRADE : 'none';
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+
+  const fig = document.createElement('figure');
+  const box = document.createElement('div');
+  box.className = 'cell';
+  box.appendChild(c);
+  fig.appendChild(box);
+  const cap = document.createElement('figcaption');
+  cap.textContent = `${label} · ${sw}×${sh}px · ${Math.round(sw / 16)}×${Math.round(sh / 16)} tiles`;
+  fig.appendChild(cap);
+  return fig;
+}
+
+async function render() {
+  const out = document.getElementById('out');
+  out.innerHTML = '';
+
+  for (const set of SETS) {
+    const img = await load(set.src);
+    const h2 = document.createElement('h2');
+    h2.textContent = set.name;
+    out.appendChild(h2);
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    let n = 1;
+    for (let r = 0; r < set.rows; r++) {
+      for (let c = 0; c < set.cols; c++) {
+        grid.appendChild(cellCanvas(img, c * set.cell, r * set.cell, set.cell, set.cell, `${set.tag}${n++}`));
+      }
+    }
+    out.appendChild(grid);
+  }
+
+  const img = await load(PL.src);
+  const h2 = document.createElement('h2');
+  h2.textContent = PL.name;
+  out.appendChild(h2);
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  for (const r of PL.rects) grid.appendChild(cellCanvas(img, r.x, r.y, r.w, r.h, r.label));
+  out.appendChild(grid);
+}
+
+document.getElementById('bUn').onclick = (e) => {
+  graded = false; e.target.classList.add('on');
+  document.getElementById('bGr').classList.remove('on'); render();
+};
+document.getElementById('bGr').onclick = (e) => {
+  graded = true; e.target.classList.add('on');
+  document.getElementById('bUn').classList.remove('on'); render();
+};
+document.getElementById('bZ').onclick = (e) => {
+  zoom = zoom === 2 ? 3 : 2; e.target.textContent = `Zoom ×${zoom === 2 ? 3 : 2}`; render();
+};
+
+render();
+</script>
+</body>
+</html>
