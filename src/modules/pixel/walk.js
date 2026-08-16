@@ -88,6 +88,12 @@ const TAU = 0.35;       // seconds, camera lead damping
 const DEAD_X = 0.18;    // player may drift this fraction of the stage before camX moves
 const TAU_X = 0.25;     // seconds, horizontal camera damping
 const FLING = 10;       // tiles in one frame past which no card mounts
+/* Usable top of the stage, in px. The fixed nav covers the first 74, and below
+   700px the chapter rail sits at 78 and is 46 tall — so nothing may be placed
+   above 124 without landing on one or the other. A bubble that opens upward
+   from a character standing high on screen would otherwise be clipped by the
+   stage edge, which is the "not fully visible" case. */
+const SAFE_TOP = 132;
 
 /** Trapezoid speed profile integrated to a CDF, so he decelerates into a stop
     and accelerates out. A single smootherstep over a whole ramp makes him
@@ -709,6 +715,99 @@ export function initWalk(stage, opts = {}) {
     // slides across to this one as the next frame corrects it.
     stage.style.setProperty('--hero-x', `${Math.round(feetX * Z - ox)}px`);
     stage.style.setProperty('--hero-y', `${Math.round(feetY * Z - oy)}px`);
+
+    /* How tall he is DRAWN, in stage pixels. The bubble has to clear his head,
+       and the CSS was doing that with a fixed 5.75rem — a number derived for
+       ZOOM 2, written in the comment as "at ZOOM 2 he occupies roughly 68px".
+       Phones now run at ZOOM 1, where he is half that, so the bubble floated a
+       visible gap above him. Publishing the real height lets the CSS clear his
+       head at any zoom instead of one. 34 is the drawn figure inside the 80px
+       frame, measured off the sheet (see the HERO_* note at the top). */
+    stage.style.setProperty('--hero-h', `${34 * Z}px`);
+
+    /* WHERE THE BUBBLE GOES. Everything else about it is layout and lives in
+       CSS, but this is arithmetic over four boxes CSS cannot compare: his
+       position, the bubble's rendered height, the stage, and the arrival card.
+
+       Three things have to hold at once, and the first version only handled
+       one of them:
+
+       1. Clear his head — at the CURRENT zoom, hence `--hero-h`.
+       2. Stay off the nav and the chapter rail (`SAFE_TOP`). At the top of the
+          map the camera clamps and he stands high, and the bubble opened
+          straight up through both with its top cut off.
+       3. Stay off the arrival card. At the LAST stop the camera clamps at the
+          bottom of the map, so he stands low — right where the card is.
+
+       The bubble stays ON HIS HEAD and THE CARD MOVES. An earlier version did
+       the opposite, sliding the bubble up until it cleared the card, and the
+       measurement showed why that is wrong: at `kfupm` on a 1280x900 stage his
+       head is at y=800 and the bubble ended up at 473-533 — a 267px gap. A
+       bubble that far from the speaker is not speech, it is a caption. The card
+       is a floating sheet with nothing anchoring it, so it is the thing that
+       can afford to move. */
+    if (bubble) {
+      const h = bubble.offsetHeight;
+      const heroTop = (feetY * Z - oy) - 34 * Z;
+      let y = heroTop - 8;                       // desired BOTTOM edge of the bubble
+
+      const below = y - h < SAFE_TOP;
+      if (below) y = (feetY * Z - oy) + 8;       // no room above: hang under him
+      bubble.classList.toggle('is-below', below);
+      stage.style.setProperty('--say-y', `${Math.round(y)}px`);
+
+      /* Horizontal: centred on him, but kept off the joystick.
+         On a phone at the last stop he stands low and the stick is bottom
+         right, and the two collided — measured, bubble x 43-299 against a stick
+         at 214-334. Shifting sideways alone cannot fix it: the bubble is 256px
+         wide and only 214px of stage remain to the left of the stick, so the
+         clamp also narrows it via `--say-max-w`. Only while their vertical
+         bands actually overlap, so a bubble higher up keeps its full width and
+         stays centred on him. */
+      const w = bubble.offsetWidth;
+      const half = w / 2;
+      let x = feetX * Z - ox;
+      let maxW = stageW;
+      if (stickEl) {
+        const sr = stickEl.getBoundingClientRect(), st2 = stage.getBoundingClientRect();
+        const sTopY = sr.top - st2.top, sBotY = sr.bottom - st2.top;
+        const bTop = below ? y : y - h, bBot = below ? y + h : y;
+        if (!(bBot < sTopY || bTop > sBotY)) {
+          const room = (sr.left - st2.left) - 12;   // usable stage left of the stick
+          maxW = Math.max(120, room - 12);
+          x = Math.min(x, room - Math.min(half, maxW / 2));
+        }
+      }
+      x = Math.max(Math.min(half, maxW / 2) + 8, Math.min(x, stageW - 8 - Math.min(half, maxW / 2)));
+      stage.style.setProperty('--say-x', `${Math.round(x)}px`);
+      stage.style.setProperty('--say-max-w', `${Math.round(maxW)}px`);
+
+      /* Lift the card clear of wherever the bubble ended up. Measured against
+         the card's UNLIFTED position — its own rect plus the lift already
+         applied — or each frame would read the position it just set and creep
+         upward until the card left the stage. */
+      const card = cardHost.querySelector('.journeycard');
+      if (card) {
+        const sTop = stage.getBoundingClientRect().top;
+        const now = parseFloat(stage.style.getPropertyValue('--card-lift')) || 0;
+        const r = card.getBoundingClientRect();
+        // Where the card would sit with no lift at all.
+        const restTop = r.top - sTop + now, restBottom = r.bottom - sTop + now;
+        const bubTop = below ? y : y - h;
+        const bubBottom = below ? y + h : y;
+
+        /* ONLY when they would actually collide. Lifting unconditionally put
+           the card above the bubble at every stop — measured 567-601px of lift,
+           which pushed it clean off the top of the stage. At six of the seven
+           stops he stands mid-screen and the bubble is nowhere near the card. */
+        const collides = !(bubBottom < restTop || bubTop > restBottom);
+        const want = collides ? Math.max(0, Math.round(restBottom - (bubTop - 12))) : 0;
+        if (Math.abs(want - now) > 1) stage.style.setProperty('--card-lift', `${want}px`);
+      }
+    } else if (stage.style.getPropertyValue('--card-lift')) {
+      // No bubble at this stop — let the card sit where it normally does.
+      stage.style.setProperty('--card-lift', '0px');
+    }
 
     // Anything whose baseline is below his feet is in front of him.
     for (const op of tall) {

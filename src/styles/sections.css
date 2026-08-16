@@ -814,7 +814,14 @@
 .journeycard {
   position: absolute;
   left: 50%;
-  bottom: clamp(2rem, 7vh, 4.5rem);
+  /* --card-lift is set by walk.js when the speech bubble would land on the
+     card. At the last stop the camera clamps at the bottom of the map and he
+     stands low, so his bubble sits where the card normally is; the card is a
+     floating sheet with nothing anchoring it, so it is the one that gives way.
+     Transitioned, because it changes between stops and a card that jumps is
+     more distracting than one that slides. */
+  bottom: calc(clamp(2rem, 7vh, 4.5rem) + var(--card-lift, 0px));
+  transition: bottom .28s var(--e-out);
   transform: translate(-50%, 14px);
   width: min(92%, 34rem);
   padding: clamp(1rem, 2vh, 1.4rem) clamp(1.1rem, 2vw, 1.6rem);
@@ -916,7 +923,7 @@
 @media (pointer: coarse) {
   /* Clear the stick. The card is 92% wide at this size, so a stick in the
      bottom corner would sit under it rather than beside it. */
-  .journeycard { bottom: 9.5rem; }
+  .journeycard { bottom: calc(9.5rem + var(--card-lift, 0px)); }
 }
 
 /* Narrow: the card was eating the screen. Measured on a 375x812 phone it ran
@@ -1410,18 +1417,26 @@
 
   position: absolute;
   z-index: 3;
-  left: clamp(
+  /* walk.js resolves both axes when it can — it is the only place that knows
+     where the joystick is. The clamp is the fallback for the frame before the
+     first measurement lands. */
+  left: var(--say-x, clamp(
     calc(var(--say-w) / 2 + .75rem),
     calc(var(--hero-x, 50%) + 2.5rem),
     calc(100% - var(--say-w) / 2 - .75rem)
-  );
-  /* Clear of his head, not on top of it. His feet are --hero-y and the sprite
-     is ~34px drawn, so at ZOOM 2 he occupies roughly 68px above that; the
-     bubble's own translate lifts it a further 100% of its height. 5.75rem puts
-     the tail just above his hat instead of across his chest. */
-  top: calc(var(--hero-y, 50%) - 5.75rem);
+  ));
+  /* Clear of his head, not on top of it. His feet are --hero-y and --hero-h is
+     how tall he is DRAWN at the current zoom, published by walk.js each frame.
+     This was a fixed 5.75rem derived for ZOOM 2; phones run at ZOOM 1, where he
+     is half as tall, and the bubble floated a visible gap above his head. */
+  /* walk.js resolves this: it is the one place that can weigh his head, the
+     nav, the chapter rail and the arrival card against each other. The fallback
+     is the old head-clearance sum, used only for the frame before the first
+     measurement lands. */
+  top: var(--say-y, calc(var(--hero-y, 50%) - var(--hero-h, 68px) - .5rem));
   width: max-content;
-  max-width: var(--say-w);
+  /* --say-max-w narrows it only while it shares a band with the joystick. */
+  max-width: min(var(--say-w), var(--say-max-w, 100vw));
 
   padding: .6rem .85rem;
   background: var(--t);
@@ -1447,6 +1462,29 @@
   transform: translate(-50%, calc(-100% - 10px)) scale(1);
 }
 
+/* Hanging below him, when there is no room above.
+   walk.js sets this: it needs his position, the stage height and the bubble's
+   own rendered height to decide, and CSS cannot compare those. It happens at
+   the top of the map, where the camera clamps and he stands high on screen —
+   the bubble opened upward straight through the nav and the chapter rail, and
+   the top of it was cut off. Flipping keeps the whole line on screen and keeps
+   the tail pointing at him. */
+.saybubble.is-below {
+  top: var(--say-y, calc(var(--hero-y, 50%) + .5rem));
+  transform: translate(-50%, 4px) scale(.94);
+  transform-origin: 50% 0;
+}
+
+.saybubble.is-below.is-in { transform: translate(-50%, 10px) scale(1); }
+
+.saybubble.is-below::after {
+  top: auto;
+  bottom: 100%;
+  border-top-color: transparent;
+  border-bottom: var(--tail) solid var(--t);
+  border-top: 0;
+}
+
 .saybubble::after {
   content: '';
   position: absolute;
@@ -1463,11 +1501,11 @@
 @media (max-width: 1100px) {
   .saybubble {
     --say-w: min(16rem, 72vw);
-    left: clamp(
+    left: var(--say-x, clamp(
       calc(var(--say-w) / 2 + .5rem),
       var(--hero-x, 50%),
       calc(100% - var(--say-w) / 2 - .5rem)
-    );
+    ));
   }
 }
 

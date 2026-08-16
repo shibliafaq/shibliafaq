@@ -626,3 +626,60 @@ The stillness of the reduced-motion brain was checked by reading the code path,
 not observed: emulating the media query mid-session leaves the page's original
 animated instance drawing to the same canvas, so a second instance cannot be
 measured. Worth one look on a phone with Reduce Motion on.
+
+---
+
+## 17. Speech bubble placement (2026-08-16)
+
+Reported as bubbles sometimes cut off and sometimes covering something
+important. Three separate causes, all found by walking every stop at both
+widths and comparing rectangles.
+
+### 1. The head clearance was hard-coded for one zoom
+
+`top: calc(var(--hero-y) - 5.75rem)`, with a comment deriving 5.75rem from "at
+ZOOM 2 he occupies roughly 68px". Phones run at ZOOM 1 since §11, where he is
+half that, so the bubble floated a visible gap above him. `walk.js` now
+publishes `--hero-h` (`34 * Z`, the drawn figure at the current zoom) and the
+CSS clears his actual head.
+
+### 2. Nothing kept it inside the stage
+
+At the first stop the camera clamps at the top of the map and he stands high;
+the bubble opened upward through the fixed nav and the chapter rail with its top
+cut off. There is now an `is-below` flip — tail inverted, hanging under his feet
+— chosen in `walk.js`, because deciding needs his position, the bubble's
+rendered height and the stage box, and CSS cannot compare those. `SAFE_TOP` is
+132: the nav takes 74, and under 700px the rail sits at 78 and is 46 tall.
+
+### 3. It collided with the card, and on a phone with the joystick
+
+At the last stop the camera clamps at the BOTTOM, so he stands low — where the
+card is.
+
+The first fix slid the bubble up until it cleared the card, and the measurement
+condemned it: at `kfupm` on 1280x900 his head is at y=800 and the bubble landed
+at 473-533, **a 267px gap**. A bubble that far from the speaker is a caption.
+So the bubble stays on his head and **the card moves** — `--card-lift`, applied
+to its `bottom` and transitioned. The card is a floating sheet with nothing
+anchoring it; it is the thing that can afford to give way.
+
+That lift must be conditional. Applying it whenever a card existed lifted it at
+every stop — measured 567-601px, pushing it off the top of the stage. It now
+fires only when the two rectangles actually intersect: 0px at six stops, 117px
+at `kfupm`.
+
+On a phone the same stop put the bubble on the joystick instead (bubble x
+43-299 against a stick at 214-334). Shifting sideways cannot solve it — the
+bubble is 256px wide and only 214px of stage remain left of the stick — so
+`--say-x` and `--say-max-w` are also resolved in `walk.js`, and only while the
+two share a vertical band. Result: 256px wide at six stops, 190px at `kfupm`.
+
+The lift is computed from the card's UNLIFTED position (its rect plus the lift
+already applied), or each frame reads the position it just set and the card
+creeps off the stage.
+
+### Verified
+
+Every stop, both widths, comparing bubble against stage, card, rail, joystick
+and the nav: 7/7 clean at 1280x900 and 7/7 at 375x812.
