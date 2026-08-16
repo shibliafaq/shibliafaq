@@ -172,66 +172,63 @@ node tools/sync-site-copy.mjs --write   # apply it
 - <span class="lead__meta">During the M.Sc</span><span class="lead__body">I was doing architectural projects but now I learned working with real-time satellite pipelines,</span><span class="lead__meta">All the works are based on one question:</span><em class="lead__ask">How do we make cities survive the climate crisis?</em>
 
 ### projects.1
-- <span class="badge__dot"></span>Under Development
+- <span class="badge__dot"></span>M.Sc. Thesis
 
 ### projects.2
-- M.Sc. Thesis
+- KFUPM · Aug 2026
 
 ### projects.3
-- KFUPM · Dept. Architecture &amp; City Design
+- Architecture &amp; City Design
 
 ### projects.4
 - A Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation
 
 ### projects.5
-- Built on a <strong>Design Science methodology</strong>, this near-real-time digital twin platform transforms retrospective urban climate studies into live decision-support tools. Monitors multi-city thermal variations across five Saudi climate zones and urban typologies across <strong>Riyadh, Jeddah, Dammam, Makkah, and NEOM</strong>, combining satellite feeds with demographic layers to deploy an equity-focused Heat Vulnerability Index that prioritises interventions in underserved residential communities.
+- Built on a <strong>Design Science methodology</strong>, this digital twin platform monitors, forecasts, and mitigates urban heat across five Saudi cities. Combines MODIS satellite feeds (cross-validated against Landsat at r ≥ 0.85), Prophet forecasting to 2030, an equity-weighted Heat Vulnerability Index, and an <strong>intervention simulator</strong> that ranks cooling strategies by residents reached per riyal. Covers <strong>Riyadh, Jeddah, Dammam, Makkah, and NEOM</strong> across three climate zones.
 
 ### projects.6
-- &lt;10 min
+- 5 cities
 
 ### projects.7
-- Pipeline latency
+- Riyadh · Jeddah · Dammam · Makkah · NEOM
 
 ### projects.8
-- &lt;1.5°C
+- 0.96–1.91°C
 
 ### projects.9
-- Forecast RMSE
+- Monthly forecast RMSE
 
 ### projects.10
-- 17M (70%)
+- 1.37M
 
 ### projects.11
-- Population coverage
+- Residents in top-vulnerability quintile
 
 ### projects.12
-- 3 Zones
+- 12 measures
 
 ### projects.13
-- Climatic variety
+- In the intervention simulator
 
 ### projects.14
 - Google Earth Engine
 
 ### projects.15
-- Apache Kafka
+- PostgreSQL/PostGIS
 
 ### projects.16
-- Spark Streaming
+- FastAPI
 
 ### projects.17
-- PostgreSQL + PostGIS
+- Prophet
 
 ### projects.18
-- Facebook Prophet
+- deck.gl
 
 ### projects.19
-- Streamlit
+- MapLibre
 
 ### projects.20
-- Kepler.gl 3D
-
-### projects.21
 - Docker Compose
 
 ### projects.22
@@ -381,22 +378,22 @@ node tools/sync-site-copy.mjs --write   # apply it
 - Five cities.<br><em>One framework.</em>
 
 ### atlas.lead
-- Riyadh, Jeddah, Dammam, Makkah, and NEOM — three climate zones, 17 million residents, one near-real-time heat monitoring pipeline.
+- Riyadh, Jeddah, Dammam, Makkah, and NEOM. Three climate contexts, 15.8 million metropolitan residents, ~5.5M inside the analysed urban footprint, one satellite pipeline delivering land-surface temperature, vulnerability, and intervention estimates on a single 500&nbsp;m grid.
 
 ### atlas.1
-- <span class="atlas__n">01</span> Riyadh <em>Hot desert · BWh</em>
+- <span class="atlas__n">01</span> Riyadh <em>Hyper-arid inland plateau · BWh</em>
 
 ### atlas.2
-- <span class="atlas__n">02</span> Jeddah <em>Coastal arid · BWh</em>
+- <span class="atlas__n">02</span> Jeddah <em>Coastal humid (Red Sea) · BWh</em>
 
 ### atlas.3
-- <span class="atlas__n">03</span> Dammam <em>Gulf coastal · BWh</em>
+- <span class="atlas__n">03</span> Dammam <em>Gulf coastal humid · BWh</em>
 
 ### atlas.4
-- <span class="atlas__n">04</span> Makkah <em>Mountain arid · BWh</em>
+- <span class="atlas__n">04</span> Makkah <em>Enclosed valley · BWh</em>
 
 ### atlas.5
-- <span class="atlas__n">05</span> NEOM <em>Red Sea · BWh/BSh</em>
+- <span class="atlas__n">05</span> NEOM <em>Northwest highland · BWh/BSh</em>
 
 ### atlas.6
 - Interactive map unavailable on this device

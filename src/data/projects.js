@@ -13,22 +13,24 @@ export const projects = {
   thesis: {
     // The Thesis Coverage globe (#atlas) is relocated into this card's modal.
     embed: 'atlas',
-    cat: 'M.Sc. Thesis · KFUPM · Architecture & City Design · Under Development',
+    cat: 'M.Sc. Thesis · KFUPM · Architecture & City Design · In Defence',
     title: 'Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting & Mitigation',
-    desc: 'Currently under active development. Built on Design Science Research methodology, this near-real-time digital twin platform ingests multi-satellite feeds via Google Earth Engine, runs city-specific Prophet ML forecasting models, and outputs an equity-weighted Heat Vulnerability Index — all served through a Streamlit + Kepler.gl dashboard. Five Saudi cities. One framework. &lt;10-min satellite-to-screen latency.',
+    desc: 'Currently in defence preparation. Built on Design Science Research methodology, this digital twin platform pulls MODIS Land Surface Temperature via Google Earth Engine, runs a Prophet forecasting ensemble (Terra and Aqua modelled separately, day and night, monthly + 7-day + 2030 horizons), and computes an equity-weighted Heat Vulnerability Index. An intervention simulator ranks twelve mitigation measures by cooling delivered, spillover reach, cost, and beneficiaries — using own-data seasonal betas, not literature values. Served through a FastAPI + PostgreSQL/PostGIS backend and a deck.gl + MapLibre frontend. Five Saudi cities. One framework.',
     metrics: [
-      { v: '&lt;10 min', l: 'Pipeline latency' },
-      { v: '&lt;1.5°C', l: 'Forecast RMSE target' },
-      { v: '100K+', l: 'At-risk residents mapped' },
+      { v: '0.96–1.91°C', l: 'Monthly RMSE' },
+      { v: 'r ≥ 0.85', l: 'MODIS vs Landsat' },
+      { v: '1.37M', l: 'At-risk residents mapped' },
       { v: '5 cities', l: 'Riyadh · Jeddah · Dammam · Makkah · NEOM' },
     ],
-    method: 'Google Earth Engine API → Apache Kafka 3-broker cluster → PySpark Structured Streaming (event-time watermarking) → PostgreSQL + PostGIS → Facebook Prophet (city-specific, meteorological exogenous regressors) → Streamlit dashboard + Kepler.gl 3D HVI map',
-    tags: ['Google Earth Engine', 'Apache Kafka', 'PySpark Streaming', 'PostgreSQL + PostGIS', 'Facebook Prophet', 'Streamlit', 'Kepler.gl 3D', 'Docker Compose', 'Design Science Research', 'Heat Vulnerability Index', 'Vision 2030'],
+    method: 'Google Earth Engine (on-demand ingestion) → PostgreSQL/PostGIS spatial DB → Prophet forecasting (Terra + Aqua separately, day + night) → Intervention Simulator (own-data seasonal OLS betas, exponential spillover kernel, Saudi/Gulf cost rates) → FastAPI backend → deck.gl + MapLibre dashboard. Kafka/Spark streaming layer designed for future automation.',
+    tags: ['Google Earth Engine', 'PostgreSQL/PostGIS', 'FastAPI', 'Prophet', 'deck.gl', 'MapLibre', 'Docker Compose', 'Design Science Research', 'Heat Vulnerability Index', 'Intervention Simulator', 'Vision 2030'],
     images: [
-      { src: `${IMG}/thesis_arch.webp`, cap: 'System Architecture — Input → Processing Engine → Output Dashboard → End Users' },
-      { src: `${IMG}/thesis_pipeline.webp`, cap: 'Technical Data Pipeline — Satellite Data → GEE → Kafka → Spark → PostgreSQL → Streamlit' },
+      // Captions carry the correction the diagrams themselves still need: both
+      // images draw Kafka, Spark and Streamlit as live blocks. See docs/CONTEXT.md.
+      { src: `${IMG}/thesis_arch.webp`, cap: 'System Architecture — Input → Processing Engine → Output Dashboard → End Users. Kafka/Spark shown here are roadmap, not the delivered pipeline.' },
+      { src: `${IMG}/thesis_pipeline.webp`, cap: 'Technical Data Pipeline — diagram predates the current stack: ingestion is on-demand via GEE, and the dashboard is FastAPI + deck.gl rather than Streamlit.' },
     ],
-    links: [{ t: 'Under Development — No Public Demo Yet', dev: true }],
+    links: [{ t: 'Live demo available on request', h: 'mailto:shibliafaq4@gmail.com?subject=Digital%20Twin%20demo%20request', primary: true }],
   },
 
   gis: {

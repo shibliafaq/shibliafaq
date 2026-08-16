@@ -743,3 +743,52 @@ every element that ships with the attribute found nothing else exposed.
 
 Page height dropped 24,080 -> 23,139. Verified the card still mounts it (583px),
 and closing returns it hidden at 0px.
+
+---
+
+## 20. Thesis content corrected against the actual research (2026-08-16)
+
+The thesis card and modal described a system that does not exist in that form.
+Corrections supplied by the author; recorded here because several are the kind
+of claim that gets repeated once it is in the markup.
+
+| claim shown | reality |
+|---|---|
+| "Under Development" | submitted; defence Aug 2026. Now "In Defence" |
+| "17M (70%) population coverage" | 15.8M metro total, ~5.5M analysed urban footprint. 70% mapped to nothing |
+| "<10 min pipeline latency" | aspirational. Ingestion is on-demand via GEE |
+| "<1.5°C forecast RMSE" | no horizon given. Monthly 0.96-1.91°C day, 7-day 2.4-3.3°C |
+| "Streamlit + Kepler.gl" | actual stack is FastAPI + deck.gl + MapLibre |
+| Kafka / Spark as live | designed, not running |
+| "multi-satellite feeds" | MODIS Terra+Aqua, Landsat for validation. VIIRS extracted but not in pipeline |
+| HVI described, simulator absent | the intervention simulator is the largest deliverable |
+| "Mountain arid" (Makkah) | enclosed valley |
+
+Card metrics are now 5 cities / 0.96-1.91°C monthly RMSE / 1.37M in the top
+vulnerability quintile / 12 measures in the simulator. Modal metrics carry
+r >= 0.85 for MODIS vs Landsat instead.
+
+**Two escaping notes.** `cat` and `title` go through `esc()` in `modal.js`, so
+the data must hold a plain `&` — a pre-escaped `&amp;` renders literally as
+"&amp;". `desc` and `metrics[].v` are inserted raw and may carry entities.
+
+**Kepler.gl and Streamlit still appear elsewhere and that is correct** — they
+are genuinely the stack for the IoT pipeline and the multi-city temperature
+study. Only the thesis claimed them wrongly.
+
+### Not done, and needing the author
+
+- **The two architecture diagrams are images** (`thesis_arch.webp`,
+  `thesis_pipeline.webp`) and still draw Kafka, Spark and Streamlit as live
+  blocks, "48-Hour Forecast RMSE < 1.5°C", "5 Prophet Models" (actually 20),
+  "2023-2025 (730 days)" (actually 2018-2025), and omit beta_NDBI. The captions
+  now say the diagrams predate the stack, which is a stopgap, not a fix. They
+  need redrawing — ideally separating Delivered (solid) from Roadmap (dashed).
+- **The generic 3D heatmap** should be a real dashboard screenshot.
+- **Structural suggestions still open:** a headline finding above the fold
+  (Saudi cities are daytime cool-islands against the desert — the inverse of
+  Oke), an Intervention Simulator mini-section with the Dammam worked example
+  (one water feature cools 16,167 residents; one cool-pavement patch cools 602),
+  a Delivered/Roadmap split, and a Chapters strip.
+- **`atlas.lead` has no translations.** Six carried "17 million" and
+  "near-real-time" and were removed rather than left contradicting the English.
