@@ -83,9 +83,19 @@
     <canvas class="hero__globe" id="heroGlobe" aria-hidden="true"></canvas>
     <div class="hero__scrim"></div>
     <div class="hero__heat"></div>
+
+    <!-- Riyadh. The globe dives to it, then hands over to these two frames.
+         Both are the same 2880x1620 pixels in register, so the reveal is a
+         mask over a single image rather than two pictures being swapped. -->
+    <div class="riyadh" id="riyadh" aria-hidden="true">
+      <img class="riyadh__layer riyadh__heat" id="riyadhHeat" alt="" decoding="async">
+      <img class="riyadh__layer riyadh__cool" id="riyadhCool" alt="" decoding="async">
+      <div class="riyadh__vignette"></div>
+    </div>
   </div>
 
   <div class="worlds__copy">
+  <div class="worlds__two">
 <section id="hero" class="hero">
 
   <div class="hero__body">
@@ -150,6 +160,22 @@
     <p class="lead" data-reveal data-i18n="future.lead">Deserts where the tropics were, ice gone from both poles, dust over every ocean. This is not a different world — it is this one, with the heat left unchecked. Everything below is work aimed at the other version.</p>
   </div>
 </section>
+  </div><!-- /.worlds__two -->
+
+<section id="about" class="section about--overmap">
+  <div class="wrap">
+    <p class="eyebrow" data-reveal data-i18n="about.label">About</p>
+    <h2 class="display sec-title" data-reveal data-split data-i18n="about.title">The <em>problem</em><br>I’m solving</h2>
+
+    <div class="about__grid">
+      <div class="prose about__text">
+        <p data-reveal data-i18n="about.p1">This is Olaya, Riyadh — surface temperature on a summer afternoon. I’m a licensed architect with <strong>4+ years of design and delivery</strong> who pivoted after realising the crises I was watching could not be solved one building at a time.</p>
+        <blockquote class="pull" data-reveal data-i18n="about.pull">“To effectively tackle the climate crisis in our cities, I needed a deeper understanding of city-scale informatics — so I set out to build it.”</blockquote>
+        <p data-reveal data-i18n="about.p2">Now finishing an <strong>M.Sc. at KFUPM</strong>, I pair spatial design thinking with satellite remote sensing, GIS and machine learning — building heat adaptation tools for the Arabian Peninsula. <strong>Move your cursor to see what intervention does.</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
   </div><!-- /.worlds__copy -->
 
   <!-- The globe's grab area, sized from its projected silhouette by earth.js.
@@ -168,29 +194,8 @@
 </div><!-- /.worlds -->
 
 <!-- ══ ABOUT ════════════════════════════════════════════════ -->
-<section id="about" class="section">
-  <div class="wrap">
-    <p class="eyebrow" data-reveal data-i18n="about.label">About</p>
-    <h2 class="display sec-title" data-reveal data-split data-i18n="about.title">The <em>problem</em><br>I’m solving</h2>
+<!-- ABOUT lives inside .worlds — see the block above. -->
 
-    <div class="about__grid">
-      <div class="prose about__text">
-        <p data-reveal data-i18n="about.p1">I’m a licensed architect with <strong>4+ years across professional design and project delivery</strong> who made a deliberate pivot. After managing architectural projects across India and leading a $720K portfolio spanning commercial, educational, and residential spaces, I realised that the escalating urban and climate crises I witnessed could not be solved at the building scale alone.</p>
-        <blockquote class="pull" data-reveal data-i18n="about.pull">“To effectively tackle the climate crisis in our cities, I needed a deeper understanding of city-scale informatics — so I set out to build it.”</blockquote>
-        <p data-reveal data-i18n="about.p2">Now completing an <strong>M.Sc. in Smart and Sustainable Cities at KFUPM</strong> (GPA 4.0/4.0), I combine architectural spatial thinking with satellite remote sensing, GIS, and machine learning to build evidence-based heat adaptation tools for the Arabian Peninsula.</p>
-        <p data-reveal data-i18n="about.p3">Whether driving innovation in a research lab, a spatial data consultancy, or a municipal smart city team, I bridge the gap between <strong>technical data science and the physical realities of urban design</strong>.</p>
-      </div>
-
-      <ul class="about__cards">
-        <li data-copy="about.1" class="acard" data-reveal><span class="acard__icon">🎓</span><div><p class="acard__t" data-i18n="about.c1">M.Sc. Smart &amp; Sustainable Cities</p><p class="acard__s">KFUPM · GPA 4.0/4.0 · 2025–2026</p></div></li>
-        <li data-copy="about.2" class="acard" data-reveal><span class="acard__icon">🧠</span><div><p class="acard__t" data-i18n="about.c2">Research — UHI, Digital Twins &amp; ML</p><p class="acard__s">Remote Sensing · Climate Analytics · PostGIS</p></div></li>
-        <li data-copy="about.3" class="acard" data-reveal><span class="acard__icon">🏛️</span><div><p class="acard__t" data-i18n="about.c3">B.Arch. Architecture — First Class with Distinction</p><p class="acard__s">BIT Mesra · CGPA 7.61/10 · 2016–2021</p></div></li>
-        <li data-copy="about.4" class="acard" data-reveal><span class="acard__icon">🏅</span><div><p class="acard__t" data-i18n="about.c4">Licensed Architect &amp; Professional Member</p><p class="acard__s">Council of Architecture (IN) · Associate Member IIA</p></div></li>
-        <li data-copy="about.5" class="acard" data-reveal><span class="acard__icon">📍</span><div><p class="acard__t" data-i18n="about.c5">Dhahran, Saudi Arabia</p><p class="acard__s">Open to Smart City Roles, Research &amp; PhDs</p></div></li>
-      </ul>
-    </div>
-  </div>
-</section>
 
 <!-- ══ RESEARCH DIRECTION ═══════════════════════════════════ -->
 <section id="direction" class="section">

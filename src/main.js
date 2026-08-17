@@ -5,7 +5,7 @@ import './styles/sections.css';
 import './styles/overlays.css';
 import './styles/i18n.css';
 
-import { initScroll, ScrollTrigger } from './modules/scroll.js';
+import { initScroll, ScrollTrigger, reducedMotion } from './modules/scroll.js';
 import { initReveals } from './modules/reveals.js';
 import { initHero } from './modules/hero.js';
 import { initProjects } from './modules/projects.js';
@@ -90,7 +90,7 @@ idleInit(() => {
     const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - ((-2 * t + 2) ** 2) / 2);
 
     ScrollTrigger.create({
-      trigger: worlds,
+      trigger: document.querySelector('.worlds__two') || worlds,
       start: 'top top',
       end: 'bottom bottom',
       scrub: true,
@@ -107,8 +107,137 @@ idleInit(() => {
         stage.style.setProperty('--zoom', z.toFixed(3));
       },
     });
+
+    /* PHASE TWO — the dive, scrubbed against About's arrival.
+       A separate trigger rather than more range on the first one: the two
+       phases are anchored to different things, and folding them into one scrub
+       would mean every edit to About's length silently re-times the pull-back
+       two screens earlier. */
+    const about = document.getElementById('about');
+    const riyadh = document.getElementById('riyadh');
+    if (!about || !riyadh) return;
+
+    ScrollTrigger.create({
+      trigger: about,
+      start: 'top bottom',
+      end: 'top top',
+      scrub: true,
+      invalidateOnRefresh: true,
+      onUpdate: (self) => {
+        const p = self.progress;
+        earth.setDive(p);
+        /* The plate arrives late and fast. Crossfading through the middle of
+           the descent would show a half-transparent map over a still-curved
+           globe — the one state that looks like neither. By 0.72 the sphere is
+           scaled past the frame edges and its surface is flat, so there is
+           nothing left to give the swap away. */
+        riyadh.style.opacity = Math.min(1, Math.max(0, (p - 0.72) / 0.24)).toFixed(3);
+      },
+    });
+
+    initRiyadhReveal(riyadh);
   });
 });
+
+/**
+ * The thermal probe.
+ *
+ * Both frames are the same pixels in register, so this masks one image rather
+ * than swapping two — the cursor reads as an instrument held over a single
+ * place, not as a wipe between two pictures.
+ *
+ * Written to custom properties and never to layout: setting a property cannot
+ * force a reflow, and the mask is composited. Pointer moves are coalesced onto
+ * one rAF, because a pointermove stream on a desktop mouse runs well past
+ * display rate and there is no point recomputing a mask twice for one frame.
+ */
+function initRiyadhReveal(root) {
+  const heat = document.getElementById('riyadhHeat');
+  const cool = document.getElementById('riyadhCool');
+  if (!heat || !cool) return;
+
+  // Loaded only when the dive is near — two full-bleed rasters is not something
+  // to spend on a reader who never scrolls this far.
+  const small = window.matchMedia('(max-width: 760px)').matches;
+  const src = (stem) => `/assets/img/${stem}${small ? '-sm' : ''}.webp`;
+  let armed = false;
+  const arm = () => {
+    if (armed) return;
+    const r = root.getBoundingClientRect();
+    if (r.top > window.innerHeight * 2.5) return;
+    armed = true;
+    heat.src = src('riyadh-heat');
+    cool.src = src('riyadh-cool');
+  };
+  arm();
+  window.addEventListener('scroll', arm, { passive: true });
+
+  // Opens on first contact rather than sitting open, so the map is unbroken
+  // until someone actually reaches for it. Small on purpose: a probe reads as
+  // an instrument, a porthole reads as a page transition.
+  const R_OPEN = small ? 64 : 104;
+  let px = 0, py = 0;          // where the pointer is
+  let cx = 0, cy = 0;          // where the probe is — it trails, see below
+  let open = 0, running = false, seeded = false, t = 0;
+
+  /* One rAF while the probe is live, rather than painting per pointermove.
+     It has two jobs a per-event handler cannot do: ease the probe toward the
+     cursor so it has weight instead of being welded to it, and drift the three
+     lobes so the outline keeps changing shape. Both are what stop it reading as
+     a cursor decoration. */
+  const frame = () => {
+    if (!running) return;
+    requestAnimationFrame(frame);
+
+    if (parseFloat(root.style.opacity || '0') < 0.05) { running = false; return; }
+
+    // Trails the pointer. 0.18 is loose enough to feel physical, tight enough
+    // that it never lags somewhere the reader is not looking.
+    cx += (px - cx) * 0.18;
+    cy += (py - cy) * 0.18;
+
+    const r = root.getBoundingClientRect();
+    if (!r.width) return;
+    root.style.setProperty('--rx', `${((cx - r.left) / r.width * 100).toFixed(2)}%`);
+    root.style.setProperty('--ry', `${((cy - r.top) / r.height * 100).toFixed(2)}%`);
+    root.style.setProperty('--r', `${open.toFixed(0)}px`);
+
+    if (cool && !reducedMotion) {
+      // Three incommensurate periods, so the lobes never resynchronise into a
+      // recognisable shape. Amplitudes stay under a third of the radius —
+      // past that it stops being a blob and starts being three circles.
+      t += 0.016;
+      const k = R_OPEN * 0.3;
+      cool.style.setProperty('--l1x', `${(Math.sin(t * 0.7) * k).toFixed(1)}px`);
+      cool.style.setProperty('--l1y', `${(Math.cos(t * 0.53) * k).toFixed(1)}px`);
+      cool.style.setProperty('--l2x', `${(Math.sin(t * 0.41 + 2.1) * k * 1.1).toFixed(1)}px`);
+      cool.style.setProperty('--l2y', `${(Math.sin(t * 0.61 + 1.3) * k * 1.1).toFixed(1)}px`);
+      cool.style.setProperty('--l3x', `${(Math.cos(t * 0.37 + 4.2) * k * 1.2).toFixed(1)}px`);
+      cool.style.setProperty('--l3y', `${(Math.cos(t * 0.79 + 0.6) * k * 1.2).toFixed(1)}px`);
+    }
+  };
+
+  const track = (x, y) => {
+    px = x; py = y;
+    if (!seeded) { cx = x; cy = y; seeded = true; }   // no swoop in from 0,0
+    if (open < R_OPEN) open = R_OPEN;
+    if (!running) { running = true; requestAnimationFrame(frame); }
+  };
+
+  window.addEventListener('pointermove', (e) => {
+    // Only while the plate is actually on screen and visible.
+    if (parseFloat(root.style.opacity || '0') < 0.05) return;
+    track(e.clientX, e.clientY);
+  }, { passive: true });
+
+  // Touch has no hover, so the probe follows a finger dragged across the map.
+  // The map is not the globe's grab target, so this steals nothing from scroll.
+  window.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'touch') return;
+    if (parseFloat(root.style.opacity || '0') < 0.05) return;
+    track(e.clientX, e.clientY);
+  }, { passive: true });
+}
 
 // The atlas and the thermal sequence are no longer page sections — they are
 // relocated into their project cards and mounted by modal.js when the card is

@@ -81,31 +81,13 @@ node tools/sync-site-copy.mjs --write   # apply it
 - The <em>problem</em><br>I’m solving
 
 ### about.p1
-- I’m a licensed architect with <strong>4+ years across professional design and project delivery</strong> who made a deliberate pivot. After managing architectural projects across India and leading a $720K portfolio spanning commercial, educational, and residential spaces, I realised that the escalating urban and climate crises I witnessed could not be solved at the building scale alone.
+- This is Olaya, Riyadh — surface temperature on a summer afternoon. I’m a licensed architect with <strong>4+ years of design and delivery</strong> who pivoted after realising the crises I was watching could not be solved one building at a time.
 
 ### about.pull
 - “To effectively tackle the climate crisis in our cities, I needed a deeper understanding of city-scale informatics — so I set out to build it.”
 
 ### about.p2
-- Now completing an <strong>M.Sc. in Smart and Sustainable Cities at KFUPM</strong> (GPA 4.0/4.0), I combine architectural spatial thinking with satellite remote sensing, GIS, and machine learning to build evidence-based heat adaptation tools for the Arabian Peninsula.
-
-### about.p3
-- Whether driving innovation in a research lab, a spatial data consultancy, or a municipal smart city team, I bridge the gap between <strong>technical data science and the physical realities of urban design</strong>.
-
-### about.1
-- <span class="acard__icon">🎓</span><div><p class="acard__t" data-i18n="about.c1">M.Sc. Smart &amp; Sustainable Cities</p><p class="acard__s">KFUPM · GPA 4.0/4.0 · 2025–2026</p></div>
-
-### about.2
-- <span class="acard__icon">🧠</span><div><p class="acard__t" data-i18n="about.c2">Research — UHI, Digital Twins &amp; ML</p><p class="acard__s">Remote Sensing · Climate Analytics · PostGIS</p></div>
-
-### about.3
-- <span class="acard__icon">🏛️</span><div><p class="acard__t" data-i18n="about.c3">B.Arch. Architecture — First Class with Distinction</p><p class="acard__s">BIT Mesra · CGPA 7.61/10 · 2016–2021</p></div>
-
-### about.4
-- <span class="acard__icon">🏅</span><div><p class="acard__t" data-i18n="about.c4">Licensed Architect &amp; Professional Member</p><p class="acard__s">Council of Architecture (IN) · Associate Member IIA</p></div>
-
-### about.5
-- <span class="acard__icon">📍</span><div><p class="acard__t" data-i18n="about.c5">Dhahran, Saudi Arabia</p><p class="acard__s">Open to Smart City Roles, Research &amp; PhDs</p></div>
+- Now finishing an <strong>M.Sc. at KFUPM</strong>, I pair spatial design thinking with satellite remote sensing, GIS and machine learning — building heat adaptation tools for the Arabian Peninsula. <strong>Move your cursor to see what intervention does.</strong>
 
 ## Research direction
 

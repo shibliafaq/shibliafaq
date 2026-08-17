@@ -259,6 +259,101 @@
 
 .worlds__copy { margin-top: -100svh; }
 
+/* ---- Riyadh, revealed ---------------------------------------
+   The globe dives here and hands over. Both frames are the same pixels in
+   register, so this is one image with a mask over it rather than two pictures
+   being swapped — which is what lets the cursor read as a probe into the same
+   place rather than a wipe between two places.
+
+   The cool layer sits ON TOP and is masked down to a disc around the pointer.
+   That way the heat map is the default state, which is the honest one: the
+   problem is what is there until you go looking for the fix. */
+.riyadh {
+  position: absolute;
+  inset: 0;
+  opacity: 0;                      /* main.js scrubs this in as the dive lands */
+  pointer-events: none;
+  --rx: 50%;
+  --ry: 50%;
+  --r: 0px;                        /* reveal radius, opened on first pointer move */
+}
+
+.riyadh__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  /* The globe is a sphere and this is a flat plate. A touch of scale on the
+     handover frame hides the geometry change at the moment of the crossfade. */
+  transform: scale(1.06);
+}
+
+/* THREE overlapping lobes, not one circle.
+   A single radial gradient reads as a cookie-cutter no matter how soft its
+   edge — the eye finds the perfect circle immediately and the whole thing looks
+   like a UI element pasted on top. Three offset lobes of different sizes union
+   into a lumpy outline with no findable centre, which reads as a patch of
+   ground being sensed. Their offsets drift slowly (see main.js), so the shape
+   is never quite the same twice.
+
+   Layered masks composite additively by default, so the union is free; the
+   -webkit- pair is spelled out because Safari needs its own keyword. */
+.riyadh__cool {
+  --l1x: 0px; --l1y: 0px;
+  --l2x: 0px; --l2y: 0px;
+  --l3x: 0px; --l3y: 0px;
+
+  -webkit-mask-image:
+    radial-gradient(circle var(--r) at calc(var(--rx) + var(--l1x)) calc(var(--ry) + var(--l1y)), #000 0%, #000 52%, transparent 100%),
+    radial-gradient(circle calc(var(--r) * .82) at calc(var(--rx) + var(--l2x)) calc(var(--ry) + var(--l2y)), #000 0%, #000 46%, transparent 100%),
+    radial-gradient(circle calc(var(--r) * .66) at calc(var(--rx) + var(--l3x)) calc(var(--ry) + var(--l3y)), #000 0%, #000 42%, transparent 100%);
+  mask-image:
+    radial-gradient(circle var(--r) at calc(var(--rx) + var(--l1x)) calc(var(--ry) + var(--l1y)), #000 0%, #000 52%, transparent 100%),
+    radial-gradient(circle calc(var(--r) * .82) at calc(var(--rx) + var(--l2x)) calc(var(--ry) + var(--l2y)), #000 0%, #000 46%, transparent 100%),
+    radial-gradient(circle calc(var(--r) * .66) at calc(var(--rx) + var(--l3x)) calc(var(--ry) + var(--l3y)), #000 0%, #000 42%, transparent 100%);
+  -webkit-mask-composite: source-over;
+          mask-composite: add;
+}
+
+/* Keeps display type legible over a busy false-colour raster without flattening
+   it behind a panel. */
+/* Weighted to the LEFT, where the copy is, instead of dimming the whole plate.
+   The first pass laid an even wash over everything and the thermal data — the
+   entire point of showing Riyadh — came out as a brown smudge. The right half
+   is now nearly clear, so the map is legible as data while the column of text
+   still has ground to sit on. */
+.riyadh__vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right,
+      rgba(9, 9, 11, .82) 0%,
+      rgba(9, 9, 11, .62) 26%,
+      rgba(9, 9, 11, .22) 55%,
+      rgba(9, 9, 11, .10) 100%),
+    linear-gradient(to bottom,
+      rgba(9, 9, 11, .55) 0%, transparent 18%,
+      transparent 82%, rgba(9, 9, 11, .55) 100%);
+}
+
+@media (max-width: 860px) {
+  /* One column on phones: the copy sits over the middle, so a left-weighted
+     wash would miss it entirely. */
+  .riyadh__vignette {
+    background:
+      linear-gradient(to bottom,
+        rgba(9, 9, 11, .70) 0%, rgba(9, 9, 11, .34) 22%,
+        rgba(9, 9, 11, .34) 74%, rgba(9, 9, 11, .74) 100%);
+  }
+}
+
+/* About sits over the map, so it needs no ground of its own and must not
+   introduce one. */
+.about--overmap { position: relative; z-index: 1; background: transparent; }
+.about--overmap .about__grid { grid-template-columns: minmax(0, 62ch); }
+.about--overmap .prose p,
+.about--overmap .pull { text-shadow: 0 2px 20px rgba(9, 9, 11, .9), 0 1px 5px rgba(9, 9, 11, .8); }
+
 /* The globe's grab area. `touch-action: none` is the whole point: it tells the
    browser this region never pans, so a finger landing on the planet turns it
    instead of scrolling the page. Circular via border-radius so the corners of

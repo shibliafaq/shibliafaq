@@ -345,6 +345,56 @@ export function initEarth(opts = {}) {
   // swings the land-heavy mid-latitudes up into the visible band.
   const BASE_TILT_X = -0.62;
 
+  /* Riyadh — Olaya district, which is what the thermal plates actually show. */
+  const RIYADH_LON = 46.6753;
+  const RIYADH_LAT = 24.7136;
+  /* How far in the dive goes — and it is HARD-CAPPED by the camera.
+
+     The sphere is centred at z = 0 and the camera sits at z = 3.1, so its near
+     surface reaches the camera at scale 3.1 exactly. The first attempt used 9:
+     by 70% of the descent the scale was already 3.73, the camera was INSIDE the
+     planet, and since the surface renders front faces only the screen went
+     black. It read as the globe disappearing; it was the globe swallowing the
+     camera.
+
+     0.84 of the camera distance keeps the surface ~0.5 units in front of it.
+     At that range the visible patch spans about a third of a world unit across
+     a sphere of radius 2.6, so the horizon is gone and the surface is flat —
+     which is the condition for handing over to a flat map without a cut. */
+  const DIVE_SCALE = 2.75;  // must stay below camera.position.z (3.1)
+
+  /* THE LENS OPENS ON THE WAY DOWN — this is what makes it a descent.
+
+     Scaling the sphere at a fixed field of view is geometrically identical to
+     dollying the camera, so the first version was not wrong; it just looked
+     wrong. 36 degrees is a telephoto lens. Telephoto flattens depth, so the
+     planet grew without the reader ever feeling they moved — magnification,
+     not travel.
+
+     Widening to 74 while the surface keeps closing is the dolly-zoom: the
+     subject holds roughly its size in frame while the perspective behind it
+     stretches, and that mismatch is precisely the sensation of being pulled
+     into a scene. It also matches what actually happens to a human descending
+     — peripheral vision fills with ground. */
+  const FOV_HIGH = 36;      // orbit: the framing the whole hero was tuned at
+  const FOV_LOW = 74;       // low over the city, everything in peripheral view
+
+  /* The descent is driven by the planet's ANGULAR radius, not by rig.scale.
+
+     Driving scale directly looked right on paper and was wrong on screen: as
+     the lens opened, the frame grew faster than the sphere did, so between
+     roughly 25% and 50% of the dive the planet visibly SHRANK before rushing
+     in. Fill ratio ran 0.86 -> 0.74 -> ... — a pull-back in the middle of a
+     descent.
+
+     Stating the angular radius makes the thing the reader actually perceives
+     the controlled variable, and the scale is solved back out of it:
+         angular radius = asin(R / d)   =>   R = d * sin(angle)
+     Now every frame is guaranteed to show more planet than the last, whatever
+     the lens is doing. */
+  const ANG_HIGH = 15.5;    // degrees — the pulled-back globe with space around it
+  const ANG_LOW = 65;       // degrees — horizon gone, ground filling the frame
+
   // How much of the frame the fully pulled-back sphere is allowed to fill.
   // 1.0 would have the limb touch both edges exactly; this leaves the planet
   // visibly surrounded by space, which is what makes it read as pulled back
@@ -381,6 +431,13 @@ export function initEarth(opts = {}) {
      and scroll independent instead of adversarial. */
 
   let zoom = 0;
+  /* THE DIVE — 0 is the pulled-back globe, 1 is nose-down over Riyadh at the
+     moment the flat thermal plate takes over. Kept separate from `zoom` because
+     they are different journeys: `zoom` pulls AWAY from the reader, this drives
+     straight back in at one point on the surface. */
+  let dive = 0;
+  let diveFrom = null;   // spin captured when the dive starts, so it eases from
+                         // wherever the idle rotation and the reader left it
   // rig.scale at the close-up framing, per breakpoint. Drag sensitivity is
   // measured against this so it reads the same on a phone as on a desktop.
   let baseScale = 1.74;
@@ -423,8 +480,53 @@ export function initEarth(opts = {}) {
     // sphere would bury the headline in it. Lift it into the space above.
     const toY = narrow ? 0.30 : 0;
 
-    rig.position.set(lerp(fromX, 0, zoom), lerp(fromY, toY, zoom), 0);
-    rig.scale.setScalar(lerp(fromScale, toScale, zoom));
+    /* The dive rides ON TOP of the pulled-back framing rather than replacing
+       it, so the two never fight: `zoom` decides where the globe sits, `dive`
+       then drives the camera into it from there. Easing is cubic-in — slow to
+       leave, fast at the end — because a dive that decelerates into the surface
+       reads as a lift rather than a descent. */
+    const d = dive * dive * dive;
+    rig.position.set(lerp(fromX, 0, zoom) * (1 - d), lerp(fromY, toY, zoom) * (1 - d), 0);
+    if (dive <= 0) {
+      rig.scale.setScalar(lerp(fromScale, toScale, zoom));
+    } else {
+      // Solve the scale from the angular size we want to show.
+      const ang = THREE.MathUtils.degToRad(lerp(ANG_HIGH, ANG_LOW, dive * dive));
+      // sin() can never reach 1 here, so R stays below the camera distance and
+      // the sphere can never swallow the camera — the failure that turned the
+      // screen black when this was a raw scale lerp.
+      const want = camera.position.z * Math.sin(ang);
+      rig.scale.setScalar(Math.max(lerp(fromScale, toScale, zoom), want));
+    }
+
+    // The axial tilt is a fact about the planet seen from outside. Diving to a
+    // point on the surface, it just reads as a crooked horizon, so it is taken
+    // out on the way down.
+    rig.rotation.z = THREE.MathUtils.degToRad(-23.4) * (1 - dive);
+
+    /* The lens opens on a gentler curve than the descent so it leads slightly:
+       the view starts widening before the ground is obviously rushing, which is
+       the order that reads as committing to a dive rather than reacting to one. */
+    // Exponent > 1 so the lens opens LATE. At 0.7 it opened faster than the
+    // ground closed, which is what produced the shrink described above.
+    const fovT = Math.pow(dive, 1.6);
+    const wantFov = lerp(FOV_HIGH, FOV_LOW, fovT);
+    if (Math.abs(camera.fov - wantFov) > 0.01) {
+      camera.fov = wantFov;
+      camera.updateProjectionMatrix();
+    }
+
+    /* Entering the atmosphere. The starfield is what tells the reader they are
+       in space; leaving it lit while the ground fills the frame is the single
+       loudest cue that nothing has actually moved. The limb glow goes with it —
+       from below it is overhead, not a halo on the horizon. */
+    if (stars?.material) {
+      stars.material.opacity = 0.5 * (1 - Math.min(1, dive * 1.4));
+    }
+    if (glow?.material) {
+      glow.material.opacity = 1 - Math.min(1, dive * 1.25);
+      glow.visible = dive < 0.8;
+    }
 
     // The axial tilt is framed for a view where the pole was off-screen. Ease
     // it toward upright as the whole sphere comes into frame, or the planet
@@ -682,6 +784,40 @@ export function initEarth(opts = {}) {
       applyFraming();
       requestFrame();
     },
+    /** 0 = pulled back, 1 = nose-down over Riyadh.
+     *  Rotation finishes in the first 45% and the descent runs the whole way,
+     *  so the planet swings round to Arabia and only then drops — the order the
+     *  reader can actually follow. Doing both evenly reads as a tumble. */
+    setDive(p) {
+      const v = Math.min(1, Math.max(0, p));
+      if (v === dive) return;
+
+      if (v > 0 && diveFrom === null) {
+        // Capture once, on entry. The target is chosen as the nearest
+        // equivalent turn to where the globe already is, so it never unwinds
+        // several revolutions to reach a longitude it is almost facing.
+        const target = lonToRotation(RIYADH_LON);
+        const turns = Math.round((spin.y - target) / (Math.PI * 2));
+        diveFrom = { y: spin.y, x: spin.x, toY: target + turns * Math.PI * 2 };
+      }
+      if (v === 0) { diveFrom = null; }
+
+      dive = v;
+      if (diveFrom) {
+        const swing = Math.min(1, v / 0.45);
+        const e = swing < 0.5 ? 2 * swing * swing : 1 - ((-2 * swing + 2) ** 2) / 2;
+        spin.y = lerp(diveFrom.y, diveFrom.toY, e);
+        /* Latitude is a rotation about X, and the sign was wrong: the dive
+           landed on Madagascar — 18.8S 46.9E against Riyadh's 24.7N 46.7E.
+           Same longitude, mirrored latitude, which is exactly what an inverted
+           X rotation produces and is why the longitude solve was never in
+           question. Positive tips the northern hemisphere toward the camera. */
+        spin.x = lerp(diveFrom.x, THREE.MathUtils.degToRad(RIYADH_LAT), e);
+      }
+      applyFraming();
+      requestFrame();
+    },
+
     /** 0 = present-day Earth, 1 = the failed one. */
     setDecay(p) {
       const v = Math.min(1, Math.max(0, p));
@@ -750,6 +886,10 @@ export function initEarth(opts = {}) {
 
         if (drag.active) {
           drag.idle = 0;
+        } else if (dive > 0) {
+          /* Hands off entirely while diving. The idle spin and the tilt settle
+             both pull toward a framing chosen for the pulled-back globe, and
+             either one would drag the camera off Riyadh on the way down. */
         } else {
           // Fling carries on and decays, then the idle spin eases back in.
           drag.vx *= 0.94;
