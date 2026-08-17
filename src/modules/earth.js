@@ -37,7 +37,12 @@ function tiers() {
 }
 
 const T = tiers();
+
 const DAY = `/assets/img/earth-day${T.day}.webp`;
+// The failed-climate surface, at the same tier the present-day one resolved to.
+// Both are sampled in the same fragment at the same UV, so a mismatch in size
+// shows up as one of them going soft halfway through the crossfade.
+const FUTURE = `/assets/img/earth-future${T.day}.webp`;
 const NIGHT = `/assets/img/earth-night${T.rest}.webp`;
 const CLOUDS = `/assets/img/earth-clouds${T.rest}.webp`;
 
@@ -84,8 +89,10 @@ const SURFACE_VERT = /* glsl */ `
 
 const SURFACE_FRAG = /* glsl */ `
   uniform sampler2D dayMap;
+  uniform sampler2D futureMap;
   uniform sampler2D nightMap;
   uniform sampler2D cloudMap;
+  uniform float decay;
   uniform vec3 sunDir;
   uniform vec3 atmoColor;
   uniform float cloudOffset;
@@ -102,7 +109,16 @@ const SURFACE_FRAG = /* glsl */ `
     // Wide terminator so the handover reads as dusk rather than a seam.
     float daylight = smoothstep(-0.22, 0.30, ndl);
 
-    vec3 day = texture2D(dayMap, vUv).rgb;
+    // THE CROSSFADE, and it is deliberately the only place it happens.
+    // Everything downstream — the water mask, the lit term, the specular — is
+    // derived from 'day', so blending here propagates correctly to all of them.
+    // A second blend further down would double-apply it; blending at only some
+    // of several sampling sites would tear. One site, one mix.
+    //
+    // The emergent behaviour is the good part: the water mask is derived from
+    // the surface colour, so as the oceans go to dust the sun glint retreats on
+    // its own. Nothing had to be written to make the seas stop shining.
+    vec3 day = mix(texture2D(dayMap, vUv).rgb, texture2D(futureMap, vUv).rgb, decay);
     vec3 night = texture2D(nightMap, vUv).rgb;
 
     // Oceans are the blue-dominant, dark pixels of the Blue Marble map. Deriving
@@ -120,7 +136,9 @@ const SURFACE_FRAG = /* glsl */ `
 
     // Night side: pulled down hard and warmed. The raw VIIRS composite is far
     // too bright to sit behind display type.
-    vec3 lights = pow(night, vec3(1.9)) * vec3(1.3, 0.92, 0.55) * 1.35;
+    // Dimmed but never extinguished as it decays: the planet stays inhabited,
+    // which is what makes it read as a future rather than as a dead rock.
+    vec3 lights = pow(night, vec3(1.9)) * vec3(1.3, 0.92, 0.55) * 1.35 * (1.0 - 0.45 * decay);
 
     vec3 col = mix(lights, lit, daylight);
 
@@ -130,7 +148,14 @@ const SURFACE_FRAG = /* glsl */ `
     float cloud = texture2D(cloudMap, vec2(vUv.x + cloudOffset, vUv.y)).r;
     cloud = smoothstep(0.16, 0.82, cloud);
     vec3 cloudLit = vec3(1.0) * (0.10 + 0.95 * max(ndl, 0.0));
-    col = mix(col, cloudLit, cloud * 0.82 * mix(0.35, 1.0, daylight));
+    // Weather stops with the decay. The cloud composite is present-day Earth's
+    // water cycle, and leaving it running over a burnt surface was the one
+    // thing still arguing the planet was fine — white cumulus over dead ground
+    // reads as a colour-grade, not as a consequence. Fading it out is also what
+    // finally exposes the surface: the failed map's detail was half-hidden
+    // under weather that belonged to the other world.
+    float weather = 1.0 - decay;
+    col = mix(col, cloudLit, cloud * 0.82 * mix(0.35, 1.0, daylight) * weather);
 
     // --- atmosphere ---------------------------------------------
     // Thick forward-scattering haze toward the limb. This is what removes the
@@ -199,10 +224,25 @@ const hasWebGL = () => {
   } catch { return false; }
 };
 
-export function initEarth() {
-  const canvas = document.getElementById('heroGlobe');
-  const hero = document.getElementById('hero');
-  if (!canvas || !hero || !hasWebGL()) return;
+/**
+ * @param {object} [opts]
+ * @param {string} [opts.canvas]  id of the <canvas> to draw into
+ * @param {string} [opts.host]    id of the element that owns pointer drag and
+ *                                the visibility test — usually the section
+ * @param {object} [opts.textures] {day, night, clouds} URLs, defaulting to the
+ *                                 present-day set chosen by `tiers()`
+ *
+ * Parameterised so the same globe can be built twice. The second instance is
+ * the same planet under a failed-climate surface map: one texture swap, no
+ * duplicated shader, lighting or interaction code. If the two ever diverge in
+ * how they rotate or how they are lit, the comparison stops being a comparison.
+ */
+export function initEarth(opts = {}) {
+  const canvas = document.getElementById(opts.canvas || 'heroGlobe');
+  const hero = document.getElementById(opts.host || 'hero');
+  if (!canvas || !hero || !hasWebGL()) return null;
+
+  const TEX = { day: DAY, future: FUTURE, night: NIGHT, clouds: CLOUDS, ...(opts.textures || {}) };
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -214,7 +254,17 @@ export function initEarth() {
   // The globe hangs above the frame so its lower limb arcs across the top and
   // the copy below sits on open space. Aiming the visible disc near the equator
   // is what keeps land — not ocean — in front of the viewer.
+  // TWO groups, not one. `rig` owns framing (position/scale) and the axial
+  // tilt; `spinner` owns the rotation. They were the same object, which put
+  // rotation.z (the 23.4-degree tilt) and rotation.y (the spin) into a single
+  // XYZ Euler — so the tilt was applied first and then swung about world Y, and
+  // the pole traced a cone once per revolution instead of holding still.
+  //
+  // The current crop hides it: the pole is off-screen. Framing the whole sphere
+  // puts it dead centre, where a wobbling axis is the first thing you notice.
   const rig = new THREE.Group();
+  const spinner = new THREE.Group();
+  rig.add(spinner);
   scene.add(rig);
 
   // Lifted well above the equator: only the sphere's top cap is in frame, so a
@@ -226,6 +276,8 @@ export function initEarth() {
 
   const surfaceUniforms = {
     dayMap: { value: null },
+    futureMap: { value: null },
+    decay: { value: 0 },
     nightMap: { value: null },
     cloudMap: { value: null },
     sunDir: { value: sunDir },
@@ -241,7 +293,7 @@ export function initEarth() {
       fragmentShader: SURFACE_FRAG,
     })
   );
-  rig.add(globe);
+  spinner.add(globe);
 
   // Shell radius sets the halo thickness: it extends from the surface at 1.0
   // out to this, so 1.035 reaches half as far as 1.07 did. The `peak` uniform
@@ -265,7 +317,7 @@ export function initEarth() {
       depthWrite: false,
     })
   );
-  rig.add(glow);
+  spinner.add(glow);
 
   // Starfield — deterministic so every load is identical.
   const starCount = 1100;
@@ -292,31 +344,98 @@ export function initEarth() {
   // swings the land-heavy mid-latitudes up into the visible band.
   const BASE_TILT_X = -0.62;
 
+  // How much of the frame the fully pulled-back sphere is allowed to fill.
+  // 1.0 would have the limb touch both edges exactly; this leaves the planet
+  // visibly surrounded by space, which is what makes it read as pulled back
+  // rather than merely smaller.
+  const FIT_MARGIN = 0.82;
+
+  // Where the idle settle eases back to, and the centre of the drag clamp.
+  // A variable rather than the constant, because the comfortable tilt for a
+  // cropped close-up is not the comfortable tilt for a full sphere.
+  let tiltTarget = BASE_TILT_X;
+
   const spin = { y: lonToRotation(visitorLongitude()), x: BASE_TILT_X };
   // idle starts high so the globe is already turning at full speed the moment it
   // appears. Starting at 0 makes it sit still for a beat and then creep up,
   // which reads as a stutter rather than as a planet.
   const drag = { active: false, vx: 0, vy: 0, lastX: 0, lastY: 0, idle: 99 };
 
-  rig.rotation.z = THREE.MathUtils.degToRad(-23.4); // axial tilt
+  rig.rotation.z = THREE.MathUtils.degToRad(-23.4); // axial tilt — on the PARENT, so it does not precess
+
+  /* ---- framing ------------------------------------------------
+     `zoom` runs 0..1: 0 is the cropped hero close-up, 1 is the whole sphere
+     centred in frame. Everything about the framing is derived from it, and
+     NOTHING writes rig.position or rig.scale except applyFraming().
+
+     That rule exists because the previous layout() set the framing constants
+     unconditionally on every resize. Any scroll-driven value written straight
+     to the rig was destroyed the next time the window changed size — including
+     a phone URL bar collapsing mid-scroll, which would have snapped the globe
+     from full-sphere back to close-up in the middle of the transition. Keeping
+     `zoom` as the single source of truth and re-deriving from it makes resize
+     and scroll independent instead of adversarial. */
+
+  let zoom = 0;
+  let ready = false;          // textures in, safe to render
+  let pendingFrame = false;   // coalesces on-demand renders under reduced motion
+
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  function applyFraming() {
+    const w = canvas.clientWidth || hero.clientWidth;
+    const narrow = w < 760;
+
+    // FROM: the close-up. Negative Y drops the sphere below the frame centre so
+    // its upper limb arcs across the viewport with open space above it. Phones
+    // are tall and narrow, so the same offset drops the limb further down —
+    // hence a separate pair.
+    const fromScale = narrow ? 1.58 : 1.74;
+    const fromY = narrow ? -1.28 : -1.45;
+    const fromX = narrow ? 0 : 0.1;
+
+    // TO: the whole sphere, in frame. DERIVED from the viewport rather than
+    // hardcoded per breakpoint, because which edge the sphere hits first
+    // changes with the aspect ratio:
+    //
+    //   visible half-height at the sphere plane = tan(fov/2) * cameraZ
+    //                                           = tan(18deg) * 3.1 = 1.007
+    //   visible half-width                      = half-height * aspect
+    //
+    // On desktop (aspect ~1.06) height binds. On a 375x812 phone the aspect is
+    // 0.46, so half-width is only 0.465 — and the old hardcoded 0.66 was a
+    // radius HALF AGAIN larger than the frame could hold, which is why the
+    // planet ran off both sides instead of pulling back. Taking the smaller of
+    // the two makes it correct at every width, including the ones between the
+    // breakpoints that a two-value guess never covers.
+    const halfH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
+    const toScale = halfH * Math.min(1, camera.aspect) * FIT_MARGIN;
+
+    // On a tall frame the copy occupies the bottom third, so centring the
+    // sphere would bury the headline in it. Lift it into the space above.
+    const toY = narrow ? 0.30 : 0;
+
+    rig.position.set(lerp(fromX, 0, zoom), lerp(fromY, toY, zoom), 0);
+    rig.scale.setScalar(lerp(fromScale, toScale, zoom));
+
+    // The axial tilt is framed for a view where the pole was off-screen. Ease
+    // it toward upright as the whole sphere comes into frame, or the planet
+    // arrives lying on its side.
+    tiltTarget = lerp(BASE_TILT_X, -0.18, zoom);
+  }
 
   function layout() {
-    const w = hero.clientWidth;
-    const h = hero.clientHeight;
+    // Sized from the CANVAS's own box, not the host's. The host is now a tall
+    // scroll container and the canvas is a viewport-height sticky child inside
+    // it — measuring the host would make camera.aspect wrong by the whole
+    // container/viewport ratio and blow the framebuffer up by the same factor.
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
     if (!w || !h) return;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
-
-    const narrow = w < 760;
-    // Negative Y drops the sphere below the frame centre, so its upper limb
-    // arcs across the viewport with open space above it. At this offset the
-    // limb crosses near the vertical middle, leaving the top half to space.
-    // Phone viewports are tall and narrow, so the same offset drops the limb far
-    // lower in frame than it sits on desktop. Raising it keeps roughly the same
-    // proportion of planet to space.
-    rig.position.set(narrow ? 0 : 0.1, narrow ? -1.28 : -1.45, 0);
-    rig.scale.setScalar(narrow ? 1.58 : 1.74);
+    applyFraming();
   }
 
   /* ---- drag to rotate ---------------------------------------- */
@@ -357,11 +476,16 @@ export function initEarth() {
       const dy = e.clientY - drag.lastY;
       drag.lastX = e.clientX;
       drag.lastY = e.clientY;
-      drag.vx = dx * 0.0045;
-      drag.vy = dy * 0.0035;
+      // Scaled by apparent size. A fixed radians-per-pixel rate means the
+      // zoomed-out globe — roughly half the on-screen radius — spins twice as
+      // fast per pixel dragged, which feels slippery exactly where the reader is
+      // meant to be able to turn it deliberately.
+      const grip = rig.scale.x / 1.74;
+      drag.vx = dx * 0.0045 * grip;
+      drag.vy = dy * 0.0035 * grip;
       spin.y += drag.vx;
       // Clamped so it can never tip past the poles into an upside-down globe.
-      spin.x = Math.max(BASE_TILT_X - 0.75, Math.min(BASE_TILT_X + 0.6, spin.x + drag.vy));
+      spin.x = Math.max(tiltTarget - 0.75, Math.min(tiltTarget + 0.6, spin.x + drag.vy));
       drag.idle = 0;
     };
 
@@ -380,12 +504,50 @@ export function initEarth() {
 
   /* ---- go ---------------------------------------------------- */
 
+  /* ---- the handle the page drives it by ----------------------
+     initEarth returns this. Scroll code sets `zoom` and `decay` and knows
+     nothing about three.js; this module owns every rendering decision. Values
+     are clamped here rather than trusted, because a scrub can overshoot past
+     0 and 1 during a fling and an unclamped decay would sample the crossfade
+     outside its range. */
+  function requestFrame() {
+    // Only needed when no rAF loop is running (reduced motion). Coalesced so a
+    // burst of scroll events costs one render, not one per event.
+    if (!ready || pendingFrame || !reducedMotion) return;
+    pendingFrame = true;
+    requestAnimationFrame(() => {
+      pendingFrame = false;
+      spinner.rotation.y = spin.y;
+      spinner.rotation.x = spin.x;
+      renderer.render(scene, camera);
+    });
+  }
+
+  const api = {
+    /** 0 = cropped hero close-up, 1 = whole sphere centred. */
+    setZoom(p) {
+      const v = Math.min(1, Math.max(0, p));
+      if (v === zoom) return;
+      zoom = v;
+      applyFraming();
+      requestFrame();
+    },
+    /** 0 = present-day Earth, 1 = the failed one. */
+    setDecay(p) {
+      const v = Math.min(1, Math.max(0, p));
+      if (v === surfaceUniforms.decay.value) return;
+      surfaceUniforms.decay.value = v;
+      requestFrame();
+    },
+    get isReady() { return ready; },
+  };
+
   const loader = new THREE.TextureLoader();
   const load = (url) => new Promise((res, rej) => loader.load(url, res, undefined, rej));
 
-  Promise.all([load(DAY), load(NIGHT), load(CLOUDS)])
-    .then(([day, night, clouds]) => {
-      for (const t of [day, night, clouds]) {
+  Promise.all([load(TEX.day), load(TEX.future), load(TEX.night), load(TEX.clouds)])
+    .then(([day, future, night, clouds]) => {
+      for (const t of [day, future, night, clouds]) {
         t.colorSpace = THREE.SRGBColorSpace;
         // Most of the visible disc is viewed at a grazing angle — exactly the
         // case trilinear filtering blurs and anisotropic filtering rescues.
@@ -397,6 +559,7 @@ export function initEarth() {
       clouds.wrapS = THREE.RepeatWrapping;
 
       surfaceUniforms.dayMap.value = day;
+      surfaceUniforms.futureMap.value = future;
       surfaceUniforms.nightMap.value = night;
       surfaceUniforms.cloudMap.value = clouds;
 
@@ -404,9 +567,23 @@ export function initEarth() {
       window.addEventListener('resize', layout, { passive: true });
       canvas.classList.add('is-ready');
 
+      ready = true;
+      renderer.render(scene, camera);
+
+      /* REDUCED MOTION.
+         The old branch returned here after one frame — no drag, no loop, and
+         (once this became a scroll-driven transition) no way to ever reach the
+         second Earth. That is content removal wearing a motion preference's
+         clothes, and the house rule is the opposite: less motion, not less
+         content.
+
+         So: no idle spin, no cloud drift, no starfield rotation — nothing moves
+         on its own. But scroll and drag are things the reader is DOING, not
+         animation happening at them, so both stay live and each schedules a
+         single frame. The whole transition is still reachable; it just never
+         moves unless a hand moves it. */
       if (reducedMotion) {
-        rig.rotation.y = spin.y;
-        renderer.render(scene, camera);
+        bindDrag();
         return;
       }
 
@@ -428,16 +605,16 @@ export function initEarth() {
           drag.vx *= 0.94;
           drag.vy *= 0.94;
           spin.y += drag.vx;
-          spin.x = Math.max(BASE_TILT_X - 0.75, Math.min(BASE_TILT_X + 0.6, spin.x + drag.vy));
+          spin.x = Math.max(tiltTarget - 0.75, Math.min(tiltTarget + 0.6, spin.x + drag.vy));
 
           drag.idle += dt;
           const resume = Math.min(1, Math.max(0, (drag.idle - 1.2) / 2.5));
           spin.y += dt * 0.022 * resume;                        // ~4.7 min per revolution
-          spin.x += (BASE_TILT_X - spin.x) * dt * 0.4 * resume; // settle back to the framing tilt
+          spin.x += (tiltTarget - spin.x) * dt * 0.4 * resume; // settle back to the framing tilt
         }
 
-        rig.rotation.y = spin.y;
-        rig.rotation.x = spin.x;
+        spinner.rotation.y = spin.y;
+        spinner.rotation.x = spin.x;
         surfaceUniforms.cloudOffset.value -= dt * 0.0016; // weather outruns the ground
         stars.rotation.y += dt * 0.003;
 
@@ -448,4 +625,6 @@ export function initEarth() {
       // Textures unavailable — leave the CSS starfield placeholder in place.
       canvas.remove();
     });
+
+  return api;
 }

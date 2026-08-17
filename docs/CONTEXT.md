@@ -860,3 +860,113 @@ in the DOM where a screen reader and a translator can reach them.
 Still outstanding: the generic 3D render on the card face wants replacing with a
 real dashboard screenshot — the poster layout leans on that image far harder
 than the old split card did.
+
+## 22. One globe, two worlds — the scroll-scrubbed zoom-out (2026-08-17)
+
+The hero Earth and the failed Earth are the SAME globe. Scrolling pulls the
+camera back from the cropped close-up to the whole sphere while the surface
+crossfades to a climate-failed map. One canvas, one scene, one rotation, fully
+reversible, draggable throughout.
+
+This replaced two earlier attempts in one session — a marquee, then a second
+globe flipped with `scaleY(-1)` to read as a reflection. Both are gone.
+
+### Structure
+
+```
+.worlds                     the scroll container the transition is scrubbed against
+  .worlds__stage            position: sticky, top 0, height 100svh  <- the canvas
+  .worlds__copy             margin-top: -100svh
+    #hero                   transparent
+    #future                 transparent
+```
+
+**The stage must not be inside `.hero`.** `.hero` sets `overflow: hidden`, which
+makes it a scroll container, and `position: sticky` is confined to its nearest
+scrollport — a sticky canvas in there behaves like `position: relative` and
+scrolls away, silently, with nothing to see in devtools.
+
+**The overlap pulls the COPY up, not the stage down.** The first version used
+`margin-bottom: -100svh` on the stage. Layout was right and the release was
+wrong: sticky constrains an element by its MARGIN box, that margin made the
+margin box zero tall, and the stage stayed stuck a full screen past the end of
+`.worlds` — the globe showed straight through the About section.
+
+### Driving it
+
+`initEarth()` returns `{ setZoom, setDecay, isReady }`. main.js owns one
+ScrollTrigger over `.worlds` and knows no three.js.
+
+    zoom   0 -> 1  over progress 0.00 .. 0.72   (eased)
+    decay  0 -> 1  over progress 0.30 .. 0.95   (linear)
+
+The ranges deliberately differ. The camera moves first and alone, so the reader
+pulls back on a planet they recognise before it starts to turn; crossfading in
+lockstep reads as a rendering glitch. Decay is linear because an eased crossfade
+lingers in the half-and-half state, the one state that looks like neither planet.
+
+`--zoom` is published to the stage as a custom property so CSS keeps ownership
+of the scrim and heat-glow fade — both exist to buy ground for the hero copy and
+have no job once it is gone, and the scrim's centred ellipse would otherwise sit
+as a grey disc on the planet's face.
+
+### Four things in earth.js that had to change
+
+1. **`layout()` no longer writes framing.** It used to set position/scale
+   unconditionally on every resize, which would have destroyed any scroll-driven
+   value — including when a phone URL bar collapses mid-transition. `zoom` is now
+   the single source of truth and `applyFraming()` re-derives from it.
+2. **The axial tilt moved to a parent group.** `rotation.z` (tilt) and
+   `rotation.y` (spin) shared one XYZ Euler, so the pole precessed on a 23.4-degree
+   cone once per revolution. The old crop hid it; a centred full sphere does not.
+3. **The zoomed-out scale is derived, not hardcoded.** `halfH * min(1, aspect) *
+   0.82`. Which edge binds changes with aspect: at 375x812 the half-width is
+   0.465, so the old hardcoded 0.66 was a radius half again larger than the frame
+   could hold and the planet ran off both sides.
+4. **Drag sensitivity scales with `rig.scale`.** Fixed radians-per-pixel made the
+   zoomed-out globe spin twice as fast per pixel.
+
+### Drag binds to `.worlds`, not the stage
+
+The stage is a SIBLING of the sections, so nothing bubbles to it — and the copy
+covers the whole viewport. Measured: `elementFromPoint` at frame centre returned
+`#future` with no path to the stage, i.e. the zoomed-out globe could not be
+turned at all. `.worlds` is the one common ancestor of both.
+
+Separately, `.hero__body`/`.hero__stats` reach `opacity: 0` but still hit-test,
+and earth.js refuses drags targeting links — so the four invisible CTAs sat dead
+centre of the planet. They get `pointer-events: none` via a `.set()`, since
+pointer-events does not interpolate.
+
+### Reduced motion
+
+The old branch rendered one frame and returned before `bindDrag()`. Carried
+forward that would have made the second Earth permanently unreachable — content
+removal wearing a motion preference's clothes. Now: no idle spin, no cloud drift,
+no starfield rotation, but scroll and drag stay live and each schedules a single
+coalesced frame. Less motion, not less content.
+
+### Clouds
+
+Cloud opacity is multiplied by `1 - decay`. The composite is present-day Earth's
+water cycle, and white cumulus over burnt ground read as a colour-grade rather
+than a consequence. Fading it out is also what finally exposes the failed map's
+surface detail.
+
+### Runway
+
+`.future`'s height IS the scrub range. Desktop measures 837px (0.92 screens).
+Phones needed an explicit fix: `.hero` drops to `min-height: auto` at 560px, so
+at 375x812 the range was only 570px — 0.70 of a screen, about one flick. Raised
+to `118svh`, giving ~1.0 screens. The extra height lands above the bottom-aligned
+copy, which is where the planet is.
+
+### Texture
+
+`earth-future-6k.webp` shipped at 2880x1440 under a 6k filename, against a
+6144-wide NASA day map — 2.13x less angular detail, blended in the same fragment
+at the same UV. Rebuilt with Real-ESRGAN x4plus (4x to 11520, Lanczos down to
+6144). See tools note: the source is NOT cyclic (seam 1.24x normal adjacency), so
+it is seam-healed with a cosine cross-dissolve BEFORE upscaling — a plain Lanczos
+takes the seam to 2.96x, healed takes it to 0.03x.
+

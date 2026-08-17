@@ -172,13 +172,6 @@
 .is-rtl .projects__pin { direction: ltr; }
 .is-rtl .pcard { direction: rtl; }
 
-/* Same case, same cause: the marquee loop animates x in px from a left-edge
-   origin. Under RTL the flex track lays out from the container's right edge,
-   so the whole strip sits off-screen and the marquee renders empty. Its items
-   are Latin technical terms that are never translated, so LTR is the correct
-   reading order for them anyway — no inner override needed. */
-.is-rtl .marquee { direction: ltr; }
-
 /* Arabic numerals and Latin technical terms inside RTL text need isolating or
    they reorder around punctuation. */
 .is-rtl .tag,

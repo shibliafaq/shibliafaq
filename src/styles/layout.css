@@ -185,7 +185,7 @@
    sections in --ink-1, one step lighter than --ink. Removed: the alternation
    read as two different blacks rather than as depth, and every section now
    sits on the same ground. --ink-1 is still the surface for things that ARE
-   raised off the page — the marquee strip and the modal panel. */
+   raised off the page — the modal panel and the card surfaces. */
 
 .sec-title {
   font-size: var(--fs-h2);
@@ -224,6 +224,60 @@
   isolation: isolate;
 }
 
+/* ============================================================
+   THE TWO WORLDS — one globe across two sections
+   ============================================================ */
+
+.worlds { position: relative; }
+
+/* Sticky, NOT fixed and NOT pinned.
+   - fixed would paint behind `body`'s opaque --ink background at any negative
+     z-index, and above the copy at any positive one.
+   - a ScrollTrigger pin would add a pin-spacer, changing document height under
+     the pinned sections further down the page — a bug this project has already
+     paid for once.
+   - sticky needs no JS, survives resize for free, and cannot desynchronise
+     from the scroll position because it IS the scroll position.
+
+   The overlap is done by pulling the COPY up, not by collapsing the stage.
+   The first attempt put `margin-bottom: -100svh` on the stage itself, which
+   works for layout but breaks the release: sticky keeps an element inside its
+   containing block by its MARGIN box, and that margin made the margin box zero
+   tall — so the stage stayed stuck a full screen past the end of .worlds and
+   the globe showed straight through the About section. Pulling `.worlds__copy`
+   up instead leaves the stage a real 100svh box, so it unsticks exactly when
+   the transition ends. Same total height, correct release. */
+.worlds__stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  z-index: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background: #05060a;
+}
+
+.worlds__copy { margin-top: -100svh; }
+
+/* --zoom (0..1) is written by main.js from the same scrub that drives the
+   camera. Both of these layers exist to buy legible ground for the HERO copy;
+   once that copy has faded and the whole sphere is in frame they have no job
+   left, and the scrim's centred ellipse would sit as a grey disc directly on
+   the planet's face. So they retreat as the camera pulls back.
+
+   Faded here rather than in JS because the scrim is redefined at two
+   breakpoints — a JS opacity tween would have to know about all three. */
+.worlds__stage { --zoom: 0; }
+.worlds__stage .hero__scrim { opacity: calc(1 - 0.82 * var(--zoom)); }
+.worlds__stage .hero__heat  { opacity: calc(1 - var(--zoom)); }
+/* Kill the keyframes the moment the pull-back starts, so the rule above wins. */
+@supports (animation-play-state: paused) {
+  .worlds__stage[style*="--zoom"] .hero__heat { animation: none; }
+}
+
+.worlds .hero,
+.worlds .future { position: relative; z-index: 1; background: transparent; }
+
 .hero__media { position: absolute; inset: 0; z-index: -2; background: #05060a; }
 
 /* Placeholder and no-WebGL fallback: deep space with a horizon glow roughly
@@ -251,12 +305,12 @@
 
 .hero__globe.is-ready { opacity: 1; }
 
-/* Drag is handled on the whole hero, so the grab cursor belongs there too —
-   except over links and buttons, which stay clickable. */
-.hero.is-draggable { cursor: grab; touch-action: pan-y; }
-.hero.is-draggable a,
-.hero.is-draggable button { cursor: pointer; }
-body.is-grabbing .hero.is-draggable { cursor: grabbing; }
+/* Drag is bound to .worlds — the one element that is an ancestor of BOTH the
+   sticky stage and the copy sections — so the grab cursor belongs there too.
+   Links and buttons stay clickable; earth.js refuses to start a drag on them. */
+.worlds.is-draggable { cursor: grab; touch-action: pan-y; }
+.worlds a, .worlds button { cursor: pointer; }
+body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 
 /* The globe fills the lower two thirds and space is black above it, so the
    scrim is bottom-and-left weighted: it buys ground for the name without
@@ -281,6 +335,10 @@ body.is-grabbing .hero.is-draggable { cursor: grabbing; }
   pointer-events: none;
   background: radial-gradient(58% 38% at 50% 92%, rgba(var(--accent-rgb), .15), transparent 68%);
   mix-blend-mode: screen;
+  /* The keyframes own opacity AND transform, and a running animation outranks
+     any declaration outside it — so the --zoom fade above could never take
+     effect while this was live. The breathing belongs to the close-up anyway;
+     it is switched off for the rest of the transition rather than fought. */
   animation: heatBreath 18s var(--e-soft) infinite alternate;
 }
 
@@ -399,44 +457,45 @@ body.is-grabbing .hero.is-draggable { cursor: grabbing; }
 }
 
 /* ============================================================
-   MARQUEE
-   ============================================================ */
+   THE OTHER OUTCOME — the copy laid over the failed Earth
+   ============================================================
 
-.marquee {
+   This section owns no globe of its own any more. It is the second screen of
+   the shared `.worlds` stage: by the time it is in view the camera has pulled
+   all the way back and the surface has finished turning, so all this element
+   contributes is text over a planet that is already there.
+
+   Consequently: no background (it would paint over the sticky stage behind it),
+   no overflow, no isolation, no scrim. Its height is its only other job — it is
+   the scroll runway the transition is scrubbed against, so shortening it makes
+   the whole zoom happen faster. */
+
+.future {
   position: relative;
-  overflow: hidden;
-  padding: clamp(1rem, 2.5vh, 1.75rem) 0;
-  border-block: 1px solid var(--line);
-  background: var(--ink-1);
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  min-height: clamp(600px, 92vh, 940px);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-items: end;
+  padding: clamp(3rem, 9vh, 6rem) var(--pad-x) clamp(3rem, 8vh, 5.5rem);
 }
 
-.marquee__track {
-  display: flex;
-  gap: 3.5rem;
-  width: max-content;
-  will-change: transform;
+.future__body {
+  position: relative;
+  grid-row: 2;
+  max-width: 62ch;
+  text-align: center;
+  margin-inline: auto;
+  /* The planet is behind the words here, not beside them — a soft ground keeps
+     the lead readable over the bright ochre without drawing a panel. */
+  text-shadow: 0 2px 18px rgba(9, 9, 11, .85), 0 1px 4px rgba(9, 9, 11, .7);
 }
 
-.marquee__item {
-  font-family: var(--f-display);
-  font-weight: 700;
-  font-size: clamp(1rem, 2.2vw, 1.75rem);
-  letter-spacing: -.02em;
-  color: var(--t-4);
-  white-space: nowrap;
-  transition: color var(--d-fast) var(--e-out);
+.future__body .sec-title { margin: .55rem 0 1rem; }
+.future__body .sec-title em {
+  font-style: italic;
+  color: var(--accent);
 }
-
-.marquee__item::after {
-  content: "◆";
-  margin-left: 3.5rem;
-  font-size: .4em;
-  vertical-align: middle;
-  color: var(--amber-40);
-}
-
-.marquee:hover .marquee__item { color: var(--t-3); }
+.future__body .lead { margin-inline: auto; }
 
 /* ============================================================
    FOOTER
@@ -569,8 +628,20 @@ body.is-grabbing .hero.is-draggable { cursor: grabbing; }
 
   .sec-title { max-width: none; margin-bottom: 1.75rem; }
   .nav { height: 64px; }
-  .marquee__item { font-size: 1rem; }
-  .marquee__track { gap: 2rem; }
-  .marquee__item::after { margin-left: 2rem; }
-  .footer { gap: .5rem 1.25rem; padding: 2.25rem var(--pad-x); }
+  /* THE SCROLL RUNWAY.
+     `.future`'s height is what the whole transition is scrubbed against, and on
+     phones it is the ONLY source of runway: `.hero` drops to `min-height: auto`
+     at 560px and below, so it contributes less than a screen rather than
+     exactly one.
+
+     Measured at 375x812: hero 667 + future 715 = 1382, minus the 812 viewport
+     leaves 570px of scrub — 0.70 of a screen, which is roughly one flick. The
+     entire pull-back and decay would happen inside a single gesture, too fast
+     to read as a transition at all. At 118svh the range is ~1.0 screens, which
+     matches the desktop feel.
+
+     The extra height is not dead space: the copy is bottom-aligned, so it all
+     goes above the text, which is exactly where the planet is. */
+  .future { min-height: 118svh; }
+    .footer { gap: .5rem 1.25rem; padding: 2.25rem var(--pad-x); }
 }

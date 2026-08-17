@@ -62,15 +62,31 @@
 <main id="main">
 
 <!-- ══ HERO ═════════════════════════════════════════════════ -->
-<section id="hero" class="hero">
-  <div class="hero__media">
-    <!-- Painted immediately so the hero is never empty; the WebGL globe fades
+<!-- ══ THE TWO WORLDS ══════════════════════════════════════
+     One globe, one canvas, one continuous scene, across two screens of scroll.
+     The camera pulls back from a cropped close-up to the whole sphere while the
+     surface crossfades from the present-day Earth to a failed-climate one.
+
+     The stage is a SIBLING of the sections rather than a child of the hero, and
+     that is not a style choice. `position: sticky` is confined to its nearest
+     scroll container, and `.hero` sets `overflow: hidden` — which makes it one.
+     A sticky canvas inside the hero would silently behave like `position:
+     relative` and scroll away, with no error and nothing to see in devtools.
+
+     `margin-bottom: -100svh` is what lets the stage claim no layout space, so
+     the two sections flow over it instead of being pushed down a screen. -->
+<div class="worlds" id="worlds">
+  <div class="worlds__stage" id="worldsStage">
+    <!-- Painted immediately so the page is never empty; the WebGL globe fades
          in over it and this stays as the fallback if WebGL is unavailable. -->
     <div class="hero__space"></div>
     <canvas class="hero__globe" id="heroGlobe" aria-hidden="true"></canvas>
     <div class="hero__scrim"></div>
     <div class="hero__heat"></div>
   </div>
+
+  <div class="worlds__copy">
+<section id="hero" class="hero">
 
   <div class="hero__body">
     <p class="eyebrow hero__hey" data-i18n="hero.hey">Hey, I’m</p>
@@ -121,12 +137,21 @@
   </div>
 </section>
 
-<!-- ══ MARQUEE ══════════════════════════════════════════════ -->
-<div class="marquee" aria-hidden="true">
-  <div class="marquee__track" id="marqueeTrack">
-    <span data-copy="_nav.8" class="marquee__item">Urban Heat Islands</span><span data-copy="_nav.9" class="marquee__item">GIS &amp; Remote Sensing</span><span data-copy="_nav.10" class="marquee__item">Smart Cities</span><span data-copy="_nav.11" class="marquee__item">ArcGIS Pro</span><span data-copy="_nav.12" class="marquee__item">Google Earth Engine</span><span data-copy="_nav.13" class="marquee__item">Apache Kafka</span><span data-copy="_nav.14" class="marquee__item">Machine Learning</span><span data-copy="_nav.15" class="marquee__item">Digital Twin</span><span data-copy="_nav.16" class="marquee__item">MODIS Satellite</span><span data-copy="_nav.17" class="marquee__item">Kepler.gl</span><span data-copy="_nav.18" class="marquee__item">Climate Resilience</span><span data-copy="_nav.19" class="marquee__item">Apache Spark</span>
+<!-- ══ THE OTHER OUTCOME ═══════════════════════════════════
+     The same globe as the hero, one texture different. Reusing initEarth
+     rather than writing a second renderer is the whole point: identical
+     lighting, identical rotation, identical drag. If the two diverged in how
+     they move or how they are lit, the reader would read the difference as
+     styling rather than as the planet. -->
+<section id="future" class="future">
+  <div class="future__body wrap">
+    <p class="eyebrow" data-reveal data-i18n="future.label">The other outcome</p>
+    <h2 class="display sec-title" data-reveal data-split data-i18n="future.title">The same planet.<br><em>If we fail.</em></h2>
+    <p class="lead" data-reveal data-i18n="future.lead">Deserts where the tropics were, ice gone from both poles, dust over every ocean. This is not a different world — it is this one, with the heat left unchecked. Everything below is work aimed at the other version.</p>
   </div>
-</div>
+</section>
+  </div><!-- /.worlds__copy -->
+</div><!-- /.worlds -->
 
 <!-- ══ ABOUT ════════════════════════════════════════════════ -->
 <section id="about" class="section">

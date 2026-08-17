@@ -77,7 +77,8 @@ const SKIP_CLASS = /\btli\b|\btli__|\bjourney__rail\b|\bjourney__cards\b/;
 
 /** Human-readable section names, in page order. */
 const SECTIONS = {
-  hero: 'Hero', about: 'About', direction: 'Research direction',
+  hero: 'Hero', future: 'The other outcome — second globe',
+  about: 'About', direction: 'Research direction',
   thermal: 'Thermal sequence', projects: 'Projects', atlas: 'Atlas',
   publications: 'Publications', skills: 'Skills',
   background: 'Background — headings and chrome', contact: 'Contact',

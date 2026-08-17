@@ -83,17 +83,39 @@ export function initHero() {
 
   intro.eventCallback('onComplete', () => {
     gsap.timeline({
-      scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 0.8 },
+      /* Ends at 55% of a screen, not at the hero's bottom edge.
+         The camera finishes pulling back at 602px of scroll (0.72 of an 837px
+         range) while 'bottom top' put this fade's end at 910px — so the
+         headline and the four CTAs were still half-opaque, sitting on the face
+         of the planet, at the exact moment the whole Earth arrived. The copy
+         has to be gone BEFORE the reveal it is standing in front of. */
+      scrollTrigger: {
+        trigger: '#hero', start: 'top top',
+        end: () => `+=${Math.round(window.innerHeight * 0.55)}`,
+        scrub: 0.8, invalidateOnRefresh: true,
+      },
     })
       .fromTo('.hero__name',
         { y: 0, scale: 1, opacity: 1 },
         { y: -80, scale: 1.04, opacity: 0.12, ...scrub }, 0)
-      .fromTo(['.hero__globe', '.hero__space'],
+      /* The globe used to be CSS-scaled here (1 -> 1.14, yPercent 5). Removed:
+         the camera now pulls BACK over this exact range, so a CSS scale-up
+         fought it frame for frame — and CSS-scaling a fixed-size WebGL buffer
+         resamples the render, which shows as blur. The starfield backdrop keeps
+         its drift because it is a plain div and reads as parallax. */
+      .fromTo('.hero__space',
         { scale: 1, yPercent: 0 },
         { scale: 1.14, yPercent: 5, ...scrub }, 0)
       .fromTo(['.hero__hey', '.hero__role', '.hero__desc', '.hero__actions'],
         { y: 0, opacity: 1 },
         { y: -40, opacity: 0, ...scrub }, 0)
+      /* Opacity 0 still hit-tests. These elements stay full-size and stacked
+         over the canvas, and earth.js refuses to start a drag whose target is
+         inside a link or button — so the four invisible CTAs, sitting dead
+         centre of the zoomed-out planet, would have swallowed every grab.
+         Toggled rather than scrubbed: pointer-events does not interpolate. */
+      .set(['.hero__body', '.hero__stats'], { pointerEvents: 'none' }, 0.35)
+      .set(['.hero__body', '.hero__stats'], { pointerEvents: 'auto' }, 0)
       .fromTo('.hero__stats',
         { y: 0, opacity: 1 },
         { y: -20, opacity: 0, ...scrub }, 0.15);

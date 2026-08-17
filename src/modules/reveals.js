@@ -89,31 +89,4 @@ export function initReveals() {
     });
   }
 
-  // --- marquee --------------------------------------------------
-  // The track holds one copy of the list; clone it so the loop is seamless.
-  const track = document.getElementById('marqueeTrack');
-  if (track && !reducedMotion) {
-    const original = track.innerHTML;
-    track.innerHTML = original + original;
-    const half = () => track.scrollWidth / 2;
-
-    const loop = gsap.to(track, {
-      x: () => -half(),
-      duration: 34,
-      ease: 'none',
-      repeat: -1,
-      modifiers: { x: (x) => `${parseFloat(x) % half()}px` },
-    });
-
-    // Scrolling the page nudges the marquee — small touch, reads as inertia.
-    ScrollTrigger.create({
-      trigger: document.body,
-      start: 'top top',
-      end: 'bottom bottom',
-      onUpdate: (self) => {
-        const boost = 1 + Math.min(Math.abs(self.getVelocity()) / 1800, 4);
-        gsap.to(loop, { timeScale: self.direction === -1 ? -boost : boost, duration: .5, overwrite: true });
-      },
-    });
-  }
 }

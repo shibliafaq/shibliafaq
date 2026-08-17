@@ -61,6 +61,17 @@ node tools/sync-site-copy.mjs --write   # apply it
 ### hero.9
 - #04
 
+## The other outcome — second globe
+
+### future.label
+- The other outcome
+
+### future.title
+- The same planet.<br><em>If we fail.</em>
+
+### future.lead
+- Deserts where the tropics were, ice gone from both poles, dust over every ocean. This is not a different world — it is this one, with the heat left unchecked. Everything below is work aimed at the other version.
+
 ## About
 
 ### about.label
@@ -632,42 +643,6 @@ node tools/sync-site-copy.mjs --write   # apply it
 
 ### nav.contact
 - Contact
-
-### _nav.8
-- Urban Heat Islands
-
-### _nav.9
-- GIS &amp; Remote Sensing
-
-### _nav.10
-- Smart Cities
-
-### _nav.11
-- ArcGIS Pro
-
-### _nav.12
-- Google Earth Engine
-
-### _nav.13
-- Apache Kafka
-
-### _nav.14
-- Machine Learning
-
-### _nav.15
-- Digital Twin
-
-### _nav.16
-- MODIS Satellite
-
-### _nav.17
-- Kepler.gl
-
-### _nav.18
-- Climate Resilience
-
-### _nav.19
-- Apache Spark
 
 ### _nav.20
 - © 2026 Shibli Afaq
