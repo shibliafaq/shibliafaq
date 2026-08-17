@@ -970,3 +970,32 @@ at the same UV. Rebuilt with Real-ESRGAN x4plus (4x to 11520, Lanczos down to
 it is seam-healed with a cosine cross-dissolve BEFORE upscaling — a plain Lanczos
 takes the seam to 2.96x, healed takes it to 0.03x.
 
+
+### The texture rebuild, as run (2026-08-17)
+
+`tools/upscale_earth.py` + `tools/rrdbnet.py`. Real-ESRGAN x4plus on CPU, ~45 min
+for 72 tiles at 256px. RRDBNet is written out rather than imported: `basicsr`
+does not install on Windows + Python 3.11, and `load_state_dict(strict=True)` is
+what proves the reimplementation matches the checkpoint.
+
+Results, against the NASA map each tier is blended with:
+
+| tier | size | MB | NASA MB | sharpness | seam |
+|---|---|---|---|---|---|
+| earth-future-6k | 6144x3072 | 1.46 | 1.47 | 1.38x | 0.66x |
+| earth-future-4k | 4096x2048 | 0.77 | 0.75 | 1.98x | 0.58x |
+| earth-future    | 2048x1024 | 0.24 | 0.23 | 3.09x | 0.50x |
+
+Three things worth keeping:
+
+- **Heal the seam before upscaling.** The Gemini source is not cyclic — its two
+  edges measure 1.24x normal column-to-column difference. Upscaling sharpens that
+  step into a line: plain Lanczos to 6144 takes it to 2.96x. Healed first, 0.03x.
+  Wrap-padding alone is not enough; it fixes the convolution, not the content.
+- **Quality 92 was pure waste.** The lapvar curve is flat from q78 up, so 2.65 MB
+  bought exactly what 1.46 MB does. Measure the curve before picking a number.
+- **Checkpoint anything this long.** The first run was killed at tile 50/72 and
+  lost 40 minutes because the output lived only in RAM. The checkpoint signature
+  includes a hash of the INPUT, not just the geometry — adding the seam heal
+  changed every pixel while leaving all dimensions identical, and a geometry-only
+  signature would have resumed happily and mixed healed tiles with unhealed ones.
