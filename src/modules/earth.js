@@ -377,6 +377,9 @@ export function initEarth(opts = {}) {
      and scroll independent instead of adversarial. */
 
   let zoom = 0;
+  // rig.scale at the close-up framing, per breakpoint. Drag sensitivity is
+  // measured against this so it reads the same on a phone as on a desktop.
+  let baseScale = 1.74;
   let ready = false;          // textures in, safe to render
   let pendingFrame = false;   // coalesces on-demand renders under reduced motion
 
@@ -391,6 +394,7 @@ export function initEarth(opts = {}) {
     // are tall and narrow, so the same offset drops the limb further down —
     // hence a separate pair.
     const fromScale = narrow ? 1.58 : 1.74;
+    baseScale = fromScale;   // the drag reference for THIS breakpoint
     const fromY = narrow ? -1.28 : -1.45;
     const fromX = narrow ? 0 : 0.1;
 
@@ -476,11 +480,24 @@ export function initEarth(opts = {}) {
       const dy = e.clientY - drag.lastY;
       drag.lastX = e.clientX;
       drag.lastY = e.clientY;
-      // Scaled by apparent size. A fixed radians-per-pixel rate means the
-      // zoomed-out globe — roughly half the on-screen radius — spins twice as
-      // fast per pixel dragged, which feels slippery exactly where the reader is
-      // meant to be able to turn it deliberately.
-      const grip = rig.scale.x / 1.74;
+      /* Sensitivity rises as the sphere gets smaller, because a point on the
+         surface should follow the finger. For a sphere of on-screen radius R
+         pixels, dragging dx pixels turns it by about dx/R radians — so radians
+         per pixel goes as 1/R, i.e. INVERSELY with rig.scale.
+
+         This was written the wrong way round at first (scale / 1.74), which
+         cut sensitivity exactly where the sphere is smallest: on a phone at
+         full pull-back that is 0.381 / 1.74 = 0.219, a 4.6x loss, and the
+         globe barely moved under a full-width swipe. The hardcoded 1.74 was
+         wrong too — it is the DESKTOP close-up scale, while phones start at
+         1.58.
+
+         sqrt rather than the full 1/R: the tuned 0.0045 rad/px is already about
+         3.5x faster than one-to-one tracking, which suits a big sphere you only
+         see a patch of. Applying the full inverse on a small full-disc sphere
+         made a 44px drag spin it a whole radian. The square root keeps it
+         clearly more responsive when small without becoming uncontrollable. */
+      const grip = Math.min(2.4, Math.sqrt(baseScale / Math.max(rig.scale.x, 0.05)));
       drag.vx = dx * 0.0045 * grip;
       drag.vy = dy * 0.0035 * grip;
       spin.y += drag.vx;
