@@ -249,7 +249,14 @@ export function initEarth(opts = {}) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
+  /* Near plane at 0.01, not the usual 0.1.
+     The dive ends with the surface about 0.03 world units from the camera, so a
+     0.1 near plane would clip the ground away and punch a hole through the
+     middle of the frame at exactly the moment the thermal plate takes over.
+     Nothing else in this scene is anywhere near the camera, and it holds only a
+     sphere, a glow shell with depthWrite off, and a starfield — so the depth
+     precision this costs has nothing to fight over. */
+  const camera = new THREE.PerspectiveCamera(36, 1, 0.01, 100);
   camera.position.set(0, 0, 3.1);
 
   // The globe hangs above the frame so its lower limb arcs across the top and
@@ -393,7 +400,14 @@ export function initEarth(opts = {}) {
      Now every frame is guaranteed to show more planet than the last, whatever
      the lens is doing. */
   const ANG_HIGH = 15.5;    // degrees — the pulled-back globe with space around it
-  const ANG_LOW = 65;       // degrees — horizon gone, ground filling the frame
+  /* 82, not 65. At 65 the descent stopped with the whole Arabian Peninsula
+     still in frame and then cut straight to city blocks — two scales with
+     nothing between them, so the reader never connects the map to the planet.
+     At 82 the horizon is gone and the surface is rushing, which is the state
+     the flat plate can take over from without a visible seam.
+
+     sin(82) = 0.990, so the sphere still stops short of the camera. */
+  const ANG_LOW = 82;
 
   // How much of the frame the fully pulled-back sphere is allowed to fill.
   // 1.0 would have the limb touch both edges exactly; this leaves the planet

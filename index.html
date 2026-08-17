@@ -88,8 +88,10 @@
          Both are the same 2880x1620 pixels in register, so the reveal is a
          mask over a single image rather than two pictures being swapped. -->
     <div class="riyadh" id="riyadh" aria-hidden="true">
-      <img class="riyadh__layer riyadh__heat" id="riyadhHeat" alt="" decoding="async">
-      <img class="riyadh__layer riyadh__cool" id="riyadhCool" alt="" decoding="async">
+      <!-- One canvas, not two layered images under a CSS mask. A mask only
+           knows where the pointer IS; the wake has to know where it HAS BEEN,
+           and that needs a buffer that persists and decays between frames. -->
+      <canvas class="riyadh__canvas" id="riyadhCanvas"></canvas>
       <div class="riyadh__vignette"></div>
     </div>
   </div>
