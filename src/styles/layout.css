@@ -254,7 +254,11 @@
   z-index: 0;
   overflow: hidden;
   isolation: isolate;
-  background: #05060a;
+  /* --ink, not the #05060a the space backdrop uses. The stage's bottom edge
+     scrolls into view when it releases, and butting #05060a against the page's
+     #09090b draws a faint line along it. .hero__space paints its own opaque
+     deep-space base on top, so nothing about the hero changes. */
+  background: var(--ink);
 }
 
 .worlds__copy { margin-top: -100svh; }
@@ -300,7 +304,18 @@
       rgba(9, 9, 11, .10) 100%),
     linear-gradient(to bottom,
       rgba(9, 9, 11, .55) 0%, transparent 18%,
-      transparent 82%, rgba(9, 9, 11, .55) 100%);
+      /* Must reach FULL ink exactly at the edge, not .55. The stage is a
+         viewport-tall sticky box, so when it releases at the end of .worlds its
+         bottom edge scrolls into view — and a gradient that stops short of
+         opaque leaves a hard horizontal line with the map on one side and black
+         on the other. The ramp starts late so it costs the map as little height
+         as possible while still landing on solid. */
+      /* Solid by 94%, not at 100%. Reaching full ink only in the last pixel row
+         leaves the rows above it a few percent transparent, and a few percent
+         of a bright false-colour raster over near-black is still a visible
+         edge. Landing early gives a band that is genuinely opaque before the
+         clip, so the plate dissolves instead of stopping. */
+      transparent 68%, rgba(9, 9, 11, .72) 87%, var(--ink) 94%, var(--ink) 100%);
 }
 
 @media (max-width: 860px) {
@@ -310,7 +325,7 @@
     background:
       linear-gradient(to bottom,
         rgba(9, 9, 11, .70) 0%, rgba(9, 9, 11, .34) 22%,
-        rgba(9, 9, 11, .34) 74%, rgba(9, 9, 11, .74) 100%);
+        rgba(9, 9, 11, .34) 66%, rgba(9, 9, 11, .82) 86%, var(--ink) 94%, var(--ink) 100%);
   }
 }
 
