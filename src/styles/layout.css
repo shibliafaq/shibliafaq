@@ -259,6 +259,23 @@
 
 .worlds__copy { margin-top: -100svh; }
 
+/* The globe's grab area. `touch-action: none` is the whole point: it tells the
+   browser this region never pans, so a finger landing on the planet turns it
+   instead of scrolling the page. Circular via border-radius so the corners of
+   its box stay scrollable — the disc is round, and the bits of sky beside it
+   should still scroll. */
+.worlds__grab {
+  /* Fixed, so its coordinates are viewport coordinates — which is exactly what
+     projectedDisc() computes, since the canvas is inset 0 of a viewport-height
+     stage stuck at top 0. z-index 2 puts it over .hero and .future (both 1);
+     under the stage it was under them and unreachable. */
+  position: fixed;
+  border-radius: 50%;
+  touch-action: none;
+  pointer-events: none;   /* earth.js enables it once the disc is discrete */
+  z-index: 2;
+}
+
 /* --zoom (0..1) is written by main.js from the same scrub that drives the
    camera. Both of these layers exist to buy legible ground for the HERO copy;
    once that copy has faded and the whole sphere is in frame they have no job

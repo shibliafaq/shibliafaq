@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { reducedMotion } from './scroll.js';
+import { reducedMotion, stopScroll, startScroll } from './scroll.js';
 
 /**
  * The hero backdrop: a real, rotating, draggable Earth.
@@ -239,6 +239,7 @@ const hasWebGL = () => {
  */
 export function initEarth(opts = {}) {
   const canvas = document.getElementById(opts.canvas || 'heroGlobe');
+  const grabEl = document.getElementById(opts.grab || 'worldsGrab');
   const hero = document.getElementById(opts.host || 'hero');
   if (!canvas || !hero || !hasWebGL()) return null;
 
@@ -359,7 +360,10 @@ export function initEarth(opts = {}) {
   // idle starts high so the globe is already turning at full speed the moment it
   // appears. Starting at 0 makes it sit still for a beat and then creep up,
   // which reads as a stutter rather than as a planet.
-  const drag = { active: false, vx: 0, vy: 0, lastX: 0, lastY: 0, idle: 99 };
+  const drag = { active: false, vx: 0, vy: 0, lastX: 0, lastY: 0, idle: 99,
+                 // touch axis lock: undecided / rejected-as-scroll / Lenis paused
+                 pending: false, declined: false, heldScroll: false,
+                 startX: 0, startY: 0 };
 
   rig.rotation.z = THREE.MathUtils.degToRad(-23.4); // axial tilt — on the PARENT, so it does not precess
 
@@ -426,6 +430,48 @@ export function initEarth(opts = {}) {
     // it toward upright as the whole sphere comes into frame, or the planet
     // arrives lying on its side.
     tiltTarget = lerp(BASE_TILT_X, -0.18, zoom);
+    syncGrab();
+  }
+
+  /* Where the sphere's silhouette actually lands on screen, in CSS pixels.
+
+     Not the naive `scale * pxPerWorld`: under perspective the silhouette of a
+     sphere of radius R at distance d subtends asin(R/d), which projects to
+     f * tan(asin(R/d)) — noticeably larger than R projected at the centre
+     plane. At the hero close-up that is 950px against a naive 786px, and a hit
+     test built on the naive figure would refuse grabs over the outer fifth of
+     the visible planet. */
+  function projectedDisc() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return null;
+    const f = (h / 2) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)); // px
+    const d = camera.position.z;                    // sphere centre sits at z = 0
+    const rPx = f * Math.tan(Math.asin(Math.min(0.999, rig.scale.x / d)));
+    const pxPerWorld = f / d;
+    return {
+      cx: w / 2 + rig.position.x * pxPerWorld,
+      cy: h / 2 - rig.position.y * pxPerWorld,      // screen Y runs the other way
+      rPx, w, h,
+    };
+  }
+
+  /* The grab target only switches on once the planet is a DISCRETE object with
+     room to scroll past it. At the hero close-up the disc is wider than the
+     viewport, so making it swallow touches there would leave the first screen
+     of the site unscrollable on a phone — the globe is a backdrop at that
+     point, not a control. */
+  function syncGrab() {
+    if (!grabEl) return;
+    const disc = projectedDisc();
+    if (!disc) return;
+    const discrete = disc.rPx * 2 < disc.h * 0.78;
+    if (!discrete) { grabEl.style.pointerEvents = 'none'; return; }
+    const r = disc.rPx;
+    grabEl.style.pointerEvents = 'auto';
+    grabEl.style.left = `${disc.cx - r}px`;
+    grabEl.style.top = `${disc.cy - r}px`;
+    grabEl.style.width = `${r * 2}px`;
+    grabEl.style.height = `${r * 2}px`;
   }
 
   function layout() {
@@ -459,22 +505,103 @@ export function initEarth(opts = {}) {
 
     const INTERACTIVE = 'a, button, input, textarea, select, label, [role="button"]';
 
+    /* AXIS LOCK — touch only.
+       On a phone one finger has to serve two jobs: scrolling the page and
+       turning the globe. Lenis runs with syncTouch, so it reads the same
+       touchmove stream this handler does, and claiming every gesture meant a
+       diagonal swipe scrolled AND rotated at once — the page slid away under
+       the reader while the planet spun.
+
+       So a touch gesture starts undecided. Nothing is claimed, nothing is
+       prevented, no pointer capture is taken, until the finger has moved far
+       enough to say what it is. Then it locks for the rest of the gesture —
+       switching axis mid-swipe feels far worse than picking wrong.
+
+       Biased toward scrolling: rotation has to beat vertical by 15% to win.
+       Scrolling is how the page is read; turning the globe is a bonus, and a
+       page that resists scrolling is broken in a way a stiff globe is not.
+
+       A mouse needs none of this. The wheel scrolls and the button drags, so
+       there is nothing to disambiguate — it claims immediately, as before. */
+    const AXIS_LOCK_PX = 10;   // travel before the gesture is judged
+    const H_BIAS = 1.15;       // how much horizontal must beat vertical by
+
+    const releaseScroll = () => {
+      if (drag.heldScroll) { startScroll(); drag.heldScroll = false; }
+    };
+
+    const claim = (e) => {
+      drag.active = true;
+      drag.pending = false;
+      drag.lastX = e.clientX;
+      drag.lastY = e.clientY;
+      document.body.classList.add('is-grabbing');
+      hero.setPointerCapture?.(e.pointerId);
+    };
+
     const down = (e) => {
       if (e.button !== undefined && e.button !== 0) return;
       // Let clicks on links and buttons behave like clicks.
       if (e.target.closest?.(INTERACTIVE)) return;
 
+      drag.vx = drag.vy = 0;
+      drag.startX = drag.lastX = e.clientX;
+      drag.startY = drag.lastY = e.clientY;
+      drag.declined = false;
+
+      if (e.pointerType === 'touch') {
+        /* Landed on the planet itself? Then it is a rotation and nothing else —
+           no axis guessing, no scrolling, however the finger then moves. This
+           is the trackball rule: touch the ball, you turn the ball.
+
+           `worldsGrab` is only hit-testable while the disc is discrete, so this
+           branch cannot fire over the full-bleed hero backdrop and strand the
+           reader on an unscrollable first screen. And because that element
+           carries `touch-action: none`, the browser has already decided not to
+           pan for this gesture before we get here — which is the part
+           stopScroll() alone could never deliver, since stopping Lenis just
+           hands scrolling back to the native pan it was suppressing. */
+        if (grabEl && e.target === grabEl) {
+          stopScroll();
+          drag.heldScroll = true;
+          claim(e);
+          return;
+        }
+        // Off the planet: undecided. Deliberately no preventDefault and no
+        // capture here — both would take the gesture away from the scroller
+        // before we know it is ours, which is the bug this exists to stop.
+        drag.pending = true;
+        drag.active = false;
+        return;
+      }
+
       e.preventDefault();
       window.getSelection?.()?.removeAllRanges();
-      document.body.classList.add('is-grabbing');
-      drag.active = true;
-      drag.lastX = e.clientX;
-      drag.lastY = e.clientY;
-      drag.vx = drag.vy = 0;
-      hero.setPointerCapture?.(e.pointerId);
+      claim(e);
     };
 
     const move = (e) => {
+      if (drag.declined) return;
+
+      if (drag.pending) {
+        const tx = e.clientX - drag.startX;
+        const ty = e.clientY - drag.startY;
+        if (Math.hypot(tx, ty) < AXIS_LOCK_PX) return;   // too early to tell
+
+        if (Math.abs(tx) <= Math.abs(ty) * H_BIAS) {
+          // Vertical. It belongs to the scroller; stay out of it entirely.
+          drag.pending = false;
+          drag.declined = true;
+          return;
+        }
+        // Horizontal. Take it, and hold the scroller off for the duration so
+        // the page cannot slide while the planet turns.
+        stopScroll();
+        drag.heldScroll = true;
+        claim(e);
+        return;
+      }
+
       if (!drag.active) return;
       const dx = e.clientX - drag.lastX;
       const dy = e.clientY - drag.lastY;
@@ -507,6 +634,12 @@ export function initEarth(opts = {}) {
     };
 
     const up = (e) => {
+      // Always run, even for a gesture we declined — the scroller must be
+      // handed back on every path out, including pointercancel, or one stray
+      // gesture leaves the page permanently unscrollable.
+      drag.pending = false;
+      drag.declined = false;
+      releaseScroll();
       if (!drag.active) return;
       drag.active = false;
       document.body.classList.remove('is-grabbing');

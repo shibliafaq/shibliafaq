@@ -151,6 +151,20 @@
   </div>
 </section>
   </div><!-- /.worlds__copy -->
+
+  <!-- The globe's grab area, sized from its projected silhouette by earth.js.
+       It exists because `touch-action` is evaluated when a gesture STARTS and
+       cannot be switched on once a finger is already down — so guaranteeing
+       that a touch on the planet never scrolls needs a real element carrying
+       `touch-action: none` already sitting there when the finger lands.
+
+       It is a sibling of .worlds__copy, not a child of the stage, and that is
+       load-bearing: .hero and .future carry z-index 1 while the stage carries
+       0, so anything inside the stage is painted UNDER the copy and never wins
+       a hit test. Measured — with it inside the stage, elementFromPoint over
+       the planet returned .hero__actions, and the grab element could not have
+       received a single touch. -->
+  <div class="worlds__grab" id="worldsGrab" aria-hidden="true"></div>
 </div><!-- /.worlds -->
 
 <!-- ══ ABOUT ════════════════════════════════════════════════ -->
