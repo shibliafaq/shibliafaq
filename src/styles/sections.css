@@ -1972,12 +1972,12 @@
      hid behind it at 1200. Scaling both on vw fixes the RATIO rather than
      chasing it with font-size nudges. 31vw is 446px at 1440, so the card is
      effectively unchanged on a normal desktop. */
-  width: min(100%, 31vw);
+  width: min(100%, 36vw);
   /* FIXED, and uniform across every card. The radius is solved from this, so a
      card that sizes itself to its own content makes the spokes uneven and the
      ring stops looking like a ring. Content is clipped to fit rather than the
      card growing to fit content. */
-  height: clamp(270px, 35vh, 330px);
+  height: clamp(300px, 40vh, 390px);
   overflow: hidden;
   /* rotateX puts the card on the cylinder; translateZ pushes it out to the
      radius. The translate(-50%,-50%) has to come FIRST or the card orbits its
@@ -2226,7 +2226,7 @@
      instead: lighter cut, wide tracking, and enough transparency that it reads
      as something the cards are mounted on rather than something competing with
      them. It still names the section; it no longer announces it. */
-  color: rgba(var(--accent-rgb), .34);
+  color: var(--accent);
   font-weight: 500;
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -2248,15 +2248,17 @@
    Opacity and a few pixels of lift, nothing more. The rotation settle in the
    ring is doing the work; this only stops the cards appearing fully formed
    before they have finished moving. */
-.wheels .wheel__stage,
-.wheels .wheel__head {
+/* The lift goes on the STAGE ONLY. The head's transform is its 3D placement on
+   the ring's axis, so it cannot carry an entrance transform as well — and
+   cancelling one with `transform: none` cancels the other too. That is exactly
+   what happened: the head lost its translate(-50%,-50%) and sat half its own
+   width right of centre, 174px off on the research wheel. Opacity is safe to
+   share; transform is not. */
+.wheels .wheel__stage {
   opacity: calc(0.15 + 0.85 * var(--intro, 1));
   transform: translateY(calc((1 - var(--intro, 1)) * 14px));
 }
-/* The hub is positioned in 3D on the ring's axis, so it must NOT take the
-   translateY above — that would drag it off the axis and break the depth
-   sorting the label depends on. */
-.wheels .wheel__head { transform: none; }
+.wheels .wheel__head { opacity: calc(0.15 + 0.85 * var(--intro, 1)); }
 
 .wheels--h .wheel__stage {
   /* A horizontal ring needs width to travel through, not height. Its height is

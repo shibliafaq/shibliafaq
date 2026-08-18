@@ -123,7 +123,37 @@ function setupWheel(root) {
       c.style.setProperty('--a', `${(-i * step).toFixed(3)}deg`);
       c.classList.toggle('is-h', horizontal);
     });
+    fitLabel();
     paint();
+  }
+
+  /* Size the hub label to its own column, rather than to a shared clamp.
+     The label has to be WIDER than a card (or the card hides it completely, since
+     it sits behind on the ring's axis) and NARROWER than the column (or the
+     stage clips it mid-word). A single font-size cannot satisfy both for two
+     labels of different lengths: at one size "Architecture Projects" overflowed
+     the column by 132px while "M.Sc. Projects" was still narrower than its card.
+
+     Fitting each label to its column instead makes both the same physical width,
+     which reads as deliberate, and guarantees the window between card and column
+     is respected whatever the label says or the viewport does. */
+  function fitLabel() {
+    const title = root.querySelector('.wheel__title');
+    if (!title || !radius) return;
+    title.style.fontSize = '';
+    const colW = root.clientWidth;
+    if (!colW) return;
+    /* Rendered width EQUALS layout width here, so no correction is needed.
+       The head sits at translateZ(-r), which perspective shrinks by
+       P / (P + r), and it carries a counter-scale of (P + r) / P precisely to
+       undo that. The two cancel exactly. Dividing by the counter as well
+       double-counted it and produced a label 247px wide against a 346px card —
+       narrower than the thing it has to show past. */
+    const layoutW = title.scrollWidth;
+    if (!layoutW) return;
+    const targetLayout = colW * 0.96;
+    const base = parseFloat(getComputedStyle(title).fontSize);
+    title.style.fontSize = `${(base * (targetLayout / layoutW)).toFixed(2)}px`;
   }
 
   /** Depth cues, recomputed from each card's actual angle to the viewer. */
