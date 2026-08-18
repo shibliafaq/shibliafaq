@@ -2121,3 +2121,48 @@
 .wheels .pcard--poster .pcard__plate { position: absolute; inset: auto 0 0 0; padding: .85rem 1rem 1rem; }
 .wheels .pcard--poster .pcard__badges,
 .wheels .pcard--poster .pcard__cta { display: none; }
+
+/* ============================================================
+   HORIZONTAL WHEEL VARIANT  (lab page — comparison only)
+   ============================================================
+   Same ring, turned about Y. The card rotates about Y too, so the spokes lie
+   along the horizontal and the radius is solved from card width. */
+
+.wheels--h { grid-template-columns: 1fr; gap: clamp(1.5rem, 4vh, 3rem); }
+
+.wheels--h .wheel__stage {
+  /* A horizontal ring needs width to travel through, not height. Its height is
+     just the card plus the foreshortening headroom of its neighbours. */
+  height: clamp(300px, 40vh, 400px);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 20%, #000 80%, transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0%, #000 20%, #000 80%, transparent 100%);
+}
+
+.wheel__card.is-h {
+  transform:
+    translate(-50%, -50%)
+    rotateY(var(--a, 0deg))
+    translateZ(var(--r, 300px));
+}
+
+/* Hover has to restate the ring transform on this axis too — replacing it is
+   what snapped cards to the cylinder's origin on the vertical wheel. */
+.wheels .pcard.is-h:hover,
+.wheels .pcard.is-h:focus-visible {
+  transform:
+    translate(-50%, -50%)
+    rotateY(var(--a, 0deg))
+    translateZ(var(--r, 300px));
+}
+
+.wheels--h .wheel__head { text-align: left; }
+
+/* ---- lab page chrome ---------------------------------------- */
+.lab { padding: clamp(2rem, 6vh, 4rem) 0 clamp(4rem, 10vh, 7rem); }
+.lab__bar {
+  display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+  padding: 0 var(--pad-x); margin-bottom: clamp(1.5rem, 4vh, 3rem);
+}
+.lab__bar h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(1.4rem, 3vw, 2.2rem); }
+.lab__bar a { color: var(--accent); font-family: var(--f-mono); font-size: var(--fs-xs); letter-spacing: .1em; }
+.lab__note { color: var(--t-2); font-size: var(--fs-sm); max-width: 62ch; padding: 0 var(--pad-x); margin-bottom: 2rem; }

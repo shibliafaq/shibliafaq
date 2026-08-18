@@ -58,6 +58,13 @@ function setupWheel(root) {
   const n = cards.length;
   if (!n) return;
 
+  /* Axis. `data-wheel="horizontal"` spins about Y instead of X and solves its
+     radius from card WIDTH rather than height — the dimension that has to fit
+     between spokes is whichever one lies along the direction of travel. Nothing
+     else about the mechanism changes, which is the reason this is a parameter
+     and not a second module. */
+  const horizontal = root.dataset.wheel === 'horizontal';
+
   const step = 360 / n;
   let radius = 0;
   let angle = 0;        // current ring rotation, degrees
@@ -76,19 +83,23 @@ function setupWheel(root) {
        drove the front card clean out of its column. Anything that changes card
        height (fonts, images, a breakpoint) has to re-run this, hence the
        callers below. */
-    const h = cards.reduce((m, c) => Math.max(m, c.offsetHeight), 0);
+    const h = cards.reduce(
+      (m, c) => Math.max(m, horizontal ? c.offsetWidth : c.offsetHeight), 0);
     if (!h) return;
     radius = ((h / 2) / Math.tan((step / 2) * Math.PI / 180)) * (1 + GAP);
     ring.style.setProperty('--r', `${radius.toFixed(1)}px`);
     cards.forEach((c, i) => {
       c.style.setProperty('--a', `${(-i * step).toFixed(3)}deg`);
+      c.classList.toggle('is-h', horizontal);
     });
     paint();
   }
 
   /** Depth cues, recomputed from each card's actual angle to the viewer. */
   function paint() {
-    ring.style.transform = `translateZ(${(-radius).toFixed(1)}px) rotateX(${angle.toFixed(3)}deg)`;
+    ring.style.transform = horizontal
+      ? `translateZ(${(-radius).toFixed(1)}px) rotateY(${angle.toFixed(3)}deg)`
+      : `translateZ(${(-radius).toFixed(1)}px) rotateX(${angle.toFixed(3)}deg)`;
     for (let i = 0; i < n; i++) {
       // How far this card is from facing the viewer, 0 (front) .. 180 (back).
       let d = Math.abs(((angle - i * step) % 360 + 540) % 360 - 180);
@@ -154,7 +165,7 @@ function setupWheel(root) {
      side precisely so that escape route exists. */
   root.addEventListener('wheel', (e) => {
     e.preventDefault();
-    turn(e.deltaY * WHEEL_K);
+    turn((horizontal ? -1 : 1) * (e.deltaY + e.deltaX) * WHEEL_K);
   }, { passive: false });
 
   // Keyboard: the wheel is a list, and a list has to be operable without a
@@ -169,16 +180,17 @@ function setupWheel(root) {
   // control's axis and stealing it would break page gestures.
   let dragging = false;
   let lastY = 0;
+  let lastX = 0;
   root.addEventListener('pointerdown', (e) => {
     if (e.target.closest('a, button')) return;
-    dragging = true; lastY = e.clientY;
+    dragging = true; lastY = e.clientY; lastX = e.clientX;
     root.setPointerCapture?.(e.pointerId);
   });
   root.addEventListener('pointermove', (e) => {
     if (!dragging) return;
-    const dy = e.clientY - lastY;
-    lastY = e.clientY;
-    turn(dy * WHEEL_K * 1.6);
+    const d = horizontal ? (e.clientX - lastX) : (e.clientY - lastY);
+    lastY = e.clientY; lastX = e.clientX;
+    turn((horizontal ? -1 : 1) * d * WHEEL_K * 1.6);
   });
   const endDrag = (e) => {
     if (!dragging) return;

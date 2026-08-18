@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2309090b'/%3E%3Crect x='1' y='1' width='30' height='30' rx='5' fill='none' stroke='%23f59e0b' stroke-width='1.5'/%3E%3Ctext x='16' y='21' font-family='system-ui,sans-serif' font-weight='800' font-size='14' fill='%23f59e0b' text-anchor='middle'%3ESA%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300..800;1,300..500&display=swap" rel="stylesheet">
+<title>Wheel layout — horizontal variant</title>
+</head>
+<body>
+
+<!-- COMPARISON PAGE, not part of the site's navigation.
+     Same cards and the same wheel module as the live section; the only
+     difference is data-wheel="horizontal", which spins the ring about Y and
+     solves its radius from card width instead of height. Built as a page rather
+     than a toggle so both arrangements can be looked at side by side without
+     one disturbing the other. -->
+<main class="lab">
+  <div class="lab__bar">
+    <h1>Horizontal wheels</h1>
+    <a href="/">&larr; back to the vertical version</a>
+  </div>
+  <p class="lab__note">Masters above, architecture below, both turning horizontally.
+    Put the pointer over a row and scroll, or drag it sideways.</p>
+
+  <div class="wheels wheels--h">
+    <section class="wheel" data-wheel="horizontal" data-lenis-prevent aria-label="Master's research projects" tabindex="0">
+      <header class="wheel__head">
+        <p class="eyebrow">M.Sc. &middot; Smart &amp; Sustainable Cities</p>
+        <h3 class="wheel__title">Research</h3>
+      </header>
+      <div class="wheel__stage">
+        <div class="wheel__ring">
+          <article class="wheel__card pcard" data-modal="thesis" tabindex="0" role="button" aria-label="Open: Smart Digital Twin Framework for Urban Heat Island Monitorin">
+            <div class="pcard__media"><img src="/assets/img/hero-thesis@1x.webp" alt="Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecas" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">M.Sc. Thesis · KFUPM · Architecture &amp; City Design</p>
+              <h3 class="pcard__title">Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting &amp; Mitigation</h3>
+            </div>
+          </article>
+          <article class="wheel__card pcard" data-modal="gis" tabindex="0" role="button" aria-label="Open: GIS &amp; Remote Sensing UHI Assessment — Dammam Metropolita">
+            <div class="pcard__media"><img src="/assets/img/hero-gis@1x.webp" alt="GIS &amp; Remote Sensing UHI Assessment — Dammam Metropolitan Area" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">CRP 583: Urban Informatics · KFUPM · Jan–May 2026 · Co-author: Sultan Aldhafeeri</p>
+              <h3 class="pcard__title">GIS &amp; Remote Sensing UHI Assessment — Dammam Metropolitan Area</h3>
+            </div>
+          </article>
+          <article class="wheel__card pcard" data-modal="iot" tabindex="0" role="button" aria-label="Open: Real-Time Smart City IoT Monitoring Pipeline">
+            <div class="pcard__media"><img src="/assets/img/hero-iot@1x.webp" alt="Real-Time Smart City IoT Monitoring Pipeline" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">ICS 574: Big Data Analytics · KFUPM · Fall 2025 · Co-author: Sultan Aldhafeeri</p>
+              <h3 class="pcard__title">Real-Time Smart City IoT Monitoring Pipeline</h3>
+            </div>
+          </article>
+          <article class="wheel__card pcard" data-modal="temp" tabindex="0" role="button" aria-label="Open: Multi-City Surface Temperature Analysis — 3 Cities · 3 Conti">
+            <div class="pcard__media"><img src="/assets/img/hero-temp@1x.webp" alt="Multi-City Surface Temperature Analysis — 3 Cities · 3 Continents" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">ICS 574: Big Data Analytics · KFUPM · Fall 2025 · Co-author: Sultan Aldhafeeri</p>
+              <h3 class="pcard__title">Multi-City Surface Temperature Analysis — 3 Cities · 3 Continents</h3>
+            </div>
+          </article>
+          <article class="wheel__card pcard" data-modal="its" tabindex="0" role="button" aria-label="Open: ITS-Based Congestion Management — Aramco Stadium Corridor, A">
+            <div class="pcard__media"><img src="/assets/img/hero-its@1x.webp" alt="ITS-Based Congestion Management — Aramco Stadium Corridor, Al Khobar" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">CE 584: Intelligent Transportation Systems · KFUPM · Jan–Apr 2026 · Team of 4</p>
+              <h3 class="pcard__title">ITS-Based Congestion Management — Aramco Stadium Corridor, Al Khobar</h3>
+            </div>
+          </article>
+          <article class="wheel__card pcard" data-modal="sound" tabindex="0" role="button" aria-label="Open: A Systematic Review of Soundscape and Thermal Comfort Intera">
+            <div class="pcard__media"><img src="/assets/img/hero-sound@1x.webp" alt="A Systematic Review of Soundscape and Thermal Comfort Interactions in " loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">ARC 514: Sustainable Urbanism · KFUPM · Advisors: Dr. Adenle &amp; Dr. Basheer · Under Review</p>
+              <h3 class="pcard__title">A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments</h3>
+            </div>
+          </article>
+          <article class="wheel__card pcard pcard--todo" data-modal="thesis" data-msc-slot="7" tabindex="0" role="button" aria-label="Research project 7 — to be filled in">
+            <div class="pcard__media"><img src="/assets/img/hero-thesis@1x.webp" alt="" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">M.Sc. · KFUPM</p>
+              <h3 class="pcard__title">Research project 7</h3>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="wheel" data-wheel="horizontal" data-lenis-prevent aria-label="Architecture projects" tabindex="0">
+      <header class="wheel__head">
+        <p class="eyebrow">B.Arch &middot; Architecture</p>
+        <h3 class="wheel__title">Built work</h3>
+      </header>
+      <div class="wheel__stage">
+        <div class="wheel__ring">
+      <article class="wheel__card pcard" data-modal="arch" tabindex="0" role="button" aria-label="Open: Twin Tower Complex">
+            <div class="pcard__media"><img src="/assets/img/hero-arch@1x.webp" alt="Twin Tower Complex — Net-Zero Mixed-Use Development" loading="lazy" width="1200" height="600"></div>
+            <div class="pcard__body">
+              <p data-copy="projects.60" class="pcard__course">B.Arch Thesis · BIT Mesra · 2021</p>
+              <h3 data-copy="projects.61" class="pcard__title">Twin Tower Complex — Net-Zero Mixed-Use Development</h3>
+              <p data-copy="projects.62" class="pcard__result">69 storeys · Net-zero energy · Diagrid structure · Full BIM</p>
+              <div class="tags"><span data-copy="projects.63" class="tag">Revit BIM</span><span data-copy="projects.64" class="tag">Net-Zero</span><span data-copy="projects.65" class="tag">Diagrid</span><span data-copy="projects.66" class="tag">AutoCAD</span></div>
+            </div>
+          </article>
+          <article class="wheel__card pcard pcard--todo" data-modal="arch" data-arch-slot="2" tabindex="0" role="button" aria-label="Architecture project 2 — to be filled in">
+            <div class="pcard__media"><img src="/assets/img/arch_page_02.webp" alt="" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">B.Arch · BIT Mesra</p>
+              <h3 class="pcard__title">Architecture project 2</h3>
+              <p class="pcard__result">Title, year and result to be supplied</p>
+            </div>
+          </article>
+          <article class="wheel__card pcard pcard--todo" data-modal="arch" data-arch-slot="3" tabindex="0" role="button" aria-label="Architecture project 3 — to be filled in">
+            <div class="pcard__media"><img src="/assets/img/arch_page_03.webp" alt="" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">B.Arch · BIT Mesra</p>
+              <h3 class="pcard__title">Architecture project 3</h3>
+              <p class="pcard__result">Title, year and result to be supplied</p>
+            </div>
+          </article>
+          <article class="wheel__card pcard pcard--todo" data-modal="arch" data-arch-slot="4" tabindex="0" role="button" aria-label="Architecture project 4 — to be filled in">
+            <div class="pcard__media"><img src="/assets/img/arch_page_04.webp" alt="" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">B.Arch · BIT Mesra</p>
+              <h3 class="pcard__title">Architecture project 4</h3>
+              <p class="pcard__result">Title, year and result to be supplied</p>
+            </div>
+          </article>
+          <article class="wheel__card pcard pcard--todo" data-modal="arch" data-arch-slot="5" tabindex="0" role="button" aria-label="Architecture project 5 — to be filled in">
+            <div class="pcard__media"><img src="/assets/img/arch_page_05.webp" alt="" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">B.Arch · BIT Mesra</p>
+              <h3 class="pcard__title">Architecture project 5</h3>
+              <p class="pcard__result">Title, year and result to be supplied</p>
+            </div>
+          </article>
+          <article class="wheel__card pcard pcard--todo" data-modal="arch" data-arch-slot="6" tabindex="0" role="button" aria-label="Architecture project 6 — to be filled in">
+            <div class="pcard__media"><img src="/assets/img/arch_page_06.webp" alt="" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">B.Arch · BIT Mesra</p>
+              <h3 class="pcard__title">Architecture project 6</h3>
+              <p class="pcard__result">Title, year and result to be supplied</p>
+            </div>
+          </article>
+          <article class="wheel__card pcard pcard--todo" data-modal="arch" data-arch-slot="7" tabindex="0" role="button" aria-label="Architecture project 7 — to be filled in">
+            <div class="pcard__media"><img src="/assets/img/arch_page_07.webp" alt="" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">B.Arch · BIT Mesra</p>
+              <h3 class="pcard__title">Architecture project 7</h3>
+              <p class="pcard__result">Title, year and result to be supplied</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script type="module" src="/src/lab-wheels.js"></script>
+</body>
+</html>

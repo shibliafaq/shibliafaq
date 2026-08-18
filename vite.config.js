@@ -204,6 +204,13 @@ export default defineConfig({
     assetsInlineLimit: 0,
     target: 'es2020',
     rollupOptions: {
+      // Two entry pages. The second is the horizontal-wheel comparison, kept out
+      // of the site's navigation but built so it can be looked at on the deploy
+      // rather than only on a dev server.
+      input: {
+        main: 'index.html',
+        wheelsHorizontal: 'wheels-horizontal.html',
+      },
       output: {
         manualChunks: {
           three: ['three'],
