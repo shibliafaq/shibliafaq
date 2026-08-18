@@ -477,7 +477,19 @@ export function initEarth(opts = {}) {
          angular radius = asin(R / d)   =>   R = d * sin(angle)
      Now every frame is guaranteed to show more planet than the last, whatever
      the lens is doing. */
-  const ANG_HIGH = 15.5;    // degrees — the pulled-back globe with space around it
+  /* There is deliberately NO constant for where the dive starts.
+
+     There used to be: ANG_HIGH = 15.5 degrees. That is the angular radius of
+     the DESKTOP pulled-back globe, so on desktop the dive began exactly where
+     the pull-back ended and looked continuous. On a phone the pull-back stops
+     at scale 0.381 — 7.06 degrees — and the first dive frame forced 15.5, so
+     the planet more than doubled between one frame and the next before the
+     descent started properly. A jump on phones only, which is why it survived
+     every desktop check.
+
+     The start angle is now READ from wherever the pull-back actually left the
+     globe, so the two stages are continuous by construction on any viewport
+     rather than by a constant that happens to match one of them. */
   /* 82, not 65. At 65 the descent stopped with the whole Arabian Peninsula
      still in frame and then cut straight to city blocks — two scales with
      nothing between them, so the reader never connects the map to the planet.
@@ -584,16 +596,18 @@ export function initEarth(opts = {}) {
        reads as a lift rather than a descent. */
     const d = dive * dive * dive;
     rig.position.set(lerp(fromX, 0, zoom) * (1 - d), lerp(fromY, toY, zoom) * (1 - d), 0);
+    const base = lerp(fromScale, toScale, zoom);   // where the pull-back leaves it
     if (dive <= 0) {
-      rig.scale.setScalar(lerp(fromScale, toScale, zoom));
+      rig.scale.setScalar(base);
     } else {
-      // Solve the scale from the angular size we want to show.
-      const ang = THREE.MathUtils.degToRad(lerp(ANG_HIGH, ANG_LOW, dive * dive));
+      // The angle the globe is ALREADY at, not an assumed one. At dive 0 this
+      // resolves back to `base` exactly, so there is no seam between the stages.
+      const angStart = Math.asin(Math.min(0.999, base / camera.position.z));
+      const ang = lerp(angStart, THREE.MathUtils.degToRad(ANG_LOW), dive * dive);
       // sin() can never reach 1 here, so R stays below the camera distance and
       // the sphere can never swallow the camera — the failure that turned the
       // screen black when this was a raw scale lerp.
-      const want = camera.position.z * Math.sin(ang);
-      rig.scale.setScalar(Math.max(lerp(fromScale, toScale, zoom), want));
+      rig.scale.setScalar(camera.position.z * Math.sin(ang));
     }
 
     // The axial tilt is a fact about the planet seen from outside. Diving to a
