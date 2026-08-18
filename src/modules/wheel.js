@@ -157,13 +157,35 @@ function setupWheel(root) {
     run();
   }
 
-  /* Wheel input.
-     `data-lenis-prevent` on the container keeps Lenis from also consuming this,
-     and preventDefault stops the page scrolling underneath — which is the
-     interaction asked for: over a wheel, the wheel turns; anywhere else on the
-     section, the page moves. The section is laid out with real margins either
-     side precisely so that escape route exists. */
+  /* Is the pointer actually over the ring, rather than merely inside the
+     section's box?
+
+     This distinction was not needed while the wheels were two columns with page
+     margins either side — there was always somewhere to put the pointer to
+     scroll the page. Stacked full-width and gapless, the two sections tile the
+     viewport, and capturing anywhere inside them meant the page could not be
+     scrolled at all.
+
+     The live region is the front card's box, stretched along the axis the cards
+     travel on and left tight across it. So on a horizontal ring the whole width
+     of the band responds, while the strip above and below the cards still
+     belongs to the page. */
+  function overRing(e) {
+    const front = cards.find((c) => c.getAttribute('aria-hidden') === 'false') || cards[0];
+    const b = front.getBoundingClientRect();
+    if (!b.width) return false;
+    const padX = horizontal ? window.innerWidth : b.width * 0.15;
+    const padY = horizontal ? b.height * 0.12 : window.innerHeight;
+    return e.clientX >= b.left - padX && e.clientX <= b.right + padX
+        && e.clientY >= b.top - padY && e.clientY <= b.bottom + padY;
+  }
+
+  /* `data-lenis-prevent` on the container keeps Lenis from also consuming this,
+     and preventDefault stops the page scrolling underneath — but only once the
+     pointer is genuinely over the ring. Returning early leaves the event
+     untouched, so the page scrolls normally everywhere else. */
   root.addEventListener('wheel', (e) => {
+    if (!overRing(e)) return;
     e.preventDefault();
     turn((horizontal ? -1 : 1) * (e.deltaY + e.deltaX) * WHEEL_K);
   }, { passive: false });
@@ -183,6 +205,7 @@ function setupWheel(root) {
   let lastX = 0;
   root.addEventListener('pointerdown', (e) => {
     if (e.target.closest('a, button')) return;
+    if (!overRing(e)) return;
     dragging = true; lastY = e.clientY; lastX = e.clientX;
     root.setPointerCapture?.(e.pointerId);
   });

@@ -2128,7 +2128,49 @@
    Same ring, turned about Y. The card rotates about Y too, so the spokes lie
    along the horizontal and the radius is solved from card width. */
 
-.wheels--h { grid-template-columns: 1fr; gap: clamp(1.5rem, 4vh, 3rem); }
+/* No gap, and the two rings share an edge — the pair should read as one
+   object with two bands, not as two separate widgets stacked. */
+.wheels--h { grid-template-columns: 1fr; gap: 0; padding-inline: 0; }
+
+/* The label moves INSIDE the ring and becomes its hub.
+   Above the stage it cost a block of vertical space between the two wheels and
+   read as a form label. Centred inside and set large, it is the thing the cards
+   turn around — and because it sits behind them it is revealed and covered as
+   the wheel moves, which does more to explain the mechanism than a caption
+   above it ever did. */
+.wheels--h .wheel { position: relative; }
+
+.wheels--h .wheel__head {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.wheels--h .wheel__title {
+  font-size: clamp(2.6rem, 8vw, 6.5rem);
+  line-height: .95;
+  letter-spacing: -.04em;
+  /* Solid accent, not an outline. Hollow type read as a placeholder waiting to
+     be filled; filled, it reads as the hub the wheel turns around. It sits
+     behind the cards, so it can carry full weight without competing — the
+     cards cover it and reveal it as they pass. */
+  color: var(--accent);
+  opacity: 1;
+}
+
+.wheels--h .wheel__head .eyebrow {
+  color: var(--t-3);
+  margin-bottom: .4rem;
+}
+
+/* The stage has to sit above the hub, and needs no background of its own or it
+   would hide it. */
+.wheels--h .wheel__stage { position: relative; z-index: 1; }
 
 .wheels--h .wheel__stage {
   /* A horizontal ring needs width to travel through, not height. Its height is
