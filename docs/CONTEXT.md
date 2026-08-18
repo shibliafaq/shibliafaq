@@ -999,3 +999,39 @@ Three things worth keeping:
   includes a hash of the INPUT, not just the geometry — adding the seam heal
   changed every pixel while leaving all dimensions identical, and a geometry-only
   signature would have resumed happily and mixed healed tiles with unhealed ones.
+
+### Pacing, and where the dive lands (2026-08-18)
+
+**Rest points.** Every pixel of scroll used to drive something, so there was
+nowhere to stop and look. Each beat now runs, finishes, and holds. Sized in
+scroll gestures rather than taste: a wheel notch through Lenis moves about a
+third of a screen, so `.future` at 220svh leaves a ~594px hold — three notches —
+after the surface turn completes. `.about--overmap` gets 52vh below its copy for
+the same reason, and the dive completes at 62% of a 1.5-screen scrub.
+
+**The decay start is derived, not hard-coded.** The brief was "as soon as the
+hero text is gone", and that text is faded by a separate trigger anchored to
+`#hero` in pixels. A progress constant would drift with any section or viewport
+change, and it already differed between desktop and phone because `.hero` is
+`100svh` on one and content-height on the other. `onRefresh` converts the same
+pixel distance `hero.js` uses into this scrub's own progress.
+
+**The surface turn is smoothstepped.** §22 argued for linear on the grounds that
+easing lingers in the half-and-half state. That was backwards: smoothstep has
+zero gradient at both ends and its steepest point in the middle, so it leaves and
+arrives gently while crossing the ambiguous middle *faster* than linear. Span
+also widened 0.14 -> 0.30 of the scrub.
+
+**The dive lands on the VISITOR's city, not Riyadh.** Resolved from the IANA zone
+name via `Intl.DateTimeFormat().resolvedOptions().timeZone` and a lookup table —
+no permission prompt, no IP lookup, no network call, which is the same standard
+`visitorLongitude()` was already held to. Unknown zones fall back to a continent
+latitude paired with the offset-derived longitude, which still lands on the right
+part of the right landmass; unknown regions fall back to Riyadh. Latitude is
+clamped to +/-70 so the dive never ends staring at an ice cap.
+
+**Open tension:** the thermal plates are Olaya, Riyadh, but the dive now lands
+wherever the reader is. For most visitors the globe flies to their city and then
+hands over to a map of Riyadh. The copy says "This is Olaya, Riyadh", so it is
+not a lie — but it is a jump, and it wants either a line acknowledging it or a
+plate per region.

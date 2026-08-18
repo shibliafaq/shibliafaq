@@ -94,13 +94,19 @@ idleInit(() => {
        from the same pixel distance hero.js uses, converted into this scrub's
        own progress each refresh. */
     const range = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
-    // Ease the framing only. Linear decay is correct — a crossfade with an
-    // eased midpoint spends too long in the half-and-half state, which is the
-    // one state that looks like neither planet.
     const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - ((-2 * t + 2) ** 2) / 2);
 
+    /* The surface turn is smoothstepped, not linear.
+       I argued for linear here originally on the grounds that easing would
+       linger in the half-and-half state. That was backwards: smoothstep has
+       zero gradient at both ends and its steepest point in the MIDDLE, so it
+       leaves and arrives gently while crossing the ambiguous middle faster
+       than linear does. It removes the abrupt onset and the abrupt stop, which
+       is what made the change feel like a switch being thrown. */
+    const smoothstep = (t) => t * t * (3 - 2 * t);
+
     const HERO_COPY_FADE = 0.55;   // must match hero.js
-    const DECAY_SPAN = 0.14;       // how much of the scrub the surface turn takes
+    const DECAY_SPAN = 0.30;       // how much of the scrub the surface turn takes
 
     let pCopyGone = 0.4;           // recomputed on every refresh, below
     let pDecayEnd = 0.54;
@@ -123,7 +129,7 @@ idleInit(() => {
         // attention and the surface turn gets the frame to itself.
         const z = easeInOut(range(p, 0, Math.max(0.05, pCopyGone - 0.02)));
         earth.setZoom(z);
-        earth.setDecay(range(p, pCopyGone, pDecayEnd));
+        earth.setDecay(smoothstep(range(p, pCopyGone, pDecayEnd)));
         // Published as a custom property rather than tweened directly, so the
         // stylesheet still decides what the scrim and the heat glow LOOK like
         // and this only says how far through we are. Writing a property never
@@ -144,7 +150,11 @@ idleInit(() => {
     ScrollTrigger.create({
       trigger: about,
       start: 'top bottom',
-      end: 'top top',
+      /* 1.5 screens, not the one screen 'top top' gives. Anchoring both ends to
+         About's top edge fixed the dive at exactly one viewport of scroll, so
+         the descent had no room to finish early and rest — it was still moving
+         when the heading arrived. */
+      end: () => `+=${Math.round(window.innerHeight * 1.5)}`,
       scrub: true,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
@@ -152,7 +162,7 @@ idleInit(() => {
            the plate was still settling as About's first line arrived, so the
            reader was reading and being moved at the same time. */
         const p = self.progress;
-        earth.setDive(range(self.progress, 0, 0.78));
+        earth.setDive(range(self.progress, 0, 0.62));
         /* The plate arrives LATE — the descent has to carry deep into the
            continent first, or the reader jumps from a whole peninsula to city
            blocks in one frame and the scales never connect. By 0.86 the globe's
@@ -162,7 +172,7 @@ idleInit(() => {
            The plate also keeps moving through the handover: it arrives 22%
            oversized and settles, so the approach continues across the cut
            rather than stopping dead at it. */
-        const f = Math.min(1, Math.max(0, (p - 0.66) / 0.14));
+        const f = Math.min(1, Math.max(0, (p - 0.52) / 0.12));
         riyadh.style.opacity = f.toFixed(3);
         riyadh.style.setProperty('--plate', (1.22 - 0.16 * f).toFixed(3));
       },

@@ -334,7 +334,7 @@
 /* Extra room below the copy so the thermal plate is still there, alone and
    still, after the last line is read — the same rest the failed Earth gets.
    Without it Direction arrives the instant the paragraph ends. */
-.about--overmap { position: relative; z-index: 1; background: transparent; padding-bottom: 34vh; }
+.about--overmap { position: relative; z-index: 1; background: transparent; padding-bottom: 52vh; }
 .about--overmap .about__grid { grid-template-columns: minmax(0, 62ch); }
 .about--overmap .prose p,
 .about--overmap .pull { text-shadow: 0 2px 20px rgba(9, 9, 11, .9), 0 1px 5px rgba(9, 9, 11, .8); }
@@ -572,10 +572,17 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   /* 150svh, not 92vh. This height IS the scroll runway the whole first
      transition is scrubbed against, and a hold cannot exist in a range that is
      already fully spoken for. At 92vh every pixel was doing something; at
-     150svh the camera and the surface turn are done inside the first ~40% and
+     220svh the camera and the surface turn are done inside the first half and
      the rest is the failed Earth sitting still, which is the only part of the
-     sequence where a reader gets to stop and look. */
-  min-height: 150svh;
+     sequence where a reader gets to stop and look.
+
+     Sized in scroll gestures rather than in taste: a wheel notch through Lenis
+     moves roughly a third of a screen, so a beat that should survive two
+     deliberate scrolls needs about two-thirds of a screen of dead range after
+     it finishes. At 220svh the hold is ~1.2 screens — three or four notches —
+     which is long enough that stopping is the default rather than something
+     the reader has to fight the page for. */
+  min-height: 220svh;
   display: grid;
   grid-template-rows: 1fr auto;
   align-items: end;
@@ -745,7 +752,7 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 
      The extra height is not dead space: the copy is bottom-aligned, so it all
      goes above the text, which is exactly where the planet is. */
-  .future { min-height: 165svh; }
+  .future { min-height: 235svh; }
     .footer { gap: .5rem 1.25rem; padding: 2.25rem var(--pad-x); }
 }
 

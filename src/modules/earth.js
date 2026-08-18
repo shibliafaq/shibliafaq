@@ -68,6 +68,75 @@ function visitorLongitude() {
   }
 }
 
+/* Where the visitor actually is, to city precision, from the IANA time-zone
+   name the browser already exposes.
+
+   `Intl.DateTimeFormat().resolvedOptions().timeZone` returns "Asia/Riyadh",
+   "Europe/London" and so on. It costs no permission prompt, no IP lookup and no
+   network call — the same standard the longitude guess above was held to, which
+   is why this is used rather than the Geolocation API. The trade is precision:
+   a zone is a city-sized answer, not a street-sized one, which is all "fly me
+   home" needs.
+
+   Not exhaustive by design. Missing zones fall through to a continent default
+   paired with the offset-derived longitude, which still lands on the right part
+   of the right landmass. */
+const ZONE_LATLON = {
+  'Asia/Riyadh': [24.71, 46.68], 'Asia/Dubai': [25.20, 55.27], 'Asia/Qatar': [25.29, 51.53],
+  'Asia/Kuwait': [29.38, 47.99], 'Asia/Bahrain': [26.23, 50.59], 'Asia/Muscat': [23.59, 58.41],
+  'Asia/Karachi': [24.86, 67.01], 'Asia/Kolkata': [22.57, 88.36], 'Asia/Calcutta': [22.57, 88.36],
+  'Asia/Dhaka': [23.81, 90.41], 'Asia/Kathmandu': [27.72, 85.32], 'Asia/Colombo': [6.93, 79.86],
+  'Asia/Tehran': [35.69, 51.39], 'Asia/Baghdad': [33.32, 44.36], 'Asia/Jerusalem': [31.77, 35.21],
+  'Asia/Amman': [31.95, 35.93], 'Asia/Beirut': [33.89, 35.50], 'Asia/Damascus': [33.51, 36.29],
+  'Asia/Istanbul': [41.01, 28.98], 'Europe/Istanbul': [41.01, 28.98],
+  'Asia/Bangkok': [13.76, 100.50], 'Asia/Singapore': [1.35, 103.82], 'Asia/Jakarta': [-6.21, 106.85],
+  'Asia/Manila': [14.60, 120.98], 'Asia/Kuala_Lumpur': [3.14, 101.69], 'Asia/Ho_Chi_Minh': [10.82, 106.63],
+  'Asia/Shanghai': [31.23, 121.47], 'Asia/Hong_Kong': [22.32, 114.17], 'Asia/Taipei': [25.03, 121.57],
+  'Asia/Tokyo': [35.68, 139.69], 'Asia/Seoul': [37.57, 126.98], 'Asia/Tashkent': [41.30, 69.24],
+  'Europe/London': [51.51, -0.13], 'Europe/Dublin': [53.35, -6.26], 'Europe/Lisbon': [38.72, -9.14],
+  'Europe/Madrid': [40.42, -3.70], 'Europe/Paris': [48.86, 2.35], 'Europe/Brussels': [50.85, 4.35],
+  'Europe/Amsterdam': [52.37, 4.90], 'Europe/Berlin': [52.52, 13.40], 'Europe/Zurich': [47.38, 8.54],
+  'Europe/Vienna': [48.21, 16.37], 'Europe/Prague': [50.08, 14.44], 'Europe/Warsaw': [52.23, 21.01],
+  'Europe/Rome': [41.90, 12.50], 'Europe/Athens': [37.98, 23.73], 'Europe/Stockholm': [59.33, 18.07],
+  'Europe/Oslo': [59.91, 10.75], 'Europe/Copenhagen': [55.68, 12.57], 'Europe/Helsinki': [60.17, 24.94],
+  'Europe/Moscow': [55.76, 37.62], 'Europe/Kyiv': [50.45, 30.52], 'Europe/Kiev': [50.45, 30.52],
+  'Africa/Cairo': [30.04, 31.24], 'Africa/Lagos': [6.52, 3.38], 'Africa/Nairobi': [-1.29, 36.82],
+  'Africa/Johannesburg': [-26.20, 28.05], 'Africa/Casablanca': [33.57, -7.59], 'Africa/Algiers': [36.75, 3.06],
+  'Africa/Tunis': [36.81, 10.18], 'Africa/Accra': [5.60, -0.19], 'Africa/Addis_Ababa': [9.02, 38.75],
+  'America/New_York': [40.71, -74.01], 'America/Toronto': [43.65, -79.38], 'America/Chicago': [41.88, -87.63],
+  'America/Denver': [39.74, -104.99], 'America/Phoenix': [33.45, -112.07], 'America/Los_Angeles': [34.05, -118.24],
+  'America/Vancouver': [49.28, -123.12], 'America/Mexico_City': [19.43, -99.13], 'America/Bogota': [4.71, -74.07],
+  'America/Lima': [-12.05, -77.04], 'America/Santiago': [-33.45, -70.67], 'America/Sao_Paulo': [-23.55, -46.63],
+  'America/Argentina/Buenos_Aires': [-34.60, -58.38],
+  'Australia/Sydney': [-33.87, 151.21], 'Australia/Melbourne': [-37.81, 144.96],
+  'Australia/Brisbane': [-27.47, 153.03], 'Australia/Perth': [-31.95, 115.86],
+  'Australia/Adelaide': [-34.93, 138.60], 'Pacific/Auckland': [-36.85, 174.76],
+};
+
+// Fallback latitudes by region prefix — paired with the offset-derived
+// longitude, this still lands on the right part of the right landmass.
+const REGION_LAT = {
+  Africa: 5, America: 35, Antarctica: -75, Asia: 30, Atlantic: 38,
+  Australia: -30, Europe: 50, Indian: -10, Pacific: -15,
+};
+
+/**
+ * @returns {{lat:number, lon:number, zone:string|null}}
+ */
+function visitorLatLon() {
+  let zone = null;
+  try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || null; } catch {}
+
+  if (zone && ZONE_LATLON[zone]) {
+    const [lat, lon] = ZONE_LATLON[zone];
+    return { lat, lon, zone };
+  }
+  const lon = visitorLongitude();
+  const region = zone ? zone.split('/')[0] : null;
+  const lat = (region && REGION_LAT[region] !== undefined) ? REGION_LAT[region] : 25;
+  return { lat, lon, zone };
+}
+
 /** three.js maps u=0.25 to +Z, so 90W faces the camera at rotation 0. */
 const lonToRotation = (lon) => THREE.MathUtils.degToRad(90 - (lon + 180));
 
@@ -352,9 +421,18 @@ export function initEarth(opts = {}) {
   // swings the land-heavy mid-latitudes up into the visible band.
   const BASE_TILT_X = -0.62;
 
-  /* Riyadh — Olaya district, which is what the thermal plates actually show. */
-  const RIYADH_LON = 46.6753;
-  const RIYADH_LAT = 24.7136;
+  /* WHERE THE DIVE LANDS — the visitor's own city, not a fixed point.
+
+     Resolved from the IANA time zone the browser already reports, so it costs
+     no permission prompt and no network call. A reader in Lagos flies down to
+     Lagos; the planet stops being an illustration and becomes the one they are
+     standing on, which is the whole argument the section is making.
+
+     Falls back to Riyadh when the zone is unrecognised — the research region,
+     and the city the thermal plates below actually show. */
+  const HOME = visitorLatLon();
+  const DIVE_LON = Number.isFinite(HOME.lon) ? HOME.lon : 46.6753;
+  const DIVE_LAT = Number.isFinite(HOME.lat) ? HOME.lat : 24.7136;
   /* How far in the dive goes — and it is HARD-CAPPED by the camera.
 
      The sphere is centred at z = 0 and the camera sits at z = 3.1, so its near
@@ -810,7 +888,7 @@ export function initEarth(opts = {}) {
         // Capture once, on entry. The target is chosen as the nearest
         // equivalent turn to where the globe already is, so it never unwinds
         // several revolutions to reach a longitude it is almost facing.
-        const target = lonToRotation(RIYADH_LON);
+        const target = lonToRotation(DIVE_LON);
         const turns = Math.round((spin.y - target) / (Math.PI * 2));
         diveFrom = { y: spin.y, x: spin.x, toY: target + turns * Math.PI * 2 };
       }
@@ -826,7 +904,11 @@ export function initEarth(opts = {}) {
            Same longitude, mirrored latitude, which is exactly what an inverted
            X rotation produces and is why the longitude solve was never in
            question. Positive tips the northern hemisphere toward the camera. */
-        spin.x = lerp(diveFrom.x, THREE.MathUtils.degToRad(RIYADH_LAT), e);
+        /* Clamped away from the poles: past about 70 degrees the dive ends
+           looking straight down at an ice cap with the horizon nowhere in
+           frame, which reads as a bug rather than as a destination. */
+        const lat = Math.max(-70, Math.min(70, DIVE_LAT));
+        spin.x = lerp(diveFrom.x, THREE.MathUtils.degToRad(lat), e);
       }
       applyFraming();
       requestFrame();
