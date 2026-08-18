@@ -41,9 +41,12 @@ import { reducedMotion } from './scroll.js';
    that distance came out at -43px: the neighbour sat on top of the front card,
    which is what made the ring look like a stack of glued cards rather than a
    wheel with spokes. 0.60 on a 230px card gives +46px of real daylight. */
-const GAP = 0.90;
-const SNAP_AFTER = 140;    // ms of stillness before easing to the nearest card
-const WHEEL_K = 0.22;      // degrees of turn per pixel of scroll
+const GAP = 0.52;
+/* Impulse per pixel of scroll, NOT degrees per pixel — the motion model is
+   velocity-based now. Derived so that one ~120px wheel notch carries about one
+   card: step * (1 - FRICTION) / 120, which for a 7-card ring at friction 0.955
+   is 51.43 * 0.045 / 120 ≈ 0.019. */
+const WHEEL_K = 0.019;
 
 export function initWheels() {
   const wheels = [...document.querySelectorAll('[data-wheel]')];
@@ -63,14 +66,24 @@ function setupWheel(root) {
      between spokes is whichever one lies along the direction of travel. Nothing
      else about the mechanism changes, which is the reason this is a parameter
      and not a second module. */
-  const horizontal = root.dataset.wheel === 'horizontal';
+  /* "auto" means vertical on a desktop and horizontal on a phone. A vertical
+     ring needs height to travel through and a narrow screen has none to spare,
+     while a horizontal one needs width — which is exactly what a phone has more
+     of, proportionally. Same mechanism, turned ninety degrees to suit the
+     shape of the viewport.
+
+     `let`, and re-evaluated on the media query, so rotating a tablet switches
+     axis rather than leaving the ring solved for the wrong dimension. */
+  const AUTO_H = window.matchMedia('(max-width: 900px)');
+  const wanted = () => (root.dataset.wheel === 'horizontal')
+    || (root.dataset.wheel === 'auto' && AUTO_H.matches);
+  let horizontal = wanted();
 
   const step = 360 / n;
   let radius = 0;
   let angle = 0;        // current ring rotation, degrees
   let target = 0;       // where it is easing to
   let raf = 0;
-  let idleTimer = 0;
 
   /* Radius is derived from the rendered card height, so it survives a font
      swap, a breakpoint, or a card that turns out taller than its siblings —
@@ -134,26 +147,55 @@ function setupWheel(root) {
     }
   }
 
+  /* MOTION: a flywheel, not an ease-to-target.
+
+     The first model added each scroll to a target angle and eased toward it, so
+     the ring stopped the instant that target was reached — the moment the
+     gesture ended, the movement ended. A wheel with mass does not do that.
+
+     Scroll now applies an IMPULSE to a velocity; friction bleeds it away each
+     frame; and only once the spin is spent does it settle onto the nearest
+     card. So letting go leaves it coasting and slowing, which is what makes it
+     feel like an object rather than a slider.
+
+     The two constants are tied together, not chosen separately. A decaying
+     velocity travels v/(1-friction) in total, so for one wheel notch (~120px)
+     to carry roughly one card:
+
+         impulse = step * (1 - FRICTION) / 120  ->  WHEEL_K
+
+     Changing FRICTION without re-deriving WHEEL_K changes how FAR a notch
+     travels, not just how long it coasts. */
+  const FRICTION = 0.955;
+  let vel = 0;
+  let settling = false;
+
   function tick() {
-    raf = 0;
-    const diff = target - angle;
-    if (Math.abs(diff) < 0.02) { angle = target; paint(); return; }
-    angle += diff * 0.16;
+    if (settling) {
+      const d = target - angle;
+      if (Math.abs(d) < 0.02) { angle = target; paint(); raf = 0; return; }
+      angle += d * 0.12;
+    } else {
+      angle += vel;
+      vel *= FRICTION;
+      // Spent. Hand over to the settle, which takes it to the nearest card.
+      if (Math.abs(vel) < 0.05) {
+        vel = 0;
+        settling = true;
+        target = Math.round(angle / step) * step;
+      }
+    }
     paint();
     raf = requestAnimationFrame(tick);
   }
 
   function run() { if (!raf) raf = requestAnimationFrame(tick); }
 
-  function snap() {
-    target = Math.round(target / step) * step;
-    run();
-  }
-
   function turn(deltaDeg) {
-    target += deltaDeg;
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(snap, SNAP_AFTER);
+    // Any new input cancels the settle — otherwise a scroll during the final
+    // glide fights it and the ring stutters.
+    settling = false;
+    vel += deltaDeg;
     run();
   }
 
@@ -194,8 +236,8 @@ function setupWheel(root) {
   // mouse. Arrows move one card; the roving tabindex above keeps only the
   // front card in the tab order.
   root.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { turn(step); e.preventDefault(); }
-    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { turn(-step); e.preventDefault(); }
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { turn(step * (1 - FRICTION)); e.preventDefault(); }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { turn(-step * (1 - FRICTION)); e.preventDefault(); }
   });
 
   // Drag, for trackpads and touch. Vertical only — horizontal is not this
@@ -219,7 +261,8 @@ function setupWheel(root) {
     if (!dragging) return;
     dragging = false;
     root.releasePointerCapture?.(e.pointerId);
-    snap();
+    // No snap() call: releasing a drag leaves whatever velocity the last moves
+    // built, so a flick coasts. The settle happens when that runs out.
   };
   root.addEventListener('pointerup', endDrag);
   root.addEventListener('pointercancel', endDrag);
@@ -241,6 +284,14 @@ function setupWheel(root) {
   ro.observe(cards[0]);
   ro.observe(root);
   measure();
+
+  AUTO_H.addEventListener('change', () => {
+    const next = wanted();
+    if (next === horizontal) return;
+    horizontal = next;
+    angle = 0; target = 0;      // the ring is solved for the other axis now
+    measure();
+  });
 
   if (reducedMotion) {
     // No easing loop: jumps straight to the target so the wheel still works,

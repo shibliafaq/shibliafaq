@@ -210,6 +210,7 @@ export default defineConfig({
       input: {
         main: 'index.html',
         wheelsHorizontal: 'wheels-horizontal.html',
+        projectsMap: 'projects-map.html',
       },
       output: {
         manualChunks: {

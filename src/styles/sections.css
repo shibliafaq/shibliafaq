@@ -1966,7 +1966,7 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: min(100%, 400px);
+  width: min(100%, 460px);
   /* FIXED, and uniform across every card. The radius is solved from this, so a
      card that sizes itself to its own content makes the spokes uneven and the
      ring stops looking like a ring. Content is clipped to fit rather than the
@@ -2132,28 +2132,30 @@
    object with two bands, not as two separate widgets stacked. */
 .wheels--h { grid-template-columns: 1fr; gap: 0; padding-inline: 0; }
 
-/* The label moves INSIDE the ring and becomes its hub.
-   Above the stage it cost a block of vertical space between the two wheels and
-   read as a form label. Centred inside and set large, it is the thing the cards
-   turn around — and because it sits behind them it is revealed and covered as
-   the wheel moves, which does more to explain the mechanism than a caption
-   above it ever did. */
-.wheels--h .wheel { position: relative; }
+/* The label sits INSIDE the ring, and the cards pass BEHIND it.
+   Above the stage it cost a block of vertical space and read as a form label.
+   Centred and set large it becomes the hub the wheel turns around.
 
-.wheels--h .wheel__head {
+   In FRONT of the cards, not behind: behind, it was covered whenever a card was
+   at the front, which is most of the time, so the section had no stable
+   identity. In front it is always legible and the cards slide under it — which
+   also makes the axis of the ring obvious at a glance. */
+.wheels .wheel { position: relative; }
+
+.wheels .wheel__head {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 3;              /* over the cards — they pass behind it */
   margin: 0;
   display: grid;
   place-content: center;
   text-align: center;
-  pointer-events: none;
+  pointer-events: none;    /* never intercepts a scroll aimed at the ring */
 }
 
-.wheels--h .wheel__title {
-  font-size: clamp(2.6rem, 8vw, 6.5rem);
-  line-height: .95;
+.wheels .wheel__title {
+  font-size: clamp(1.8rem, 4.2vw, 3.4rem);
+  line-height: .98;
   letter-spacing: -.04em;
   /* Solid accent, not an outline. Hollow type read as a placeholder waiting to
      be filled; filled, it reads as the hub the wheel turns around. It sits
@@ -2161,16 +2163,17 @@
      cards cover it and reveal it as they pass. */
   color: var(--accent);
   opacity: 1;
+  text-shadow: 0 2px 24px rgba(9, 9, 11, .95), 0 1px 6px rgba(9, 9, 11, .9);
 }
 
-.wheels--h .wheel__head .eyebrow {
+.wheels .wheel__head .eyebrow {
   color: var(--t-3);
   margin-bottom: .4rem;
 }
 
 /* The stage has to sit above the hub, and needs no background of its own or it
    would hide it. */
-.wheels--h .wheel__stage { position: relative; z-index: 1; }
+.wheels .wheel__stage { position: relative; z-index: 1; }
 
 .wheels--h .wheel__stage {
   /* A horizontal ring needs width to travel through, not height. Its height is
@@ -2197,7 +2200,7 @@
     translateZ(var(--r, 300px));
 }
 
-.wheels--h .wheel__head { text-align: left; }
+.wheels--h .wheel__title { font-size: clamp(2.6rem, 8vw, 6.5rem); }
 
 /* ---- lab page chrome ---------------------------------------- */
 .lab { padding: clamp(2rem, 6vh, 4rem) 0 clamp(4rem, 10vh, 7rem); }

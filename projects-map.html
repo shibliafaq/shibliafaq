@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300..800;1,300..500&display=swap" rel="stylesheet">
+<title>Projects on the map — concept</title>
+</head>
+<body>
+
+<!-- CONCEPT PAGE. Not in the site's navigation.
+     Projects placed at their real study coordinates. The claim being tested is
+     that for this portfolio the geography is not decoration: Multi-City runs
+     Dammam 26N to Reykjavik 64N and reports r = -0.995 between latitude and
+     temperature, so the north-south line IS the result. -->
+<main class="atlas-lab">
+  <aside class="atlas-lab__side">
+    <a class="atlas-lab__back" href="/">&larr; back to the site</a>
+
+    <div>
+      <p class="atlas__idx" id="atlasIdx">01 / 07</p>
+      <h1 class="atlas__title" id="atlasTitle">—</h1>
+      <p class="atlas__note" id="atlasNote">—</p>
+    </div>
+
+    <nav class="atlas__list" id="atlasList" aria-label="Projects"></nav>
+  </aside>
+
+  <div class="atlas-lab__stage">
+    <canvas id="atlasCanvas"></canvas>
+    <div id="atlasLabels"></div>
+  </div>
+</main>
+
+<script type="module" src="/src/lab-atlas.js"></script>
+</body>
+</html>
