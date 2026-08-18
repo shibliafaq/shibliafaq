@@ -164,180 +164,6 @@ node tools/sync-site-copy.mjs --write   # apply it
 ### projects.lead
 - <span class="lead__meta">During the M.Sc</span><span class="lead__body">I was doing architectural projects but now I learned working with real-time satellite pipelines,</span><span class="lead__meta">All the works are based on one question:</span><em class="lead__ask">How do we make cities survive the climate crisis?</em>
 
-### projects.1
-- <span class="badge__dot"></span>M.Sc. Thesis
-
-### projects.2
-- KFUPM · Aug 2026
-
-### projects.3
-- Architecture &amp; City Design
-
-### projects.4
-- A Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation
-
-### projects.14
-- Google Earth Engine
-
-### projects.15
-- PostgreSQL/PostGIS
-
-### projects.16
-- FastAPI
-
-### projects.17
-- Prophet
-
-### projects.18
-- deck.gl
-
-### projects.19
-- MapLibre
-
-### projects.20
-- Docker Compose
-
-### projects.22
-- Open the study →
-
-### projects.5
-- Built on a <strong>Design Science methodology
-
-### projects.23
-- CRP 583 · Urban Informatics · KFUPM
-
-### projects.24
-- GIS &amp; Remote Sensing UHI Assessment — Dammam Metro Area
-
-### projects.25
-- NDBI Dominance (R²=0.511) · 57.3 km² Urgent Exposure Zone · 4.18× Hotspot Scale Multiplier
-
-### projects.26
-- ArcGIS Pro 3.6
-
-### projects.27
-- Landsat 8/9 &amp; Sentinel-2
-
-### projects.28
-- Getis-Ord Gi*
-
-### projects.29
-- HVI
-
-### projects.30
-- Spatial SQL
-
-### projects.31
-- ICS 574 · Big Data Analytics · KFUPM <span class="live">Live</span>
-
-### projects.32
-- Real-Time Smart City IoT Monitoring Pipeline
-
-### projects.33
-- Sub-2-Second Ingestion · 5-Minute Tumbling Windows · 10 Simulated Urban Zones
-
-### projects.34
-- Apache Kafka
-
-### projects.35
-- PySpark Streaming
-
-### projects.36
-- PostgreSQL + PostGIS
-
-### projects.37
-- MQTT (Mosquitto)
-
-### projects.38
-- Docker Compose
-
-### projects.39
-- ICS 574 · Big Data Analytics · KFUPM
-
-### projects.40
-- Multi-City Surface Temperature Analysis — 3 Continents
-
-### projects.41
-- r=−0.995 Near-Perfect Correlation · R²=0.990 · 25,905 Valid MODIS Measurements
-
-### projects.42
-- MODIS (Terra)
-
-### projects.43
-- Google Earth Engine
-
-### projects.44
-- Kepler.gl
-
-### projects.45
-- GeoPandas
-
-### projects.46
-- Spatial Regression
-
-### projects.47
-- CE 584 · Intelligent Transportation Systems · KFUPM
-
-### projects.48
-- ITS-Based Congestion Management — Aramco Stadium Corridor, Al Khobar
-
-### projects.49
-- Alternative C Recommended · 20–35% Travel Time Reduction · SAR 28–47M Plan
-
-### projects.50
-- Adaptive Signal Control (ATSC)
-
-### projects.51
-- ATMS / TMC
-
-### projects.52
-- Smart Parking
-
-### projects.53
-- Multi-Criteria Matrix
-
-### projects.54
-- ARC 514 · Sustainable Urbanism · KFUPM · Under Review
-
-### projects.55
-- A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments
-
-### projects.56
-- 1,011 records screened · ITAP framework · PRISMA 2020
-
-### projects.57
-- PRISMA 2020
-
-### projects.58
-- Thermal Comfort
-
-### projects.59
-- Soundscape
-
-### projects.60
-- B.Arch Thesis · BIT Mesra · 2021
-
-### projects.61
-- Twin Tower Complex — Net-Zero Mixed-Use Development
-
-### projects.62
-- 69 storeys · Net-zero energy · Diagrid structure · Full BIM
-
-### projects.63
-- Revit BIM
-
-### projects.64
-- Net-Zero
-
-### projects.65
-- Diagrid
-
-### projects.66
-- AutoCAD
-
-### projects.67
-- 01 / 07
-
 ## Atlas
 
 ### atlas.label
@@ -625,6 +451,30 @@ node tools/sync-site-copy.mjs --write   # apply it
 
 ### nav.contact
 - Contact
+
+### projects.60
+- B.Arch Thesis · BIT Mesra · 2021
+
+### projects.61
+- Twin Tower Complex — Net-Zero Mixed-Use Development
+
+### projects.62
+- 69 storeys · Net-zero energy · Diagrid structure · Full BIM
+
+### projects.63
+- Revit BIM
+
+### projects.64
+- Net-Zero
+
+### projects.65
+- Diagrid
+
+### projects.66
+- AutoCAD
+
+### projects.67
+- 01 / 07
 
 ### _nav.20
 - © 2026 Shibli Afaq
