@@ -1931,7 +1931,10 @@
   /* Tall enough to hold the front card plus two either side. The arc needs
      roughly 2.2x the card height to show five spokes; anything less clips the
      wheel down to the one card facing you. */
-  height: clamp(520px, 74vh, 760px);
+  /* Sized to the arc, not chosen. A 230px card at GAP 0.60 puts the
+     neighbour's far edge 362px from centre, so the stage needs ~723px to show
+     the front card plus one either side without clipping them. */
+  height: clamp(560px, 82vh, 780px);
   /* 1000, not 1500. Perspective is the strength of the effect — at 1500 the
      foreshortening on the tilted cards was so slight the ring read as a stack
      of flat cards fading out. */
@@ -1965,7 +1968,7 @@
      card that sizes itself to its own content makes the spokes uneven and the
      ring stops looking like a ring. Content is clipped to fit rather than the
      card growing to fit content. */
-  height: clamp(260px, 33vh, 340px);
+  height: clamp(190px, 24vh, 230px);
   overflow: hidden;
   /* rotateX puts the card on the cylinder; translateZ pushes it out to the
      radius. The translate(-50%,-50%) has to come FIRST or the card orbits its

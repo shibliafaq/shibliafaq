@@ -35,7 +35,13 @@ import { reducedMotion } from './scroll.js';
  * read as structure, not as content competing to be read.
  */
 
-const GAP = 0.10;          // breathing space between neighbours, as a fraction
+/* 0.60, and it is not a taste value — it was solved.
+   The gap that matters is the PROJECTED one between the front card's edge and
+   its neighbour's, after perspective has scaled both. At 0.10 with a 284px card
+   that distance came out at -43px: the neighbour sat on top of the front card,
+   which is what made the ring look like a stack of glued cards rather than a
+   wheel with spokes. 0.60 on a 230px card gives +46px of real daylight. */
+const GAP = 0.60;
 const SNAP_AFTER = 140;    // ms of stillness before easing to the nearest card
 const WHEEL_K = 0.22;      // degrees of turn per pixel of scroll
 
