@@ -1966,7 +1966,13 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: min(100%, 460px);
+  /* Viewport-relative, NOT a fixed cap — because the hub label is sized in vw
+     and has to stay wider than the card at every width. A 460px cap against a
+     vw label meant their ratio drifted: the label cleared the card at 1440 and
+     hid behind it at 1200. Scaling both on vw fixes the RATIO rather than
+     chasing it with font-size nudges. 31vw is 446px at 1440, so the card is
+     effectively unchanged on a normal desktop. */
+  width: min(100%, 31vw);
   /* FIXED, and uniform across every card. The radius is solved from this, so a
      card that sizes itself to its own content makes the spokes uneven and the
      ring stops looking like a ring. Content is clipped to fit rather than the
@@ -2199,7 +2205,13 @@
      The longer label overruns the column and is clipped by the stage. That is
      the intended reading — oversized type bleeding off both edges with a card
      travelling across it — not an accident. */
-  font-size: clamp(2.4rem, 5.9vw, 5rem);
+  /* Sized off the SHORTER label again — "M.Sc. Projects" is the one that has to
+     clear the 460px card, and at 3.4vw it measured 391px, so that wheel's hub
+     vanished while the other's showed. One visible and one not reads as a bug
+     rather than as restraint. 4.1vw clears both; the volume is turned down by
+     weight and transparency instead of by size, which is what was actually
+     overpowering. */
+  font-size: clamp(1.8rem, 4.3vw, 3.6rem);
   line-height: .95;
   white-space: nowrap;
   letter-spacing: -.04em;
@@ -2207,14 +2219,25 @@
      be filled; filled, it reads as the hub the wheel turns around. It sits
      behind the cards, so it can carry full weight without competing — the
      cards cover it and reveal it as they pass. */
-  color: var(--accent);
+  /* A hub mark, not a headline.
+     Sized up to clear the card it became the loudest thing in the section —
+     solid accent at full weight on display type will always beat a photograph
+     next to it. The scale is only there for geometry, so the WEIGHT comes off
+     instead: lighter cut, wide tracking, and enough transparency that it reads
+     as something the cards are mounted on rather than something competing with
+     them. It still names the section; it no longer announces it. */
+  color: rgba(var(--accent-rgb), .34);
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
   opacity: 1;
-  text-shadow: 0 2px 24px rgba(9, 9, 11, .95), 0 1px 6px rgba(9, 9, 11, .9);
+  text-shadow: none;
 }
 
 .wheels .wheel__head .eyebrow {
-  color: var(--t-3);
-  margin-bottom: .4rem;
+  color: var(--t-4);
+  margin-bottom: .35rem;
+  font-size: .55rem;
 }
 
 /* The stage has to sit above the hub, and needs no background of its own or it
