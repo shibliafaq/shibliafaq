@@ -1928,8 +1928,14 @@
    applied after the ring's own rotation, which flattens the cylinder. */
 .wheel__stage {
   position: relative;
-  height: clamp(420px, 62vh, 680px);
-  perspective: 1500px;
+  /* Tall enough to hold the front card plus two either side. The arc needs
+     roughly 2.2x the card height to show five spokes; anything less clips the
+     wheel down to the one card facing you. */
+  height: clamp(520px, 74vh, 760px);
+  /* 1000, not 1500. Perspective is the strength of the effect — at 1500 the
+     foreshortening on the tilted cards was so slight the ring read as a stack
+     of flat cards fading out. */
+  perspective: 1000px;
   perspective-origin: 50% 50%;
   overflow: hidden;
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
@@ -1955,6 +1961,12 @@
   left: 50%;
   top: 50%;
   width: min(100%, 460px);
+  /* FIXED, and uniform across every card. The radius is solved from this, so a
+     card that sizes itself to its own content makes the spokes uneven and the
+     ring stops looking like a ring. Content is clipped to fit rather than the
+     card growing to fit content. */
+  height: clamp(260px, 33vh, 340px);
+  overflow: hidden;
   /* rotateX puts the card on the cylinder; translateZ pushes it out to the
      radius. The translate(-50%,-50%) has to come FIRST or the card orbits its
      own corner rather than its centre. */
@@ -2029,3 +2041,40 @@
   .wheels { grid-template-columns: 1fr; gap: 3rem; }
   .wheel__stage { height: clamp(360px, 52vh, 520px); }
 }
+
+
+/* ---- wheel card internals -----------------------------------
+   The card is now a fixed-height panel on a ring, so its parts share that
+   height rather than summing to whatever they want. Media takes the space the
+   text does not need. */
+/* NO height here. The element carries both .wheel__card and .pcard, and
+   `.wheels .pcard` (0,2,0) outranks `.wheel__card` (0,1,0) — so setting height
+   on this selector silently overrode the fixed card height and every card took
+   the full stage height instead. Same collision as the hover-transform bug;
+   anything sized on .wheel__card must not be restated here. */
+.wheels .pcard { display: flex; flex-direction: column; }
+.wheels .pcard__media { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.wheels .pcard__media img,
+.wheels .pcard__video { width: 100%; height: 100%; object-fit: cover; }
+.wheels .pcard__body { flex: 0 0 auto; padding: .85rem 1rem 1rem; }
+.wheels .pcard__title {
+  font-size: clamp(.95rem, 1.15vw, 1.12rem);
+  line-height: 1.25;
+  /* Two lines, then ellipsis — a third line would push the body past the
+     fixed height and crop it mid-word. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.wheels .pcard__result,
+.wheels .pcard__crawl { display: none; }   /* no room at this size */
+.wheels .pcard__course { font-size: .62rem; margin-bottom: .3rem; }
+.wheels .tags { gap: .3rem; }
+.wheels .tag { font-size: .58rem; padding: .18rem .42rem; }
+
+/* The poster card carries its own full-bleed layout; on the ring it has to
+   behave like every other spoke or the wheel is lopsided. */
+.wheels .pcard--poster .pcard__plate { position: absolute; inset: auto 0 0 0; padding: .85rem 1rem 1rem; }
+.wheels .pcard--poster .pcard__badges,
+.wheels .pcard--poster .pcard__cta { display: none; }

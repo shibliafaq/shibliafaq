@@ -10,16 +10,23 @@ import { reducedMotion } from './scroll.js';
  *
  * GEOMETRY
  * For N cards the angular step is 360/N. Place card i at `rotateX(-i*step)
- * translateZ(R)` and it lands on the cylinder facing outward. R is not a taste
- * value: the chord between two adjacent card centres is 2*R*sin(step/2), and
- * that has to exceed the card's own height or neighbours intersect. Solving it
- * the other way round gives the radius that leaves a chosen gap:
+ * translateZ(R)` and it lands on the cylinder facing outward. The radius that
+ * makes adjacent cards exactly touch is
  *
- *     R = h * (1 + GAP) / (2 * sin(step / 2))
+ *     R = (h / 2) / tan(step / 2)
  *
- * So the wheel re-solves itself for any number of cards and any card height —
- * which matters here because the two columns will not always hold the same
- * count while the architecture side is still being filled in.
+ * TAN, not sin. The first version used the chord — 2*R*sin(step/2) — which is
+ * the straight-line distance between card CENTRES, not the spacing between
+ * their edges around the ring. It over-solved the radius by a third, and
+ * combined with a 564px tallest card that put the neighbouring card 471px off
+ * centre in a 533px stage: a 26px sliver of it showed and everything else was
+ * clipped. One card on screen at a time, which is exactly why it did not read
+ * as a wheel. At the correct radius five cards are in frame at once and the
+ * cylinder is legible.
+ *
+ * The height fed in is a FIXED card height, not the tallest natural card. A
+ * wheel with irregular spokes does not read as a wheel, and the poster card was
+ * 564px against 344px for the rest.
  *
  * WHY THE FAR SIDE IS DIMMED RATHER THAN HIDDEN
  * `backface-visibility: hidden` would empty the gaps and lose the depth. Left
@@ -28,7 +35,7 @@ import { reducedMotion } from './scroll.js';
  * read as structure, not as content competing to be read.
  */
 
-const GAP = 0.18;          // fraction of card height left between neighbours
+const GAP = 0.10;          // breathing space between neighbours, as a fraction
 const SNAP_AFTER = 140;    // ms of stillness before easing to the nearest card
 const WHEEL_K = 0.22;      // degrees of turn per pixel of scroll
 
@@ -65,7 +72,7 @@ function setupWheel(root) {
        callers below. */
     const h = cards.reduce((m, c) => Math.max(m, c.offsetHeight), 0);
     if (!h) return;
-    radius = (h * (1 + GAP)) / (2 * Math.sin((step / 2) * Math.PI / 180));
+    radius = ((h / 2) / Math.tan((step / 2) * Math.PI / 180)) * (1 + GAP);
     ring.style.setProperty('--r', `${radius.toFixed(1)}px`);
     cards.forEach((c, i) => {
       c.style.setProperty('--a', `${(-i * step).toFixed(3)}deg`);
@@ -158,19 +165,23 @@ function setupWheel(root) {
   root.addEventListener('pointerup', endDrag);
   root.addEventListener('pointercancel', endDrag);
 
-  // Card heights depend on fonts, so measure once they have settled as well as
-  // on resize — otherwise the radius is solved against fallback metrics and
-  // every card sits slightly wrong.
-  // Two frames: one for the absolute positioning and width cap to apply, one
-  // for the resulting reflow to settle. Measuring earlier reads flow-layout
-  // heights, which is what broke the radius the first time.
-  requestAnimationFrame(() => requestAnimationFrame(measure));
-  window.addEventListener('resize', measure, { passive: true });
-  if (document.fonts?.ready) document.fonts.ready.then(measure);
-  // Images decide card height here, and they arrive late.
-  ring.querySelectorAll('img').forEach((img) => {
-    if (!img.complete) img.addEventListener('load', measure, { once: true });
-  });
+  /* A ResizeObserver on a card, not a list of events that might mean the card
+     resized.
+
+     Two rounds of this bug were the same shape: measure fires, the card is not
+     yet at its final height, and the radius is solved against the wrong number
+     with nothing to correct it. First it read 564px of flow layout; then, after
+     the height was fixed in CSS, it still caught 486px and settled there — the
+     wheel only snapped right when something happened to fire a resize. Deferring
+     by more frames just moves the race.
+
+     The observer removes the guesswork: whatever eventually decides the card's
+     height — stylesheet arrival, fonts, a breakpoint, an image — the radius is
+     re-solved when the height actually changes. */
+  const ro = new ResizeObserver(() => measure());
+  ro.observe(cards[0]);
+  ro.observe(root);
+  measure();
 
   if (reducedMotion) {
     // No easing loop: jumps straight to the target so the wheel still works,
