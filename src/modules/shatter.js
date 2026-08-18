@@ -127,13 +127,23 @@ export function initShatter(root, opts = {}) {
         el.append(projFace, label);
       }
 
+      // Order matters: back face first so it sits behind the picture, then the
+      // bevel and the specular on top of everything.
+      const back = document.createElement('div');
+      back.className = 'shard__back';
+      el.insertBefore(back, el.firstChild);
+
+      const edge = document.createElement('div');
+      edge.className = 'shard__edge';
+      el.appendChild(edge);
+
       const sheen = document.createElement('div');
       sheen.className = 'shard__sheen';
       el.appendChild(sheen);
       layer.appendChild(el);
 
       shards.push({
-        el, mapFace, projFace, label,
+        el, mapFace, projFace, label, sheen,
         bx, by, bw, bh,
         carrier: n,
         cx: bx + bw / 2, cy: by + bh / 2,
@@ -291,6 +301,16 @@ export function initShatter(root, opts = {}) {
         + ' rotateZ(' + rz.toFixed(2) + 'deg)'
         + ' translateZ(' + ringZ.toFixed(1) + 'px)'
         + ' scale(' + seam.toFixed(4) + ')';
+
+      /* Move the highlight with the plate's attitude. A glass surface catches
+         light where its normal points at the source, so as a plate turns the
+         specular has to travel across it — a fixed gradient reads as a printed
+         stripe no matter how bright it is. Wrapped through sin/cos so it sweeps
+         smoothly and never jumps as the rotation passes 360. */
+      const nx = Math.sin((ry + rz) * Math.PI / 180);
+      const ny = Math.cos((rx - rz) * Math.PI / 180);
+      s.sheen.style.setProperty('--sx', (50 + nx * 42).toFixed(1) + '%');
+      s.sheen.style.setProperty('--sa', (118 + ny * 46).toFixed(1) + 'deg');
 
       if (s.projFace) {
         const face = Math.min(1, Math.max(0, (p - 0.24) / 0.30));

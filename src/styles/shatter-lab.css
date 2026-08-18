@@ -42,45 +42,73 @@
 /* What it becomes: a normal card image, cropped to the shard. */
 .shard__face--proj { background-size: cover; background-position: center; opacity: 0; }
 
-/* GLASS.
-   A border cannot follow a clip-path — it draws on the element's box, so on a
-   jagged shard it appears as a rectangle floating around the fragment. A
-   drop-shadow filter DOES follow the clipped silhouette, so the edge light is
-   done with two of them: a tight bright one for the cut edge and a wide dark
-   one for the shadow it casts on whatever is behind. */
+/* GLASS: thickness, bevel, specular, reflection.
+
+   THICKNESS is real, not painted. `.shard__back` is a copy of the plate pushed
+   10px behind it inside the same preserve-3d context, so the moment a plate
+   tilts you see the gap between front and back faces as an edge. That is
+   something the clip-path shards could not do at any cost — a clipped element
+   has no interior to offset — and it is the main reason rectangles are worth
+   having.
+
+   The EDGE BEVEL is an inset shadow pair: bright on the top-left where the key
+   light lands, dim on the bottom-right. Two lines, and it is what stops the
+   plate reading as a sticker.
+
+   The CAST SHADOW is a drop-shadow filter rather than box-shadow, because it
+   has to sit under the plate in the 3D scene and follow it as it turns. */
+
 .shard {
-  filter:
-    drop-shadow(0 0 1px rgba(255, 255, 255, .55))
-    drop-shadow(0 8px 22px rgba(0, 0, 0, .55));
+  transform-style: preserve-3d;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, .55));
 }
 
-/* A raking highlight across each fragment, so they catch light at different
-   angles as they tumble instead of reading as flat cut-outs. */
+.shard__back {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(-10px);
+  background: #0b0d12;
+  /* A dim rim so the back face catches a little light too, otherwise the
+     thickness reads as a hole rather than as an edge. */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16);
+}
+
+.shard__edge {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow:
+    inset 1.5px 1.5px 0 rgba(255, 255, 255, .55),
+    inset -1.5px -1.5px 0 rgba(255, 255, 255, .16),
+    inset 0 0 0 1px rgba(255, 255, 255, .12),
+    inset 0 0 26px rgba(120, 180, 255, .07);
+}
+
+/* SPECULAR. --sx is written per frame from the plate's own rotation, so the
+   highlight sweeps across as it tumbles instead of sitting still like a decal —
+   a static gradient is the single clearest tell that something is not glass.
+
+   Kept low. At .48 white on screen blend the highlight was brighter than the
+   photograph under it and every plate read as frosted rather than as glass over
+   a map — the thing being carried has to stay the thing you look at. */
 .shard__sheen {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(122deg,
-    rgba(255, 255, 255, .22) 0%,
-    rgba(255, 255, 255, .04) 26%,
-    transparent 45%,
-    transparent 62%,
-    rgba(255, 255, 255, .10) 82%,
-    rgba(255, 255, 255, .01) 100%);
+  background:
+    linear-gradient(var(--sa, 118deg),
+      transparent 0%,
+      rgba(255, 255, 255, .02) calc(var(--sx, 50%) - 22%),
+      rgba(255, 255, 255, .26) var(--sx, 50%),
+      rgba(255, 255, 255, .02) calc(var(--sx, 50%) + 14%),
+      transparent 100%),
+    /* A second, cooler pass at a different angle — one highlight reads as a
+       bar, two crossing at different angles read as a surface. */
+    linear-gradient(calc(var(--sa, 118deg) + 74deg),
+      transparent 40%,
+      rgba(150, 200, 255, .09) 72%,
+      transparent 100%);
   mix-blend-mode: screen;
-}
-
-.shard__label {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  padding: .7rem .8rem;
-  font-family: var(--f-display);
-  font-weight: 700;
-  font-size: .78rem;
-  line-height: 1.2;
-  color: var(--t);
-  background: linear-gradient(to top, rgba(9,9,11,.92), rgba(9,9,11,.6) 55%, transparent);
-  opacity: 0;
 }
 
 /* ---- lab chrome --------------------------------------------- */
