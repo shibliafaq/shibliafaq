@@ -68,27 +68,42 @@ idleInit(() => {
     const stage = document.getElementById('worldsStage');
     if (!worlds || !stage) return;
 
-    /* THE TRANSITION.
-       One scrub over the whole two-section stage drives both channels. They
-       deliberately do NOT share a range:
+    /* THE TRANSITION, AND THE RESTS BETWEEN IT.
 
-         zoom   0 -> 1   over progress 0.00 .. 0.72
-         decay  0 -> 1   over progress 0.30 .. 0.95
+       The first version mapped something to every pixel of scroll: the camera
+       was still pulling back while the surface was already turning, and the
+       moment that finished the dive began. Nothing ever held still, so there
+       was no point at which a reader could stop and look — which is tiring to
+       watch and worse than tiring for anyone sensitive to motion.
 
-       The camera moves first and alone. The reader pulls back on a planet they
-       already recognise, and only once it is clearly the whole Earth does the
-       surface begin to turn. Crossfading in lockstep with the dolly reads as a
-       rendering glitch — two things changing at once, neither legible. Ending
-       the decay before the scrub ends leaves the failed Earth sitting still and
-       fully formed while the copy is read.
+       Each beat now runs, finishes, and then HOLDS:
 
-       ScrollTrigger, not a scroll listener: Lenis owns scrolling here, and
-       window.scrollY lags its interpolated position by a frame or more. */
+         zoom    0 -> copy-clear      camera pulls back while the hero copy goes
+         decay   copy-clear -> +0.14  the surface turns, quickly, straight after
+         hold    the rest of the range — the failed Earth simply sits there
+
+       The hold is over half the scrub. That is the point: it is the only part
+       where the reader is not being moved.
+
+       WHERE THE DECAY STARTS IS MEASURED, NOT GUESSED. The brief was that the
+       texture should change as soon as the hero text is gone, and the text is
+       faded by a separate trigger anchored to #hero in pixels. Hard-coding a
+       progress figure would drift the moment a section height or a viewport
+       changed — and it already differs between desktop and phone, because
+       .hero is 100svh on one and content-height on the other. So it is derived
+       from the same pixel distance hero.js uses, converted into this scrub's
+       own progress each refresh. */
     const range = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
     // Ease the framing only. Linear decay is correct — a crossfade with an
     // eased midpoint spends too long in the half-and-half state, which is the
     // one state that looks like neither planet.
     const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - ((-2 * t + 2) ** 2) / 2);
+
+    const HERO_COPY_FADE = 0.55;   // must match hero.js
+    const DECAY_SPAN = 0.14;       // how much of the scrub the surface turn takes
+
+    let pCopyGone = 0.4;           // recomputed on every refresh, below
+    let pDecayEnd = 0.54;
 
     ScrollTrigger.create({
       trigger: document.querySelector('.worlds__two') || worlds,
@@ -96,11 +111,19 @@ idleInit(() => {
       end: 'bottom bottom',
       scrub: true,
       invalidateOnRefresh: true,
+      onRefresh: (self) => {
+        const px = self.end - self.start;                 // this scrub, in pixels
+        if (!px) return;
+        pCopyGone = Math.min(0.6, (window.innerHeight * HERO_COPY_FADE) / px);
+        pDecayEnd = Math.min(0.85, pCopyGone + DECAY_SPAN);
+      },
       onUpdate: (self) => {
         const p = self.progress;
-        const z = easeInOut(range(p, 0, 0.72));
+        // Camera finishes as the copy clears, so the two never compete for
+        // attention and the surface turn gets the frame to itself.
+        const z = easeInOut(range(p, 0, Math.max(0.05, pCopyGone - 0.02)));
         earth.setZoom(z);
-        earth.setDecay(range(p, 0.30, 0.95));
+        earth.setDecay(range(p, pCopyGone, pDecayEnd));
         // Published as a custom property rather than tweened directly, so the
         // stylesheet still decides what the scrim and the heat glow LOOK like
         // and this only says how far through we are. Writing a property never
@@ -125,8 +148,11 @@ idleInit(() => {
       scrub: true,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
+        /* The dive finishes at 78% and holds. Running it to the very end meant
+           the plate was still settling as About's first line arrived, so the
+           reader was reading and being moved at the same time. */
         const p = self.progress;
-        earth.setDive(p);
+        earth.setDive(range(self.progress, 0, 0.78));
         /* The plate arrives LATE — the descent has to carry deep into the
            continent first, or the reader jumps from a whole peninsula to city
            blocks in one frame and the scales never connect. By 0.86 the globe's
@@ -136,7 +162,7 @@ idleInit(() => {
            The plate also keeps moving through the handover: it arrives 22%
            oversized and settles, so the approach continues across the cut
            rather than stopping dead at it. */
-        const f = Math.min(1, Math.max(0, (p - 0.86) / 0.14));
+        const f = Math.min(1, Math.max(0, (p - 0.66) / 0.14));
         riyadh.style.opacity = f.toFixed(3);
         riyadh.style.setProperty('--plate', (1.22 - 0.16 * f).toFixed(3));
       },
