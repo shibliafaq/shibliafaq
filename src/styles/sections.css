@@ -1934,7 +1934,7 @@
   /* Sized to the arc, not chosen. A 230px card at GAP 0.60 puts the
      neighbour's far edge 362px from centre, so the stage needs ~723px to show
      the front card plus one either side without clipping them. */
-  height: clamp(560px, 82vh, 780px);
+  height: clamp(600px, 88vh, 820px);
   /* 1000, not 1500. Perspective is the strength of the effect — at 1500 the
      foreshortening on the tilted cards was so slight the ring read as a stack
      of flat cards fading out. */
@@ -1966,12 +1966,12 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: min(100%, 430px);
+  width: min(100%, 400px);
   /* FIXED, and uniform across every card. The radius is solved from this, so a
      card that sizes itself to its own content makes the spokes uneven and the
      ring stops looking like a ring. Content is clipped to fit rather than the
      card growing to fit content. */
-  height: clamp(215px, 27vh, 262px);
+  height: clamp(270px, 35vh, 330px);
   overflow: hidden;
   /* rotateX puts the card on the cylinder; translateZ pushes it out to the
      radius. The translate(-50%,-50%) has to come FIRST or the card orbits its
@@ -2005,10 +2005,14 @@
 /* The front card is the only one that should look interactive. */
 .wheel__card[aria-hidden="false"] { cursor: pointer; }
 
-.wheels .pcard {
-  margin: 0;
-  width: 100%;
-}
+/* NOTHING that sizes or positions the card belongs on this selector.
+   The element carries BOTH .wheel__card and .pcard, so `.wheels .pcard` (0,2,0)
+   silently beats `.wheel__card` (0,1,0). That has now cost three separate bugs:
+   `transform: none` erased the ring placement and stacked every card flat;
+   `height: 100%` made each card the full stage height; `width: 100%` overrode
+   the width cap so "narrower cards" did nothing. Geometry lives on
+   .wheel__card, appearance lives here, and the two do not overlap. */
+.wheels .pcard { margin: 0; }
 
 /* The hover lift has to go, because `.pcard:hover { transform: translateY(-6px) }`
    REPLACES the transform that puts the card on the ring — the card would snap
@@ -2065,11 +2069,37 @@
    on this selector silently overrode the fixed card height and every card took
    the full stage height instead. Same collision as the hover-transform bug;
    anything sized on .wheel__card must not be restated here. */
-.wheels .pcard { display: flex; flex-direction: column; }
-.wheels .pcard__media { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+/* FULL BLEED. The image is the card; the text sits on it under a gradient
+   rather than in a panel beneath it. On a ring this matters more than it would
+   in a grid — a card split into picture-then-text reads as two stacked
+   rectangles the moment it tilts, while a single image plane stays one object
+   all the way round. */
+.wheels .pcard { display: block; padding: 0; }
+.wheels .pcard__media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* The base card sets `aspect-ratio: 16/9`, which wins over `inset: 0` and
+     sizes the media to its own ratio instead of the card's — so "full bleed"
+     left the bottom two thirds of the card empty. The ring decides the shape
+     here, not the picture. */
+  aspect-ratio: auto;
+}
 .wheels .pcard__media img,
 .wheels .pcard__video { width: 100%; height: 100%; object-fit: cover; }
-.wheels .pcard__body { flex: 0 0 auto; padding: .85rem 1rem 1rem; }
+
+.wheels .pcard__body {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 1.1rem .9rem .9rem;
+  /* Deep enough to carry two lines of title over a bright photograph, and
+     soft-topped so it does not draw a band across the picture. */
+  background: linear-gradient(to top,
+    rgba(9, 9, 11, .94) 0%,
+    rgba(9, 9, 11, .82) 42%,
+    rgba(9, 9, 11, .38) 74%,
+    transparent 100%);
+}
 .wheels .pcard__title {
   font-size: clamp(.95rem, 1.15vw, 1.12rem);
   line-height: 1.25;
