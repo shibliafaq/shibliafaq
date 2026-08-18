@@ -1,102 +1,69 @@
 /**
- * THE MAP BREAKS LIKE GLASS.
+ * THE MAP BREAKS INTO PLATES.
  *
- *   crack    an impact point, radial and concentric fractures, ~50 shards
+ *   crack    the map splits into ~50 rectangles of wildly different sizes
  *   drift    they tumble through space and can be shoved around with the mouse
- *   gather   fourteen of them square up, take a project photo, form the rings
+ *   gather   fourteen of them take a project photo and form the rings
  *
- * WHY RADIAL + CONCENTRIC RATHER THAN A VORONOI
- * Real glass does not break into evenly sized cells. It fails along rays running
- * out from the impact and rings running around it, so fragments are small and
- * sharp near the strike and large and blunt at the edges. Building the fracture
- * that way gives the size gradient and the shard SHAPES for free, and costs a
- * fraction of what a Voronoi would. The randomness lives in the ray angles and
- * the ring radii — which is exactly where a real break varies — so the glass
- * never breaks the same way twice.
+ * RECTANGLES, NOT SHARDS — and it is a better fit than the glass version was.
+ * The pieces are already the shape they have to end up as, so there is no
+ * polygon morph at the end and no moment where a fragment visibly squares
+ * itself up. It also matches what the rest of the page is made of: every card,
+ * plate and tile on this site is a rectangle.
  *
- * WHY ONLY SOME SHARDS BECOME CARDS
- * There are fourteen projects, but a convincing break needs far more than
- * fourteen pieces. So the shards are split: carriers square up and take a
- * photograph, the rest stay glass and are thrown clear. If every fragment became
- * a card the break would read as a grid that happened to be jagged.
+ * The split is recursive and always across the LONGER side of whichever plate
+ * it picks, which is what keeps the sizes varied without producing slivers. A
+ * uniform grid gives fifty identical tiles and reads as a spreadsheet; splitting
+ * the biggest plate each time gives a few large faces and many small ones, which
+ * is what makes it look broken rather than divided.
+ *
+ * WHY ONLY SOME PLATES BECOME CARDS
+ * Fourteen projects, but a convincing break needs far more than fourteen pieces.
+ * Carriers take a photograph, the rest stay blank and are thrown clear.
  */
 
 const N_RAYS = 13;             // radial fractures out from the impact
 const N_RINGS = 4;             // concentric fractures around it
-const PTS = 20;                // vertices per shard — fixed, so clip-path can morph
 const CARRIERS = 14;           // shards that become project cards
 
 const rand = (a, b) => a + Math.random() * (b - a);
 
-/** Resample a polygon to exactly PTS vertices around its perimeter. Every shard
- *  needs the same count or clip-path cannot interpolate it to a rectangle. */
-function resample(poly, n = PTS) {
-  const segLen = [];
-  let total = 0;
-  for (let i = 0; i < poly.length; i++) {
-    const a = poly[i];
-    const b = poly[(i + 1) % poly.length];
-    const d = Math.hypot(b[0] - a[0], b[1] - a[1]);
-    segLen.push(d);
-    total += d;
-  }
-  const out = [];
-  let walked = 0;
-  let seg = 0;
-  for (let i = 0; i < n; i++) {
-    const want = (i / n) * total;
-    while (seg < poly.length - 1 && walked + segLen[seg] < want) {
-      walked += segLen[seg];
-      seg++;
-    }
-    const t = segLen[seg] ? (want - walked) / segLen[seg] : 0;
-    const a = poly[seg];
-    const b = poly[(seg + 1) % poly.length];
-    out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]);
-  }
-  return out;
-}
+/** Recursive split into rectangles. Always cuts the LONGER side of the plate
+ *  it picks, so nothing degenerates into a sliver, and it biases toward the
+ *  biggest remaining plate so the result is a few large faces and many small
+ *  ones rather than fifty of the same size. */
+function fracture(vw, vh, target = 52) {
+  let rects = [{ x: 0, y: 0, w: vw, h: vh }];
+  const MIN = Math.min(vw, vh) * 0.028;   // below this a plate reads as grit
 
-/** The fracture pattern, in viewport pixels. Rebuilt fresh every time. */
-function fracture(vw, vh) {
-  const ix = rand(0.28, 0.72) * vw;
-  const iy = rand(0.28, 0.72) * vh;
-  const maxR = Math.hypot(Math.max(ix, vw - ix), Math.max(iy, vh - iy)) * 1.2;
-
-  const angles = Array.from({ length: N_RAYS }, () => Math.random() * Math.PI * 2)
-    .sort((a, b) => a - b);
-  angles.push(angles[0] + Math.PI * 2);
-
-  // Radii grow faster than linearly, so fragments near the impact stay small —
-  // the single strongest cue that something was struck at that point.
-  const rings = [0];
-  for (let i = 1; i <= N_RINGS; i++) {
-    rings.push(maxR * Math.pow(i / N_RINGS, 1.7) * rand(0.85, 1.15));
-  }
-  rings[N_RINGS] = maxR;
-
-  const cells = [];
-  for (let r = 0; r < N_RINGS; r++) {
-    for (let a = 0; a < N_RAYS; a++) {
-      const a0 = angles[a];
-      const a1 = angles[a + 1];
-      const r0 = rings[r];
-      const r1 = rings[r + 1];
-      const j = () => rand(0.97, 1.03);   // no two fragments share a clean edge
-      const poly = [];
-      const steps = 3;
-      for (let s = 0; s <= steps; s++) {
-        const ang = a0 + (a1 - a0) * (s / steps);
-        poly.push([ix + Math.cos(ang) * r0 * j(), iy + Math.sin(ang) * r0 * j()]);
-      }
-      for (let s = steps; s >= 0; s--) {
-        const ang = a0 + (a1 - a0) * (s / steps);
-        poly.push([ix + Math.cos(ang) * r1 * j(), iy + Math.sin(ang) * r1 * j()]);
-      }
-      cells.push(poly);
+  let guard = 0;
+  while (rects.length < target && guard++ < target * 12) {
+    rects.sort((a, b) => b.w * b.h - a.w * a.h);
+    /* Reach across the WHOLE list, not just the top ten.
+       Always splitting the largest plate equalises everything: measured, it
+       gave only a 3.3x spread between the biggest and smallest piece, which
+       reads as a mosaic rather than a break. Sampling the full sorted list with
+       a mild bias toward the front means some large faces survive untouched
+       while some small ones get split again — which is where the wide range of
+       sizes in a real break comes from. */
+    const idx = Math.floor(Math.pow(Math.random(), 1.7) * rects.length);
+    const r = rects[idx];
+    const cutVertical = r.w >= r.h;
+    const span = cutVertical ? r.w : r.h;
+    if (span < MIN * 2) continue;
+    const t = rand(0.32, 0.68);
+    rects.splice(idx, 1);
+    if (cutVertical) {
+      const cut = Math.max(MIN, Math.min(r.w - MIN, r.w * t));
+      rects.push({ x: r.x, y: r.y, w: cut, h: r.h });
+      rects.push({ x: r.x + cut, y: r.y, w: r.w - cut, h: r.h });
+    } else {
+      const cut = Math.max(MIN, Math.min(r.h - MIN, r.h * t));
+      rects.push({ x: r.x, y: r.y, w: r.w, h: cut });
+      rects.push({ x: r.x, y: r.y + cut, w: r.w, h: r.h - cut });
     }
   }
-  return cells;
+  return rects;
 }
 
 export function initShatter(root, opts = {}) {
@@ -119,35 +86,21 @@ export function initShatter(root, opts = {}) {
     vw = window.innerWidth;
     vh = window.innerHeight;
 
-    const cells = fracture(vw, vh);
+    const rects = fracture(vw, vh);
 
-    // Carriers are the largest fragments — a photograph needs room to be read,
-    // and the big pieces are the ones the eye follows anyway.
-    const order = cells.map((poly, i) => {
-      let a = 0;
-      for (let k = 0; k < poly.length; k++) {
-        const p1 = poly[k];
-        const p2 = poly[(k + 1) % poly.length];
-        a += p1[0] * p2[1] - p2[0] * p1[1];
-      }
-      return { i, area: Math.abs(a) / 2 };
-    }).sort((x, y) => y.area - x.area);
-
+    // Carriers are the largest plates — a photograph needs room to be read, and
+    // the big faces are the ones the eye follows anyway.
+    const order = rects
+      .map((r, i) => ({ i, area: r.w * r.h }))
+      .sort((x, y) => y.area - x.area);
     const carrierOf = new Map();
     order.slice(0, CARRIERS).forEach((c, n) => carrierOf.set(c.i, n));
 
-    cells.forEach((poly, i) => {
-      // A bounding box per shard: fifty viewport-sized elements would be fifty
-      // full-screen composites every frame.
-      const xs = poly.map((pt) => pt[0]);
-      const ys = poly.map((pt) => pt[1]);
-      const bx = Math.min(...xs);
-      const by = Math.min(...ys);
-      const bw = Math.max(2, Math.max(...xs) - bx);
-      const bh = Math.max(2, Math.max(...ys) - by);
-
-      const local = resample(poly).map(([x, y]) => [((x - bx) / bw) * 100, ((y - by) / bh) * 100]);
-      const rect = resample([[0, 0], [100, 0], [100, 100], [0, 100]]);
+    rects.forEach((r, i) => {
+      const bx = r.x;
+      const by = r.y;
+      const bw = r.w;
+      const bh = r.h;
 
       const el = document.createElement('div');
       el.className = 'shard';
@@ -181,21 +134,15 @@ export function initShatter(root, opts = {}) {
 
       shards.push({
         el, mapFace, projFace, label,
-        bx, by, bw, bh, local, rect,
+        bx, by, bw, bh,
         carrier: n,
         cx: bx + bw / 2, cy: by + bh / 2,
         ox: 0, oy: 0, vx: 0, vy: 0,
         rot: { x: rand(-1, 1), y: rand(-1, 1), z: rand(-1, 1) },
-        /* Tumble, not a propeller. At 60-320 degrees most fragments passed
-           through edge-on during the drift and simply vanished — a plane with
-           no thickness is invisible at 90 degrees. Kept under a quarter turn so
-           every shard stays face-on enough to read. */
         spin: rand(18, 105) * (Math.random() < 0.5 ? -1 : 1),
-        /* Depth is SIGNED. Some fragments fly toward the reader and some
-           recede — a break where everything retreats reads as a picture being
-           pulled away rather than as glass coming apart around you. Weighted so
-           more go back than forward, because a shard that comes too close just
-           fills the frame. */
+        /* Depth is SIGNED: about a third of the plates come toward the reader
+           and the rest recede. Everything retreating reads as a picture being
+           pulled away rather than as something breaking around you. */
         zdir: Math.random() < 0.34 ? rand(0.35, 1) : -rand(0.3, 1),
         zamt: rand(180, 620),
       });
@@ -318,6 +265,19 @@ export function initShatter(root, opts = {}) {
         z -= 1100 * gEase;
       }
 
+      /* NO clip-path. Every plate is already the shape it has to end up as, so
+         there is nothing to morph — which also removes a per-frame polygon
+         string for all 52 elements.
+
+         The break is expressed as a GAP instead: each plate shrinks slightly
+         while the crack runs, opening dark seams between neighbours, so the
+         surface reads as coming apart rather than as tiles fading.
+
+         Declared HERE, above the transform that uses it. It was written below
+         and every frame threw "Cannot access 'seam' before initialization",
+         which silently froze all 52 plates at the origin. */
+      const seam = 1 - 0.05 * crack * (1 - gEase);
+
       /* The ring is pushed BACK by its own radius before the rotation, exactly
          as wheel.js does. Without it the front card ends a full radius nearer
          the camera than the perspective origin and is magnified. */
@@ -329,20 +289,8 @@ export function initShatter(root, opts = {}) {
         + ' rotateX(' + rx.toFixed(2) + 'deg)'
         + ' rotateY(' + ry.toFixed(2) + 'deg)'
         + ' rotateZ(' + rz.toFixed(2) + 'deg)'
-        + ' translateZ(' + ringZ.toFixed(1) + 'px)';
-
-      // Torn while flying, square once it is a card. Debris never squares up.
-      const tear = carrier ? Math.min(crack, 1 - gEase) : crack;
-      const pts = [];
-      for (let k = 0; k < s.local.length; k++) {
-        const lx = s.local[k][0];
-        const ly = s.local[k][1];
-        const rxp = s.rect[k][0];
-        const ryp = s.rect[k][1];
-        pts.push((rxp + (lx - rxp) * tear).toFixed(2) + '% '
-               + (ryp + (ly - ryp) * tear).toFixed(2) + '%');
-      }
-      s.el.style.clipPath = 'polygon(' + pts.join(',') + ')';
+        + ' translateZ(' + ringZ.toFixed(1) + 'px)'
+        + ' scale(' + seam.toFixed(4) + ')';
 
       if (s.projFace) {
         const face = Math.min(1, Math.max(0, (p - 0.24) / 0.30));
