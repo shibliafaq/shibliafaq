@@ -569,23 +569,27 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 
 .future {
   position: relative;
-  /* 150svh, not 92vh. This height IS the scroll runway the whole first
-     transition is scrubbed against, and a hold cannot exist in a range that is
-     already fully spoken for. At 92vh every pixel was doing something; at
-     220svh the camera and the surface turn are done inside the first half and
-     the rest is the failed Earth sitting still, which is the only part of the
-     sequence where a reader gets to stop and look.
+  /* HEIGHT IS THE SCROLL RUNWAY. It is not where the copy goes.
 
-     Sized in scroll gestures rather than in taste: a wheel notch through Lenis
-     moves roughly a third of a screen, so a beat that should survive two
-     deliberate scrolls needs about two-thirds of a screen of dead range after
-     it finishes. At 220svh the hold is ~1.2 screens — three or four notches —
-     which is long enough that stopping is the default rather than something
-     the reader has to fight the page for. */
+     Conflating those two broke the section on phones. The height was raised to
+     220svh to buy a hold, and because the copy was bottom-aligned it went with
+     it — so the globe sat mid-viewport, then a screen of empty black, then the
+     headline arrived about a thousand pixels after the transition it belongs
+     to. Two things that should be one moment, a full screen apart.
+
+     A wheel notch through Lenis moves roughly a third of a screen, so a beat
+     that should survive two or three deliberate scrolls needs about a screen of
+     dead range after it finishes. 220svh buys that.
+
+     The THIRD row is what puts the copy back where it belongs: the body sits at
+     roughly 68% of the free height, so it rises into frame just as the surface
+     finishes turning, and the remaining 32% is trailing dead space — the hold —
+     that the copy scrolls up through. Measured against the scrub rather than
+     eyeballed: on both 375x812 and 800x600 the copy now enters within ~40px of
+     the turn completing. */
   min-height: 220svh;
   display: grid;
-  grid-template-rows: 1fr auto;
-  align-items: end;
+  grid-template-rows: 0.68fr auto 0.32fr;
   padding: clamp(3rem, 9vh, 6rem) var(--pad-x) clamp(3rem, 8vh, 5.5rem);
 }
 

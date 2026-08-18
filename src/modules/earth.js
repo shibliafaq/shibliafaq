@@ -568,9 +568,14 @@ export function initEarth(opts = {}) {
     const halfH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
     const toScale = halfH * Math.min(1, camera.aspect) * FIT_MARGIN;
 
-    // On a tall frame the copy occupies the bottom third, so centring the
-    // sphere would bury the headline in it. Lift it into the space above.
-    const toY = narrow ? 0.30 : 0;
+    /* On a tall frame the copy occupies the lower half, so the sphere is lifted
+       out of it. 0.45, not the 0.30 it started at: at 0.30 the planet spanned
+       roughly y 127-443 of an 812px viewport while the headline began near 250,
+       so the two lines of display type sat straight across the planet's middle.
+       0.45 moves it up about 60px and puts the text under the disc rather than
+       through it. Desktop is wide enough that the copy clears the sphere on its
+       own, so it stays centred. */
+    const toY = narrow ? 0.45 : 0;
 
     /* The dive rides ON TOP of the pulled-back framing rather than replacing
        it, so the two never fight: `zoom` decides where the globe sits, `dive`

@@ -87,7 +87,7 @@ node tools/sync-site-copy.mjs --write   # apply it
 - “To effectively tackle the climate crisis in our cities, I needed a deeper understanding of city-scale informatics — so I set out to build it.”
 
 ### about.p2
-- Now finishing an <strong>M.Sc. at KFUPM</strong>, I pair spatial design thinking with satellite remote sensing, GIS and machine learning — building heat adaptation tools for the Arabian Peninsula. <strong>Move your cursor to see what intervention does.</strong>
+- Now finishing an <strong>M.Sc. at KFUPM</strong>, I pair spatial design thinking with satellite remote sensing, GIS and machine learning — building heat adaptation tools for the Arabian Peninsula. <strong>Move across the map to see what intervention does.</strong>
 
 ## Research direction
 
