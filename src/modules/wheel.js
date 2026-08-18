@@ -96,6 +96,24 @@ function setupWheel(root) {
       const t = d / 180;                        // 1 = front, 0 = directly behind
       const c = cards[i];
       c.style.setProperty('--depth', t.toFixed(3));
+
+      /* --vis is driven by the ANGLE, not by depth, and it is what actually
+         stops the ring looking glued.
+
+         On a full cylinder the cards near +/-90 degrees bunch together in
+         projection — the same reason ferris-wheel cars crowd at the top — and
+         the card on the far side projects back toward the centre. Measured on
+         this ring: card 2 (103 deg) overlapped card 1 by 171px, and card 3
+         (154 deg) poked 99px out of the FRONT card's own edge. No radius or gap
+         fixes that; it is what a cylinder does.
+
+         So everything past about 95 degrees is dropped to a ghost. Front and
+         its two immediate neighbours carry the section; the rest still shows
+         through the gaps as the back of the wheel, which is the brief, without
+         colliding with the cards that have to stay readable. */
+      const deg = 180 - d;                      // 0 at the front, 180 behind
+      const vis = Math.max(0, Math.min(1, (95 - deg) / 50));
+      c.style.setProperty('--vis', vis.toFixed(3));
       // Only the card actually facing the reader should take a click; without
       // this the far side stays in the hit-test and swallows presses aimed at
       // the front through the gaps.

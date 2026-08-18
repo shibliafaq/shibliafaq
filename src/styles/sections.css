@@ -1941,8 +1941,11 @@
   perspective: 1000px;
   perspective-origin: 50% 50%;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
-          mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+  /* Fades hard at top and bottom, because that is exactly where the cards
+     crowd together on a cylinder. The mask does the last of the work the
+     angle fade starts. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 26%, #000 74%, transparent 100%);
+          mask-image: linear-gradient(to bottom, transparent 0%, #000 26%, #000 74%, transparent 100%);
 }
 
 .wheel__ring {
@@ -1963,12 +1966,12 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: min(100%, 460px);
+  width: min(100%, 430px);
   /* FIXED, and uniform across every card. The radius is solved from this, so a
      card that sizes itself to its own content makes the spokes uneven and the
      ring stops looking like a ring. Content is clipped to fit rather than the
      card growing to fit content. */
-  height: clamp(190px, 24vh, 230px);
+  height: clamp(215px, 27vh, 262px);
   overflow: hidden;
   /* rotateX puts the card on the cylinder; translateZ pushes it out to the
      radius. The translate(-50%,-50%) has to come FIRST or the card orbits its
@@ -1984,11 +1987,18 @@
   transform-style: preserve-3d;
 
   /* --depth is 1 facing the reader, 0 directly behind. Everything below reads
-     from it, so there is one source of truth for "how far round is this". */
-  opacity: calc(0.10 + 0.90 * var(--depth, 1));
+     from it, so there is one source of truth for "how far round is this".
+
+     THE FLOORS MATTER MORE THAN THE RANGE. At 0.10 opacity / 3px blur / 0.35
+     brightness the far side computed to 23% opacity, 2.6px blur and 44%
+     brightness — invisible. That deleted the whole point of the gaps, which
+     exist so the back of the ring shows through them. Raised floors keep the
+     far cards clearly present as structure while still losing decisively to the
+     front card for attention. */
+  opacity: calc(0.05 + 0.95 * var(--vis, 1));
   filter:
-    blur(calc((1 - var(--depth, 1)) * 3px))
-    brightness(calc(0.35 + 0.65 * var(--depth, 1)));
+    blur(calc((1 - var(--vis, 1)) * 2.2px))
+    brightness(calc(0.45 + 0.55 * var(--vis, 1)));
   transition: opacity .18s linear, filter .18s linear;
 }
 
