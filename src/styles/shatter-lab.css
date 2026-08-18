@@ -1,0 +1,79 @@
+/* Map -> shards -> wheels. Layout only; the choreography is in shatter.js. */
+
+.shatter {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--ink);
+  /* One perspective for the whole flight, so every shard shares a vanishing
+     point. Per-shard perspective would make them read as fourteen separate
+     animations rather than one object coming apart. */
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
+}
+
+.shatter__layer {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.shard {
+  position: absolute;
+  top: 0; left: 0;
+  transform-origin: 50% 50%;
+  will-change: transform, clip-path;
+  backface-visibility: hidden;
+  /* No transition: every value is written per frame from scroll progress.
+     A transition here would fight the scrub and lag behind the pointer. */
+}
+
+.shard__face {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+}
+
+/* The map slice is sized to the whole viewport and offset per cell, so the
+   fourteen shards reconstruct the original picture with no seams. */
+.shard__face--map { background-size: cover; }
+
+/* What it becomes: a normal card image, cropped to the shard. */
+.shard__face--proj { background-size: cover; background-position: center; opacity: 0; }
+
+.shard::after {
+  /* A hairline so the pieces read as separate solids in flight rather than as
+     one texture with cuts drawn on it. */
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, .10);
+  pointer-events: none;
+}
+
+.shard__label {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: .7rem .8rem;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: .78rem;
+  line-height: 1.2;
+  color: var(--t);
+  background: linear-gradient(to top, rgba(9,9,11,.92), rgba(9,9,11,.6) 55%, transparent);
+  opacity: 0;
+}
+
+/* ---- lab chrome --------------------------------------------- */
+.shatter-lab__hud {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 5;
+  padding: 1rem clamp(1rem, 3vw, 2.5rem) 1.4rem;
+  display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;
+  background: linear-gradient(to top, rgba(9,9,11,.92), transparent);
+  font-family: var(--f-mono); font-size: var(--fs-xs); letter-spacing: .1em; color: var(--t-3);
+}
+.shatter-lab__hud input { flex: 1 1 260px; accent-color: var(--accent); }
+.shatter-lab__hud a { color: var(--accent); }
+.shatter-lab__beat { color: var(--accent); min-width: 8ch; }

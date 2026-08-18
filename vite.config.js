@@ -211,6 +211,7 @@ export default defineConfig({
         main: 'index.html',
         wheelsHorizontal: 'wheels-horizontal.html',
         projectsMap: 'projects-map.html',
+        shatter: 'shatter.html',
       },
       output: {
         manualChunks: {
