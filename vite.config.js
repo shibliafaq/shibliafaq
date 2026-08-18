@@ -204,15 +204,16 @@ export default defineConfig({
     assetsInlineLimit: 0,
     target: 'es2020',
     rollupOptions: {
-      // Two entry pages. The second is the horizontal-wheel comparison, kept out
-      // of the site's navigation but built so it can be looked at on the deploy
-      // rather than only on a dev server.
+      // Two entries. The second is the map concept, kept out of the site's
+      // navigation but built so it can be looked at on the deploy.
+      //
+      // The shatter, tile-field and horizontal-wheel comparison pages are gone:
+      // the axis question is settled (vertical on desktop, horizontal on phones,
+      // handled by data-wheel="auto") and the transition experiments were
+      // rejected. They are in git history if any of it is wanted back.
       input: {
         main: 'index.html',
-        wheelsHorizontal: 'wheels-horizontal.html',
         projectsMap: 'projects-map.html',
-        shatter: 'shatter.html',
-        projectsTiles: 'projects-tiles.html',
       },
       output: {
         manualChunks: {

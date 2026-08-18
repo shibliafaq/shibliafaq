@@ -2244,6 +2244,20 @@
    would hide it. */
 .wheels .wheel__stage { position: relative; z-index: 1; }
 
+/* The entrance, driven by --intro (written by wheel.js, 0 -> 1 once).
+   Opacity and a few pixels of lift, nothing more. The rotation settle in the
+   ring is doing the work; this only stops the cards appearing fully formed
+   before they have finished moving. */
+.wheels .wheel__stage,
+.wheels .wheel__head {
+  opacity: calc(0.15 + 0.85 * var(--intro, 1));
+  transform: translateY(calc((1 - var(--intro, 1)) * 14px));
+}
+/* The hub is positioned in 3D on the ring's axis, so it must NOT take the
+   translateY above — that would drag it off the axis and break the depth
+   sorting the label depends on. */
+.wheels .wheel__head { transform: none; }
+
 .wheels--h .wheel__stage {
   /* A horizontal ring needs width to travel through, not height. Its height is
      just the card plus the foreshortening headroom of its neighbours. */

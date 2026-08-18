@@ -81,6 +81,19 @@ function setupWheel(root) {
 
   const step = 360 / n;
   let radius = 0;
+  /* ENTRANCE. Not a set-piece — a settle.
+     The page already spends its 3D budget on the globe sequence, and a second
+     elaborate arrival three screens later competes with it rather than adding
+     to it. So the ring simply comes to rest: it fades up while finishing a
+     little over half a card of rotation, which reads as something that was
+     already turning before you looked at it.
+
+     Runs once, on first sight, and never again — an entrance that replays every
+     time the section scrolls back into view stops being an entrance and becomes
+     a tic. */
+  let intro = 0;
+  let introRunning = false;
+
   let angle = 0;        // current ring rotation, degrees
   let target = 0;       // where it is easing to
   let raf = 0;
@@ -115,9 +128,14 @@ function setupWheel(root) {
 
   /** Depth cues, recomputed from each card's actual angle to the viewer. */
   function paint() {
+    // The entrance offset decays to nothing, so once intro is 1 this is exactly
+    // the resting transform and there is no residue to drift.
+    const settle = (1 - intro) * step * 0.6;
+    const a = angle + settle;
     ring.style.transform = horizontal
-      ? `translateZ(${(-radius).toFixed(1)}px) rotateY(${angle.toFixed(3)}deg)`
-      : `translateZ(${(-radius).toFixed(1)}px) rotateX(${angle.toFixed(3)}deg)`;
+      ? `translateZ(${(-radius).toFixed(1)}px) rotateY(${a.toFixed(3)}deg)`
+      : `translateZ(${(-radius).toFixed(1)}px) rotateX(${a.toFixed(3)}deg)`;
+    root.style.setProperty('--intro', intro.toFixed(3));
     for (let i = 0; i < n; i++) {
       // How far this card is from facing the viewer, 0 (front) .. 180 (back).
       let d = Math.abs(((angle - i * step) % 360 + 540) % 360 - 180);
@@ -285,6 +303,29 @@ function setupWheel(root) {
      The observer removes the guesswork: whatever eventually decides the card's
      height — stylesheet arrival, fonts, a breakpoint, an image — the radius is
      re-solved when the height actually changes. */
+  /* Fires once, when the wheel is first genuinely on screen. rootMargin pulls
+     it slightly early so the settle is already underway by the time the reader
+     is looking straight at it — an entrance that begins after you arrive reads
+     as a delayed reaction. */
+  function runIntro() {
+    if (introRunning) return;
+    introRunning = true;
+    if (reducedMotion) { intro = 1; paint(); return; }
+    const t0 = performance.now();
+    const DUR = 900;
+    (function step_(now) {
+      const t = Math.min(1, (now - t0) / DUR);
+      // Cubic ease-out: quick to commit, slow to settle.
+      intro = 1 - Math.pow(1 - t, 3);
+      paint();
+      if (t < 1) requestAnimationFrame(step_);
+    })(t0);
+  }
+
+  new IntersectionObserver((entries) => {
+    if (entries.some((e) => e.isIntersecting)) runIntro();
+  }, { rootMargin: '-12% 0px -12% 0px' }).observe(root);
+
   const ro = new ResizeObserver(() => measure());
   ro.observe(cards[0]);
   ro.observe(root);
