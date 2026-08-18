@@ -4,6 +4,7 @@
   position: fixed;
   inset: 0;
   overflow: hidden;
+  cursor: crosshair;
   background: var(--ink);
   /* One perspective for the whole flight, so every shard shares a vanishing
      point. Per-shard perspective would make them read as fourteen separate
@@ -41,14 +42,32 @@
 /* What it becomes: a normal card image, cropped to the shard. */
 .shard__face--proj { background-size: cover; background-position: center; opacity: 0; }
 
-.shard::after {
-  /* A hairline so the pieces read as separate solids in flight rather than as
-     one texture with cuts drawn on it. */
-  content: "";
+/* GLASS.
+   A border cannot follow a clip-path — it draws on the element's box, so on a
+   jagged shard it appears as a rectangle floating around the fragment. A
+   drop-shadow filter DOES follow the clipped silhouette, so the edge light is
+   done with two of them: a tight bright one for the cut edge and a wide dark
+   one for the shadow it casts on whatever is behind. */
+.shard {
+  filter:
+    drop-shadow(0 0 1px rgba(255, 255, 255, .55))
+    drop-shadow(0 8px 22px rgba(0, 0, 0, .55));
+}
+
+/* A raking highlight across each fragment, so they catch light at different
+   angles as they tumble instead of reading as flat cut-outs. */
+.shard__sheen {
   position: absolute;
   inset: 0;
-  border: 1px solid rgba(255, 255, 255, .10);
   pointer-events: none;
+  background: linear-gradient(122deg,
+    rgba(255, 255, 255, .22) 0%,
+    rgba(255, 255, 255, .04) 26%,
+    transparent 45%,
+    transparent 62%,
+    rgba(255, 255, 255, .10) 82%,
+    rgba(255, 255, 255, .01) 100%);
+  mix-blend-mode: screen;
 }
 
 .shard__label {
