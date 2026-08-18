@@ -8,7 +8,7 @@ import './styles/i18n.css';
 import { initScroll, ScrollTrigger } from './modules/scroll.js';
 import { initReveals } from './modules/reveals.js';
 import { initHero } from './modules/hero.js';
-import { initProjects } from './modules/projects.js';
+import { initWheels } from './modules/wheel.js';
 import { initSkills } from './modules/skills.js';
 import { initExperience } from './modules/experience.js';
 import { initModal, initArch, initLightbox } from './modules/modal.js';
@@ -24,7 +24,7 @@ initNav();
 initCursor();
 initHero();
 initReveals();
-initProjects();
+initWheels();
 // Runs on load rather than near-viewport: it swaps the tag list for the canvas,
 // and doing that late would show the list and then visibly replace it. The rAF
 // loop inside is still gated on the section being on screen.

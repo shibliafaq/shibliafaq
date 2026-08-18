@@ -273,104 +273,168 @@
     <p class="lead" data-reveal data-i18n="projects.lead"><span class="lead__meta">During the M.Sc</span><span class="lead__body">I was doing architectural projects but now I learned working with real-time satellite pipelines,</span><span class="lead__meta">All the works are based on one question:</span><em class="lead__ask">How do we make cities survive the climate crisis?</em></p>
   </div>
 
-  <div class="projects__pin" id="projectsPin">
-    <div class="projects__track" id="projectsTrack">
+    <!-- TWO WHEELS. Cards live in the HTML rather than being generated from
+       data/projects.js on purpose: every one of them carries data-copy and
+       data-i18n anchors that the copy pipeline and the translation engine both
+       read, and a crawler has to see the titles. The wheel module only ever
+       transforms what is already here. -->
+  <div class="wheels">
+    <section class="wheel" data-wheel data-lenis-prevent aria-label="Master's research projects" tabindex="0">
+      <header class="wheel__head">
+        <p class="eyebrow">M.Sc. · Smart &amp; Sustainable Cities</p>
+        <h3 class="wheel__title">Research</h3>
+      </header>
+      <div class="wheel__stage">
+        <div class="wheel__ring">
+      <article class="wheel__card pcard pcard--poster" data-modal="thesis" tabindex="0" role="button" aria-label="Open: Smart Digital Twin Framework">
+            <div class="pcard__media">
+              <!-- `poster` is the whole fallback chain in one attribute: it paints
+                   before a byte of video arrives, it is what shows if autoplay is
+                   refused, and it is what stays under prefers-reduced-motion, where
+                   projects.js never calls play(). `preload="none"` keeps the 1.1 MB
+                   off the initial load — the card is four screens down. -->
+              <video class="pcard__video" data-src="/assets/video/thesis-cover.mp4"
+                     poster="/assets/img/thesis-cover-poster.webp"
+                     muted loop playsinline preload="none"
+                     width="1280" height="720"
+                     aria-label="Smart Digital Twin · UHI monitoring and forecasting"></video>
+            </div>
 
-      <article class="pcard pcard--poster" data-modal="thesis" tabindex="0" role="button" aria-label="Open: Smart Digital Twin Framework">
-        <div class="pcard__media">
-          <!-- `poster` is the whole fallback chain in one attribute: it paints
-               before a byte of video arrives, it is what shows if autoplay is
-               refused, and it is what stays under prefers-reduced-motion, where
-               projects.js never calls play(). `preload="none"` keeps the 1.1 MB
-               off the initial load — the card is four screens down. -->
-          <video class="pcard__video" data-src="/assets/video/thesis-cover.mp4"
-                 poster="/assets/img/thesis-cover-poster.webp"
-                 muted loop playsinline preload="none"
-                 width="1280" height="720"
-                 aria-label="Smart Digital Twin · UHI monitoring and forecasting"></video>
+            <div class="pcard__plate">
+              <div class="pcard__badges">
+                <span data-copy="projects.1" class="badge badge--dev"><span class="badge__dot"></span>M.Sc. Thesis</span>
+                <span data-copy="projects.2" class="badge">KFUPM · Aug 2026</span>
+                <span data-copy="projects.3" class="badge badge--muted">Architecture &amp; City Design</span>
+              </div>
+              <h3 data-copy="projects.4" class="pcard__title">A Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation</h3>
+              <div class="tags">
+                <span data-copy="projects.14" class="tag">Google Earth Engine</span><span data-copy="projects.15" class="tag tag--amber">PostgreSQL/PostGIS</span><span data-copy="projects.16" class="tag tag--amber">FastAPI</span><span data-copy="projects.17" class="tag">Prophet</span><span data-copy="projects.18" class="tag tag--amber">deck.gl</span><span data-copy="projects.19" class="tag tag--amber">MapLibre</span><span data-copy="projects.20" class="tag">Docker Compose</span>
+              </div>
+              <span data-copy="projects.22" class="pcard__cta">Open the study →</span>
+            </div>
+
+            <!-- The prose and the metrics move into the modal, but stay in the HTML
+                 so a crawler and a reader with JS off still get them. `.pcard__crawl`
+                 is visually-hidden, not display:none — display:none is dropped from
+                 the accessibility tree and skipped by some crawlers. -->
+            <p data-copy="projects.5" class="pcard__crawl">Built on a <strong>Design Science methodology</p>
+          </article>
+      <article class="wheel__card pcard" data-modal="gis" tabindex="0" role="button" aria-label="Open: GIS &amp; Remote Sensing UHI Assessment">
+            <div class="pcard__media"><img src="/assets/img/hero-gis@1x.webp" alt="GIS &amp; Remote Sensing · Dammam UHI Assessment" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p data-copy="projects.23" class="pcard__course">CRP 583 · Urban Informatics · KFUPM</p>
+              <h3 data-copy="projects.24" class="pcard__title">GIS &amp; Remote Sensing UHI Assessment — Dammam Metro Area</h3>
+              <p data-copy="projects.25" class="pcard__result">NDBI Dominance (R²=0.511) · 57.3 km² Urgent Exposure Zone · 4.18× Hotspot Scale Multiplier</p>
+              <div class="tags"><span data-copy="projects.26" class="tag tag--amber">ArcGIS Pro 3.6</span><span data-copy="projects.27" class="tag tag--amber">Landsat 8/9 &amp; Sentinel-2</span><span data-copy="projects.28" class="tag tag--amber">Getis-Ord Gi*</span><span data-copy="projects.29" class="tag tag--amber">HVI</span><span data-copy="projects.30" class="tag">Spatial SQL</span></div>
+            </div>
+          </article>
+      <article class="wheel__card pcard" data-modal="iot" tabindex="0" role="button" aria-label="Open: Real-Time Smart City IoT Monitoring Pipeline">
+            <div class="pcard__media"><img src="/assets/img/hero-iot@1x.webp" alt="Real-Time IoT Monitoring Pipeline" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p data-copy="projects.31" class="pcard__course">ICS 574 · Big Data Analytics · KFUPM <span class="live">Live</span></p>
+              <h3 data-copy="projects.32" class="pcard__title">Real-Time Smart City IoT Monitoring Pipeline</h3>
+              <p data-copy="projects.33" class="pcard__result">Sub-2-Second Ingestion · 5-Minute Tumbling Windows · 10 Simulated Urban Zones</p>
+              <div class="tags"><span data-copy="projects.34" class="tag tag--amber">Apache Kafka</span><span data-copy="projects.35" class="tag tag--amber">PySpark Streaming</span><span data-copy="projects.36" class="tag tag--amber">PostgreSQL + PostGIS</span><span data-copy="projects.37" class="tag">MQTT (Mosquitto)</span><span data-copy="projects.38" class="tag">Docker Compose</span></div>
+            </div>
+          </article>
+      <article class="wheel__card pcard" data-modal="temp" tabindex="0" role="button" aria-label="Open: Multi-City Surface Temperature Analysis">
+            <div class="pcard__media"><img src="/assets/img/hero-temp@1x.webp" alt="Multi-City Surface Temperature · MODIS Analysis" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p data-copy="projects.39" class="pcard__course">ICS 574 · Big Data Analytics · KFUPM</p>
+              <h3 data-copy="projects.40" class="pcard__title">Multi-City Surface Temperature Analysis — 3 Continents</h3>
+              <p data-copy="projects.41" class="pcard__result">r=−0.995 Near-Perfect Correlation · R²=0.990 · 25,905 Valid MODIS Measurements</p>
+              <div class="tags"><span data-copy="projects.42" class="tag tag--amber">MODIS (Terra)</span><span data-copy="projects.43" class="tag tag--amber">Google Earth Engine</span><span data-copy="projects.44" class="tag tag--amber">Kepler.gl</span><span data-copy="projects.45" class="tag tag--amber">GeoPandas</span><span data-copy="projects.46" class="tag">Spatial Regression</span></div>
+            </div>
+          </article>
+      <article class="wheel__card pcard" data-modal="its" tabindex="0" role="button" aria-label="Open: ITS-Based Congestion Management">
+            <div class="pcard__media"><img src="/assets/img/hero-its@1x.webp" alt="ITS Congestion Management · Al Khobar" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p data-copy="projects.47" class="pcard__course">CE 584 · Intelligent Transportation Systems · KFUPM</p>
+              <h3 data-copy="projects.48" class="pcard__title">ITS-Based Congestion Management — Aramco Stadium Corridor, Al Khobar</h3>
+              <p data-copy="projects.49" class="pcard__result">Alternative C Recommended · 20–35% Travel Time Reduction · SAR 28–47M Plan</p>
+              <div class="tags"><span data-copy="projects.50" class="tag">Adaptive Signal Control (ATSC)</span><span data-copy="projects.51" class="tag">ATMS / TMC</span><span data-copy="projects.52" class="tag">Smart Parking</span><span data-copy="projects.53" class="tag">Multi-Criteria Matrix</span></div>
+            </div>
+          </article>
+      <article class="wheel__card pcard" data-modal="sound" tabindex="0" role="button" aria-label="Open: Soundscape and Thermal Comfort systematic review">
+            <div class="pcard__media"><img src="/assets/img/hero-sound@1x.webp" alt="Soundscape &amp; Thermal Comfort Systematic Review" loading="lazy" width="1200" height="655"></div>
+            <div class="pcard__body">
+              <p data-copy="projects.54" class="pcard__course">ARC 514 · Sustainable Urbanism · KFUPM · Under Review</p>
+              <h3 data-copy="projects.55" class="pcard__title">A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments</h3>
+              <p data-copy="projects.56" class="pcard__result">1,011 records screened · ITAP framework · PRISMA 2020</p>
+              <div class="tags"><span data-copy="projects.57" class="tag">PRISMA 2020</span><span data-copy="projects.58" class="tag">Thermal Comfort</span><span data-copy="projects.59" class="tag">Soundscape</span></div>
+            </div>
+          </article>
         </div>
+      </div>
+    </section>
 
-        <div class="pcard__plate">
-          <div class="pcard__badges">
-            <span data-copy="projects.1" class="badge badge--dev"><span class="badge__dot"></span>M.Sc. Thesis</span>
-            <span data-copy="projects.2" class="badge">KFUPM · Aug 2026</span>
-            <span data-copy="projects.3" class="badge badge--muted">Architecture &amp; City Design</span>
-          </div>
-          <h3 data-copy="projects.4" class="pcard__title">A Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting, and Mitigation</h3>
-          <div class="tags">
-            <span data-copy="projects.14" class="tag">Google Earth Engine</span><span data-copy="projects.15" class="tag tag--amber">PostgreSQL/PostGIS</span><span data-copy="projects.16" class="tag tag--amber">FastAPI</span><span data-copy="projects.17" class="tag">Prophet</span><span data-copy="projects.18" class="tag tag--amber">deck.gl</span><span data-copy="projects.19" class="tag tag--amber">MapLibre</span><span data-copy="projects.20" class="tag">Docker Compose</span>
-          </div>
-          <span data-copy="projects.22" class="pcard__cta">Open the study →</span>
+    <section class="wheel" data-wheel data-lenis-prevent aria-label="Architecture projects" tabindex="0">
+      <header class="wheel__head">
+        <p class="eyebrow">B.Arch · Architecture</p>
+        <h3 class="wheel__title">Built work</h3>
+      </header>
+      <div class="wheel__stage">
+        <div class="wheel__ring">
+      <article class="wheel__card pcard" data-modal="arch" tabindex="0" role="button" aria-label="Open: Twin Tower Complex">
+            <div class="pcard__media"><img src="/assets/img/hero-arch@1x.webp" alt="Twin Tower Complex — Net-Zero Mixed-Use Development" loading="lazy" width="1200" height="600"></div>
+            <div class="pcard__body">
+              <p data-copy="projects.60" class="pcard__course">B.Arch Thesis · BIT Mesra · 2021</p>
+              <h3 data-copy="projects.61" class="pcard__title">Twin Tower Complex — Net-Zero Mixed-Use Development</h3>
+              <p data-copy="projects.62" class="pcard__result">69 storeys · Net-zero energy · Diagrid structure · Full BIM</p>
+              <div class="tags"><span data-copy="projects.63" class="tag">Revit BIM</span><span data-copy="projects.64" class="tag">Net-Zero</span><span data-copy="projects.65" class="tag">Diagrid</span><span data-copy="projects.66" class="tag">AutoCAD</span></div>
+            </div>
+          </article>
+          <article class="wheel__card pcard pcard--todo" data-arch-slot="2" tabindex="0" role="button" aria-label="Architecture project 2 — to be filled in">
+            <div class="pcard__media"><img src="/assets/img/arch_page_02.webp" alt="" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">B.Arch · BIT Mesra</p>
+              <h3 class="pcard__title">Architecture project 2</h3>
+              <p class="pcard__result">Title, year and result to be supplied</p>
+            </div>
+          </article>
+          <article class="wheel__card pcard pcard--todo" data-arch-slot="3" tabindex="0" role="button" aria-label="Architecture project 3 — to be filled in">
+            <div class="pcard__media"><img src="/assets/img/arch_page_03.webp" alt="" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">B.Arch · BIT Mesra</p>
+              <h3 class="pcard__title">Architecture project 3</h3>
+              <p class="pcard__result">Title, year and result to be supplied</p>
+            </div>
+          </article>
+          <article class="wheel__card pcard pcard--todo" data-arch-slot="4" tabindex="0" role="button" aria-label="Architecture project 4 — to be filled in">
+            <div class="pcard__media"><img src="/assets/img/arch_page_04.webp" alt="" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">B.Arch · BIT Mesra</p>
+              <h3 class="pcard__title">Architecture project 4</h3>
+              <p class="pcard__result">Title, year and result to be supplied</p>
+            </div>
+          </article>
+          <article class="wheel__card pcard pcard--todo" data-arch-slot="5" tabindex="0" role="button" aria-label="Architecture project 5 — to be filled in">
+            <div class="pcard__media"><img src="/assets/img/arch_page_05.webp" alt="" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">B.Arch · BIT Mesra</p>
+              <h3 class="pcard__title">Architecture project 5</h3>
+              <p class="pcard__result">Title, year and result to be supplied</p>
+            </div>
+          </article>
+          <article class="wheel__card pcard pcard--todo" data-arch-slot="6" tabindex="0" role="button" aria-label="Architecture project 6 — to be filled in">
+            <div class="pcard__media"><img src="/assets/img/arch_page_06.webp" alt="" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">B.Arch · BIT Mesra</p>
+              <h3 class="pcard__title">Architecture project 6</h3>
+              <p class="pcard__result">Title, year and result to be supplied</p>
+            </div>
+          </article>
+          <article class="wheel__card pcard pcard--todo" data-arch-slot="7" tabindex="0" role="button" aria-label="Architecture project 7 — to be filled in">
+            <div class="pcard__media"><img src="/assets/img/arch_page_07.webp" alt="" loading="lazy" width="1200" height="670"></div>
+            <div class="pcard__body">
+              <p class="pcard__course">B.Arch · BIT Mesra</p>
+              <h3 class="pcard__title">Architecture project 7</h3>
+              <p class="pcard__result">Title, year and result to be supplied</p>
+            </div>
+          </article>
         </div>
-
-        <!-- The prose and the metrics move into the modal, but stay in the HTML
-             so a crawler and a reader with JS off still get them. `.pcard__crawl`
-             is visually-hidden, not display:none — display:none is dropped from
-             the accessibility tree and skipped by some crawlers. -->
-        <p data-copy="projects.5" class="pcard__crawl">Built on a <strong>Design Science methodology</p>
-      </article>
-
-      <article class="pcard" data-modal="gis" tabindex="0" role="button" aria-label="Open: GIS &amp; Remote Sensing UHI Assessment">
-        <div class="pcard__media"><img src="/assets/img/hero-gis@1x.webp" alt="GIS &amp; Remote Sensing · Dammam UHI Assessment" loading="lazy" width="1200" height="670"></div>
-        <div class="pcard__body">
-          <p data-copy="projects.23" class="pcard__course">CRP 583 · Urban Informatics · KFUPM</p>
-          <h3 data-copy="projects.24" class="pcard__title">GIS &amp; Remote Sensing UHI Assessment — Dammam Metro Area</h3>
-          <p data-copy="projects.25" class="pcard__result">NDBI Dominance (R²=0.511) · 57.3 km² Urgent Exposure Zone · 4.18× Hotspot Scale Multiplier</p>
-          <div class="tags"><span data-copy="projects.26" class="tag tag--amber">ArcGIS Pro 3.6</span><span data-copy="projects.27" class="tag tag--amber">Landsat 8/9 &amp; Sentinel-2</span><span data-copy="projects.28" class="tag tag--amber">Getis-Ord Gi*</span><span data-copy="projects.29" class="tag tag--amber">HVI</span><span data-copy="projects.30" class="tag">Spatial SQL</span></div>
-        </div>
-      </article>
-
-      <article class="pcard" data-modal="iot" tabindex="0" role="button" aria-label="Open: Real-Time Smart City IoT Monitoring Pipeline">
-        <div class="pcard__media"><img src="/assets/img/hero-iot@1x.webp" alt="Real-Time IoT Monitoring Pipeline" loading="lazy" width="1200" height="670"></div>
-        <div class="pcard__body">
-          <p data-copy="projects.31" class="pcard__course">ICS 574 · Big Data Analytics · KFUPM <span class="live">Live</span></p>
-          <h3 data-copy="projects.32" class="pcard__title">Real-Time Smart City IoT Monitoring Pipeline</h3>
-          <p data-copy="projects.33" class="pcard__result">Sub-2-Second Ingestion · 5-Minute Tumbling Windows · 10 Simulated Urban Zones</p>
-          <div class="tags"><span data-copy="projects.34" class="tag tag--amber">Apache Kafka</span><span data-copy="projects.35" class="tag tag--amber">PySpark Streaming</span><span data-copy="projects.36" class="tag tag--amber">PostgreSQL + PostGIS</span><span data-copy="projects.37" class="tag">MQTT (Mosquitto)</span><span data-copy="projects.38" class="tag">Docker Compose</span></div>
-        </div>
-      </article>
-
-      <article class="pcard" data-modal="temp" tabindex="0" role="button" aria-label="Open: Multi-City Surface Temperature Analysis">
-        <div class="pcard__media"><img src="/assets/img/hero-temp@1x.webp" alt="Multi-City Surface Temperature · MODIS Analysis" loading="lazy" width="1200" height="670"></div>
-        <div class="pcard__body">
-          <p data-copy="projects.39" class="pcard__course">ICS 574 · Big Data Analytics · KFUPM</p>
-          <h3 data-copy="projects.40" class="pcard__title">Multi-City Surface Temperature Analysis — 3 Continents</h3>
-          <p data-copy="projects.41" class="pcard__result">r=−0.995 Near-Perfect Correlation · R²=0.990 · 25,905 Valid MODIS Measurements</p>
-          <div class="tags"><span data-copy="projects.42" class="tag tag--amber">MODIS (Terra)</span><span data-copy="projects.43" class="tag tag--amber">Google Earth Engine</span><span data-copy="projects.44" class="tag tag--amber">Kepler.gl</span><span data-copy="projects.45" class="tag tag--amber">GeoPandas</span><span data-copy="projects.46" class="tag">Spatial Regression</span></div>
-        </div>
-      </article>
-
-      <article class="pcard" data-modal="its" tabindex="0" role="button" aria-label="Open: ITS-Based Congestion Management">
-        <div class="pcard__media"><img src="/assets/img/hero-its@1x.webp" alt="ITS Congestion Management · Al Khobar" loading="lazy" width="1200" height="670"></div>
-        <div class="pcard__body">
-          <p data-copy="projects.47" class="pcard__course">CE 584 · Intelligent Transportation Systems · KFUPM</p>
-          <h3 data-copy="projects.48" class="pcard__title">ITS-Based Congestion Management — Aramco Stadium Corridor, Al Khobar</h3>
-          <p data-copy="projects.49" class="pcard__result">Alternative C Recommended · 20–35% Travel Time Reduction · SAR 28–47M Plan</p>
-          <div class="tags"><span data-copy="projects.50" class="tag">Adaptive Signal Control (ATSC)</span><span data-copy="projects.51" class="tag">ATMS / TMC</span><span data-copy="projects.52" class="tag">Smart Parking</span><span data-copy="projects.53" class="tag">Multi-Criteria Matrix</span></div>
-        </div>
-      </article>
-
-      <article class="pcard" data-modal="sound" tabindex="0" role="button" aria-label="Open: Soundscape and Thermal Comfort systematic review">
-        <div class="pcard__media"><img src="/assets/img/hero-sound@1x.webp" alt="Soundscape &amp; Thermal Comfort Systematic Review" loading="lazy" width="1200" height="655"></div>
-        <div class="pcard__body">
-          <p data-copy="projects.54" class="pcard__course">ARC 514 · Sustainable Urbanism · KFUPM · Under Review</p>
-          <h3 data-copy="projects.55" class="pcard__title">A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments</h3>
-          <p data-copy="projects.56" class="pcard__result">1,011 records screened · ITAP framework · PRISMA 2020</p>
-          <div class="tags"><span data-copy="projects.57" class="tag">PRISMA 2020</span><span data-copy="projects.58" class="tag">Thermal Comfort</span><span data-copy="projects.59" class="tag">Soundscape</span></div>
-        </div>
-      </article>
-
-      <article class="pcard" data-modal="arch" tabindex="0" role="button" aria-label="Open: Twin Tower Complex">
-        <div class="pcard__media"><img src="/assets/img/hero-arch@1x.webp" alt="Twin Tower Complex — Net-Zero Mixed-Use Development" loading="lazy" width="1200" height="600"></div>
-        <div class="pcard__body">
-          <p data-copy="projects.60" class="pcard__course">B.Arch Thesis · BIT Mesra · 2021</p>
-          <h3 data-copy="projects.61" class="pcard__title">Twin Tower Complex — Net-Zero Mixed-Use Development</h3>
-          <p data-copy="projects.62" class="pcard__result">69 storeys · Net-zero energy · Diagrid structure · Full BIM</p>
-          <div class="tags"><span data-copy="projects.63" class="tag">Revit BIM</span><span data-copy="projects.64" class="tag">Net-Zero</span><span data-copy="projects.65" class="tag">Diagrid</span><span data-copy="projects.66" class="tag">AutoCAD</span></div>
-        </div>
-      </article>
-
-    </div>
+      </div>
+    </section>
   </div>
 
   <div class="projects__hint mono" aria-hidden="true"><span data-copy="projects.67" id="projectsCount">01 / 07</span> — scroll to travel</div>
