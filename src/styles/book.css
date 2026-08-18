@@ -1,0 +1,299 @@
+/* ============================================================
+   THE BOOK
+   A spread of two pages with leaves that turn about the spine.
+
+   The geometry is the whole thing. A leaf is one sheet with a page on each
+   face, hinged at the spine: turning it sweeps the front page away and brings
+   its own back page down into the opposite position. That is why the turn
+   cannot be faked with a crossfade — a crossfade has no back.
+
+   Everything else here is restraint. No paper texture, no curl gradient that
+   tracks the fold, no drop shadow that follows the angle. Those are what make
+   CSS flipbooks read as a novelty, and these are drawings that people are
+   meant to look AT rather than look at the container of.
+   ============================================================ */
+
+#bookModal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  /* Opaque, not a scrim. At 96% the page behind stayed legible through it —
+     large white display type at 4% over a dark ground still reads, and a
+     headline drifting behind a drawing is exactly the kind of thing that makes
+     a viewer look at the container instead of the work. */
+  background: #050507;
+  opacity: 0;
+  transition: opacity .26s ease;
+}
+
+#bookModal[hidden] { display: none; }
+#bookModal.is-open { opacity: 1; }
+
+/* ---- chrome ------------------------------------------------
+   Header and footer are fixed rows so the viewport between them is a known
+   box — the fit maths in layout() measures that box, and a chrome bar that
+   overlapped it would make every spread slightly too tall. */
+.book__bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem clamp(1rem, 3vw, 2rem);
+}
+
+.book__bar--top { border-bottom: 1px solid var(--line); }
+.book__bar--bottom {
+  border-top: 1px solid var(--line);
+  justify-content: center;
+}
+
+.book__titles { min-width: 0; flex: 1; }
+
+.book__title {
+  font-family: var(--f-display, inherit);
+  font-size: clamp(.95rem, 1.6vw, 1.25rem);
+  color: var(--t);
+  letter-spacing: .01em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.book__meta {
+  font-size: .72rem;
+  color: var(--t-3);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-top: .15rem;
+}
+
+.book__btn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--t-1);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color .18s ease, color .18s ease, background .18s ease;
+}
+
+.book__btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--amber-06);
+}
+
+.book__btn:disabled { opacity: .28; cursor: default; }
+
+/* The page counter is the one piece of chrome that is always read, so it gets
+   tabular figures — proportional digits make the number jitter sideways on
+   every turn, which is very visible when it is centred. */
+.book__count {
+  font-variant-numeric: tabular-nums;
+  font-size: .8rem;
+  letter-spacing: .1em;
+  color: var(--t-2);
+  min-width: 7ch;
+  text-align: center;
+}
+
+/* ---- viewport ----------------------------------------------
+   The perspective lives HERE and not on the stage, because the stage is what
+   gets scaled by the zoom — perspective on a scaled element scales with it and
+   the fold would flatten out as the reader magnifies. */
+.book__viewport {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  perspective: 2400px;
+  touch-action: none;
+}
+
+#bookModal.is-zoomed .book__viewport { cursor: grab; }
+#bookModal.is-zoomed .book__viewport:active { cursor: grabbing; }
+
+.book__stage {
+  position: relative;
+  transform-style: preserve-3d;
+  transform:
+    translate(var(--pan-x, 0px), var(--pan-y, 0px))
+    scale(var(--zoom, 1));
+  /* No transition on the pan, or dragging lags a frame behind the pointer.
+     Zoom gets one because it moves in steps. */
+  transition: transform .22s ease;
+}
+
+#bookModal.is-zoomed .book__stage { transition: none; }
+
+/* ---- pages -------------------------------------------------- */
+.book__side {
+  position: absolute;
+  top: 0;
+  width: var(--page-w, 50%);
+  height: 100%;
+}
+
+.book__side--left  { left: 0; }
+.book__side--right { left: var(--page-w, 50%); }
+
+.book__face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #14141a;
+  backface-visibility: hidden;
+}
+
+.book__face img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  /* The sheets are white. Against a near-black page a hard white rectangle
+     glares, so the paper is knocked back a touch rather than the room being
+     lit up to meet it. */
+  filter: brightness(.97);
+}
+
+/* A blank endpaper, not a missing page. An odd page count leaves one side
+   empty at the end, and an empty side that looks broken is worse than one that
+   looks like the inside of a back cover. */
+.book__face.is-blank {
+  background:
+    linear-gradient(135deg, #111116, #0c0c10);
+}
+
+/* Depth at the gutter, which is where a real book has it: pages curve down
+   into the spine, so the inner edges are darker than the outer ones. */
+.book__side--left  .book__face::after,
+.book__side--right .book__face::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8%;
+  pointer-events: none;
+}
+
+.book__side--left .book__face::after {
+  right: 0;
+  background: linear-gradient(to right, transparent, rgba(0, 0, 0, .38));
+}
+
+.book__side--right .book__face::after {
+  left: 0;
+  background: linear-gradient(to left, transparent, rgba(0, 0, 0, .38));
+}
+
+.book__spine {
+  position: absolute;
+  left: var(--page-w, 50%);
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  transform: translateX(-.5px);
+  background: rgba(0, 0, 0, .55);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* ---- the turn ----------------------------------------------
+   The leaf is hinged at the spine and swings a full 180deg. Its back face is
+   pre-rotated so that when the leaf lands, the back is facing the reader the
+   right way round — without that the arriving page is mirrored, which looks
+   like a rendering bug rather than a page.
+
+   z-index sits above both sides so the moving sheet passes over the static
+   ones, the way a real page does. */
+.book__leaf {
+  position: absolute;
+  top: 0;
+  width: var(--page-w, 50%);
+  height: 100%;
+  transform-style: preserve-3d;
+  z-index: 2;
+  transition: transform var(--turn, 620ms) cubic-bezier(.42, .02, .28, 1);
+}
+
+.book__leaf--fwd {
+  left: var(--page-w, 50%);
+  transform-origin: left center;
+  transform: rotateY(0deg);
+}
+
+.book__leaf--back {
+  left: 0;
+  transform-origin: right center;
+  transform: rotateY(0deg);
+}
+
+.book__leaf--fwd.is-turning  { transform: rotateY(-180deg); }
+.book__leaf--back.is-turning { transform: rotateY(180deg); }
+
+.book__leaf .book__face--back { transform: rotateY(180deg); }
+
+/* A leaf mid-turn catches less light as it comes edge-on. One shade tied to
+   the same timing as the rotation is enough to sell the fold; a gradient that
+   tracks the angle would need a per-frame paint for a cue nobody names. */
+.book__leaf .book__face::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--turn, 620ms) ease;
+}
+
+.book__leaf.is-turning .book__face--front::before { opacity: .34; }
+.book__leaf .book__face--back::before { opacity: .34; }
+.book__leaf.is-turning .book__face--back::before { opacity: 0; }
+
+/* ---- reduced motion ----------------------------------------
+   The turn is decorative; the page change is not. With motion reduced the
+   spread swaps directly, which book.js already handles by skipping the leaf. */
+@media (prefers-reduced-motion: reduce) {
+  #bookModal { transition: none; }
+  .book__stage, .book__leaf, .book__leaf .book__face::before { transition: none; }
+}
+
+/* ---- single page -------------------------------------------
+   Below 720px book.js switches to one page per slot and marks the side and the
+   leaf. The spine moves to the LEFT edge, which is where a book's spine
+   actually is when you are looking at one page — so the leaf still turns the
+   way the reader expects, it just sweeps the full width.
+
+   Backward is the same sweep started from the far end: the leaf sits already
+   turned and rotates back to rest, which is why book.js swaps which page rides
+   on which face for dir < 0. */
+.book__side--right.is-single { left: 0; width: 100%; }
+
+.book__leaf.is-single {
+  left: 0;
+  width: 100%;
+  transform-origin: left center;
+}
+
+.book__leaf--fwd.is-single             { transform: rotateY(0deg); }
+.book__leaf--fwd.is-single.is-turning  { transform: rotateY(-180deg); }
+.book__leaf--back.is-single            { transform: rotateY(-180deg); }
+.book__leaf--back.is-single.is-turning { transform: rotateY(0deg); }
+
+@media (max-width: 720px) {
+  .book__bar { padding: .75rem 1rem; }
+  .book__title { font-size: .9rem; }
+  .book__meta { display: none; }
+  .book__btn { width: 2.1rem; height: 2.1rem; }
+  /* No gutter shading with one page: the dark inner edge only makes sense
+     where two pages meet. */
+  .book__side--right.is-single .book__face::after { display: none; }
+}

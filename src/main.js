@@ -3,6 +3,7 @@ import './styles/base.css';
 import './styles/layout.css';
 import './styles/sections.css';
 import './styles/overlays.css';
+import './styles/book.css';
 import './styles/i18n.css';
 
 import { initScroll, ScrollTrigger } from './modules/scroll.js';
@@ -14,6 +15,7 @@ import { initExperience } from './modules/experience.js';
 import { initModal, initArch, initLightbox } from './modules/modal.js';
 import { initNav, initCursor, initForm } from './modules/ui.js';
 import { initRiyadhReveal } from './modules/riyadh.js';
+import { initBook } from './modules/book.js';
 
 const idleInit = window.requestIdleCallback
   ? (fn) => window.requestIdleCallback(fn)
@@ -31,6 +33,9 @@ initWheels();
 initSkills();
 initModal();
 initArch();
+// The architecture flipbook. Binds a delegated click on [data-book], so it does
+// not care that the wheel rebuilds its cards.
+initBook();
 initLightbox();
 initForm();
 

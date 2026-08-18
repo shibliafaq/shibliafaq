@@ -2211,10 +2211,15 @@
      rather than as restraint. 4.1vw clears both; the volume is turned down by
      weight and transparency instead of by size, which is what was actually
      overpowering. */
-  font-size: clamp(1.8rem, 4.3vw, 3.6rem);
+  /* Size is solved once in wheel.js and published as --hub-size, so both wheels
+     always match; the clamp is only the fallback before that runs. Earlier
+     versions kept scaling this UP so the label would stay wider than the card
+     in front of it — that chase ended when the label went to two lines, because
+     a crossing card now covers a band of it rather than all of it, so it never
+     fully disappears. Sizing it to shout was solving a problem the second line
+     had already removed. */
+  font-size: var(--hub-size, clamp(1.4rem, 2.6vw, 2.4rem));
   line-height: .95;
-  white-space: nowrap;
-  letter-spacing: -.04em;
   /* Solid accent, not an outline. Hollow type read as a placeholder waiting to
      be filled; filled, it reads as the hub the wheel turns around. It sits
      behind the cards, so it can carry full weight without competing — the

@@ -127,33 +127,78 @@ function setupWheel(root) {
     paint();
   }
 
-  /* Size the hub label to its own column, rather than to a shared clamp.
-     The label has to be WIDER than a card (or the card hides it completely, since
-     it sits behind on the ring's axis) and NARROWER than the column (or the
-     stage clips it mid-word). A single font-size cannot satisfy both for two
-     labels of different lengths: at one size "Architecture Projects" overflowed
-     the column by 132px while "M.Sc. Projects" was still narrower than its card.
+  /* ONE font size shared by BOTH wheels.
 
-     Fitting each label to its column instead makes both the same physical width,
-     which reads as deliberate, and guarantees the window between card and column
-     is respected whatever the label says or the viewport does. */
+     Fitting each label to its own column made them equal in WIDTH but unequal
+     in size — "M.Sc." set much larger than "Architecture" because it has fewer
+     letters to fill the same space. Two labels of different sizes sitting side
+     by side read as a mistake.
+
+     So the size is solved once, from the LONGEST line across both wheels, and
+     every label uses it. On two lines that longest line is "Architecture"; fit
+     that to the column and everything else follows at the same size, narrower,
+     which is what matching type is supposed to look like.
+
+     Published on .wheels rather than set per element so both wheels genuinely
+     share one value and cannot drift apart. */
+
+  /* Fraction of the column width the longest RENDERED line fills.
+
+     This number only became meaningful once the probe below started copying
+     text-transform and letter-spacing. Before that it measured lowercase
+     untracked text and under-read the real width by 46%, so 0.94 was quietly
+     producing a label half again wider than the column — bleeding off both
+     edges, which is what read as far too big.
+
+     The floor is set by the card: at 36vw against a 619px column the card is
+     0.84 of it, and a label narrower than that is completely covered whenever a
+     card sits at the front, which is most of the time. Measured at 0.62 the
+     label disappeared entirely. 0.94 leaves about 30px of type showing past
+     each edge of the card — enough to read the ends and to see the card travel
+     across them, without the type leaving the column. */
+  const HUB_FILL = 0.94;
   function fitLabel() {
-    const title = root.querySelector('.wheel__title');
-    if (!title || !radius) return;
-    title.style.fontSize = '';
+    const host = root.closest('.wheels');
+    if (!host || !radius) return;
+    const titles = [...host.querySelectorAll('.wheel__title')];
+    if (!titles.length) return;
+
+    // Reset before measuring, or each pass compounds the last one's result.
+    titles.forEach((t) => { t.style.fontSize = ''; });
+
     const colW = root.clientWidth;
     if (!colW) return;
-    /* Rendered width EQUALS layout width here, so no correction is needed.
-       The head sits at translateZ(-r), which perspective shrinks by
-       P / (P + r), and it carries a counter-scale of (P + r) / P precisely to
-       undo that. The two cancel exactly. Dividing by the counter as well
-       double-counted it and produced a label 247px wide against a 346px card —
-       narrower than the thing it has to show past. */
-    const layoutW = title.scrollWidth;
-    if (!layoutW) return;
-    const targetLayout = colW * 0.96;
-    const base = parseFloat(getComputedStyle(title).fontSize);
-    title.style.fontSize = `${(base * (targetLayout / layoutW)).toFixed(2)}px`;
+
+    /* Widest single LINE, not widest label — the lines wrap, so a two-line
+       label is only ever as wide as its longest word. Measured by putting each
+       line in a throwaway span, because scrollWidth on a wrapped block reports
+       the container, not the text. */
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;';
+    let widest = 0;
+    for (const t of titles) {
+      const cs = getComputedStyle(t);
+      /* The font shorthand alone is NOT enough. It carries size and family but
+         not text-transform or letter-spacing, and this label is uppercased and
+         tracked out — so the probe measured lowercase untracked "Architecture"
+         at 384px while the element rendered "ARCHITECTURE" at 559px. The fit
+         then solved for a label 46% wider than it asked for, which is most of
+         why it kept coming out too big. */
+      probe.style.font = cs.font;
+      probe.style.textTransform = cs.textTransform;
+      probe.style.letterSpacing = cs.letterSpacing;
+      for (const line of t.innerHTML.split(/<br\s*\/?>/i)) {
+        probe.textContent = line.replace(/<[^>]*>/g, '').trim();
+        host.appendChild(probe);
+        widest = Math.max(widest, probe.getBoundingClientRect().width);
+        probe.remove();
+      }
+    }
+    if (!widest) return;
+
+    const base = parseFloat(getComputedStyle(titles[0]).fontSize);
+    const size = base * ((colW * HUB_FILL) / widest);
+    host.style.setProperty('--hub-size', `${size.toFixed(2)}px`);
   }
 
   /** Depth cues, recomputed from each card's actual angle to the viewer. */

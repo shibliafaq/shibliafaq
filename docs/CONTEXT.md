@@ -1035,3 +1035,142 @@ wherever the reader is. For most visitors the globe flies to their city and then
 hands over to a map of Riyadh. The copy says "This is Olaya, Riyadh", so it is
 not a lie — but it is a jump, and it wants either a line acknowledging it or a
 plate per region.
+
+---
+
+## 23. The architecture flipbook, and the resolution argument behind it (2026-08-18)
+
+Seven architecture projects live in `v2/public/assets/Architecture Portfolio`,
+folders `01-`..`07-`. Inside each: one hero render, and numbered files
+`Name (1).jpg` .. `Name (28).jpg`. The user's rule, stated directly:
+
+> hero is meant for tile only / rest is 1,2,3,4....like this which is book
+
+So the hero is the wheel tile and is NOT a page; the numbered files are the book
+in reading order. `arch_pages.py` sorts on the integer inside the parentheses —
+sorted as strings, page 10 lands between 1 and 2, and a portfolio whose pages
+are out of order is worse than one that loads slowly.
+
+### Two resolution tiers, and why 1500px was wrong
+
+The first conversion shipped one tier at 1500px, justified in that script as
+"a little softness under magnification is a far better trade than 90 MB of
+originals." The user pushed back:
+
+> i hope you dont compromize with quality of the pages because each details is
+> highly relevant
+
+They were right, and the argument that settles it is arithmetic rather than
+taste. A half-spread occupies roughly 750 CSS px. The book magnifies to 4x. So
+at full zoom the reader is looking at a **3000px-wide rendering** — ship 1500
+and every pixel is doubled at max zoom, soft by construction, whatever a
+sharpness score says. On architectural sheets the dimension strings and
+annotations ARE the content; a magnifier that returns mush is worse than none.
+
+Measured PSNR against lossless at 3000px: q78 43.6, q82 44.6, q86 45.7, q90
+47.3, q94 49.0. Note this curve does **not** flatten the way a photograph's
+does — the Earth texture went flat above q78. Line art keeps paying back
+quality because hard edges are the worst case for the DCT. Hence q90.
+
+    p01.webp      1600px q84   the spread            20.3 MB total
+    p01-hi.webp   3000px q90   fetched only on zoom  64.9 MB total
+    p01-t.webp     320px q74   thumbnails
+
+`book.js` swaps in the `-hi` file when zoom passes 1x, on load rather than on
+request, so the sharp file replaces the soft one in place with no visible gap.
+The weight is only paid by readers who actually magnify, and only for the pages
+they magnify. Verified in browser: at 2x the swapped image reports
+`naturalWidth: 3000` and the ground-floor-plan dimension strings are legible.
+
+Sources are never upscaled — Miscellaneous is only 2400px wide at source and
+stays there. Inventing pixels costs bytes and buys nothing.
+
+### The leaf model
+
+A leaf is one sheet with a page on each face. Turning leaf N sweeps its front
+page away and brings its own back page down into the opposite position. That is
+why a crossfade cannot do this: a crossfade has no back. Only three leaves ever
+exist in the DOM, so a 28-page book costs what a 6-page one does.
+
+Below 720px the book switches to one page per slot, spine at the left edge.
+A two-page spread on a phone gives each page about 170px, which for a
+dimensioned drawing is not a page. Crossing the breakpoint converts through the
+page NUMBER, not the slot — slot 3 is pages 6-7 in spread mode but page 4 in
+single mode, so keeping the slot would silently move the reader.
+
+### A real bug: paint and hit-test disagree inside the 3D ring
+
+Clicking a card did nothing for a real visitor while `card.click()` worked
+perfectly — the failure mode most likely to survive casual testing.
+
+Measured at both 1440 and 800 wide: a trusted click at a card's exact centre
+reported `event.target` as the ancestor `.wheel`, while
+`document.elementFromPoint()` at the very same coordinates returned the card.
+The cards sit inside a `preserve-3d` ring and the hit-test disagrees with the
+paint there. `book.js` therefore falls back to `elementFromPoint` when the
+target walk comes up empty. That fallback is load-bearing, not defensive
+padding — without it the books are unreachable by mouse.
+
+### Hub labels: the measurement was lying
+
+The user twice reported the hub labels as too big. The cause was not the chosen
+size but the instrument. `fitLabel()` measures the longest line with a throwaway
+span and copies the computed `font` shorthand — which carries size and family
+but NOT `text-transform` or `letter-spacing`. The labels are uppercased and
+tracked out, so the probe measured lowercase untracked "Architecture" at 384px
+while the element rendered "ARCHITECTURE" at 559px: a 46% under-read. `HUB_FILL`
+0.94 was therefore producing a label half again wider than its column, bleeding
+off both edges.
+
+With the probe copying transform and tracking, `HUB_FILL` now means what it
+says. It is back at 0.94, which renders 582px inside a 619px column instead of
+~847px overflowing it.
+
+**Known trade-off, not yet resolved.** One shared font size across both wheels
+was an explicit request. But equal size means unequal width, and the card is
+518px: "ARCHITECTURE" clears it by 63px while "PROJECTS" is 141px short, so the
+left hub is fully covered whenever a card sits at the front. Sizing off the
+SHORTER label instead would clear both but push "ARCHITECTURE" far past the
+column — which is what the user rejected. The lever that actually resolves it is
+card width (`min(100%, 36vw)`), and the user asked for BIGGER tiles, so this is
+theirs to call rather than mine.
+
+### A self-inflicted wound worth recording
+
+Patching `.wheels .wheel__title` by `s.index(selector)` matched the one-liner
+inside the `@media (max-width: 900px)` block rather than the real rule further
+down, and the replacement swallowed 154 lines including every wheel-card
+internal style. Recovered with `git checkout` and re-applied by anchoring on the
+full declaration text instead of the selector. Anchor scripted CSS edits on
+something unique to the rule, and check `git diff --stat` before building.
+
+### Resume here (as of 2026-08-18)
+
+Done and verified in browser: the two-tier page assets, `src/data/arch.js`,
+`src/modules/book.js`, `src/styles/book.css`, the `#bookModal` markup, the seven
+real architecture cards, `initBook()` in `main.js`, and the `fitLabel` probe fix.
+
+Open, in the order it probably matters:
+
+1. **Card subtitles are inferred, not authored.** "Urban design · masterplan",
+   "Mixed use", "Hospitality · landscape" and the rest came from folder names.
+   Titles too. These need the real project descriptions, and `arch.js` carries
+   the same guesses in its `meta` fields.
+2. **The left hub label is covered by the front card.** One shared font size was
+   an explicit request, but equal size means unequal width: against a 518px card
+   "ARCHITECTURE" clears by 63px while "PROJECTS" falls 141px short. Sizing off
+   the shorter label clears both and pushes "ARCHITECTURE" past the column,
+   which was already rejected. The lever is card width (`min(100%, 36vw)`) and
+   the user asked for bigger tiles — so it is theirs to decide, not a bug to fix
+   quietly.
+3. The 7th M.Sc. research project is still a `pcard--todo` placeholder.
+4. The dive lands on the visitor's own city but the thermal plates are Olaya,
+   Riyadh. Either acknowledge the mismatch in a line of copy, or carry a plate
+   per region.
+5. `projects.title`, `projects.lead`, `atlas.lead` and `future.*` have no
+   translations.
+
+Repo weight note: `public/assets/arch` is 84 MB, of which 64.9 MB is the zoom
+tier. It is committed deliberately — Vercel serves straight from the repo and
+the tier is the whole point of the quality decision above. No single file
+exceeds ~0.8 MB.
