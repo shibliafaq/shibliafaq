@@ -2055,8 +2055,18 @@
    this is a holding pattern that keeps the section usable rather than a
    designed mobile treatment. */
 @media (max-width: 900px) {
-  .wheels { grid-template-columns: 1fr; gap: 3rem; }
-  .wheel__stage { height: clamp(360px, 52vh, 520px); }
+  /* Both rings on one screen, touching.
+     Two stages plus a 3rem gap needed more than a phone has, so the second
+     wheel was always below the fold and the pair never read as a pair. At 44vh
+     each with no gap they total 88vh and both are visible at once — which is
+     the only arrangement where a reader can see there ARE two collections. */
+  .wheels { grid-template-columns: 1fr; gap: 0; }
+  .wheel__stage { height: 44vh; }
+  /* The card has to be comfortably shorter than its stage or the neighbours
+     are clipped rather than curving away. */
+  .wheel__card { height: clamp(150px, 26vh, 210px); width: min(100%, 300px); }
+  .wheels .wheel__title { font-size: clamp(1.4rem, 7vw, 2.1rem); }
+  .wheels .wheel__head .eyebrow { font-size: .55rem; }
 }
 
 
@@ -2142,20 +2152,56 @@
    also makes the axis of the ring obvious at a glance. */
 .wheels .wheel { position: relative; }
 
-.wheels .wheel__head {
+/* The scene is the shared 3D space. Perspective stays on the stage; putting
+   both on one element makes the children flatten instead of sorting. */
+.wheels .wheel__scene {
   position: absolute;
   inset: 0;
-  z-index: 3;              /* over the cards — they pass behind it */
+  transform-style: preserve-3d;
+}
+
+.wheels .wheel__head {
+  position: absolute;
+  left: 50%;
+  top: 50%;
   margin: 0;
-  display: grid;
-  place-content: center;
   text-align: center;
   pointer-events: none;    /* never intercepts a scroll aimed at the ring */
+  transform-style: preserve-3d;
+
+  /* AT THE RING'S AXIS, in the same 3D space as the cards.
+     The ring is pushed back by its radius, so the axis sits at z = -r, the
+     front card at z = 0 and the far card at z = -2r. Parking the label on the
+     axis lets the browser sort it naturally: cards in front pass OVER it,
+     cards behind pass UNDER. A z-index overlay is either always above or
+     always below and can never do this.
+
+     The counter-scale undoes the perspective shrink at that depth — without it
+     the label renders at P/(P+r) of its set size, which at r=475 is 68%. */
+  transform:
+    translate(-50%, -50%)
+    translateZ(calc(-1 * var(--r, 300px)))
+    scale(calc((1000 + var(--r-num, 300)) / 1000));
 }
 
 .wheels .wheel__title {
-  font-size: clamp(1.8rem, 4.2vw, 3.4rem);
-  line-height: .98;
+  /* Big enough to be WIDER than a card.
+     Parked on the ring's axis, the label is behind every near card — so at rest
+     the front card covers it completely and the section loses its name. Set
+     large enough to overrun the 460px card, its ends stay visible either side
+     and the card reads as passing across it, which is the effect. */
+  /* One line, and deliberately wider than the card.
+     Two lines put the longest word at 275px against a 460px card, so the whole
+     label hid behind it. One line at 4.6vw still measured only 370px — the
+     size is set by the SHORTER label, "M.Sc. Projects", because that is the one
+     that has to clear the card. At 5.9vw it does.
+
+     The longer label overruns the column and is clipped by the stage. That is
+     the intended reading — oversized type bleeding off both edges with a card
+     travelling across it — not an accident. */
+  font-size: clamp(2.4rem, 5.9vw, 5rem);
+  line-height: .95;
+  white-space: nowrap;
   letter-spacing: -.04em;
   /* Solid accent, not an outline. Hollow type read as a placeholder waiting to
      be filled; filled, it reads as the hub the wheel turns around. It sits

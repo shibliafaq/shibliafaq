@@ -101,6 +101,11 @@ function setupWheel(root) {
     if (!h) return;
     radius = ((h / 2) / Math.tan((step / 2) * Math.PI / 180)) * (1 + GAP);
     ring.style.setProperty('--r', `${radius.toFixed(1)}px`);
+    /* Also on the wheel root, because the label is a SIBLING of the ring now
+       and has to read the same radius to sit on the axis. The unitless twin is
+       for the counter-scale, which needs a number rather than a length. */
+    root.style.setProperty('--r', `${radius.toFixed(1)}px`);
+    root.style.setProperty('--r-num', radius.toFixed(1));
     cards.forEach((c, i) => {
       c.style.setProperty('--a', `${(-i * step).toFixed(3)}deg`);
       c.classList.toggle('is-h', horizontal);

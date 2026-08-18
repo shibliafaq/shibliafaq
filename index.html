@@ -280,11 +280,13 @@
        transforms what is already here. -->
   <div class="wheels">
     <section class="wheel" data-wheel="auto" data-lenis-prevent aria-label="Master's research projects" tabindex="0">
-      <header class="wheel__head">
-        <p class="eyebrow">Smart &amp; Sustainable Cities · KFUPM</p>
-        <h3 class="wheel__title">M.Sc.<br>Projects</h3>
-      </header>
       <div class="wheel__stage">
+        <!-- One 3D scene holding BOTH the ring and the label, so the browser
+             depth-sorts them against each other. The label sits at the ring's
+             axis, which is why cards in front of the axis pass over it and
+             cards behind it pass under. A z-index overlay cannot do that: it
+             is either always above or always below. -->
+        <div class="wheel__scene">
         <div class="wheel__ring">
           <article class="wheel__card pcard" data-modal="thesis" tabindex="0" role="button" aria-label="Open: Smart Digital Twin Framework for Urban Heat Island Monitorin">
             <div class="pcard__media"><img src="/assets/img/hero-thesis@1x.webp" alt="Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecas" loading="lazy" width="1200" height="670"></div>
@@ -336,15 +338,22 @@
             </div>
           </article>
         </div>
+        <header class="wheel__head">
+        <p class="eyebrow">Smart &amp; Sustainable Cities · KFUPM</p>
+        <h3 class="wheel__title">M.Sc. Projects</h3>
+        </header>
+        </div>
       </div>
     </section>
 
     <section class="wheel" data-wheel="auto" data-lenis-prevent aria-label="Architecture projects" tabindex="0">
-      <header class="wheel__head">
-        <p class="eyebrow">B.Arch · BIT Mesra</p>
-        <h3 class="wheel__title">Architecture<br>Projects</h3>
-      </header>
       <div class="wheel__stage">
+        <!-- One 3D scene holding BOTH the ring and the label, so the browser
+             depth-sorts them against each other. The label sits at the ring's
+             axis, which is why cards in front of the axis pass over it and
+             cards behind it pass under. A z-index overlay cannot do that: it
+             is either always above or always below. -->
+        <div class="wheel__scene">
         <div class="wheel__ring">
       <article class="wheel__card pcard" data-modal="arch" tabindex="0" role="button" aria-label="Open: Twin Tower Complex">
             <div class="pcard__media"><img src="/assets/img/hero-arch@1x.webp" alt="Twin Tower Complex — Net-Zero Mixed-Use Development" loading="lazy" width="1200" height="600"></div>
@@ -403,6 +412,11 @@
               <p class="pcard__result">Title, year and result to be supplied</p>
             </div>
           </article>
+        </div>
+        <header class="wheel__head">
+        <p class="eyebrow">B.Arch · BIT Mesra</p>
+        <h3 class="wheel__title">Architecture Projects</h3>
+        </header>
         </div>
       </div>
     </section>
