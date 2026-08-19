@@ -1,6 +1,7 @@
 import { projects, archPages } from '../data/projects.js';
 import { DIAGRAMS } from './diagrams.js';
 import { stopScroll, startScroll } from './scroll.js';
+import { frontCard } from './wheel.js';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -71,6 +72,26 @@ function render(data) {
         .join('')}</div>`
     : '';
 
+  /* Grouped galleries.
+
+     `images` puts every figure in one undifferentiated grid under a single
+     heading, which is fine when the figures are illustrations and wrong when
+     they are an argument. These maps ARE the argument — inputs, then four
+     models that disagree, then the two hotspot layers that disagree most, then
+     the intersection — so each group carries its own heading and its own line
+     of reasoning, and the order is the reasoning. */
+  const galleries = data.galleries?.length
+    ? data.galleries.map((g) => `
+        <div class="msec">${esc(g.sec)}</div>
+        ${g.note ? `<p class="mgal__note">${g.note}</p>` : ''}
+        <div class="mgal mgal--maps" style="--map-cols:${g.cols || 3}">${g.items.map((im) => `
+          <figure>
+            <img src="${im.src}" alt="${esc(im.cap)}" loading="lazy" data-zoom
+                 ${im.zoom ? `data-zoom-src="${im.zoom}"` : ''}>
+            <figcaption>${esc(im.cap)}</figcaption>
+          </figure>`).join('')}</div>`).join('')
+    : '';
+
   const extra = data.images2?.length
     ? `<div class="mgal" style="margin-top:1.25rem">${data.images2
         .map((im) => `<figure><img src="${im.src}" alt="${esc(im.cap)}" loading="lazy" data-zoom><figcaption>${esc(im.cap)}</figcaption></figure>`)
@@ -96,12 +117,44 @@ function render(data) {
   // version of what the gallery shows stills of, so it earns the higher slot.
   const embed = data.embed ? '<div class="membed" data-embed-slot></div>' : '';
 
+  /* The live dashboard.
+
+     Three states, and the middle one is the point. The iframe loads on demand
+     (nothing is fetched until the reader asks for it), then sits VISIBLE but
+     disarmed behind a transparent shield — because deck.gl treats the wheel as
+     zoom, and an armed map in the middle of a scrolling article eats the scroll
+     the moment the pointer crosses it. Clicking arms it; clicking away or
+     pressing Escape disarms it again. */
+  const twin = data.twin
+    ? `<div class="msec">${esc(data.twin.sec)}</div>
+       <p class="mtwin__lead">${esc(data.twin.lead)}</p>
+       <div class="mtwin" data-twin>
+         <iframe class="mtwin__frame" data-twin-frame
+                 data-src="${esc(data.twin.src)}"
+                 title="${esc(data.twin.title)}"
+                 allow="fullscreen; geolocation"
+                 referrerpolicy="no-referrer-when-downgrade"></iframe>
+         <button class="mtwin__shield" type="button" data-twin-arm>
+           <span class="mtwin__cue">
+             <span class="mtwin__dot" aria-hidden="true"></span>
+             <span class="mtwin__cta">Launch the dashboard</span>
+             <span class="mtwin__hint">${esc(data.twin.hint)}</span>
+           </span>
+         </button>
+         <div class="mtwin__bar">
+           <button class="mtwin__btn" type="button" data-twin-full>Full screen</button>
+           <button class="mtwin__btn" type="button" data-twin-release hidden>Release cursor</button>
+         </div>
+       </div>
+       <p class="mtwin__note">${data.twin.note}</p>`
+    : '';
+
   return `
     <p class="mcat">${esc(data.cat)}</p>
     <h2 class="mtitle" id="modalTitle">${esc(data.title)}</h2>
     ${finding}
     <p class="mdesc">${data.desc}</p>
-    ${metrics}${embed}${diagram}${method}${worked}${gallery}${videos}${extra}${tags}${links}
+    ${metrics}${embed}${twin}${diagram}${method}${worked}${gallery}${galleries}${videos}${extra}${tags}${links}
   `;
 }
 
@@ -123,6 +176,91 @@ const EMBEDS = {
 };
 
 let liveEmbed = null;   // { node, home, destroy }
+
+/* ============================================================
+   THE LIVE DASHBOARD
+   ============================================================
+   An iframe, deliberately, and not a merged component. The dashboard is a
+   full-viewport React/Vite app (height:100vh) with its own router, Tailwind
+   build and deck.gl context; this site is none of those things. Inside an
+   iframe its 100vh resolves to the FRAME's height rather than the window's, so
+   the property that makes it impossible to merge is the same one that makes it
+   trivial to embed — it fills whatever box it is given, unmodified.
+
+   Three states, and the middle one is the whole reason this is not four lines
+   of markup:
+
+     cold    nothing fetched. A 54 MB app should not load because someone
+             opened a project card.
+     live    running and visible, but behind a transparent shield. deck.gl
+             reads the wheel as zoom, so an armed map sitting in a scrolling
+             article swallows the page scroll the moment the pointer crosses
+             it — the reader tries to scroll past and silently zooms Riyadh.
+     armed   the shield is off and the app has the pointer. Click away, or
+             press Release, to hand scrolling back.
+*/
+function initTwin(root) {
+  const box = root.querySelector('[data-twin]');
+  if (!box) return null;
+
+  const frame = box.querySelector('[data-twin-frame]');
+  const arm = box.querySelector('[data-twin-arm]');
+  const full = box.querySelector('[data-twin-full]');
+  const release = box.querySelector('[data-twin-release]');
+
+  const load = () => {
+    if (box.classList.contains('is-loaded')) return;
+    frame.src = frame.dataset.src;
+    box.classList.add('is-loaded');
+  };
+
+  const setArmed = (on) => {
+    box.classList.toggle('is-armed', on);
+    release.hidden = !on;
+  };
+
+  arm.addEventListener('click', () => { load(); setArmed(true); });
+  release.addEventListener('click', () => setArmed(false));
+
+  full.addEventListener('click', () => {
+    if (document.fullscreenElement === box) { document.exitFullscreen?.(); return; }
+    load();
+    setArmed(true);
+    /* Native fullscreen rather than a fixed overlay of our own. The modal panel
+       is transformed while it animates, and a transformed ancestor re-bases
+       position:fixed onto itself — a hand-rolled overlay would be sized to the
+       panel instead of the screen. Where the API is refused, a new tab is a
+       worse experience but never a broken one. */
+    const req = box.requestFullscreen?.({ navigationUI: 'hide' });
+    if (req?.catch) req.catch(() => window.open(frame.dataset.src, '_blank', 'noopener'));
+    else if (!req) window.open(frame.dataset.src, '_blank', 'noopener');
+  });
+
+  // Pointerdown rather than click, and capture, so the scroll comes back on the
+  // press instead of after whatever the press activates.
+  const outside = (e) => { if (!box.contains(e.target)) setArmed(false); };
+  document.addEventListener('pointerdown', outside, true);
+
+  const onFs = () => {
+    const on = document.fullscreenElement === box;
+    box.classList.toggle('is-full', on);
+    full.textContent = on ? 'Exit full screen' : 'Full screen';
+  };
+  document.addEventListener('fullscreenchange', onFs);
+
+  return {
+    destroy() {
+      document.removeEventListener('pointerdown', outside, true);
+      document.removeEventListener('fullscreenchange', onFs);
+      if (document.fullscreenElement === box) document.exitFullscreen?.();
+      // Cut the app dead. It holds a WebGL context and polls open-meteo; left
+      // running behind a closed modal it would keep both.
+      frame.src = 'about:blank';
+    },
+  };
+}
+
+let liveTwin = null;
 
 async function mountEmbed(name, slot) {
   const spec = EMBEDS[name];
@@ -177,6 +315,7 @@ export function initModal() {
     lock();
     modal.querySelector('.modal__close')?.focus();
     if (data.embed) mountEmbed(data.embed, inner.querySelector('[data-embed-slot]'));
+    liveTwin = initTwin(inner);
   };
 
   const close = () => {
@@ -185,17 +324,53 @@ export function initModal() {
     // is cleared while it is still parented here, the only copy of a whole
     // section is destroyed and the card opens empty ever after.
     unmountEmbed();
+    try { liveTwin?.destroy(); } catch (err) { console.warn('[modal] twin teardown failed', err); }
+    liveTwin = null;
     modal.classList.remove('is-open');
     setTimeout(() => { modal.hidden = true; inner.innerHTML = ''; }, 420);
     unlock();
     lastFocus?.focus();
   };
 
-  document.querySelectorAll('[data-modal]').forEach((el) => {
-    el.addEventListener('click', () => open(el.dataset.modal));
-    el.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(el.dataset.modal); }
-    });
+  /* Delegated, with a positional fallback — and both halves are load bearing.
+
+     Binding click straight onto each card looks obviously correct and does not
+     work. The cards sit inside a preserve-3d ring, and the hit-test CHANGES
+     mid-gesture: measured on the front card, pointerdown reports target
+     .pcard__media (resolving to the card), while pointerup and click both
+     report the ancestor .wheel. A listener on the card therefore never fires,
+     and every research card silently did nothing when clicked. Only .click()
+     from the console worked, which is exactly why it survived so long.
+
+     So: listen on the document, and when the target walk comes up empty ask the
+     POSITION instead — elementFromPoint resolves correctly at the moment of the
+     click even though the event's own target does not. Same fix, same reason,
+     as the architecture books in book.js. */
+  document.addEventListener('click', (e) => {
+    if (!modal.hidden) return;                 // never re-open from under an open modal
+    let el = e.target.closest?.('[data-modal]');
+    if (!el && e.clientX != null) {
+      el = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-modal]');
+    }
+    /* Last resort, and the one that actually carries the wheel: derive the front
+       card from geometry. Neither the event target nor elementFromPoint can be
+       trusted once the ring is rotated off zero — see frontCard() in wheel.js
+       for the measurement. A click anywhere in the wheel opens whatever is
+       facing the reader, which is also what the idiom promises. */
+    if (!el) {
+      const wheel = e.target.closest?.('.wheel');
+      if (wheel) el = frontCard(wheel, '[data-modal]');
+    }
+    if (!el) return;
+    open(el.dataset.modal);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const el = e.target.closest?.('[data-modal]');
+    if (!el || !modal.hidden) return;
+    e.preventDefault();
+    open(el.dataset.modal);
   });
 
   modal.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', close));
@@ -206,7 +381,11 @@ export function initModal() {
   // Delegate zoom so it also covers images injected after open.
   inner.addEventListener('click', (e) => {
     const img = e.target.closest('img[data-zoom]');
-    if (img) openLightbox(img.src, img.alt);
+    // Prefer the zoom tier. These map layouts carry their meaning in the
+    // legend, and the gallery file is sized for a grid cell — magnifying it
+    // shows a bigger blur rather than the classes and breaks it was made to
+    // communicate.
+    if (img) openLightbox(img.dataset.zoomSrc || img.src, img.alt);
   });
 }
 

@@ -25,15 +25,15 @@ const A = '/assets/arch';
 export const archProjects = [
   {
     slug: 'odr',
-    title: 'Odisha Development Reserve',
-    meta: 'Urban design · masterplan',
+    title: 'ODR',
+    meta: 'Hospitality',
     pages: 28,
     aspect: 1,
   },
   {
     slug: 'lkcr',
-    title: 'LKCR Library',
-    meta: 'Public building · civic',
+    title: 'LKCR',
+    meta: 'School library',
     pages: 12,
     aspect: 1,
   },
@@ -69,8 +69,13 @@ export const archProjects = [
     slug: 'misc',
     title: 'Miscellaneous',
     meta: 'Studies, competitions, sketches',
-    pages: 14,
-    aspect: 1.5,
+    pages: 15,
+    /* The only project whose pages are not one shape: six square boards, five
+       photographs in both orientations, four A-series landscape sheets. One
+       aspect has to stand for all of them, and a square page is the value that
+       wastes least — object-fit keeps every page whole inside it, portrait
+       gaining side margins and landscape gaining top and bottom. */
+    aspect: 1,
   },
 ];
 

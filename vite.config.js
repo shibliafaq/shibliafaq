@@ -214,11 +214,19 @@ export default defineConfig({
       input: {
         main: 'index.html',
         projectsMap: 'projects-map.html',
+        gisTwin: 'gis-twin.html',
+        iotTwin: 'iot-twin.html',
+        mcTwin: 'mc-twin.html',
       },
       output: {
         manualChunks: {
           three: ['three'],
           motion: ['gsap', 'lenis'],
+          // deck.gl and MapLibre are ~1 MB together and belong to ONE page,
+          // which is loaded in an iframe from inside a project card. Splitting
+          // them off keeps the front page's bundle exactly as it was — the
+          // main entry never imports either.
+          deck: ['deck.gl', '@deck.gl/mapbox', '@deck.gl/layers', 'maplibre-gl'],
         },
       },
     },

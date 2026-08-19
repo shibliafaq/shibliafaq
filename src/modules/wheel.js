@@ -48,6 +48,36 @@ const GAP = 0.52;
    is 51.43 * 0.045 / 120 ≈ 0.019. */
 const WHEEL_K = 0.019;
 
+/**
+ * The card currently at the front of a wheel, found by projected area.
+ *
+ * WHY NOT JUST HIT-TEST THE CLICK
+ * Because the browser gets it wrong here, and only sometimes, which is worse.
+ * The cards sit on a ring inside a preserve-3d scene. When the ring is at
+ * rotateX(0) the front card hit-tests correctly; rotate the ring by one step
+ * and the SAME card, still visually front and still fully opaque, stops being
+ * hittable — elementFromPoint returns the .wheel__scene plane behind it, and a
+ * click on the card reaches nothing. Measured side by side: the architecture
+ * wheel at rotateX(0deg) resolved to the card, the M.Sc. wheel at
+ * rotateX(51.429deg) resolved to wheel__scene, with both front cards at the
+ * same size and screen position.
+ *
+ * So the front card is derived instead of detected. A ring turning about X
+ * foreshortens every card except the one facing the viewer, so the largest
+ * projected area IS the front card — true at any rotation, and it needs
+ * nothing from the browser but a bounding box.
+ */
+export function frontCard(wheelEl, selector) {
+  let best = null;
+  let biggest = 0;
+  wheelEl.querySelectorAll(selector).forEach((c) => {
+    const r = c.getBoundingClientRect();
+    const area = r.width * r.height;
+    if (area > biggest) { biggest = area; best = c; }
+  });
+  return best;
+}
+
 export function initWheels() {
   const wheels = [...document.querySelectorAll('[data-wheel]')];
   if (!wheels.length) return;

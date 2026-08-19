@@ -1,5 +1,6 @@
 import { archBySlug, archPage, archPageHi } from '../data/arch.js';
 import { reducedMotion, stopScroll, startScroll } from './scroll.js';
+import { frontCard } from './wheel.js';
 
 /**
  * A real book: two pages open at once, and leaves that turn about the spine.
@@ -11,8 +12,8 @@ import { reducedMotion, stopScroll, startScroll } from './scroll.js';
  * 2N+1 underneath, which is exactly what a book does. Crossfading two flat
  * images cannot produce that, because there is no back.
  *
- * The spread is [verso, recto] = [2n, 2n+1], with page 1 alone on the right at
- * the start the way a cover sits opposite a blank endpaper.
+ * The spread is [verso, recto] = [2n+1, 2n+2], so the book opens on page 1 at
+ * the left and each spread pairs an odd page with the even one after it.
  *
  * WHAT IS DELIBERATELY NOT HERE
  * No page-curl shading gradients that follow the fold, no paper texture, no
@@ -74,10 +75,20 @@ export function initBook() {
   }
 
   /** Page number for a slot, or 0 for a blank endpaper.
+   *
+   *  Slot n is pages (2n+1, 2n+2): the book OPENS on page 1 at the left, and
+   *  every spread is an odd page facing the even one after it.
+   *
+   *  This replaces a printer's convention — page 1 alone on the right with a
+   *  blank facing it, the way a cover sits opposite an endpaper. That is how a
+   *  physical book is bound, but these are portfolio sheets rather than a bound
+   *  volume, and opening on a blank half reads as a missing page rather than as
+   *  a front cover. Page 1 is the work; it goes first, on the left.
+   *
    *  In single mode each slot IS a page, so the pair collapses to one. */
-  const versoOf = (s) => (single ? 0 : s === 0 ? 0 : s * 2);
-  const rectoOf = (s) => (single ? s + 1 : s === 0 ? 1 : s * 2 + 1);
-  const lastSlot = () => (single ? project.pages - 1 : Math.ceil((project.pages - 1) / 2));
+  const versoOf = (s) => (single ? 0 : s * 2 + 1);
+  const rectoOf = (s) => (single ? s + 1 : s * 2 + 2);
+  const lastSlot = () => (single ? project.pages - 1 : Math.ceil(project.pages / 2) - 1);
 
   function pageImg(n) {
     if (!n || n > project.pages) return null;
@@ -87,6 +98,12 @@ export function initBook() {
     img.loading = 'eager';
     img.decoding = 'async';
     img.dataset.page = String(n);
+    /* Not draggable. An <img> is a native drag source, so pressing on the page
+       and moving starts Chrome's own image drag-and-drop after a few pixels —
+       which swallows the pointer stream and freezes the pan mid-gesture. The
+       CSS rule covers the same ground; both are here because this one is the
+       one that survives someone rewriting the stylesheet. */
+    img.draggable = false;
     return img;
   }
 
@@ -97,6 +114,12 @@ export function initBook() {
     if (img) el.appendChild(img);
     else el.classList.add('is-blank');
     return el;
+  }
+
+  /** Put a page into one side of the spread, replacing whatever was there. */
+  function setFace(side, n, cls) {
+    if (!side) return;
+    side.replaceChildren(face(n, cls));
   }
 
   /** Rebuild the visible spread. Only three leaves ever exist in the DOM — the
@@ -163,6 +186,9 @@ export function initBook() {
       return;
     }
 
+    const leftSide = stage.querySelector('.book__side--left');
+    const rightSide = stage.querySelector('.book__side--right');
+
     const leaf = document.createElement('div');
     leaf.className = `book__leaf book__leaf--${dir > 0 ? 'fwd' : 'back'}${single ? ' is-single' : ''}`;
 
@@ -186,6 +212,17 @@ export function initBook() {
     leaf.append(front, back);
     stage.appendChild(leaf);
 
+    /* Put the ARRIVING page underneath the leaf now, not when the turn ends.
+
+       This is what a book does: the leaf lifts and the next page is already
+       there beneath it. Waiting until the turn landed meant the old page sat in
+       place for the whole 620ms and then swapped — which reads as the page
+       updating late, because it is. Under the leaf it is invisible while it
+       decodes, so by the time the sweep uncovers it there is nothing to wait
+       for. */
+    if (single || dir > 0) setFace(rightSide, rectoOf(next), 'book__face--recto');
+    else setFace(leftSide, versoOf(next), 'book__face--verso');
+
     // Force a frame so the start transform is committed before the class that
     // animates it — without this the browser coalesces both and nothing moves.
     void leaf.offsetWidth;
@@ -193,7 +230,22 @@ export function initBook() {
 
     setTimeout(() => {
       spread = next;
-      render();
+
+      /* Move the leaf's back face into the side it landed on rather than
+         rebuilding the spread. render() replaces every <img>, and a fresh
+         element re-decodes even a cached file — a visible stall at the exact
+         moment the reader is waiting for the page. This element is already on
+         screen and already decoded; adopting the node costs nothing. */
+      if (!single) {
+        back.classList.remove('book__face--back');
+        back.classList.add(dir > 0 ? 'book__face--verso' : 'book__face--recto');
+        (dir > 0 ? leftSide : rightSide)?.replaceChildren(back);
+      }
+
+      leaf.remove();
+      updateChrome();
+      if (zoom > 1.01) upgradeFaces();
+      preload(spread + 1);
       turning = false;
     }, TURN_MS);
   }
@@ -230,46 +282,164 @@ export function initBook() {
     });
   }
 
+  const MAX_ZOOM = 4;
+
   function applyZoom() {
-    stage.style.setProperty('--zoom', zoom.toFixed(2));
-    stage.style.setProperty('--pan-x', `${panX.toFixed(0)}px`);
-    stage.style.setProperty('--pan-y', `${panY.toFixed(0)}px`);
+    stage.style.setProperty('--zoom', zoom.toFixed(3));
+    stage.style.setProperty('--pan-x', `${panX.toFixed(1)}px`);
+    stage.style.setProperty('--pan-y', `${panY.toFixed(1)}px`);
     modal.classList.toggle('is-zoomed', zoom > 1.01);
     zoomOut.disabled = zoom <= 1.01;
-    zoomIn.disabled = zoom >= 3.99;
+    zoomIn.disabled = zoom >= MAX_ZOOM - 0.01;
   }
 
-  function setZoom(z) {
-    zoom = Math.min(4, Math.max(1, z));
-    if (zoom === 1) { panX = 0; panY = 0; }
+  /* Keep the page inside the viewport.
+
+     Without this you can drag a magnified sheet clean out of frame and be left
+     looking at an empty black rectangle with no way back except zooming out.
+     The stage is scaled about its own centre, so the furthest it may travel in
+     each axis is half the overflow — at 1x the overflow is negative, which
+     clamps pan to zero and re-centres the spread automatically. */
+  function clampPan() {
+    const r = viewport.getBoundingClientRect();
+    const w = stage.offsetWidth * zoom;
+    const h = stage.offsetHeight * zoom;
+    const mx = Math.max(0, (w - r.width) / 2);
+    const my = Math.max(0, (h - r.height) / 2);
+    panX = Math.min(mx, Math.max(-mx, panX));
+    panY = Math.min(my, Math.max(-my, panY));
+  }
+
+  /* Zoom about a point rather than about the centre.
+
+     The stage maps a local point p to the screen as C + pan + zoom*p, where C
+     is the untransformed centre. Holding the point under the cursor fixed
+     across a zoom change gives pan' = d - (z2/z1)(d - pan), with d the cursor's
+     offset from C. Centre-anchored zoom is what makes a magnifier feel like it
+     is fighting you: the detail you aimed at slides away as it grows. */
+  function zoomAt(z, clientX, clientY) {
+    const next = Math.min(MAX_ZOOM, Math.max(1, z));
+    if (Math.abs(next - zoom) < 0.001) return;
+    const r = viewport.getBoundingClientRect();
+    const dx = clientX - (r.left + r.width / 2);
+    const dy = clientY - (r.top + r.height / 2);
+    const k = next / zoom;
+    panX = dx - k * (dx - panX);
+    panY = dy - k * (dy - panY);
+    zoom = next;
+    if (zoom <= 1.001) { panX = 0; panY = 0; }
     else upgradeFaces();
+    clampPan();
     applyZoom();
   }
 
-  /* Drag to pan, but only while zoomed — otherwise a drag on the book would
-     fight the page-turn gesture. */
+  /** Button and keyboard zoom, anchored on the middle of the viewport. */
+  function setZoom(z) {
+    const r = viewport.getBoundingClientRect();
+    zoomAt(z, r.left + r.width / 2, r.top + r.height / 2);
+  }
+
+  /* ---- gestures ------------------------------------------------
+     Wheel magnifies, two fingers pinch, double-click toggles. All three are
+     what people already try on an image, and none of them should scroll the
+     page underneath — the modal is the only thing on screen.
+
+     Wheel is exponential rather than additive so the step feels the same at 1x
+     and at 3x; a fixed +0.5 is a huge jump at the bottom and a nudge at the
+     top. A trackpad pinch arrives as ctrl+wheel, which lands here too.
+
+     0.0015 puts one notch at about 20%, so 1x to 4x is roughly eight notches.
+     At 0.0022 it was 30% a notch and five notches crossed the whole range,
+     which overshoots the detail you were aiming for. */
+  viewport.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    zoomAt(zoom * Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY);
+  }, { passive: false });
+
+  viewport.addEventListener('dblclick', (e) => {
+    if (e.target.closest('button')) return;
+    zoomAt(zoom > 1.01 ? 1 : 2.5, e.clientX, e.clientY);
+  });
+
+  /* Drag to pan, and two pointers to pinch.
+
+     Pointers are tracked in a map because a pinch is just "more than one live
+     pointer": the ratio of the current span to the span at gesture start is the
+     zoom, and the midpoint is what stays put. Tracking them by id rather than
+     counting touches keeps a stray third finger from corrupting the span. */
+  const points = new Map();
   let dragging = false;
   let lx = 0;
   let ly = 0;
+  let pinchSpan = 0;
+  let pinchZoom = 1;
+
+  const span = () => {
+    const [a, b] = [...points.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  };
+  const mid = () => {
+    const [a, b] = [...points.values()];
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  };
+
+  /* Capture is a nicety; the gesture state is not. setPointerCapture throws for
+     a pointer the browser does not consider active, and sitting above the state
+     update that meant one throw skipped the rest of the handler — pinchSpan
+     stayed 0 and every pinch silently did nothing. State first, capture after,
+     and never let the capture take the handler down with it. */
+  const capture = (id) => { try { viewport.setPointerCapture?.(id); } catch { /* not a live pointer */ } };
+
   viewport.addEventListener('pointerdown', (e) => {
-    if (zoom <= 1.01 || e.target.closest('button')) return;
-    dragging = true; lx = e.clientX; ly = e.clientY;
-    viewport.setPointerCapture?.(e.pointerId);
+    if (e.target.closest('button')) return;
+    points.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (points.size === 2) {
+      dragging = false;
+      pinchSpan = span();
+      pinchZoom = zoom;
+    } else if (points.size === 1 && zoom > 1.01) {
+      dragging = true;
+      lx = e.clientX;
+      ly = e.clientY;
+    }
+    capture(e.pointerId);
   });
+
   viewport.addEventListener('pointermove', (e) => {
+    if (!points.has(e.pointerId)) return;
+    points.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (points.size >= 2) {
+      if (!pinchSpan) return;
+      const m = mid();
+      zoomAt(pinchZoom * (span() / pinchSpan), m.x, m.y);
+      return;
+    }
     if (!dragging) return;
     panX += e.clientX - lx;
     panY += e.clientY - ly;
-    lx = e.clientX; ly = e.clientY;
+    lx = e.clientX;
+    ly = e.clientY;
+    clampPan();
     applyZoom();
   });
-  const endDrag = (e) => {
-    if (!dragging) return;
-    dragging = false;
-    viewport.releasePointerCapture?.(e.pointerId);
+
+  const endPointer = (e) => {
+    points.delete(e.pointerId);
+    try { viewport.releasePointerCapture?.(e.pointerId); } catch { /* never captured */ }
+    if (points.size < 2) pinchSpan = 0;
+    if (points.size === 0) dragging = false;
+    // A finger lifting off a pinch should hand back to a pan, not freeze.
+    if (points.size === 1 && zoom > 1.01) {
+      const [q] = [...points.values()];
+      dragging = true;
+      lx = q.x;
+      ly = q.y;
+    }
   };
-  viewport.addEventListener('pointerup', endDrag);
-  viewport.addEventListener('pointercancel', endDrag);
+  viewport.addEventListener('pointerup', endPointer);
+  viewport.addEventListener('pointercancel', endPointer);
 
   /* ---- open / close -------------------------------------------- */
   function open(slug) {
@@ -326,14 +496,19 @@ export function initBook() {
 
   /* Crossing the breakpoint changes the page-per-slot mapping, so the slot the
      reader is on has to be carried across rather than kept: slot 3 of a spread
-     book is pages 6-7, but slot 3 of a single book is page 4. Convert through
-     the page number so the reader stays where they were reading. */
+     book is pages 7-8, but slot 3 of a single book is page 4. Convert through
+     the page number so the reader stays where they were reading.
+
+     Going to spread mode, take the page the reader was on and find the slot it
+     sits in — floor((p-1)/2), the inverse of the (2n+1, 2n+2) pairing. */
   function setMode(toSingle) {
     if (!project || toSingle === single) return;
-    const page = rectoOf(spread) || 1;
+    const page = (single ? rectoOf(spread) : versoOf(spread)) || 1;
     single = toSingle;
     leaves = lastSlot();
-    spread = single ? Math.max(0, page - 1) : Math.max(0, Math.floor(page / 2));
+    spread = single
+      ? Math.max(0, page - 1)
+      : Math.max(0, Math.floor((page - 1) / 2));
     layout();
     render();
   }
@@ -357,6 +532,12 @@ export function initBook() {
     let t = e.target.closest?.('[data-book]');
     if (!t && e.clientX != null) {
       t = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-book]');
+    }
+    // And when the ring is rotated off zero, neither of the above resolves at
+    // all — fall back to the card that is geometrically at the front.
+    if (!t) {
+      const wheel = e.target.closest?.('.wheel');
+      if (wheel) t = frontCard(wheel, '[data-book]');
     }
     if (!t) return;
     e.preventDefault();

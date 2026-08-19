@@ -124,6 +124,7 @@
 .book__stage {
   position: relative;
   transform-style: preserve-3d;
+  user-select: none;
   transform:
     translate(var(--pan-x, 0px), var(--pan-y, 0px))
     scale(var(--zoom, 1));
@@ -158,6 +159,11 @@
   height: 100%;
   object-fit: contain;
   display: block;
+  /* Never a drag source. Dragging an image natively is a file/URL drag, and it
+     pre-empts the pointer events the pan depends on — the page would move a few
+     pixels and then stick. */
+  -webkit-user-drag: none;
+  user-select: none;
   /* The sheets are white. Against a near-black page a hard white rectangle
      glares, so the paper is knocked back a touch rather than the room being
      lit up to meet it. */

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart City Real-Time IoT Monitoring Dashboard | KFUPM</title>
+  <meta name="description" content="Continuous monitoring dashboard for a real-time IoT pipeline: MQTT to Kafka to Spark Streaming to PostgreSQL, with live sensor telemetry, alerting and analytics.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="boot" id="boot">
+    <div class="boot__mark"></div>
+    <p class="boot__label">Smart City Real-Time IoT Monitoring</p>
+    <p class="boot__sub">Connecting to stream…</p>
+  </div>
+
+  <div class="shell" id="shell" hidden>
+
+    <!-- ── header ──────────────────────────────────────────── -->
+    <header class="bar">
+      <div class="bar__brand">
+        <span class="pulse" id="pulse"></span>
+        <div>
+          <h1 class="bar__title">Smart City Real-Time IoT Monitoring</h1>
+          <p class="bar__sub">Dammam &amp; Al-Khobar · 10 nodes · ICS-574 KFUPM</p>
+        </div>
+      </div>
+
+      <div class="bar__clock">
+        <span class="bar__time mono" id="clock">--:--</span>
+        <span class="bar__date mono" id="date">—</span>
+      </div>
+
+      <div class="bar__ctl">
+        <button class="tbtn" id="playBtn" type="button" aria-label="Pause or resume"><span id="playIcon">❚❚</span></button>
+        <div class="speeds" id="speedBtns">
+          <button class="sbtn" type="button" data-speed="60">1×</button>
+          <button class="sbtn is-on" type="button" data-speed="300">5×</button>
+          <button class="sbtn" type="button" data-speed="1200">20×</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── kpi strip ───────────────────────────────────────── -->
+    <section class="kpis" id="kpis"></section>
+
+    <!-- ── the pipeline ────────────────────────────────────── -->
+    <section class="panel panel--flow">
+      <div class="panel__head">
+        <p class="label">Ingestion pipeline</p>
+        <p class="panel__note">Each dot is a batch of readings moving between stages. Rates are driven by the stream clock.</p>
+      </div>
+      <canvas id="flow" class="flow"></canvas>
+      <div class="stages" id="stages"></div>
+    </section>
+
+    <!-- ── main chart + alerts ─────────────────────────────── -->
+    <section class="panel panel--chart">
+      <div class="panel__head panel__head--row">
+        <div>
+          <p class="label">Live telemetry</p>
+          <p class="panel__note">Rolling 6-hour window across all ten nodes.</p>
+        </div>
+        <div class="chips" id="metricBtns">
+          <button class="chip is-on" type="button" data-metric="t">Temperature</button>
+          <button class="chip" type="button" data-metric="h">Humidity</button>
+          <button class="chip" type="button" data-metric="p">Pressure</button>
+        </div>
+      </div>
+      <canvas id="chart" class="chart"></canvas>
+      <div class="chart__legend" id="chartLegend"></div>
+    </section>
+
+    <section class="panel panel--alerts">
+      <div class="panel__head">
+        <p class="label">Alert stream</p>
+        <p class="panel__note" id="alertNote">—</p>
+      </div>
+      <ul class="feed" id="feed"></ul>
+    </section>
+
+    <!-- ── nodes ───────────────────────────────────────────── -->
+    <section class="panel panel--nodes">
+      <div class="panel__head">
+        <p class="label">Sensor nodes</p>
+        <p class="panel__note">Current reading and the last two hours, per node.</p>
+      </div>
+      <div class="nodes" id="nodes"></div>
+    </section>
+
+    <!-- ── analytics ───────────────────────────────────────── -->
+    <section class="panel panel--dist">
+      <div class="panel__head">
+        <p class="label">Distribution</p>
+        <p class="panel__note" id="distNote">—</p>
+      </div>
+      <canvas id="dist" class="mini"></canvas>
+    </section>
+
+    <section class="panel panel--corr">
+      <div class="panel__head">
+        <p class="label">Temperature vs humidity</p>
+        <p class="panel__note" id="corrNote">—</p>
+      </div>
+      <canvas id="corr" class="mini"></canvas>
+    </section>
+
+    <!-- ── thresholds ──────────────────────────────────────── -->
+    <section class="panel panel--why cmd-panel">
+      <p class="label">Why these thresholds</p>
+      <p class="why" id="whyBody">—</p>
+    </section>
+
+    <footer class="foot">
+      Simulated sensor data, seed 42 — the same generator the deployed Streamlit demo uses.
+      Pipeline: Mosquitto → Kafka → Spark Structured Streaming → PostgreSQL.
+      S. Afaq &amp; S. Aldhafeeri · KFUPM ICS-574.
+    </footer>
+  </div>
+
+  <div class="tip" id="tip" hidden></div>
+
+  <script type="module" src="/src/iot-twin.js"></script>
+</body>
+</html>

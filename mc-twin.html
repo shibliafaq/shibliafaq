@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-City Surface Temperature — 3 Cities, 3 Continents | KFUPM</title>
+  <meta name="description" content="25,905 NASA MODIS land surface temperature measurements across Dammam, Dublin and Reykjavik, with a seventeen-city global comparison, latitude regression and methodology.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="boot" id="boot">
+    <div class="boot__mark"></div>
+    <p class="boot__label">Multi-City Surface Temperature</p>
+    <p class="boot__sub">Loading 25,905 MODIS measurements…</p>
+  </div>
+
+  <div class="shell" id="shell" hidden>
+
+    <header class="bar">
+      <div class="bar__brand">
+        <span class="pulse"></span>
+        <div>
+          <h1 class="bar__title">Multi-City Surface Temperature</h1>
+          <p class="bar__sub">NASA MODIS/061/MOD11A1 · 3 measured cities · 14 days · Oct–Nov 2025</p>
+        </div>
+      </div>
+
+      <nav class="tabs" id="tabs">
+        <button class="tab is-on" type="button" data-view="global">Global</button>
+        <button class="tab" type="button" data-view="cities">Cities in 3D</button>
+        <button class="tab" type="button" data-view="fit">Correlation</button>
+        <button class="tab" type="button" data-view="days">14 days</button>
+        <button class="tab" type="button" data-view="method">Method</button>
+      </nav>
+    </header>
+
+    <section class="kpis" id="kpis"></section>
+
+    <!-- ══ 1. GLOBAL ══════════════════════════════════════════ -->
+    <div class="view" data-view="global">
+      <section class="panel panel--wide">
+        <div class="panel__head panel__head--row">
+          <div>
+            <p class="label">Seventeen cities, one gradient</p>
+            <p class="panel__note">Three measured against fourteen estimated, from Singapore at 1°N to Murmansk at 69°N. Marker colour is mean surface temperature on the shared scale; ring style separates measurement from estimate.</p>
+          </div>
+          <div class="chips" id="worldFilter">
+            <button class="chip is-on" type="button" data-kind="all">All</button>
+            <button class="chip" type="button" data-kind="measured">Measured (3)</button>
+            <button class="chip" type="button" data-kind="est">Estimated (14)</button>
+          </div>
+        </div>
+        <div class="worldwrap"><canvas id="world" class="world"></canvas></div>
+        <div class="scale" id="scaleWorld"></div>
+      </section>
+
+      <section class="panel panel--wide">
+        <div class="panel__head">
+          <p class="label">All cities</p>
+          <p class="panel__note" id="worldNote">—</p>
+        </div>
+        <div class="tablewrap"><table class="tbl" id="worldTable"></table></div>
+      </section>
+    </div>
+
+    <!-- ══ 2. CITIES IN 3D ════════════════════════════════════ -->
+    <div class="view" data-view="cities" hidden>
+      <section class="panel panel--wide">
+        <div class="panel__head panel__head--row">
+          <div>
+            <p class="label">Three cities on one temperature scale</p>
+            <p class="panel__note">Hexbin height and colour both carry mean surface temperature. The scale is shared across all three panels, which is what makes the latitude gradient visible rather than merely stated.</p>
+          </div>
+          <div class="bar__ctl">
+            <button class="tbtn" id="playBtn" type="button" aria-label="Play or pause"><span id="playIcon">▶</span></button>
+            <input type="range" class="scrub" id="scrub" min="0" max="13" value="0" step="1">
+            <span class="transport__time mono" id="dayLabel">All days</span>
+            <button class="chip is-on" id="allDays" type="button">All 14</button>
+          </div>
+        </div>
+        <div class="maps" id="maps">
+          <canvas id="deck"></canvas>
+          <div class="maps__labels" id="mapLabels"></div>
+        </div>
+        <div class="scale" id="scale"></div>
+      </section>
+
+      <section class="panel panel--wide">
+        <div class="panel__head">
+          <p class="label">Per city</p>
+          <p class="panel__note" id="cityNote">—</p>
+        </div>
+        <div class="cities" id="cities"></div>
+      </section>
+    </div>
+
+    <!-- ══ 3. CORRELATION ═════════════════════════════════════ -->
+    <div class="view" data-view="fit" hidden>
+      <section class="panel panel--half">
+        <div class="panel__head">
+          <p class="label">Latitude against temperature</p>
+          <p class="panel__note" id="fitNote">—</p>
+        </div>
+        <canvas id="fit" class="chart"></canvas>
+      </section>
+
+      <section class="panel panel--half">
+        <div class="panel__head">
+          <p class="label">Temperature spread by city</p>
+          <p class="panel__note">Box shows the interquartile range, whiskers the full observed range, the line the median.</p>
+        </div>
+        <canvas id="box" class="chart"></canvas>
+      </section>
+
+      <section class="panel panel--wide cmd-panel">
+        <p class="label">Why the Southern Hemisphere deviates</p>
+        <p class="why" id="southBody">—</p>
+      </section>
+    </div>
+
+    <!-- ══ 4. 14 DAYS ═════════════════════════════════════════ -->
+    <div class="view" data-view="days" hidden>
+      <section class="panel panel--wide">
+        <div class="panel__head">
+          <p class="label">Fourteen days</p>
+          <p class="panel__note">Daily mean per city, with the daily min–max range behind it. Gaps are days with no cloud-free overpass, and the line breaks rather than bridging them.</p>
+        </div>
+        <canvas id="trend" class="chart chart--tall"></canvas>
+      </section>
+
+      <section class="panel panel--half">
+        <div class="panel__head">
+          <p class="label">Daily min · mean · max</p>
+          <p class="panel__note" id="dailyNote">—</p>
+        </div>
+        <div class="tablewrap"><table class="tbl" id="dailyTable"></table></div>
+      </section>
+
+      <section class="panel panel--half">
+        <div class="panel__head">
+          <p class="label">Day-to-day variability</p>
+          <p class="panel__note">Standard deviation of the daily means. A desert is stable; a north Atlantic island is not.</p>
+        </div>
+        <div class="tablewrap"><table class="tbl" id="varTable"></table></div>
+      </section>
+    </div>
+
+    <!-- ══ 5. METHOD ══════════════════════════════════════════ -->
+    <div class="view" data-view="method" hidden>
+      <section class="panel panel--half">
+        <div class="panel__head">
+          <p class="label">Regression model</p>
+          <p class="panel__note">Calibrated on the three measured cities, 26°N to 64°N.</p>
+        </div>
+        <code class="formula mono" id="modelFormula"></code>
+        <div class="tablewrap"><table class="tbl" id="modelTable"></table></div>
+      </section>
+
+      <section class="panel panel--half">
+        <div class="panel__head">
+          <p class="label">Residuals against the model</p>
+          <p class="panel__note" id="resNote">—</p>
+        </div>
+        <canvas id="res" class="chart"></canvas>
+      </section>
+
+      <section class="panel panel--half">
+        <div class="panel__head">
+          <p class="label">Data pipeline</p>
+          <p class="panel__note">MODIS to browser.</p>
+        </div>
+        <div class="tablewrap"><table class="tbl" id="pipeTable"></table></div>
+      </section>
+
+      <section class="panel panel--half">
+        <div class="panel__head">
+          <p class="label">Execution profile</p>
+          <p class="panel__note" id="perfNote">From the original Colab run.</p>
+        </div>
+        <div class="tablewrap"><table class="tbl" id="perfTable"></table></div>
+      </section>
+    </div>
+
+    <section class="panel panel--wide cmd-panel" id="whyPanel">
+      <p class="label">What the number means</p>
+      <p class="why" id="whyBody">—</p>
+    </section>
+
+    <footer class="foot">
+      NASA MODIS/061/MOD11A1 (Terra) via Google Earth Engine · cloud cover ≤ 10% · 29 Oct – 11 Nov 2025.
+      Basemap © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>,
+      © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors.
+      S. Afaq &amp; S. Aldhafeeri · KFUPM ICS-574.
+    </footer>
+  </div>
+
+  <div class="tip" id="tip" hidden></div>
+
+  <script type="module" src="/src/mc-twin.js"></script>
+</body>
+</html>

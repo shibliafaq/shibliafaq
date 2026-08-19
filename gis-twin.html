@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dammam Heat Vulnerability — 3D Twin | KFUPM</title>
+  <meta name="description" content="Interactive 3D digital twin of the Dammam Metropolitan Area heat vulnerability assessment — 12,954 cells, thirteen layers, one priority list.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Loading state. The payload is 1.2 MB and deck.gl is a large chunk, so
+         there is a real moment before first paint; an empty grey rectangle in
+         an iframe reads as broken rather than as loading. -->
+    <div class="boot" id="boot">
+      <div class="boot__mark"></div>
+      <p class="boot__label">Dammam Metropolitan Area</p>
+      <p class="boot__sub">Loading 12,954 cells · 13 layers</p>
+    </div>
+
+    <div id="map"></div>
+
+    <!-- Top bar -->
+    <nav class="glass-navbar navbar" id="chrome-nav" hidden>
+      <div class="navbar__brand">
+        <span class="navbar__dot"></span>
+        <div>
+          <p class="navbar__title">Dammam Heat Vulnerability</p>
+          <p class="navbar__sub">GIS &amp; Remote Sensing · 500 m fishnet · 12,954 cells</p>
+        </div>
+      </div>
+      <div class="navbar__meta">
+        <span class="label" id="navLayer">—</span>
+        <span class="navbar__stat mono" id="navRange">—</span>
+      </div>
+    </nav>
+
+    <!-- Layers -->
+    <aside class="glass-left rail rail--left" id="chrome-left" hidden>
+      <p class="label rail__head">Layers</p>
+      <div id="layerGroups"></div>
+
+      <p class="label rail__head rail__head--gap">Classification</p>
+      <div class="methods">
+        <button class="lbtn is-on" type="button" data-method="jenks">Natural breaks (Jenks)</button>
+        <button class="lbtn" type="button" data-method="quantile">Equal count</button>
+        <button class="lbtn" type="button" data-method="equal">Equal interval</button>
+      </div>
+
+      <p class="label rail__head rail__head--gap">Terrain</p>
+      <label class="slider">
+        <span class="slider__row"><span>Height</span><span class="mono" id="exagOut">1.0×</span></span>
+        <input type="range" id="exag" min="0" max="250" value="100">
+      </label>
+      <button class="btn-ghost rail__reset" id="resetView" type="button">Reset view</button>
+    </aside>
+
+    <!-- Readout -->
+    <aside class="glass-right rail rail--right" id="chrome-right" hidden>
+      <p class="label rail__head" id="readTitle"></p>
+      <p class="read__note" id="readNote"></p>
+      <code class="formula mono" id="formula" hidden></code>
+      <ol class="models" id="models" hidden></ol>
+
+      <div class="read__kpis">
+        <div><span class="kpi" id="kpiA">—</span><span class="read__cap" id="capA">—</span></div>
+        <div><span class="kpi kpi--heat" id="kpiB">—</span><span class="read__cap" id="capB">—</span></div>
+      </div>
+
+      <p class="label rail__head rail__head--gap">Scale</p>
+      <p class="legend__method" id="legendMethod"></p>
+      <div class="legend" id="legend"></div>
+
+      <div class="cmd-panel take" id="take">
+        <p class="label take__head">What to take from this</p>
+        <p class="take__body" id="takeBody">—</p>
+      </div>
+    </aside>
+
+    <!-- Priority callout -->
+    <div class="glass-bottom priority" id="chrome-bottom" hidden>
+      <button class="priority__btn" id="priorityBtn" type="button">
+        <span class="priority__pip"></span>
+        <span>Isolate priority zones</span>
+      </button>
+      <p class="priority__note mono" id="priorityNote">229 cells · 57.3 km² · high heat and high population together</p>
+    </div>
+
+    <div class="tip" id="tip" hidden></div>
+
+    <p class="attrib">
+      Basemap © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>,
+      © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors ·
+      Data: Landsat 8/9, Sentinel-2, WorldPop · S. Afaq, KFUPM
+    </p>
+  </div>
+
+  <script type="module" src="/src/gis-twin.js"></script>
+</body>
+</html>

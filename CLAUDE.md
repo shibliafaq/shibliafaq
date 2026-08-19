@@ -1,6 +1,6 @@
 # Shibli Afaq — portfolio v2
 
-_Last updated: 2026-08-18._
+_Last updated: 2026-08-19 (session 2)._
 
 Vanilla JS + Vite 7. No React. GSAP ScrollTrigger + Lenis for scroll, three.js
 for the globe, canvas for the pixel valley. Multi-page build via
@@ -96,14 +96,37 @@ Check `git diff --stat` before building.
 **`position: sticky` dies inside any `overflow: hidden` ancestor,** and is
 constrained by the **margin** box — a negative margin-bottom collapses it.
 
-**Paint and hit-test disagree inside `preserve-3d`.** A real click on a card in
-the 3D ring resolves its target to the ancestor section; `elementFromPoint` at
-the same coordinates resolves correctly. `src/modules/book.js` depends on that
-fallback — without it the books are unreachable by mouse. Note `.click()` works
-either way, so this class of bug survives casual testing.
+**Paint and hit-test disagree inside `preserve-3d`, and it is worse than it
+first looks.** A real click on a wheel card resolves its target to the ancestor
+`.wheel`, so a listener bound to the card never fires. `elementFromPoint` is
+*also* unreliable: it resolves the front card at `rotateX(0deg)` and returns the
+`.wheel__scene` plane behind it once the ring turns one step. Both `modal.js`
+and `book.js` therefore fall back to `frontCard()` in `wheel.js`, which derives
+the front card from the largest projected area and needs nothing from the
+browser but a bounding box. `.click()` works either way, so this survives casual
+testing. If a card "will not open", check the ring rotation first.
 
 **Build image maps from measured pixel content, never from filenames.** The
 Olaya before/after pair arrived twice with the meaning of "before" flipped.
+
+**Check the build's EXIT CODE, never its output.** `npx vite build | grep error;
+echo "build ok"` prints success regardless, because `echo` runs either way. That
+masked a genuinely failing build for four steps. Use
+`npx vite build >/tmp/b.log 2>&1 && echo PASSED || { echo FAILED; tail /tmp/b.log; }`.
+
+**An explicit `display` overrides `[hidden]`.** `.view { display: grid }` beats
+the browser's `[hidden] { display: none }`, so hidden panels render anyway —
+stacked, while the tab bar highlights one you cannot see. Any element given a
+display needs `.thing[hidden] { display: none }` restated.
+
+**Never gate startup on a third-party load event.** `map.on('load')` did not fire
+on the IoT page even with the style parsed and tiles arriving. Start on whichever
+comes first, the event or a short timer.
+
+**A fade-in entrance hides the newest rows of a fast feed.** At 5x, new rows land
+faster than a 0.28s fade completes, so the top of the list is permanently
+invisible. Slide, do not fade — and prepend rows rather than rebuilding
+`innerHTML`, which restarts the animation on every row.
 
 ---
 
@@ -119,9 +142,69 @@ half-spread is ~750 CSS px, so full zoom is a 3000px rendering.
 - `p01-hi.webp` — 3000px q90, fetched only when the reader magnifies
 - `p01-t.webp` — 320px q74, thumbnails
 
+The ArcGIS map layouts follow the same two-tier shape: `gis_*.webp` at 900px for
+the gallery grid and `gis_*@2x.webp` at 2000px that the lightbox swaps in. On a
+map layout the legend IS the content, so a lightbox that re-serves the gallery
+file only shows a bigger blur.
+
 Quality is chosen by measurement, and the answer differs by content type: the
 Earth photograph went flat above q78, while line art keeps paying back quality
 through q94 because hard edges are the DCT's worst case. Never upscale a source.
+
+---
+
+## The four dashboards
+
+Both live inside project cards as **iframes**, never merged into this site's JS
+tree, and both are full-viewport apps. Inside an iframe `100vh` resolves to the
+iframe's height rather than the window's, so the property that makes them
+impossible to merge is the same one that makes them trivial to embed.
+
+| card | page | weight |
+|---|---|---|
+| UHI Digital Twin (thesis card) | `E:\KFUPM\uhi_digital_twin_v2\portfolio\uhi-twin-portfolio\dist` | `public/uhi-twin/` (54 MB) |
+| Dammam 3D twin (GIS card) | `gis-twin.html` | 1.25 MB payload |
+| IoT monitoring (IoT card) | `iot-twin.html` | 12 KB JS + 12 KB CSS, no map libs |
+| Multi-city temperature (temp card) | `mc-twin.html` | 0.45 MB payload |
+
+The embed has three states, and the middle one is the point: **cold** (nothing
+fetched), **live** (running and visible behind a transparent shield), **armed**
+(shield off). deck.gl reads the wheel as zoom, so an armed map inside a
+scrolling modal eats the page scroll the moment the cursor crosses it. Full
+screen uses the native Fullscreen API because the modal panel is transformed
+while animating, and a transformed ancestor re-bases `position: fixed`.
+
+Declared per project via `twin: {...}` in `src/data/projects.js`. deck.gl and
+maplibre are a separate rollup chunk so the front page bundle is unchanged.
+
+All four share one rule: **the accent never carries data**. Chrome is `#0369a1`
+and each dataset has its own scale, so no colour on screen is ambiguous.
+
+Two of them were built twice, both times because the brief was read as "copy the
+idiom" rather than "copy the design language and cover the same components".
+The IoT one first arrived as a 3D city map when what was wanted was a monitoring
+console; the multi-city one first covered two of its Streamlit app's five pages.
+**Before rebuilding someone's dashboard, enumerate the pages it already has.**
+
+### The Dammam twin specifically
+
+15 layers over 12,954 cells. Every readout figure is computed from the payload
+at runtime rather than typed into the copy, so it cannot drift: exposure returns
+57.3 km2 / 229 cells and the hot spots 120.8 / 505.0 km2, all matching the paper.
+
+**Classification is stated, not assumed.** Natural breaks (Jenks) by default,
+switchable to equal count and equal interval, with the active method printed
+above the legend and the cell count and share shown per class. The methods
+disagree about who counts as vulnerable: on the built-up model, equal interval
+puts 71% of cells in one class and quantile leaves a bottom class spanning
+0.204 to 0.534. Jenks here is the exact Fisher-Jenks DP run on 200 weighted
+bins, because the textbook O(n^2 k) form is 840 million steps per layer.
+
+**No Getis-Ord layer shipped until it reproduced.** A from-scratch recomputation
+gave a 0.93x hotspot ratio against the published 4.18x, so it was thrown away
+rather than shipped wearing the study's authority. The real answer was FDR
+correction, which `arcpy.stats.HotSpots` leaves off by default and the paper's
+method section does not mention. See `docs/CONTEXT.md` section 24.
 
 ---
 

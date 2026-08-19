@@ -1174,3 +1174,250 @@ Repo weight note: `public/assets/arch` is 84 MB, of which 64.9 MB is the zoom
 tier. It is committed deliberately — Vercel serves straight from the repo and
 the tier is the whole point of the quality decision above. No single file
 exceeds ~0.8 MB.
+
+---
+
+## 24. Two dashboards, and a statistic that would not reproduce (2026-08-19)
+
+Two project cards now open onto running dashboards rather than screenshots.
+
+### Why iframes, and why that is not a compromise
+
+Both apps are full-viewport (`height: 100vh`), which is normally the awkward
+part of embedding. Inside an iframe that resolves to the IFRAME's height, not
+the window's. So the property that makes them impossible to merge into this
+site's tree is the same property that makes them trivial to embed: they fill
+whatever box they are given, unmodified. The UHI twin is React + Tailwind + its
+own router and this site is vanilla JS; there was never a merge to consider.
+
+The embed has three states and the middle one is the entire design:
+
+    cold    nothing fetched. A 54 MB app must not load because someone
+            opened a project card.
+    live    running and visible, but behind a transparent shield.
+    armed   shield off, the app has the pointer.
+
+deck.gl reads the wheel as zoom. An armed map sitting in a scrolling article
+swallows the page scroll the moment the pointer crosses it, and the reader
+silently zooms Riyadh while trying to scroll past. Clicking arms it; clicking
+away or pressing Release hands scrolling back. Full screen uses the native
+Fullscreen API rather than a fixed overlay, because the modal panel is
+transformed while it animates and a transformed ancestor re-bases
+`position: fixed` onto itself.
+
+### The Dammam twin
+
+Built here rather than borrowed: `gis-twin.html`, `src/gis-twin.js`,
+`src/styles/gis-twin.css`, deck.gl `GridCellLayer` over MapLibre, in the UHI
+twin's visual language (Jost / JetBrains Mono, `#eef2f7`, frosted panels,
+`#0369a1` chrome, the `cmd-panel` corner brackets). One rule enforced
+throughout: the interface accent never touches the data. Chrome is blue, data is
+heat, so the reader never has to ask which colours carry meaning.
+
+The data was recovered rather than re-derived. `Fishnet_500m_Clip.shp` has
+12,954 polygons and `DMA_Clean_Analysis.xlsx` has 12,954 attribute rows keyed by
+FID, a clean 1:1 join. Workbook values are min-max normalised, and the masked
+rasters in `02_Processed` are still there, so LST was converted back into degrees
+using each year's own raster range. Two independent checks passed before
+anything was drawn: 2023 recovers a 65.83 °C maximum, and Very-High Exposure
+comes out at 57.2 km² against the paper's 57.3.
+
+### Contrast had to be measured, not eyeballed
+
+The first render read as a flat plateau. The reason, measured: the middle HALF
+of the cells occupies 10.9% of the LST range, 15.4% of the Composite HVI range
+and 3.4% of the NDBI range. A linear min-max scale therefore spends 85 to 97% of
+its colour and its height on a handful of outliers.
+
+Colour is now CLASSIFIED and the method is named in the legend, because the
+choice changes which cells are called vulnerable:
+
+    Natural breaks (Jenks)  default, and what the study's own ArcGIS maps use
+    Equal count (quantile)  even contrast, but the bottom class on the built-up
+                            model spans 0.204 to 0.534, wider than the other
+                            four together
+    Equal interval          71% of cells in one class; present to show why it
+                            is not the default
+
+Each legend row also carries its cell count and share, so an over-full class is
+visible rather than inferred. Jenks is the exact Fisher-Jenks dynamic program
+run on 200 weighted quantile bins, because the textbook O(n²k) form is about 840
+million inner steps per layer and would lock the page; the breaks are
+indistinguishable, since no cut ever falls inside a bin of 65 near-identical
+values.
+
+Height stays continuous and rank-based rather than classified, so relief
+survives inside each class instead of terracing into five plateaus.
+
+### The Getis-Ord layer that was thrown away, twice
+
+The published headline is that the Composite HVI 99% hot spot is 4.18× the area
+of the LST-only one, 505.0 km² against 120.8. The ArcGIS Gi* output did not
+survive: no `.aprx`, no `.gdb`, no `Gi_Bin` column in either workbook.
+
+A from-scratch recomputation returned 0.93×. It was not shipped. A number that
+contradicts the author's own paper while wearing the paper's authority is worse
+than an absent layer, and the bake script was written with that check built in
+so the failure was loud rather than silent.
+
+The fishnet could not simply be re-run either, because it has no `.dbf` at all —
+geometry with no attribute table, and Hot Spot Analysis needs an input FIELD. So
+the table was rejoined from the workbook into
+`01_DMA\05_ForHotspot\Fishnet_500m_HVI.shp`, with a `CELLID` field carrying the
+original FID, because Hot Spot Analysis writes a NEW feature class whose
+OBJECTID is its own and a row-order join is one edit away from silently wrong.
+
+Run in ArcGIS Pro at the documented 1,000 m band, it still missed: 1,311 and
+2,343 cells, a ratio of 1.79×. The diagnosis came from the class MEANS matching
+the paper almost exactly (0.530 / 0.538 / 0.576 / 0.614 / 0.624 / 0.682 against
+0.523 / 0.532 / 0.575 / 0.620 / 0.632 / 0.689) while the COUNTS did not. Matching
+means with wrong counts points at a significance threshold, not at the statistic.
+
+Applying Benjamini-Hochberg FDR correction to the exported p-values reproduced
+every class count exactly:
+
+    bin      no FDR   with FDR   paper
+     -2        2058       1639    1639
+     -1         657       1370    1370
+      0        4635       5529    5528
+     +1         497        523     523
+     +2         744        636     636
+     +3        2343       2020    2020
+
+    LST 99% hot: 483 cells = 120.8 km²   (paper 483 / 120.8)
+    HVI 99% hot: 2020 cells = 505.0 km²  (paper 2020 / 505.0)
+    ratio 4.18x                          (paper 4.18x)
+
+`arcpy.stats.HotSpots` leaves FDR correction off by default and the paper's
+method section says only "Getis-Ord Gi*, fixed 1,000 m band". **As published the
+result cannot be reproduced.** One clause in the method fixes it, and that is
+worth raising if the paper is ever revised.
+
+The join back was verified rather than assumed: ArcGIS exported `SOURCE_ID`
+instead of the planted `CELLID`, so the HVI value each hot-spot row carries was
+checked against the value of the cell `SOURCE_ID` points at. Max mismatch
+0.00000000 across 12,954 rows. A silent off-by-one there would have put every
+hot spot on the wrong cell while still looking entirely plausible.
+
+### Also in this session
+
+The thirteen ArcGIS map layouts were added to the GIS card in four argued
+groups (inputs, four models, the two hot spot layers, the intersection) rather
+than one undifferentiated grid, at 900px with a 2000px zoom tier, since on a map
+layout the legend is the content.
+
+And a live bug: none of the seven M.Sc. cards opened for a real visitor. See
+CLAUDE.md; the short version is that `elementFromPoint` is only reliable while
+the ring sits at `rotateX(0deg)`, so the front card is now derived from
+projected area instead of hit-tested.
+
+---
+
+## 25. Three project dashboards, one visual language (2026-08-19)
+
+Three project cards now open onto working dashboards rather than screenshots,
+all in the UHI Digital Twin's design system: Jost and JetBrains Mono, frosted
+white panels on #eef2f7, #0369a1 as the interface accent, the cmd-panel corner
+brackets. One rule holds across all three — **the accent never carries data**.
+Chrome is blue and the data has its own scale, so no colour on screen is
+ambiguous.
+
+| card | page | weight |
+|---|---|---|
+| M.Sc. thesis | `public/uhi-twin/` (copied build) | 54 MB |
+| GIS & Remote Sensing | `gis-twin.html` | 1.25 MB payload |
+| IoT pipeline | `iot-twin.html` | 12 KB JS + 12 KB CSS |
+| Multi-city temperature | `mc-twin.html` | 0.45 MB payload |
+
+### The IoT one: same components, better dashboard
+
+The first attempt got the brief wrong. "Same style as the Dammam twin" was read
+as "use the map idiom", and a 3D city replay was built. What was wanted was the
+design language applied to the Streamlit dashboard's own components: a
+continuous-monitoring console showing the flow from sensors through Kafka and
+Spark into the database.
+
+Rebuilt as an operations console — ingestion pipeline across the top with
+batches animating along the rail, live telemetry beside the alert stream, node
+cards with sparklines, distribution and correlation beneath. One clock drives
+all of it. Dropping the map also dropped deck.gl and MapLibre entirely, which is
+why the page is 12 KB rather than a megabyte; the four canvases are hand-drawn.
+
+Two findings in the deployed Streamlit app, both worth fixing at the source:
+
+- **The 30 °C alarm fires on 87.3% of readings.** The nodes' own baselines run
+  32.0 to 43.5 °C by design, so a temperate-climate default cannot separate a
+  hot afternoon from a fault. Bands here come from the distribution: p95
+  warning, p99 critical, per-node IQR for anomalies. Result: 90% normal.
+- **"Normal" renders as a negative number** on the live page. `app.py:364`
+  computes `len(df) − total_alerts`, but a reading counted in both `high_temp`
+  and `anomalies` is counted twice, so with 490 records and 518 alert-rows it
+  underflows to −28. Here each reading is classified once, most severe wins, and
+  the classes sum to 50,410.
+
+### The multi-city one: all five pages
+
+Same mistake in a different form — the first build covered roughly two of the
+Streamlit app's five pages. It has a seventeen-city global view (three measured,
+fourteen estimated) and a methodology page that were missing entirely. Rebuilt
+with all five as tabbed views.
+
+The design decision that carries it is a **shared temperature scale**. Rendered
+separately and stretched to its own range, every city looks the same: hot bits
+and cold bits. On one scale spanning −19.7 to 38.5 °C, Dammam glows, Reykjavik
+goes blue, and the gradient is visible before a word is read. The original
+Kepler.gl clips were produced one city at a time, which is exactly why the
+finding needed a scatter plot to explain it.
+
+Everything recomputes from the CSV at runtime, and every published figure
+reproduced exactly: 25,905 measurements, r = −0.9948, R² = 0.9896, −9.1 °C per
+10° north, 58.2 °C span.
+
+Three things the data said that the original did not:
+
+- **The headline r = −0.995 is on city means, which is three points.** Across
+  all 25,905 individual measurements it is −0.972 (R² = 0.9455). Both are
+  plotted. The gap is the within-city spread a three-point fit cannot see.
+- **Dublin is missing 7 of 14 days entirely** — no cloud-free MODIS overpass,
+  which is ordinary for Ireland in November. The first build silently
+  substituted the all-days mean for missing days, printing a confident 9.6 °C
+  for a day never measured, and drew the trend line straight through the gaps.
+  Now: "no cloud-free pass", and the line renders as separate runs.
+- **The ±1.4 °C stated error holds only inside the model's own valid range.**
+  Within 26–64°N the mean absolute residual is 0.97 °C across 9 cities; across
+  all 14 NH cities it is 3.66 °C, and the whole difference is tropical cities
+  the model never claimed to cover. Shown with the valid band shaded, which
+  makes it a strength rather than a hole.
+
+Also: the app's sidebar says 3 measured + 14 estimated while its page text says
+"16 cities". It is 17.
+
+### Bugs worth remembering
+
+**A build check that always passed.** `npx vite build … | grep error; echo
+"build ok"` — the `echo` runs regardless of exit code, so it printed success
+through several genuinely failing builds and a stray brace in `gis-twin.js` sat
+broken for four steps behind a false green. Check the exit code, not the output.
+
+**`display` beats `[hidden]`.** `.view { display: grid }` silently overrides the
+browser's `[hidden] { display: none }`, so all five multi-city views rendered
+stacked while the tab bar correctly highlighted one that could not be seen. The
+IoT `.shell` had the same latent trap, masked only because the boot overlay
+covered it. Any element given an explicit display needs `[hidden]` restated.
+
+**A fade-in on a high-rate feed hides the newest rows.** The alert stream
+rebuilt its `innerHTML` on every push, restarting the entrance animation on
+every row, so at 5× the whole feed sat permanently mid-fade. Rows now prepend,
+only new ones animate, and the animation slides without fading.
+
+**Startup gated on a third-party event.** `map.on('load')` never fired on the
+IoT page even though the style parsed 93 layers and the tiles arrived. A local
+dataset should not be hostage to a CDN event; startup now runs on whichever
+comes first, the load event or a short timer.
+
+Smaller ones: a fractional replay cursor used as an array index (surfacing far
+away as deck.gl failing to read a colour), a day counter dividing by 720 instead
+of 1440 giving "day 14 of 7", an `elevationScale` applied on top of an already
+metric range making 1.4 km columns 36 km tall, and a map framing routine that
+measured its container while the shell was still hidden and fell back to a
+160 px floor.
