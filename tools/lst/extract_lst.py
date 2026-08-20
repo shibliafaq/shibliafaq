@@ -45,7 +45,8 @@ from shapely.geometry import box, shape
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from cities import ALL, slug                                    # noqa: E402
 
-OUT = r"E:\Website\shibli-portfolio\public\assets\data\lst"
+# Overridable so a trial extraction cannot overwrite the live payload.
+OUT = os.environ.get("LST_OUT", "E:/Website/shibli-portfolio/public/assets/data/lst")
 WINDOW = 0.12          # degrees, about 26 km across
 GRID = 96
 NDATES = 24
@@ -93,7 +94,26 @@ def read_city(lat, lon, item):
     st, qa = out["lwir11"], out["qa_pixel"]
     # Collection 2 Level 2 surface temperature scaling, Kelvin to Celsius.
     c = st.astype("float32") * 0.00341802 + 149.0 - 273.15
-    bad = (((qa >> 1) & 1) | ((qa >> 3) & 1) | ((qa >> 4) & 1)).astype(bool)
+    # QA_PIXEL, Landsat Collection 2 Level 2. Bit 0 fill, 1 dilated cloud,
+    # 2 cirrus, 3 cloud, 4 cloud shadow, 5 snow, 6 clear, 7 WATER.
+    #
+    # WATER (bit 7) is masked because this is a study of city SURFACE
+    # temperature and open water is not the city. Sea and lake pixels are
+    # thermally damped -- they barely follow the seasonal swing the land does --
+    # so a coastal city averaged with its water reads closer to the sea than to
+    # itself, and the whole latitude gradient is compressed toward the ocean.
+    # Edinburgh (Firth of Forth), Dammam (the Gulf) and Reykjavik (the Atlantic)
+    # were all pulling sea into their means before this line included bit 7.
+    #
+    # CIRRUS (bit 2) is masked for the reason clean_frames.py exists: thin
+    # cloud has a perfectly "physical" brightness temperature, so it survives
+    # any absolute threshold and had to be caught a whole frame at a time
+    # afterwards. Dropping it per pixel is both finer and earlier.
+    #
+    # SNOW (bit 5) is deliberately NOT masked. Snow is the real surface of a
+    # winter city, and removing it would warm every high-latitude mean.
+    bad = (((qa >> 1) & 1) | ((qa >> 2) & 1) | ((qa >> 3) & 1)
+           | ((qa >> 4) & 1) | ((qa >> 7) & 1)).astype(bool)
     c[(st == 0) | bad] = np.nan
     return c
 

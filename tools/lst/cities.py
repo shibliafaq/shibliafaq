@@ -70,6 +70,14 @@ NORTH = [
     ("Lagos", "Nigeria", 6.52, 3.38),
     ("Accra", "Ghana", 5.60, -0.19),
     ("Douala", "Cameroon", 4.05, 9.77),
+    # Libreville is at 0.42 NORTH and is fitted north. It sat in SOUTH with the
+    # note "just north, kept for continuity", which made sense when this file was
+    # a single Europe-Africa corridor and the southern group needed every city it
+    # could reach. That corridor is gone -- see the header -- so the only reason
+    # to file a northern city as southern went with it. It also mattered more
+    # than one city should: the hemispheres are fitted separately BECAUSE they
+    # are in opposite seasons, so a misfiled city is put in the wrong season.
+    ("Libreville", "Gabon", 0.42, 9.47),
     ("Kampala", "Uganda", 0.35, 32.58),
     # ---- Asia -------------------------------------------------------
     ("Yakutsk", "Russia", 62.03, 129.73),
@@ -101,7 +109,6 @@ NORTH = [
 ]
 
 SOUTH = [
-    ("Libreville", "Gabon", 0.42, 9.47),          # just north, kept for continuity
     ("Nairobi", "Kenya", -1.29, 36.82),
     ("Kigali", "Rwanda", -1.94, 30.06),
     ("Bujumbura", "Burundi", -3.38, 29.36),
@@ -121,7 +128,10 @@ SOUTH = [
     ("Bulawayo", "Zimbabwe", -20.15, 28.58),
     ("Windhoek", "Namibia", -22.56, 17.08),
     ("Walvis Bay", "Namibia", -22.96, 14.51),
-    ("Polokwane", "South Africa", -23.90, 29.47),
+    # Polokwane, South Africa (-23.90, 29.47) was here and is removed: Landsat
+    # returned no usable scene for it across the whole period, so it never
+    # produced a file and silently sat in the list making the defined count
+    # (136) disagree with the extracted count (135).
     ("Gaborone", "Botswana", -24.65, 25.91),
     ("Pretoria", "South Africa", -25.75, 28.19),
     ("Maputo", "Mozambique", -25.97, 32.57),

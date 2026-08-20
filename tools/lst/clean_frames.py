@@ -29,8 +29,8 @@ import os
 
 import numpy as np
 
-D = os.path.join(os.path.dirname(__file__), "..", "..",
-                 "public", "assets", "data", "lst")
+D = os.environ.get("LST_OUT") or os.path.join(
+    os.path.dirname(__file__), "..", "..", "public", "assets", "data", "lst")
 MARGIN = 25.0
 
 

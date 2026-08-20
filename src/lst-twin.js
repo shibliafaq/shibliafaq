@@ -477,21 +477,40 @@ function fit(xs, ys) {
        disagreed before, because the card reported a straight line while the
        data plainly bends, and a reader comparing the two was right to say the
        equation and the values did not match. */
-    const put = (pre, q, lin, g) => {
+    const put = (pre, q, g) => {
+      /* The MODEL, not a description of it.
+
+         This slot used to read "T = 36.4°C up to 20°, then −0.569°C per degree".
+         That says what the curve does, but a reader cannot put a latitude into
+         it and get a temperature out, which is the one thing an equation is for.
+         The hinge is a max(), so writing the max() is both shorter and exact —
+         and it makes the breakpoint visible as the parameter it is rather than
+         as a clause in a sentence. φ is defined once, in the header card. */
       $(`eq${pre}`).textContent =
-        `T = ${q.plateau.toFixed(1)}°C up to ${q.brk.toFixed(0)}°, `
-        + `then ${q.slope < 0 ? '−' : '+'}${Math.abs(q.slope).toFixed(3)}°C per degree`;
+        `T = ${q.plateau.toFixed(1)} ${q.slope < 0 ? '−' : '+'} `
+        + `${Math.abs(q.slope).toFixed(3)} · max(φ − ${q.brk.toFixed(0)}, 0)`;
       const lats = g.map((c) => Math.abs(c.lat));
+      /* "R² line" used to sit here. It answers "was a hinge worth it", which is
+         a question about the modelling, not about the world, and it belongs in
+         the note below where the comparison is explained. A reader looking at
+         these five numbers wants to know how far off latitude alone can be, so
+         that is what the slot now holds. */
+      const err = Math.sqrt(g.reduce((s, c) => {
+        const d = c.mean - q.at(Math.abs(c.lat));
+        return s + d * d;
+      }, 0) / g.length);
       $(`stat${pre}`).innerHTML = [
         ['R² hinge', q.r2.toFixed(3)],
-        ['R² line', (lin.r * lin.r).toFixed(3)],
-        ['per 10° poleward', `${(q.slope * 10).toFixed(1)}°C`],
+        ['typical error', `±${err.toFixed(1)}°C`],
+        // U+2212, to match the equation above it; a hyphen reads as a dash
+        ['per 10° poleward',
+          `${q.slope < 0 ? '−' : '+'}${Math.abs(q.slope * 10).toFixed(1)}°C`],
         ['cities', String(q.n)],
         ['range', `${Math.min(...lats).toFixed(0)}°–${Math.max(...lats).toFixed(0)}°`],
       ].map(([k, v]) => `<div><div class="stat__v">${v}</div><div class="stat__k">${k}</div></div>`).join('');
     };
-    put('N', q2N, fitN, N);
-    put('S', q2S, fitS, S);
+    put('N', q2N, N);
+    put('S', q2S, S);
     $('eqN').style.cssText = `color:${HEMI.N};background:${HEMI.N}14;border-color:${HEMI.N}44`;
     $('eqS').style.cssText = `color:${HEMI.S};background:${HEMI.S}14;border-color:${HEMI.S}44`;
     $('statN').querySelectorAll('.stat__v').forEach((e) => { e.style.color = HEMI.N; });
@@ -515,39 +534,110 @@ function fit(xs, ys) {
     const spanS = span(S);
     const weaker = fitS.r * fitS.r < fitN.r * fitN.r;
 
-    $('noteN').innerHTML =
-      `Autumn, across ${q2N.n} cities and ${spanN.toFixed(0)} degrees of latitude. `
-      + `Flat at about <strong>${q2N.plateau.toFixed(0)}°C</strong> all the way to `
-      + `${q2N.brk.toFixed(0)}°, then falling `
-      + `<strong>${Math.abs(q2N.slope * 10).toFixed(1)}°C for every ten degrees</strong>. `
-      + `Letting the fit bend once lifts R² from ${(fitN.r * fitN.r).toFixed(2)} to `
-      + `${q2N.r2.toFixed(2)}.`;
+    /* WHAT THE READER SHOULD TAKE AWAY, not how the fit was made.
 
-    /* Three branches rather than two, because the size of the gap is the whole
-       point. On the original Europe-Africa corridor the southern R² was 0.25
-       against the north's 0.79, and the obvious reading was that the southern
-       relationship is genuinely weak. It was not — the corridor ran out of land
-       at Cape Agulhas. Adding South America and Australasia took the southern
-       span from 34 degrees to 53 and the sample from 30 cities to 57, and R²
-       went to 0.61. The lesson generalises past this chart: a weak fit over a
-       third of the range is a statement about the range. */
-    $('noteS').innerHTML =
-      `Spring, across ${q2S.n} cities and ${spanS.toFixed(0)} degrees of latitude. `
-      + `Flat at about <strong>${q2S.plateau.toFixed(0)}°C</strong> to ${q2S.brk.toFixed(0)}°, `
-      + `then falling <strong>${Math.abs(q2S.slope * 10).toFixed(1)}°C for every ten `
-      + `degrees</strong>, a steeper descent than the north's. The shape matters far more `
-      + `here: R² goes from ${(fitS.r * fitS.r).toFixed(2)} straight to `
-      + `<strong>${q2S.r2.toFixed(2)} hinged</strong>, because so many southern cities sit `
-      + `on the flat part.`;
+       These notes used to describe the MODEL: "letting the fit bend once lifts
+       R² from 0.78 to 0.83". True, and useless to anyone who came to find out
+       what latitude does to temperature. Worse, the old phrasing hid the most
+       interesting result in the chart. "Flat at about 36°C to 20°" reads as
+       "the tropics are all 36°C", and they are not — the cities inside the flat
+       part span seventeen degrees. The finding is that across the tropics
+       latitude explains NONE of a very large spread; something else does.
+
+       So each panel now says, in order: what the gradient does, how well
+       latitude alone can place a city, and which cities it fails on. Every
+       number is derived, so the prose cannot drift from the chart above it. */
+    const resid = (g, q) => {
+      const e = g.map((c) => ({ name: c.name, d: c.mean - q.at(Math.abs(c.lat)) }));
+      const abs = e.map((x) => Math.abs(x.d)).sort((a2, b2) => a2 - b2);
+      const rmse = Math.sqrt(e.reduce((s, x) => s + x.d * x.d, 0) / e.length);
+      const flat = g.filter((c) => Math.abs(c.lat) <= q.brk).map((c) => c.mean);
+      return {
+        rmse,
+        within3: Math.round(abs.filter((a2) => a2 <= 3).length / abs.length * 100),
+        nFlat: flat.length,
+        lo: Math.min(...flat),
+        hi: Math.max(...flat),
+        worst: e.slice().sort((a2, b2) => Math.abs(b2.d) - Math.abs(a2.d)).slice(0, 3),
+      };
+    };
+
+    const note = (g, q, season) => {
+      const r = resid(g, q);
+      const miss = r.worst
+        .map((x) => `${x.name} ${x.d > 0 ? '+' : '−'}${Math.abs(x.d).toFixed(1)}`)
+        .join(', ');
+      return `<strong>Across the first ${q.brk.toFixed(0)}° there is no gradient at `
+        + `all.</strong> Those ${r.nFlat} cities run from ${r.lo.toFixed(0)} to `
+        + `${r.hi.toFixed(0)}°C — ${(r.hi - r.lo).toFixed(0)} degrees of spread that `
+        + `latitude does not explain, because the tropics are humid and cloudy and it `
+        + `is the arid subtropics that get hottest. Past ${q.brk.toFixed(0)}° the `
+        + `decline is steady: <strong>${Math.abs(q.slope * 10).toFixed(1)}°C colder for `
+        + `every ten degrees</strong> poleward.<br><br>`
+        + `Latitude alone places a ${season} city within about `
+        + `<strong>±${r.rmse.toFixed(1)}°C</strong>, ${r.within3}% of them inside 3°C. `
+        + `Where it misses it misses for reasons latitude cannot see — the largest are `
+        + `${miss}.`;
+    };
+
+    $('noteN').innerHTML = note(N, q2N, 'northern');
+    $('noteS').innerHTML = note(S, q2S, 'southern');
+
+    /* WHY THE FITS ARE SPLIT, AND THE BIAS THAT SURVIVES THE SPLIT.
+
+       This note used to say the hemispheres are fitted separately "because they
+       are in opposite seasons". That is a real confound in general and it is not
+       this one: each city's mean is taken across a whole year of acquisitions —
+       measured, both hemispheres average 42% warm-season scenes across ten of
+       twelve months, which is what an evenly sampled year looks like. Opposite
+       seasons average out. The honest reason to split is that the two
+       hemispheres are different populations — the south is far more ocean, and
+       runs out of land at 53° where the north continues to 70°.
+
+       The bias that does NOT average out is cloud. Landsat needs daylight and a
+       gap in the cloud, and a city at 65° has much less of either in January
+       than one at 5°, so the scenes that survive at high latitude are
+       disproportionately summer ones. That is a bias which GROWS with latitude,
+       which means it lifts the cold end of the gradient and flattens the slope.
+       Reported here rather than buried, because it points one way: the true
+       decline is steeper than the number above it. */
+    const warmOf = (g) => {
+      const w = g.map((c) => c.warm).filter((x) => typeof x === 'number');
+      return w.length ? w.reduce((a2, b2) => a2 + b2, 0) / w.length : null;
+    };
+    const warmAll = warmOf(CITIES);
+    const hi = CITIES.filter((c) => Math.abs(c.lat) >= 55);
+    const lo = CITIES.filter((c) => Math.abs(c.lat) <= 15);
+    const warmHi = warmOf(hi);
+    const warmLo = warmOf(lo);
+
+    let bias = '';
+    if (warmHi !== null && warmLo !== null && warmHi > warmLo) {
+      bias = ` <br><br><strong>One bias does not average out.</strong> Landsat needs `
+        + `daylight and a break in the cloud, so a high-latitude city yields far fewer `
+        + `usable winter scenes: cities beyond 55° are `
+        + `<strong>${Math.round(warmHi * 100)}% warm-season</strong> against `
+        + `${Math.round(warmLo * 100)}% within 15° of the equator. That lifts the cold `
+        + `end of the curve, so the decline quoted above is a <strong>lower bound</strong> — `
+        + `the real gradient is steeper.`;
+    }
 
     $('splitNote').innerHTML =
-      `Fitted separately because the hemispheres are in opposite seasons. Pooling all `
-      + `${fitAll.n} cities gives R² = ${(fitAll.r * fitAll.r).toFixed(3)}, `
+      `<strong>T</strong> is mean surface temperature in °C and <strong>φ</strong> is degrees of latitude from the equator, unsigned — so each fit runs from its own equator to its own pole.<br><br>`
+      + `Fitted separately because the hemispheres are different populations, not because `
+      + `of season: each city's mean spans a full year of acquisitions, and both `
+      + `hemispheres come out evenly sampled`
+      + (warmAll !== null ? ` at ${Math.round(warmAll * 100)}% warm-season scenes` : '')
+      + `, so the calendar averages out. The south is far more ocean and runs out of land `
+      + `at ${Math.max(...CITIES.filter((c) => c.lat < 0).map((c) => Math.abs(c.lat))).toFixed(0)}° `
+      + `where the north reaches `
+      + `${Math.max(...CITIES.filter((c) => c.lat > 0).map((c) => c.lat)).toFixed(0)}°. `
+      + `Pooling all ${fitAll.n} cities gives R² = ${(fitAll.r * fitAll.r).toFixed(3)}, `
       + `<strong>weaker than either hemisphere on its own</strong>, so a single line across `
       + `both describes neither. Each fit is flat across the tropics and straight `
       + `poleward of a breakpoint, because surface temperature does not peak at the `
       + `equator. It peaks across the arid subtropics: the equator is humid, cloudy and `
-      + `vegetated, and evaporation cools it.`;
+      + `vegetated, and evaporation cools it.${bias}`;
 
     $('tblNote').textContent =
       `${CITIES.length} cities, ${idx.source}. Mean is across each city's own Landsat acquisitions; `
@@ -571,7 +661,8 @@ function fit(xs, ys) {
   function drawFit() {
     const { ctx, w, h } = fitCanvas($('fit'));
     ctx.clearRect(0, 0, w, h);
-    const L = 46, R = 16, T = 14, B = 30;
+    // B grew from 30 to 44 to make room for the x axis title below the ticks.
+    const L = 46, R = 16, T = 14, B = 44;
     const pw = w - L - R;
     const ph = h - T - B;
     if (pw <= 0 || ph <= 0) return;
@@ -592,7 +683,27 @@ function fit(xs, ys) {
       ctx.textAlign = 'right'; ctx.fillText(`${v.toFixed(0)}°`, L - 7, y + 3);
     }
     ctx.textAlign = 'center';
-    for (let lat = 0; lat <= 70; lat += 10) ctx.fillText(`${lat}°`, X(lat), h - 9);
+    for (let lat = 0; lat <= 70; lat += 10) ctx.fillText(`${lat}°`, X(lat), h - 20);
+
+    /* AXIS TITLES. Both axes were labelled in degrees — 0° to 70° along the
+       bottom and 5° to 48° up the side — with nothing saying that one is
+       latitude and the other Celsius. A reader has to infer which is which from
+       the shape of the data, and inferring the axes is not their job.
+
+       Set apart from the tick labels: dimmer, letter-spaced, and the y title
+       rotated up the left edge in the usual convention. */
+    ctx.save();
+    ctx.fillStyle = 'rgba(247,243,236,.42)';
+    ctx.font = '9px "JetBrains Mono", monospace';
+    ctx.letterSpacing = '0.08em';
+
+    ctx.textAlign = 'center';
+    ctx.fillText('DEGREES OF LATITUDE FROM THE EQUATOR', L + pw / 2, h - 5);
+
+    ctx.translate(11, T + ph / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('MEAN SURFACE TEMPERATURE °C', 0, 0);
+    ctx.restore();
 
     /* The curve is sampled only across latitudes that actually have cities.
 

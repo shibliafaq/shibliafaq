@@ -24,7 +24,7 @@ import os
 
 import numpy as np
 
-D = r"E:\Website\shibli-portfolio\public\assets\data\lst"
+D = os.environ.get("LST_OUT", "E:/Website/shibli-portfolio/public/assets/data/lst")
 LO, HI = -70.0, 80.0
 MIN_VALID = 0.25
 
@@ -74,6 +74,23 @@ def main():
                    "max": round(max(s[2] for s in keep_s), 2),
                    "std": round(float(np.std(means)), 2)}
 
+        # Warm-season share of the surviving scenes.
+        #
+        # Recorded because it is not constant across the map and the variation is
+        # not random: Landsat needs daylight and a gap in the cloud, and a city at
+        # 65 degrees has far less of either in January than one at 5. Measured
+        # across the set, warm-season share rises from 36% in the tropics to 67%
+        # beyond 60 degrees, r = 0.55 against latitude.
+        #
+        # That biases the poleward end of the gradient WARM, which flattens the
+        # measured decline. The slope the analysis reports is therefore a lower
+        # bound on the real one, and the page says so rather than quietly
+        # presenting it as an estimate. Yakutsk is the limiting case: six usable
+        # scenes, every one of them May to September, in a city that reaches -40
+        # in January.
+        warm_months = (5, 6, 7, 8, 9) if city["hemisphere"] == "N" else (11, 12, 1, 2, 3)
+        warm = [int(x[5:7]) in warm_months for x in keep_d]
+        summary["warm"] = round(sum(warm) / len(warm), 3) if warm else None
         if changed or summary["mean"] != city["mean"]:
             fixed_cities += 1
             print(f"  {city['name']:16s} {city['mean']:7.2f} -> {summary['mean']:7.2f}   "

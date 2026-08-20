@@ -1327,7 +1327,7 @@ ambiguous.
 | M.Sc. thesis | `public/uhi-twin/` (copied build) | 54 MB |
 | GIS & Remote Sensing | `gis-twin.html` | 1.25 MB payload |
 | IoT pipeline | `iot-twin.html` | 12 KB JS + 12 KB CSS |
-| Multi-city temperature | `mc-twin.html` | 0.45 MB payload |
+| Multi-city temperature | ~~`mc-twin.html`~~ | **retired 2026-08-20, see §28** |
 
 ### The IoT one: same components, better dashboard
 
@@ -1653,3 +1653,172 @@ latitudes that have cities**; the old line was drawn 0°–72° regardless of wh
 the data stopped, which was half the reported mismatch on its own. And the
 hemisphere accents went to near‑maximum chroma (`#22e0ff`, `#ff5c2b`), because a
 3.6px scatter dot has very little area in which to make its case.
+
+## 28. mc-twin retired; lst-twin is the temperature dashboard (2026-08-20)
+
+The 135-city Landsat build replaced the 3-city MODIS one. `mc-twin.html`,
+`src/mc-twin.js`, `src/styles/mc-twin.css` and the 440 KB
+`public/assets/data/multicity.json` are deleted, and the `mcTwin` entry is out
+of `vite.config.js`. **502 KB off the build.**
+
+It was already orphaned: `src/data/projects.js` pointed the temperature card at
+`/lst-twin.html`, and the `twinLegacy` block that still named `mc-twin.html` was
+read by nothing. That block is gone too.
+
+### The card copy was stale, and by more than a rounding
+
+Written when the payload held 82 cities. Measured against
+`public/assets/data/lst/index.json`, it holds **135** — 79 north, 56 south,
+69.7°N to 53.2°S. The card advertised *"82 cities ... Tromsø at 69°N to
+Gqeberha at 34°S"*, understating the southern reach by nineteen degrees.
+Corrected to 135 and to Punta Arenas at 53°S in `sec`, `lead` and `hint`.
+
+**Read the counts off the payload, not off the prose.** The comment in
+`projects.js` now says so.
+
+### What was thrown away, and the one thing worth keeping
+
+mc-twin carried 68 lines of uncommitted, working, verified changes: a Relief
+slider, per-city height normalisation, and a deck.gl colour fix. All of it went,
+because the page had no route to a user. The finding behind the colour fix is
+worth keeping, because it will recur anywhere `colorRange` is used:
+
+> **deck.gl does not place a `colorRange` at the values you think.** It builds a
+> linear-filtered texture one texel per colour and samples at
+> `u = (v - lo) / (hi - lo)`, so stop *i* lands at the texel centre
+> `(i + 0.5) / N` of the domain, not at the ramp’s own anchor. With a 7-stop
+> ramp the map disagreed with the legend printed beneath it by up to 5.7°C —
+> worst at 26°C, where map and card were **65 apart in RGB**. A corrected
+> `colorDomain` does not help: the texel-centre inset survives any domain. The
+> fix is to hand deck.gl a dense range already sampled at the texel centres it
+> will use — 128 texels took the worst error to **3 RGB**.
+
+**`lst-twin` is not affected.** It computes `ramp(t)` per datum and passes
+explicit RGB through `getFillColor`, so there is no colour texture to mis-sample.
+
+The deleted files are in git at `8371aca`; the uncommitted diff was preserved
+outside the repo before deletion and is not in history.
+
+## 29. Water was never masked, and the analysis panels described the fit (2026-08-20)
+
+### The bug: one missing bit
+
+`extract_lst.py` masked `QA_PIXEL` bits 1, 3 and 4 — dilated cloud, cloud,
+cloud shadow. In Landsat Collection 2 **bit 7 is Water**, and it was not in the
+mask, so every coastal city averaged sea surface into its land temperature.
+Provable from the source; no measurement needed to establish it.
+
+Measured on a trial extraction, the size of it was the surprise:
+
+| city | pixels dropped | mean before → after |
+|---|---|---|
+| Reykjavik | **57.1%** | 12.14 → 16.86 (**+4.72 °C**) |
+| Edinburgh | 43.2% | 15.59 → 17.91 (+2.32 °C) |
+| Mumbai | 38.2% | 32.40 → 34.95 (+2.55 °C) |
+| Singapore | 33.0% | 37.44 → 31.58 (**−5.86 °C**) |
+| Dammam | 0.8% | 41.91 → 42.01 (+0.10 °C) |
+| Riyadh *(control)* | **0.0%** | no change |
+
+**More than half of Reykjavik was sea.** Riyadh dropping exactly nothing is the
+check that the mask selects water rather than just deleting pixels.
+
+**Singapore moves the other way.** Everywhere else water cooled the city; in
+tropical water it warmed it. The bias changes sign with climate, so it distorts
+a latitude gradient rather than merely offsetting it — which is why it could not
+be left in and corrected for later.
+
+Bit 2 (cirrus) was added in the same line, per-pixel, which is a finer and
+earlier version of what `clean_frames.py` does a whole frame at a time. Bit 5
+(snow) is deliberately NOT masked: snow is the real surface of a winter city.
+
+### What re-extraction changed
+
+| | old | new |
+|---|---|---|
+| North plateau | 36.4 °C | **38.3 °C** |
+| South plateau | 32.7 °C | **34.7 °C** |
+| North slope /10° | −5.69 | −5.83 |
+| South slope /10° | −8.35 | −8.05 |
+| North R² | 0.826 | 0.789 |
+| South R² | 0.819 | 0.793 |
+
+**A prediction that half failed.** Removing cool coastal water should steepen
+the poleward decline. North did; south went flatter. The reasoning was too
+simple and is recorded as wrong rather than quietly dropped.
+
+**R² fell in both, and that is not a regression.** Water is thermally uniform,
+so averaging it in made cities resemble one another; the old fits were partly
+fitting ocean. What is left is real variance between real cities.
+
+### Casualties
+
+- **Yakutsk lost entirely** — 6 scenes, all summer, none survived the stricter
+  mask. 135 → 134 cities. It was the largest northern residual.
+- **Polokwane removed from `cities.py`** — returned NO USABLE SCENES across the
+  whole period, so it never produced a file and silently made the defined count
+  (136) disagree with the extracted count (135).
+- **Dar es Salaam is down to 2 scenes.** A "mean across a year" from two
+  acquisitions is not one. Still shipping; flag or drop it.
+
+### Libreville was in the wrong hemisphere
+
+`0.42°N`, filed in `SOUTH` with the note *"just north, kept for continuity"* —
+deliberate, and sound when this was a single Europe-Africa corridor that needed
+every southern city it could reach. That corridor was abandoned; the reason went
+with it. It matters more than one city should, because the hemispheres are fitted
+separately, so a misfiled city is fitted against the wrong population.
+
+Note that `summary.hemisphere` is baked in at extraction time, so editing
+`cities.py` is not enough — the city has to be re-extracted.
+
+### The panels described the fit, not the world
+
+They said *"letting the fit bend once lifts R² from 0.78 to 0.83"* — a fact about
+modelling, to a reader who came to find out what latitude does to temperature.
+Worse, *"flat at about 36°C to 20°"* reads as "the tropics are all 36°C". They
+are not: the cities inside the flat part span **21 °C**. The finding is that
+across the tropics latitude explains **none** of a very large spread.
+
+Each panel now gives, in order: what the gradient does, how well latitude alone
+places a city (**±4.6 °C** north, 64% within 3 °C), and which cities it fails on
+— La Paz sits 9 °C below its latitude because it is 3,600 m up. All derived, so
+the prose cannot drift from the chart.
+
+`R² line` left the stat row for **typical error ±°C**. Whether a hinge beat a
+straight line is a modelling question and belongs in the split note, where it is.
+
+### Two claims on that tab were false
+
+**"Fitted separately because the hemispheres are in opposite seasons."** Measured:
+both hemispheres average **42% warm-season scenes across ten of twelve months**,
+which is what an evenly sampled year looks like. Each mean spans a full year;
+the calendar averages out. The honest reason to split is that they are different
+populations — the south is far more ocean and runs out of land at 53° where the
+north reaches 70°.
+
+**The bias that does not average out is cloud.** Landsat needs daylight and a gap
+in the cloud, so high-latitude cities yield far fewer usable winter scenes:
+**60% warm-season beyond 55° against 34% within 15° of the equator**,
+r = 0.55 against latitude. That lifts the cold end and flattens the slope, so the
+quoted decline is a **lower bound**. Recorded in the panel rather than buried,
+because it points one way.
+
+`repair_lst.py` now writes a `warm` field per city so the page derives this
+instead of asserting it.
+
+### Also on that tab
+
+- **Axis titles.** Both axes were labelled in degrees — `0°–70°` across, `5°–48°`
+  up — with nothing saying one was latitude and the other Celsius.
+- **The equations are now equations.** `T = 36.4°C up to 20°, then −0.569°C per
+  degree` describes the curve; you cannot put a latitude in and get a temperature
+  out. Now `T = 38.3 − 0.583 · max(φ − 20, 0)`, with `φ` defined once as unsigned
+  degrees from the equator — without which a reader could try φ = −53 for Punta
+  Arenas. Verified by substitution: Tromsø 69.65° → 8.1 °C against 7.56 observed.
+
+### Pipeline
+
+`extract_lst.py`, `repair_lst.py` and `clean_frames.py` all honour `LST_OUT`, so
+the whole chain runs into a staging directory and only a finished, repaired set
+is swapped into `public/`. The old water-included set was kept aside for
+comparison before the swap.
