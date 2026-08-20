@@ -174,25 +174,19 @@ export const projects = {
        each city separately, which is why the finding needed a scatter plot to
        explain it: separately scaled, all three look the same. Sharing the scale
        makes the gradient visible before anything is read. */
-    /* The Landsat build supersedes the MODIS one: 82 cities instead of 3, 30 m
-       instead of 1 km, and both hemispheres fitted separately. mc-twin.html is
-       still built and still correct; this is simply the larger instrument. */
+    /* The Landsat build REPLACED the MODIS one on 2026-08-20: 135 cities
+       instead of 3, 30 m instead of 1 km, and both hemispheres fitted
+       separately. mc-twin.html has been deleted. The counts below are read
+       off public/assets/data/lst/index.json — if the payload is rebuilt,
+       re-check them there rather than trusting this comment. */
     twin: {
-      sec: 'Surface temperature, 82 cities',
-      lead: 'Landsat 8/9 thermal imagery at 30 m for 82 cities along a north–south transect, from Tromsø at 69°N to Gqeberha at 34°S. Pick a city to see its heat surface in 3D and scrub a year of acquisitions; the analysis tab fits each hemisphere separately.',
+      sec: 'Surface temperature, 135 cities',
+      lead: 'Landsat 8/9 thermal imagery at 30 m for 135 cities along a north–south transect, from Tromsø at 70°N to Punta Arenas at 53°S. Pick a city to see its heat surface in 3D and scrub a year of acquisitions; the analysis tab fits each hemisphere separately.',
       title: 'Global surface temperature — Landsat 30 m',
       src: '/lst-twin.html',
-      hint: '82 cities · 30 m · a year of acquisitions · two hemispheres',
+      hint: '135 cities · 30 m · a year of acquisitions · two hemispheres',
       note: 'Landsat 8/9 Collection 2 Level 2 (USGS) via Microsoft Planetary Computer, band ST_B10, cloud and shadow masked per pixel with QA_PIXEL. Cities carry between 6 and 24 usable acquisitions depending on cloud. Basemap © Esri, © OpenStreetMap contributors.',
-    },
-    twinLegacy: {
-      sec: 'Three cities, one scale',
-      lead: 'All 25,905 MODIS measurements as 3D hexbins, the three cities side by side on a single shared temperature scale, with the latitude fit and the fourteen-day record beneath. Scrub the days or pool them.',
-      title: 'Multi-city surface temperature — 3D comparison',
-      src: '/mc-twin.html',
-      hint: 'Shared scale · latitude fit · 14-day record',
-      note: 'Real NASA MODIS/061/MOD11A1 data, cloud cover ≤ 10%. Every statistic recomputes from the CSV at runtime. Coverage is not equal across the three: MODIS needs a cloud-free overpass, so Dublin has seven of the fourteen days and the dashboard says so rather than interpolating.',
-    },
+    },
     cat: 'ICS 574: Big Data Analytics · KFUPM · Fall 2025 · Co-author: Sultan Aldhafeeri',
     title: 'Multi-City Surface Temperature Analysis — 3 Cities · 3 Continents',
     desc: '25,905 real NASA MODIS/061/MOD11A1 measurements across Dammam (26°N), Dublin (53°N), and Reykjavik (64°N) over 14 days. Near-perfect latitude–temperature correlation: r = −0.995, R² = 0.990. Every 10° northward = 9.1°C colder. GPU-accelerated Kepler.gl 3D hexbin maps at 60 FPS. The 3D clips below are direct recordings of the live Kepler.gl visualisation.',

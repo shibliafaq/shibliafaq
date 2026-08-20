@@ -207,8 +207,11 @@ impossible to merge is the same one that makes them trivial to embed.
 | UHI Digital Twin (thesis card) | `E:\KFUPM\uhi_digital_twin_v2\portfolio\uhi-twin-portfolio\dist` | `public/uhi-twin/` (54 MB) |
 | Dammam 3D twin (GIS card) | `gis-twin.html` | 1.25 MB payload |
 | IoT monitoring (IoT card) | `iot-twin.html` | 12 KB JS + 12 KB CSS, no map libs |
-| Multi-city temperature (temp card) | `mc-twin.html` | 0.45 MB payload |
 | Global Landsat LST (temp card) | `lst-twin.html` | ~45 MB, one file per city, fetched on demand |
+
+`mc-twin.html` (3-city MODIS) was **retired on 2026-08-20** — lst-twin replaced
+it on the temp card. Files, build entry and the `twinLegacy` block are gone.
+See `docs/CONTEXT.md` §28.
 
 The embed has three states, and the middle one is the point: **cold** (nothing
 fetched), **live** (running and visible behind a transparent shield), **armed**
