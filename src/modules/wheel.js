@@ -201,7 +201,7 @@ const LISS = {
    reverted: it re-tilts the curve, and both the right-hand side and the path
    itself read worse for it. */
 const FREQ_Y = 2;
-const PHI_Z = 0.42;
+const PHI_Z = 0.05;
 
 function lissAt(th) {
   return {

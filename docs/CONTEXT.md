@@ -2724,3 +2724,46 @@ flicker has to be measured with `requestAnimationFrame` against a real eased
 input. And "never crosses the threshold" is not the same claim as "cannot flip":
 when the margin approaches the precision the values are written at, the ordering
 is decided by rounding.
+
+### The incoming tile, and why clamping to the LEADING card was not enough (2026-08-21)
+
+The clamp above guarantees the deepest card is in front of the word. The report
+that followed was precise and pointed at what that misses: "just after this frame
+it comes forward, it is never always forward while its incoming".
+
+The deepest card and the tile the eye calls "the centre one" were not the same
+card. The depth peak sits at `x = sin(PHI_Z)`, and at 0.42 that is 0.408 of the
+half-width, well right of centre. So a tile becomes the leading card only AFTER
+it has passed the middle. On the way in it is behind the plane, the clamp does
+not protect it, and it pops forward once it takes the lead.
+
+Clamping harder cannot fix this, because the clamp tracks depth and the problem
+is that depth peaks in the wrong PLACE.
+
+**PHI_Z is now 0.05**, which puts the peak essentially on the visual centre, so
+the tile arriving at the middle is already the deepest one and the clamp covers
+its whole approach. Not exactly 0: at 0 the depth is symmetric about the centre
+and cards pair to identical z, which is coplanar and lets paint order fall back
+to DOM order. 0.05 breaks the tie while moving the peak only 0.05 of the
+half-width off centre.
+
+Measured per frame over a real eased scroll, both directions:
+
+| | before (0.42) | after (0.05) |
+|---|---|---|
+| frames the centre tile is behind the word | flickering | **0 of 85** |
+| frames the leading tile is behind | 0 | 0 |
+| smallest depth margin | 24px | 24px |
+| frames the top two cards are within 6px wide | low | 12 of 85 |
+
+That last row is the price, and it is the pairing CONTEXT 31 removed PHI_Z 0.42
+to avoid: on 14% of frames the front two cards are near-identical in size. It is
+affordable now only because `.is-front` marks the leading card outright and the
+click target follows the same card, so a size tie no longer means the reader
+cannot tell which card is live.
+
+**This also settles an earlier request for free.** The largest tile now sits at
+the centre of the flow, which was asked for several rounds back and refused then
+because 0.42 put the peak 0.849 away from the middle. One constant was serving
+three different requirements, and only once all three were on the table did the
+value that satisfies them become obvious.
