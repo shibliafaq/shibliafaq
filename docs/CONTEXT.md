@@ -2793,3 +2793,282 @@ Verified per frame over an eased scroll in both directions, 108 frames:
 | rendered title width | 1218px, unchanged by the glow |
 
 Accepted by the reader at this setting.
+
+## 38. Below 900px, and a copy tool that could not tell which side moved (2026-08-21)
+
+The section 37 handoff's four tasks. The branch was merged first, because three
+commits living on one disk is a risk that outranks any of the work in them:
+`wheel-depth-and-honest-stats` fast-forwarded onto `main` and was pushed, 11
+files, +1118/-109. README.md was confirmed absent from the merge before it ran,
+since that file is also the GitHub profile page.
+
+### The wheel below 900px had never been looked at, and three things were wrong
+
+`data-wheel="auto"` flips the wheel to its horizontal axis at 900px. Everything
+sections 34 and 36 added was built and measured above that line.
+
+**What survived the breakpoint unharmed**, measured at 880x860 and 390x844:
+`is-front` is always exactly one card and always the same card `frontCard()`
+derives from projected area; `is-plate` still drops the body on the back half;
+`--liss-plane` still tracks (0.9208 to 0.9295); the hub label keeps its glow and
+its solved size; `overRing()` claims 97.7% of the stage and consumes the event,
+because its lissajous branch uses the union of the card boxes and never looks at
+`horizontal` at all. 0 cards clipped at every width tested.
+
+**A vertical swipe over the figure did nothing whatsoever.** The base rule is
+`.wheel { touch-action: pan-x }`, which tells the browser not to pan vertically
+over the section -- correct while the wheel owns vertical, which it does on the
+desktop. Below 900px the wheel's own axis is horizontal and the drag handler
+reads `clientX` and ignores `clientY`. So the browser refused to scroll and the
+JS refused to turn. Measured on a 390x844 phone: phase moved 0, page scrolled 0.
+
+The base rule's own comment argued that the escape route was the section's
+margins. That was written when `.wheels` held two narrow wheels in a grid.
+Section 31 merged them into one full-width figure, which leaves 32px of margin
+on the left and 33px on the right of a 390px viewport -- so 83% of the width was
+a dead band 371px tall. Fixed with `touch-action: pan-y` inside the 900px block,
+the exact mirror of the axis the wheel actually uses there: the browser keeps
+vertical, JS keeps horizontal, and both gestures work. Verified after the change
+that a horizontal swipe still turns the wheel.
+
+**Every title on a phone is illegible, and that one is left open.** At 390x844
+the stage is 350x371, the front card renders 97px wide and its title at 4.5pt;
+the smallest is 1.2pt. **0 of 14 titles reach 8pt**, against 4 of 14 on the
+desktop. This is `LISS.front = 0.28` doing exactly what it is told -- 0.28 of a
+350px stage is 98px -- and section 34's lever, the card's own type, cannot
+rescue a 0.33 scale factor by itself.
+
+The root of it is the stage height. `44vh` was chosen so that TWO stages plus no
+gap totalled 88vh and both rings were visible at once. That arrangement stopped
+existing when section 31 merged the wheels, so 44vh is now a small number with
+no argument left behind it. Raising it is a visible change to how the section
+reads on a phone rather than a bug fix, so it is recorded here and in the
+stylesheet and left for a decision. The same cause shows up at 880x860 as
+**19.5% overlap across 13 pairs**, against the 12% budget section 34 worked to.
+
+Also removed there: `.wheels { grid-template-columns: 1fr; gap: 0 }`, which the
+same block still carried for the second wheel. `.wheels` is `display: block` and
+holds one section, so both declarations were inert.
+
+### Reduced motion was showing three projects out of fourteen
+
+The worst of the four, and it was never mobile-specific -- it was broken at every
+width, for anyone with the accessibility setting on.
+
+The fallback set the cards to `position: relative; transform: none`, which takes
+them out of the 3D placement correctly, and then left them stacked in normal flow
+inside a stage that is still `height: clamp(600px, 88vh, 820px)` with
+`overflow: hidden`. Measured:
+
+| | desktop 1440x900 | phone 390x844 |
+|---|---|---|
+| height 14 cards need | 5040px | 2940px |
+| stage height | 792px | 371px |
+| cards visible | **3 of 14** | **2 of 14** |
+
+The comment promised "a plain readable grid" and there was no grid: the ring is
+`display: block`, so the cards simply stacked and the stage clipped them.
+
+The part that had been missed is that the CONTAINER has to leave the 3D framing
+too, not just the cards. Three elements, not one: the stage stops clipping and
+stops being a fixed height; `.wheels .wheel__scene`, which is
+`position: absolute; inset: 0` and sits between the stage and the ring, has to
+go back into flow or **the stage collapses to 0 height even after the ring is
+fixed** -- measured exactly that on the first attempt; and the ring becomes the
+grid. The head comes off the ring's axis, and the label drops its solved 241px
+`--hub-size`, which is sized to be crossed by moving cards and means nothing
+above a static grid.
+
+`overRing()` also returns false under reduced motion now. Without it the wheel
+still claimed the union of the card boxes -- in a grid, all of them -- and
+`preventDefault()` on that band stopped the page scrolling past a section the
+reader cannot turn anyway.
+
+| after | desktop | phone |
+|---|---|---|
+| cards visible | **14 of 14** | **14 of 14** |
+| cards clipped | 0 | 0 |
+| overlapping pairs | 0 | 0 |
+| grid columns | 4 | 1 |
+| smallest title | 16.2pt | 13.8pt |
+
+Verified by applying the block's exact declarations at runtime and measuring,
+because `prefers-reduced-motion` cannot be emulated from inside the page.
+
+### The retired projects module is gone
+
+`src/modules/projects.js`, the horizontal pinned-track implementation the wheel
+replaced. Confirmed unreachable before deleting rather than after: `initProjects`
+appears only at its own definition, and `projectsCount`, `projectsPin` and
+`projectsTrack` appear only inside that same file. No static import, no dynamic
+`import()` (the lazy ones are i18n, earth, atlas, thermal, walk, valleyjourney,
+worldmap and cutefantasy), and it is not a `rollupOptions.input` entry. It would
+have returned at its own first line anyway, since `projectsPin` no longer exists.
+Build passes without it.
+
+### The copy tool now knows which side moved
+
+`tools/sync-site-copy.mjs` treated `docs/site-copy.md` as authoritative and wrote
+it over `index.html`. That assumption is wrong, and section 33 recorded how close
+it came: `--write` wanted to change `publications.1` and `publications.3`, and
+the markdown still held the pre-publication text, so applying it would have
+reverted a paper published with a DOI back to "Under Review". It was caught by
+reading `git diff` afterwards.
+
+The reason it could not be caught automatically is that **a difference between
+two files says nothing about which one is newer.** "The doc was edited" and "the
+page was edited and the doc is stale" produce an identical diff.
+
+One extra fact separates them: what the HTML said when the two last agreed.
+`docs/.site-copy.lock.json` now stores a hash per key, written by `--export` and
+refreshed after every successful `--write`, so it self-heals and is never
+maintained by hand. Three cases become distinguishable:
+
+| doc moved | html moved | verdict |
+|---|---|---|
+| yes | no | safe, and this is the point of the tool |
+| no | yes | **STALE DOC -- writing reverts the page. Refuse.** |
+| yes | yes | **CONFLICT -- refuse, reconcile by hand.** |
+
+All three were tested against the live files by simulating each edit and
+restoring afterwards; `index.html` finished byte-identical. The stale case prints
+the offending keys, exits 1, and says to run `--export` if the page is the
+correct side. A missing baseline refuses `--write` rather than guessing, with
+`--force` as the documented override.
+
+**The other half of that task is recorded, not done.** 28 strings of real page
+copy carry no anchor and are invisible to the tool: the 14 `.pcard__title`s and
+the 14 `.pcard__course` lines in the wheel. That is what orphaned `projects.60`
+to `projects.66`. Anchoring them was the other option the handoff offered; the
+guard was chosen because it is the half that prevents content loss, and an
+unanchored string cannot be reverted by a tool that cannot see it. 158 strings
+are managed, 123 are not.
+
+### Still open
+
+- The 44vh mobile stage, and the 4.5pt titles and 19.5% overlap that follow from
+  it. That needs a decision about how the section should read on a phone, not a
+  tune -- and section 37's lesson applies: ask which constraint gives way.
+- Anchoring the 28 wheel-card strings, if that copy should be editable from the
+  markdown document.
+
+## 39. Telling the two collections apart (2026-08-21)
+
+Fourteen tiles are two sets of seven — M.Sc. research, then architecture — and
+nothing on the figure said which was which.
+
+### Almost every channel was already carrying something
+
+Size, blur, opacity and paint order all carry depth. The frame and the white
+title carry `is-front`. The presence of body text carries `is-plate`. Hover was
+removed in section 31 and does not exist on touch. So the cue had to survive
+`is-plate` (seven of fourteen tiles show image only), stay legible at a 52px
+card, survive the reduced-motion grid, and avoid amber, which is chrome here and
+on all five dashboards.
+
+The information already existed and never reached anyone: `.pcard__course` reads
+"M.Sc. Thesis - KFUPM ...", but `is-plate` deletes it across the back half and
+only four of the remaining titles clear 8pt. **A text cue cannot answer this.**
+
+### The arrangement was already doing half the work
+
+The two sets are contiguous in the markup, and `paint()` places card i at
+arc-length fraction i/n, so each collection travels as one unbroken convoy.
+Measured over 28 phases: the frontmost tile belongs to the dominant convoy in
+**28 of 28**, and the near half of the loop averages **75% one set**. The wheel
+already shows roughly one collection at a time; it simply never said so.
+
+### What shipped
+
+**A per-card bar on the media.** `.pcard__media::before` (`::after` is the
+scrim), 1.1% of card height, crimson `#f87171` for research and azure `#38bdf8`
+for architecture. On the media rather than the body, so it survives `is-plate`.
+A bar rather than a frame, because `.is-front` already owns the frame and two
+cues wearing the same treatment is how a cue stops meaning anything.
+
+Height is a PERCENTAGE, not pixels: the whole card is scaled by the path, so a
+3px bar would render 0.3px on the rearmost tile. First attempt at 2.4% measured
+6px on the front card and was too heavy; 1.1% gives 2.7px.
+
+**A gap at the seam, with a pip in it.** `GROUP_GAP = 0.035` of the loop per
+seam, with the runs read from the markup rather than hardcoded to 7/7, so adding
+a project re-solves the spacing instead of putting the gap in the wrong place.
+Measured in curve space: seam gaps 324 and 323 against within-group gaps of 179
+to 256, **1.52x wider, and every seam exceeds every normal gap** — matching the
+1.53x the arithmetic predicts. The pips ride the curve by the same rules as the
+cards, so they foreshorten and dim with depth (measured 6px and 4px at one
+phase) instead of floating on top.
+
+### The colour was chosen by measurement, and the first pair was wrong
+
+Teal and violet were rejected on sight. The measurement says why, and it is not
+what it looks like: that pair was the **furthest** from the wordmark's yellow
+(126 and 168 degrees against a hue of 48). So the clash was never about hue
+distance — two cool colours against a warm gold site is a temperature clash. One
+warm plus one cool is the fix, which is what crimson/azure is: 48 and 158
+degrees from the yellow, 110 degrees apart from each other.
+
+**An instrument note.** The first check of the seam gap measured distance in
+SCREEN pixels and reported that the seam was not wider. It was wrong: screen
+distance mixes the arc gap with perspective, so a near-side normal gap (292px)
+can exceed a far-side seam (186px). Measured in curve space, where depth does
+not contaminate spacing, the seam is unambiguously wider at every phase. Same
+failure as section 34's font probe — one term short of the real transform.
+
+### Known limit
+
+The bar renders at 2.7px on the front tile and 0.4px on the rearmost: **6 of 14
+tiles carry a bar of at least 1px.** The eight that do not are exactly the eight
+`is-plate` tiles, so the cue is legible wherever the card itself is legible, and
+absent where the card is already structure rather than content. That is coherent
+but it is not "all fourteen are labelled", and it should not be described as if
+it were.
+
+### The wave (option D), and an fps instrument that was lying
+
+An electromagnetic wave rides the curve: an E component and a B component, in
+phase, oscillating in perpendicular planes, with field vectors drawn between the
+axis and each crest. It travels at 0.18 loops per second, its amplitude and
+thickness foreshorten with depth because each point is scaled by its own
+perspective factor, and it is parked a clear 60px behind the deepest card so it
+can never cross in front of a tile. Its two arcs are recoloured every frame from
+the live card positions, so they track the convoys as the wheel turns.
+
+**A canvas, not SVG.** The prototype rebuilt 200 `<path>` elements per frame;
+the shipped version touches no DOM at all, and its draw calls are batched by
+(collection, depth band) into Path2D buckets -- **56 strokes a frame instead of
+about 960**, because alpha and width only vary with depth and depth is smooth.
+
+**The fps numbers that drove that rewrite were worthless, and this is the part
+worth keeping.** Three separate measurements were quoted -- 27.6 against 34 for
+the SVG version, 31.6 against 36.4 for the canvas -- and a fourth came back at
+60fps WITH the wave against 39.7 WITHOUT, which is impossible. Re-run with the
+order reversed and a settle between samples, the four readings were 59.3, 34.5,
+26.5 and 27.0, varying only by when they were taken.
+
+So rAF pacing in this browser pane is dominated by sampling order, not by the
+work being measured, and every frame-rate figure taken through it is unusable.
+The batching is still right -- 56 draw calls against 960 is a property of the
+code, readable without an instrument -- but the claim that the wave cost "a
+fifth of the frame budget" was never measured, it was assumed from a broken
+proxy. Real profiling has to come from a normal browser's performance panel.
+
+Same lesson as sections 34, 36 and 37, arriving from yet another direction:
+verify the instrument, then the code. A number that cannot be reproduced when
+you change only the order of measurement is not a number.
+
+### The legend, below the figure
+
+The bar on a tile says "these two are the same kind of thing"; it cannot say
+which kind. That needs words, and words cannot go on the tiles for the reason
+above. So the naming happens once, below the stage, at a size that is always
+readable, and the tiles only have to carry the match. The swatch is a thin bar
+at the size the cue actually renders, rather than a dot or a chip, so the reader
+does not have to translate between the key and the thing it keys.
+
+It sits BELOW the figure deliberately: it explains something you have already
+seen, and a key read before the thing it keys is just a list.
+
+The counts are written by `wheel.js` from the cards themselves, never typed into
+the markup -- the same rule the five dashboards follow, so an eighth project
+cannot leave the key quietly claiming seven.

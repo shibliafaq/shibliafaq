@@ -170,6 +170,31 @@ invisible. Slide, do not fade — and prepend rows rather than rebuilding
 
 ---
 
+**`touch-action` has to mirror whichever axis the control actually owns.**
+`.wheel` sets `touch-action: pan-x` because the wheel owns vertical input — true
+on the desktop. Below 900px `data-wheel="auto"` flips the wheel to its horizontal
+axis and the drag handler starts reading `clientX` only, so a vertical swipe was
+refused by the browser AND ignored by the JS. Measured on a phone: phase 0, page
+scroll 0, over 83% of the viewport width. If a component changes axis at a
+breakpoint, `touch-action` changes with it. See CONTEXT §38.
+
+**A reduced-motion fallback must take the CONTAINER out of 3D, not just the
+items.** Setting the cards to `position: relative; transform: none` is correct
+and insufficient: the stage keeps `overflow: hidden` and a fixed height, so
+fourteen cards needing 5040px rendered three. And `.wheel__scene` between the
+stage and the ring is `position: absolute; inset: 0` — leave that and the stage
+collapses to **0 height** even after the ring is fixed. Stage, scene and ring,
+all three. `prefers-reduced-motion` cannot be emulated from the page, so verify
+by applying the block's exact declarations at runtime and measuring.
+
+**A diff cannot tell you which side is newer.** `tools/sync-site-copy.mjs` wrote
+`docs/site-copy.md` over `index.html` on the assumption the markdown was always
+the newer copy. It is not — the HTML gets hand-edited too, and the two produce an
+identical diff whichever side moved. It nearly reverted a published paper to
+"Under Review". `docs/.site-copy.lock.json` now records what the HTML said when
+the two last agreed, which is the one fact that separates "doc edited" from "doc
+stale"; the tool refuses on stale and on conflict. Do not delete that lockfile.
+
 ## Asset pipeline
 
 Originals are never committed. Conversion scripts live in the scratchpad and are

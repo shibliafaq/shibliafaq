@@ -2074,13 +2074,36 @@
    this is a holding pattern that keeps the section usable rather than a
    designed mobile treatment. */
 @media (max-width: 900px) {
-  /* Both rings on one screen, touching.
-     Two stages plus a 3rem gap needed more than a phone has, so the second
-     wheel was always below the fold and the pair never read as a pair. At 44vh
-     each with no gap they total 88vh and both are visible at once — which is
-     the only arrangement where a reader can see there ARE two collections. */
-  .wheels { grid-template-columns: 1fr; gap: 0; }
+  /* THE STAGE HEIGHT IS THE LAST TRACE OF THERE HAVING BEEN TWO WHEELS.
+     44vh was chosen so two stages plus no gap totalled 88vh and both rings were
+     visible at once. Section 31 merged them into one figure of fourteen, so the
+     arrangement that 44vh existed to produce no longer exists -- and 44vh is
+     now why a 390px phone gets a 371px stage, a 98px front card and a 4.5pt
+     title. Left at 44vh deliberately for now: raising it is a visible change to
+     how the section reads on a phone, not a bug fix. See CONTEXT 38.
+
+     The `.wheels { grid-template-columns: 1fr; gap: 0 }` that sat here went
+     with the second wheel. `.wheels` is `display: block` and holds a single
+     section, so both declarations were inert. */
   .wheel__stage { height: 44vh; }
+  /* VERTICAL BELONGS TO THE PAGE ONCE THE WHEEL'S OWN AXIS IS HORIZONTAL.
+
+     `data-wheel="auto"` flips the wheel to its horizontal axis at exactly this
+     breakpoint, and from that point the drag handler reads clientX and ignores
+     clientY. The base rule is `touch-action: pan-x`, which tells the browser
+     not to pan vertically -- so a vertical swipe over the figure was handed to
+     JS, which then ignored it. Measured on a 390x844 phone: a vertical swipe
+     moved the phase 0 and scrolled the page 0. Nothing happened at all.
+
+     The base rule's argument was that "the section has real margins either
+     side, and that is the escape route". That was true of two narrow wheels in
+     a grid. One full-width figure leaves 32px of margin on the left and 33px on
+     the right of a 390px viewport, so 83% of the width was a dead band 371px
+     tall.
+
+     pan-y is the exact mirror of the axis the wheel actually uses here: the
+     browser keeps vertical, JS keeps horizontal, and both gestures work. */
+  .wheel { touch-action: pan-y; }
   /* The card has to be comfortably shorter than its stage or the neighbours
      are clipped rather than curving away. */
   .wheel__card { height: clamp(150px, 26vh, 210px); width: min(100%, 300px); }
@@ -2519,15 +2542,236 @@
   .wheels .wheel--liss .wheel__card.is-front { box-shadow: none; }
 }
 
-/* Motion off: no path, no travel. Fall back to a plain readable grid rather
-   than freezing seven cards on top of each other at 42%. */
+/* ---- WHICH COLLECTION A TILE BELONGS TO -------------------------------
+
+   Seven M.Sc. research projects and seven architecture projects share one
+   figure, and nothing on the tiles said which was which.
+
+   The information already existed and simply never reached anyone:
+   `.pcard__course` reads "M.Sc. Thesis - KFUPM ...", but `is-plate` deletes the
+   body across the back half of the loop, so seven of fourteen tiles carry no
+   text at all, and of the rest only four clear 8pt. A text cue cannot answer
+   this question. Measured, not assumed.
+
+   So the cue goes on the MEDIA, which every tile keeps at every depth, as a bar
+   along the bottom edge.
+
+   Deliberately NOT a frame: `.is-front` already owns the frame, and two
+   different things wearing the same treatment is how a cue stops meaning
+   anything. Deliberately NOT the amber accent either -- amber is chrome here
+   and on all five dashboards, and the house rule is that the accent never
+   carries data.
+
+   `::before`, because `::after` is the scrim gradient.
+
+   HEIGHT IS A PERCENTAGE, NOT PIXELS. The whole card is scaled by the path, so
+   a 3px bar would render 0.3px on the rearmost tile and disappear. A percentage
+   of the card scales with it and keeps roughly the same proportion of the tile
+   at every depth. */
+/* Crimson for the research collection, azure for architecture. Chosen from a
+   measured comparison against the wordmark's own yellow (hue 48deg): these
+   two are 48deg and 158deg from it and 110deg apart from each other, the
+   widest separation of the pairs tried. The first attempt, teal and violet,
+   was rejected and the measurement says why -- it was the FURTHEST pair from
+   the yellow, so the clash was never about hue distance. Two cool colours
+   against a warm gold site is a temperature clash, and one warm plus one cool
+   is what fixes it. */
+/* Declared once here and read by BOTH the card bars and the wave canvas
+   (wheel.js reads these two custom properties rather than repeating the
+   hex), so the ribbon and the tiles can never drift apart. */
+.wheel--liss { --tag-msc: #f87171; --tag-arch: #38bdf8; }
+.wheels .wheel__card[data-modal] { --tile-tag: var(--tag-msc); }
+.wheels .wheel__card[data-book]  { --tile-tag: var(--tag-arch); }
+
+/* ---- THE KEY, BELOW THE FIGURE ----------------------------------------
+
+   The bar on a tile says "these two are the same kind of thing"; it cannot say
+   WHICH kind. That needs words, and words cannot go on the tiles -- `is-plate`
+   deletes the body on the back half and only four titles clear 8pt. So the
+   naming happens once, in one place, at a size that is always readable, and the
+   tiles only have to carry the match.
+
+   Below the stage rather than above it: it explains something you have already
+   seen, and a key read before the thing it keys is just a list. */
+.wheel__legend {
+  list-style: none;
+  margin: clamp(.9rem, 2.5vh, 1.75rem) 0 0;
+  padding: 0 var(--pad-x, 1rem);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(1.1rem, 4vw, 2.5rem);
+  flex-wrap: wrap;
+}
+
+.wheel__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+/* The swatch IS the cue, at the size the cue actually renders: a thin bar, not
+   a dot or a chip. A key that does not look like the thing it explains makes
+   the reader do the translation. */
+.wheel__legend-key {
+  width: 29px;
+  height: 3.3px;
+  border-radius: 2px;
+  background: var(--legend-hue, #f87171);
+  flex: none;
+}
+
+.wheel__legend-item[data-legend="modal"] { --legend-hue: var(--tag-msc, #f87171); }
+.wheel__legend-item[data-legend="book"]  { --legend-hue: var(--tag-arch, #38bdf8); }
+
+.wheel__legend-name {
+  font-size: .75rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--t-2);
+  white-space: nowrap;
+}
+
+.wheel__legend-count {
+  font-family: var(--f-mono);
+  font-size: .68rem;
+  color: var(--t-4);
+}
+
+@media (max-width: 900px) {
+  .wheel__legend { gap: 1rem; }
+  .wheel__legend-name { font-size: .66rem; letter-spacing: .07em; }
+}
+
+/* THE WAVE RIDES THE CURVE, ALWAYS BEHIND THE TILES.
+
+   A canvas, not SVG. The prototype rebuilt 200 <path> elements every frame
+   and measured 27.6fps against 34 without it; the same drawing as ~600 short
+   canvas strokes costs a fraction of that, because nothing touches the DOM.
+
+   Parked well behind the deepest card and counter-scaled, so it can never
+   cross in front of a tile and still draws at its true size -- pushed back,
+   perspective would shrink it, and (P - z)/P cancels that exactly. Same
+   trick as the hub label, opposite end of the range. */
+.wheel--liss .wheel__wave {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: 0;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .wheel--liss .wheel__wave { display: none; }
+}
+
+.wheels .wheel__card .pcard__media::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1.1%;
+  min-height: 1px;
+  z-index: 2;
+  background: var(--tile-tag, transparent);
+}
+
+/* ---- THE PIP BETWEEN THE TWO COLLECTIONS ------------------------------
+
+   The two sets are contiguous in the markup, so on the curve each one is a
+   single unbroken run of seven. wheel.js opens a gap in the arc-length
+   distribution where one run ends and the next begins, and parks a pip in the
+   middle of it: punctuation between two sentences rather than a fifteenth tile.
+
+   Amber, because this IS chrome -- it separates the collections, it does not
+   encode either of them, so the rule about the accent never carrying data is
+   not in play. Small, dim, and it foreshortens with depth like everything else
+   on the path. */
+.wheel--liss .wheel__pip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin: 0;
+  border-radius: 50%;
+  background: var(--amber, #e0a355);
+  pointer-events: none;
+  transform:
+    translate(-50%, -50%)
+    translate3d(var(--lx, 0px), var(--ly, 0px), var(--lz, 0px))
+    scale(var(--liss-s, 1));
+  opacity: calc(.18 + .5 * var(--vis, 1));
+  box-shadow: 0 0 .6em rgba(224, 163, 85, .45);
+}
+
+/* Reduced motion flattens the path to a grid, where a gap in an arc and a pip
+   marking it have nothing to mark. */
+@media (prefers-reduced-motion: reduce) {
+  .wheel--liss .wheel__pip { display: none; }
+}
+
+/* Motion off: no path, no travel. The cards fall back to a plain grid.
+
+   WHAT WAS HERE BEFORE ONLY DID HALF THE JOB, and it had never been rendered.
+   It took the cards out of their 3D placement correctly -- `position: relative`
+   and `transform: none` -- and then left them stacked in normal flow inside a
+   stage that is still `height: clamp(600px, 88vh, 820px)` with
+   `overflow: hidden`. Measured: fourteen cards need 5040px of height at
+   1440x900 and 2940px at 390x844, against stages of 792px and 371px. Eleven of
+   fourteen cards were clipped away on the desktop and twelve of fourteen on a
+   phone, so a reader with reduced motion on saw three projects out of fourteen.
+
+   The comment promised "a plain readable grid" and there was no grid at all:
+   `.wheel__ring` is `display: block`, so the cards simply stacked.
+
+   The container has to leave the 3D framing too, which is the part that was
+   missed. The stage stops clipping and stops being a fixed height, the ring
+   stops being an absolutely positioned preserve-3d subtree and becomes the
+   grid, and the head stops being parked on the ring's axis. The hub label also
+   drops its solved `--hub-size`, because 241px of display type is sized to be
+   crossed by moving cards and means nothing above a static grid. */
+@media (prefers-reduced-motion: reduce) {
+  .wheel--liss .wheel__stage {
+    height: auto;
+    overflow: visible;
+    perspective: none;
+    -webkit-mask-image: none;
+            mask-image: none;
+  }
+  /* The scene is `position: absolute; inset: 0` too, and it sits between the
+     stage and the ring. Leaving it absolute collapses the stage to 0 height
+     even after the ring is put back in flow -- measured exactly that. */
+  .wheels .wheel--liss .wheel__scene {
+    position: static;
+    transform-style: flat;
+  }
+  .wheel--liss .wheel__ring {
+    position: static;
+    display: grid;
+    /* min(100%, 260px) so a narrow phone gets one column instead of overflowing. */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: clamp(.9rem, 2vw, 1.4rem);
+    transform: none;
+    transform-style: flat;
+    will-change: auto;
+  }
+  .wheels .wheel--liss .wheel__head {
+    position: static;
+    transform: none;
+    margin-bottom: clamp(1rem, 3vh, 2rem);
+  }
+  .wheels .wheel--liss .wheel__title {
+    font-size: clamp(1.8rem, 6vw, 3.2rem);
+    transform: none;
+  }
   .wheel--liss .wheel__card {
     position: relative;
     left: auto; top: auto;
+    width: 100%;
     transform: none;
     opacity: 1;
     filter: none;
     transition: none;
+    z-index: auto;
   }
 }

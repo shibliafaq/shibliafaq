@@ -49,15 +49,41 @@
  * session, because of CRLF line endings.
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 
 const HTML = 'index.html';
 const DOC = 'docs/site-copy.md';
+/* The baseline: what index.html said for each key the last time the two files
+   were in agreement. Written by --export and refreshed after every successful
+   --write, so it self-heals and never needs maintaining by hand. */
+const LOCK = 'docs/.site-copy.lock.json';
 const NL = String.fromCharCode(10);
 
 const INIT = process.argv.includes('--init');
 const EXPORT = process.argv.includes('--export');
 const WRITE = process.argv.includes('--write');
+const FORCE = process.argv.includes('--force');
+
+/** Same normalisation the comparison uses, so a hash and a match agree. */
+const norm = (t) => t.trim().replace(/\s+/g, ' ');
+const hash = (t) => createHash('sha256').update(norm(t)).digest('hex').slice(0, 16);
+
+function readLock() {
+  if (!existsSync(LOCK)) return null;
+  try { return JSON.parse(readFileSync(LOCK, 'utf-8')).keys || null; }
+  catch { return null; }
+}
+
+function writeLock(items) {
+  const keys = {};
+  for (const it of items) keys[it.key] = hash(it.text);
+  writeFileSync(LOCK, JSON.stringify({
+    note: 'Baseline for tools/sync-site-copy.mjs. Generated - do not edit by hand.',
+    generated: new Date().toISOString(),
+    keys,
+  }, null, 2) + NL);
+}
 
 /* Elements that carry prose. Deliberately a whitelist: <div> and <section> are
    containers, and treating them as copy would hand you the entire page as one
@@ -251,7 +277,9 @@ if (EXPORT) {
     }
   }
   writeFileSync(DOC, lines.join(NL));
+  writeLock(items);
   console.log(`--export: ${items.length} strings -> ${DOC}`);
+  console.log(`--export: baseline for ${items.length} keys -> ${LOCK}`);
   process.exit(0);
 }
 
@@ -304,10 +332,79 @@ if (!changes.length) {
   process.exit(0);
 }
 
+/* ------------------------------------------------- WHICH SIDE ACTUALLY MOVED
+
+   A difference between the two files is not evidence about which one is newer,
+   and this tool used to assume it was always the markdown. It is not:
+   index.html gets hand-edited too, and nothing reconciles them.
+
+   On 2026-08-21 that assumption nearly shipped a regression. `--write` wanted
+   to change publications.1 and publications.3, and those were not whitespace:
+   docs/site-copy.md still held the PRE-PUBLICATION text, so applying it would
+   have reverted a paper that is published with a DOI back to "Under Review".
+   It was caught only by reading `git diff` afterwards, which is not a safety
+   net anyone should have to rely on.
+
+   The baseline in docs/.site-copy.lock.json records what the HTML said for each
+   key when the two files were last in agreement. That one extra fact makes the
+   three cases distinguishable, where a plain diff cannot tell them apart:
+
+     doc moved, html did not  -> the edit is in the doc. Safe; this is the point.
+     html moved, doc did not  -> the doc is STALE, and writing REVERTS the page.
+     both moved               -> a genuine conflict; nobody can pick for you. */
+const lock = readLock();
+const verdict = new Map();
 for (const c of changes) {
-  console.log(`  ${c.key}`);
+  const base = lock && lock[c.key];
+  if (!base) { verdict.set(c, 'unverified'); continue; }
+  const docMoved = hash(c.now) !== base;
+  const htmlMoved = hash(c.was) !== base;
+  if (docMoved && !htmlMoved) verdict.set(c, 'safe');
+  else if (!docMoved && htmlMoved) verdict.set(c, 'stale');
+  else verdict.set(c, 'conflict');
+}
+
+const LABEL = {
+  stale: '  [STALE DOC -- writing this REVERTS index.html]',
+  conflict: '  [CONFLICT -- both sides changed since the baseline]',
+  unverified: '  [unverified -- no baseline for this key]',
+  safe: '',
+};
+for (const c of changes) {
+  console.log(`  ${c.key}${LABEL[verdict.get(c)]}`);
   console.log(`      was: ${c.was.slice(0, 120)}`);
   console.log(`      now: ${c.now.slice(0, 120)}`);
+}
+
+const stale = changes.filter((c) => verdict.get(c) === 'stale');
+const conflict = changes.filter((c) => verdict.get(c) === 'conflict');
+const unverified = changes.filter((c) => verdict.get(c) === 'unverified');
+
+if (stale.length || conflict.length) {
+  console.error(`${NL}REFUSING TO WRITE.`);
+  if (stale.length) {
+    console.error(`${NL}${stale.length} key(s) changed in ${HTML} while ${DOC} kept the old text:`);
+    stale.forEach((c) => console.error('  ' + c.key));
+    console.error(`Applying would throw those edits away. If ${HTML} is right,`);
+    console.error(`run --export to refresh ${DOC} from the page.`);
+  }
+  if (conflict.length) {
+    console.error(`${NL}${conflict.length} key(s) changed on BOTH sides since the baseline:`);
+    conflict.forEach((c) => console.error('  ' + c.key));
+    console.error('Reconcile them by hand, then --export to re-baseline.');
+  }
+  console.error(`${NL}--force overrides this and writes ${DOC} over ${HTML} regardless.`);
+  process.exit(1);
+}
+
+if (unverified.length && WRITE && !FORCE) {
+  console.error(`${NL}REFUSING TO WRITE: no baseline for ${unverified.length} key(s).`);
+  console.error(`${LOCK} is missing or does not cover them, so there is no way to`);
+  console.error(`tell whether ${DOC} is newer than ${HTML} or staler.`);
+  console.error(`${NL}If ${HTML} is currently correct:  node tools/sync-site-copy.mjs --export`);
+  console.error(`If ${DOC} is currently correct:   add --force`);
+  console.error('Either way the baseline is written afterwards, so this is a one-time step.');
+  process.exit(1);
 }
 
 if (!WRITE) {
@@ -321,4 +418,8 @@ for (const c of [...changes].sort((a, b) => b.from - a.from)) {
   out = out.slice(0, c.from) + c.now + out.slice(c.to);
 }
 writeFileSync(HTML, out);
+/* The two files agree again, so re-baseline. This is what makes the guard
+   self-healing: the lock never has to be maintained by hand. */
+writeLock(collect(out));
 console.log(`${NL}${changes.length} change(s) written to ${HTML}.`);
+console.log(`baseline refreshed -> ${LOCK}`);

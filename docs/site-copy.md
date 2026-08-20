@@ -452,7 +452,6 @@ node tools/sync-site-copy.mjs --write   # apply it
 ### nav.contact
 - Contact
 
-
 ### _nav.20
 - © 2026 Shibli Afaq
 

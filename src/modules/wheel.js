@@ -419,6 +419,92 @@ function setupWheel(root) {
   const path = root.dataset.wheelPath === 'lissajous' ? 'lissajous' : 'ring';
   if (path === 'lissajous') root.classList.add('wheel--liss');
 
+  /* ================================ TWO COLLECTIONS, ONE CURVE
+
+     The fourteen tiles are two sets of seven -- M.Sc. research, then
+     architecture -- and they are CONTIGUOUS in the markup. Because paint()
+     places card i at arc-length fraction i/n, contiguous indices are a
+     contiguous arc, so each collection already travels as one unbroken convoy.
+     Measured: the frontmost tile belongs to the dominant convoy in 28 of 28
+     phases, and the near half of the loop averages 75% one set.
+
+     What was missing is that nothing SAID so. Even spacing gives fourteen
+     equal steps, so the seam between the two sevens looks like every other
+     interval. Opening a gap where one run ends and the next begins turns an
+     undifferentiated ring into two groups, and a pip in the gap marks the seam.
+
+     The runs are read from the markup rather than hardcoded to 7/7, so adding a
+     project to either collection re-solves the spacing rather than silently
+     putting the gap in the wrong place. */
+  const GROUP_GAP = 0.035;            // fraction of the loop, per seam
+
+  function buildGroups() {
+    const kind = (c) => (c.hasAttribute('data-book') ? 'book' : 'modal');
+    const runs = [];
+    cards.forEach((c, i) => {
+      const k = kind(c);
+      if (!runs.length || runs[runs.length - 1].k !== k) runs.push({ k, idx: [] });
+      runs[runs.length - 1].idx.push(i);
+    });
+    const frac = new Array(cards.length).fill(0);
+    // One collection, or none: nothing to separate, so keep the even ring.
+    if (runs.length < 2) {
+      cards.forEach((_, i) => { frac[i] = i / cards.length; });
+      return { frac, pips: [] };
+    }
+    const span = 1 - GROUP_GAP * runs.length;
+    let pos = 0;
+    for (const r of runs) {
+      const s = (r.idx.length / cards.length) * span;
+      r.idx.forEach((ci, j) => { frac[ci] = pos + (j * s) / r.idx.length; });
+      pos += s + GROUP_GAP;
+    }
+    /* The pip goes in the middle of the VISIBLE gap, which is wider than
+       GROUP_GAP: the last card of a run sits one intra-run step short of its
+       run's end, and that step counts too. Taking the midpoint between the two
+       cards either side gets it right without restating the arithmetic. */
+    const pips = runs.map((r, i) => {
+      const last = frac[r.idx[r.idx.length - 1]];
+      const next = frac[runs[(i + 1) % runs.length].idx[0]];
+      const to = next > last ? next : next + 1;
+      return ((last + to) / 2) % 1;
+    });
+    return { frac, pips };
+  }
+
+  const GROUPS = buildGroups();
+
+  /* THE KEY'S COUNTS ARE COMPUTED, NEVER TYPED.
+
+     Same rule the dashboards follow: every readout figure is derived from the
+     data at runtime so it cannot drift from what it describes. A hand-written
+     "7" in the markup would survive an eighth project being added and quietly
+     start lying. */
+  {
+    const legend = root.querySelector('.wheel__legend');
+    if (legend) {
+      const n = { modal: 0, book: 0 };
+      cards.forEach((c) => { n[c.hasAttribute('data-book') ? 'book' : 'modal'] += 1; });
+      legend.querySelectorAll('[data-legend]').forEach((li) => {
+        const out = li.querySelector('.wheel__legend-count');
+        if (out) out.textContent = String(n[li.dataset.legend] || 0);
+      });
+    }
+  }
+
+  /* One pip per seam, created here rather than in index.html: they are a
+     property of how the cards are grouped, which is read from the markup, so a
+     hand-written pip could disagree with the arrangement it is marking. */
+  const pips = path === 'lissajous'
+    ? GROUPS.pips.map(() => {
+        const el = document.createElement('span');
+        el.className = 'wheel__pip';
+        el.setAttribute('aria-hidden', 'true');
+        ring.appendChild(el);
+        return el;
+      })
+    : [];
+
   const step = 360 / n;
   let radius = 0;
   /* The card's UNTRANSFORMED box and the stage's perspective, both cached by
@@ -450,6 +536,219 @@ function setupWheel(root) {
   let angle = 0;        // current ring rotation, degrees
   let target = 0;       // where it is easing to
   let raf = 0;
+
+  /* ================================ THE WAVE ON THE PATH
+
+     An electromagnetic wave riding the curve: an E component and a B component,
+     in phase, oscillating in perpendicular planes, with field vectors drawn
+     between the axis and each crest. It travels continuously, which is the
+     whole point of drawing a wave rather than a wavy line.
+
+     WHY A CANVAS AND NOT SVG. The prototype rebuilt 200 <path> elements every
+     frame and measured 27.6fps against 34fps with it removed -- a fifth of the
+     frame budget spent on decoration. The same drawing as short canvas strokes
+     touches no DOM at all.
+
+     WHY IT IS PARKED AT THE BACK. Every tile has to be in front of it. The hub
+     label sits near the FRONT of the depth range on purpose, so the arriving
+     tile crosses over the word; the wave wants the opposite, so it goes a clear
+     margin behind the deepest card. Being pushed back, perspective would shrink
+     it, and the (P - z)/P counter-scale cancels that exactly -- the same trick
+     the label uses at the other end of the range.
+
+     WHY THE AMPLITUDE IS SCALED BY m. The base curve already has perspective
+     baked into it, point by point. A constant amplitude on top of that would
+     not foreshorten, and the far half of the loop would wave as widely as the
+     near half. Multiplying by each point's own magnification makes the wave
+     shrink into the distance exactly as the tiles do. */
+  const WAVE = {
+    points: 240,
+    freq: 6,              // crests around one loop
+    speed: 0.18,          // loops per second, the travel
+    ampE: 52, ampB: 36,   // before perspective; x m at the near end
+    oblique: (62 * Math.PI) / 180,
+    width: 3.4, opacity: 0.42,
+    axisOpacity: 0.10, tickEvery: 6, tickOpacity: 0.17,
+    backMargin: 60,       // px behind the deepest card
+  };
+
+  let wave = null;
+  let waveRaf = 0;
+  let waveVisible = false;
+
+  /* Which collection owns a given point of the curve. Nearest card wins, which
+     needs no knowledge of how many runs there are; baked into a lookup table
+     once, because the answer only depends on the fraction, and the fraction
+     minus the phase is all that changes as the wheel turns. */
+  const KIND_LUT = (() => {
+    const L = new Array(512);
+    for (let k = 0; k < 512; k++) {
+      const f = k / 512;
+      let best = 0, bd = 2;
+      for (let j = 0; j < cards.length; j++) {
+        let d = Math.abs(GROUPS.frac[j] - f);
+        if (d > 0.5) d = 1 - d;
+        if (d < bd) { bd = d; best = j; }
+      }
+      L[k] = cards[best].hasAttribute('data-book') ? 1 : 0;
+    }
+    return L;
+  })();
+
+  function initWave() {
+    if (path !== 'lissajous' || reducedMotion || wave) return;
+    const el = document.createElement('canvas');
+    el.className = 'wheel__wave';
+    el.setAttribute('aria-hidden', 'true');
+    ring.appendChild(el);
+    wave = { el, ctx: el.getContext('2d'), w: 0, h: 0, hue: ['#f87171', '#38bdf8'] };
+  }
+
+  /** Size the canvas to the curve's envelope plus the widest the wave can swing. */
+  function sizeWave() {
+    if (!wave || !fit) return;
+    const N = WAVE.points;
+    let mx = 0, my = 0;
+    for (let i = 0; i < N; i++) {
+      const p = lissAt(thetaAtFraction(i / N));
+      const m = persp / (persp - p.z * fit.Rz);
+      const sx = ((fit.upright ? p.y : p.x) * fit.ampX + fit.shiftX / m) * m;
+      const sy = ((fit.upright ? p.x : p.y) * fit.ampY + fit.shiftY / m) * m;
+      mx = Math.max(mx, Math.abs(sx) + WAVE.ampE * m + WAVE.width * 2);
+      my = Math.max(my, Math.abs(sy) + WAVE.ampE * m + WAVE.width * 2);
+    }
+    const w = Math.ceil(mx * 2), h = Math.ceil(my * 2);
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    wave.w = w; wave.h = h; wave.dpr = dpr;
+    wave.el.width = Math.ceil(w * dpr);
+    wave.el.height = Math.ceil(h * dpr);
+    wave.el.style.width = `${w}px`;
+    wave.el.style.height = `${h}px`;
+    const z = -(fit.Rz + WAVE.backMargin);
+    wave.el.style.transform =
+      `translate(-50%, -50%) translateZ(${z.toFixed(1)}px) scale(${((persp - z) / persp).toFixed(4)})`;
+    // Colours come from the stylesheet so the wave and the tile bars agree.
+    const cs = getComputedStyle(root);
+    const a = cs.getPropertyValue('--tag-msc').trim();
+    const b = cs.getPropertyValue('--tag-arch').trim();
+    if (a && b) wave.hue = [a, b];
+  }
+
+  function drawWave(now) {
+    waveRaf = 0;
+    if (!wave || !fit || !waveVisible) return;
+    const { ctx, w, h, dpr } = wave;
+    const N = WAVE.points;
+    const travel = (now / 1000) * WAVE.speed * Math.PI * 2;
+    const phase = ((angle / 360) % 1 + 1) % 1;
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.lineCap = 'round';
+    const cx = w / 2, cy = h / 2;
+
+    const bx = new Float64Array(N), by = new Float64Array(N), mm = new Float64Array(N);
+    for (let i = 0; i < N; i++) {
+      const p = lissAt(thetaAtFraction(i / N));
+      const m = persp / (persp - p.z * fit.Rz);
+      mm[i] = m;
+      bx[i] = ((fit.upright ? p.y : p.x) * fit.ampX + fit.shiftX / m) * m;
+      by[i] = ((fit.upright ? p.x : p.y) * fit.ampY + fit.shiftY / m) * m;
+    }
+    let mMin = Infinity, mMax = -Infinity;
+    for (let i = 0; i < N; i++) { if (mm[i] < mMin) mMin = mm[i]; if (mm[i] > mMax) mMax = mm[i]; }
+    const span = (mMax - mMin) || 1;
+
+    const ex = new Float64Array(N), ey = new Float64Array(N);
+    const ox = new Float64Array(N), oy = new Float64Array(N);
+    const cO = Math.cos(WAVE.oblique), sO = Math.sin(WAVE.oblique);
+    for (let i = 0; i < N; i++) {
+      const a = (i - 1 + N) % N, b = (i + 1) % N;
+      const dx = bx[b] - bx[a], dy = by[b] - by[a];
+      const L = Math.hypot(dx, dy) || 1;
+      const nx = -dy / L, ny = dx / L;
+      const s = Math.sin(WAVE.freq * (i / N) * Math.PI * 2 - travel);
+      const aE = WAVE.ampE * mm[i] * s, aB = WAVE.ampB * mm[i] * s;
+      ex[i] = bx[i] + nx * aE;              ey[i] = by[i] + ny * aE;
+      ox[i] = bx[i] + (nx * cO - ny * sO) * aB;
+      oy[i] = by[i] + (nx * sO + ny * cO) * aB;
+    }
+
+    /* BATCHED BY (COLLECTION, DEPTH BAND), NOT DRAWN SEGMENT BY SEGMENT.
+
+       The straightforward version strokes each of the 240 segments separately
+       for each of the four layers -- about 960 draw calls a frame, each with its
+       own state change, and it measured 4.8fps of cost. Alpha and width only
+       change with depth, and depth is smooth, so quantising it into seven bands
+       lets every segment sharing a band and a collection go into one Path2D and
+       be stroked once: 56 strokes instead of 960, for a difference no eye can
+       find. */
+    const BANDS = 7;
+    const bucket = new Array(4 * 2 * BANDS);
+    for (let i = 0; i < N; i++) {
+      const j = (i + 1) % N;
+      const dep = (mm[i] - mMin) / span;
+      const band = Math.min(BANDS - 1, Math.max(0, (dep * BANDS) | 0));
+      const k = KIND_LUT[(((i / N - phase) % 1 + 1) % 1 * 512) | 0];
+      const at = (layer) => {
+        const idx = (layer * 2 + k) * BANDS + band;
+        return bucket[idx] || (bucket[idx] = new Path2D());
+      };
+      const ax = at(0);
+      ax.moveTo(cx + bx[i], cy + by[i]); ax.lineTo(cx + bx[j], cy + by[j]);
+      const bp = at(1);
+      bp.moveTo(cx + ox[i], cy + oy[i]); bp.lineTo(cx + ox[j], cy + oy[j]);
+      const ep = at(2);
+      ep.moveTo(cx + ex[i], cy + ey[i]); ep.lineTo(cx + ex[j], cy + ey[j]);
+      if (i % WAVE.tickEvery === 0) {
+        const tp = at(3);
+        tp.moveTo(cx + bx[i], cy + by[i]); tp.lineTo(cx + ex[i], cy + ey[i]);
+        tp.moveTo(cx + bx[i], cy + by[i]); tp.lineTo(cx + ox[i], cy + oy[i]);
+      }
+    }
+    const LAYER = [
+      { a: WAVE.axisOpacity, w: 1.2 },
+      { a: WAVE.opacity * 0.7, w: WAVE.width * 0.8 },
+      { a: WAVE.opacity, w: WAVE.width },
+      { a: WAVE.tickOpacity, w: 1 },
+    ];
+    for (let layer = 0; layer < 4; layer++) {
+      for (let k = 0; k < 2; k++) {
+        ctx.strokeStyle = wave.hue[k];
+        for (let band = 0; band < BANDS; band++) {
+          const path = bucket[(layer * 2 + k) * BANDS + band];
+          if (!path) continue;
+          const sc = 0.35 + 0.65 * ((band + 0.5) / BANDS);
+          ctx.globalAlpha = LAYER[layer].a * sc;
+          ctx.lineWidth = LAYER[layer].w * sc;
+          ctx.stroke(path);
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+    waveRaf = requestAnimationFrame(drawWave);
+  }
+
+  function startWave() {
+    if (!wave || waveRaf || reducedMotion) return;
+    waveVisible = true;
+    waveRaf = requestAnimationFrame(drawWave);
+  }
+  function stopWave() {
+    waveVisible = false;
+    if (waveRaf) cancelAnimationFrame(waveRaf);
+    waveRaf = 0;
+  }
+
+  /* Off screen, it does not run at all. A travelling wave needs its own frame
+     loop -- the flywheel's stops when the wheel settles -- and a loop that keeps
+     drawing a section nobody is looking at is pure cost. */
+  if (path === 'lissajous' && !reducedMotion) {
+    initWave();
+    new IntersectionObserver((es) => {
+      if (es.some((e) => e.isIntersecting)) startWave(); else stopWave();
+    }, { rootMargin: '10% 0px 10% 0px' }).observe(root);
+  }
 
   /* Radius is derived from the rendered card height, so it survives a font
      swap, a breakpoint, or a card that turns out taller than its siblings —
@@ -486,6 +785,8 @@ function setupWheel(root) {
     });
     fitLabel();
     paint();
+    // after paint(), because the canvas is sized from the fit paint() solves
+    sizeWave();
   }
 
   /* ONE font size shared by BOTH wheels.
@@ -650,7 +951,7 @@ function setupWheel(root) {
       for (let i = 0; i < n; i++) {
         // Fraction of the way round the curve, by DISTANCE, offset by the
         // scroll phase. i/n is then genuinely even spacing on the path.
-        const th = thetaAtFraction(th0 / (2 * Math.PI) + i / n);
+        const th = thetaAtFraction(th0 / (2 * Math.PI) + GROUPS.frac[i]);
         const p = lissAt(th);
         const c = cards[i];
         /* This card's own perspective magnification. The recentring shift is
@@ -728,6 +1029,27 @@ function setupWheel(root) {
         c.style.pointerEvents = live ? 'auto' : 'none';
         c.setAttribute('aria-hidden', live ? 'false' : 'true');
         c.tabIndex = live ? 0 : -1;
+      }
+
+      /* The pips ride the same curve by the same rules the cards do, so they
+         foreshorten, dim and sort in depth with them rather than floating on
+         top as an overlay. The scale uses the cards' own depth ramp, so a pip
+         at the back of the loop shrinks by the same proportion its neighbours
+         do. */
+      for (let k = 0; k < pips.length; k++) {
+        const pt = lissAt(thetaAtFraction(th0 / (2 * Math.PI) + GROUPS.pips[k]));
+        const pm = persp / (persp - pt.z * Rz);
+        const pTt = (pt.z + 1) / 2;
+        const el = pips[k];
+        el.style.setProperty('--lx',
+          `${((upright ? pt.y : pt.x) * fit.ampX + fit.shiftX / pm).toFixed(1)}px`);
+        el.style.setProperty('--ly',
+          `${((upright ? pt.x : pt.y) * fit.ampY + fit.shiftY / pm).toFixed(1)}px`);
+        el.style.setProperty('--lz', `${(pt.z * Rz).toFixed(1)}px`);
+        el.style.setProperty('--vis',
+          Math.max(0, Math.min(1, (pTt - 0.12) / 0.5)).toFixed(3));
+        el.style.setProperty('--liss-s',
+          (LISS.back + (1 - LISS.back) * Math.pow(pTt, LISS.falloff)).toFixed(3));
       }
 
       /* THE LABEL NEVER SITS IN FRONT OF THE LEADING CARD.
@@ -889,6 +1211,13 @@ function setupWheel(root) {
      of the band responds, while the strip above and below the cards still
      belongs to the page. */
   function overRing(e) {
+    /* Reduced motion replaces the figure with a static grid (see the
+       prefers-reduced-motion block in sections.css), and a grid is not a
+       control. Without this the wheel still claimed the union of the card
+       boxes -- which in a grid is all of them -- and preventDefault()
+       on that band stopped the page scrolling past a section the reader
+       cannot turn anyway. */
+    if (reducedMotion) return false;
     /* THE PATH IS NOT A COLUMN, SO IT CANNOT BE ONE CARD WIDE.
 
        The rule below asks "is the pointer over the front card's column", which
