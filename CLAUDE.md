@@ -127,6 +127,28 @@ map ramp.
 scenes, min/max are set by outlier pixels in two extreme frames; ordinary scenes
 then land in a sliver. p2-p98 roughly doubled the usable span.
 
+**Do not let colour and height encode the same variable identically.** On the
+Landsat map both read the cell's position in the city's whole-year range, so on
+any one date every column stood at the same height: Dammam had 839 m of relief
+across a 28.8 km footprint, a 2.9% slope. Fix by giving them different jobs,
+colour fixed across the city and height normalised within the frame, and scale
+the height span by the city's ground width so every city gets the same visual
+slope. See CONTEXT §27.
+
+**When a fitted line misses the data, suspect the model before the plot.** The
+"equation and values not matching" report was a straight line fitted to a
+relationship that is flat across the tropics and falls only poleward. A hinge
+beat both the line and a quadratic in both hemispheres (0.826/0.819 against
+0.780/0.613 and 0.801/0.802). Also: sample a fitted curve ONLY across the range
+that has data, never the full axis.
+
+**A physical filter does not catch cloud.** Thin cloud reads as a perfectly
+plausible -30 C, so `repair_lst.py`'s -70/+80 window passed whole cloud-covered
+frames: Abuja had 12% of its pixels below 0 C, in Nigeria. An absolute threshold
+cannot separate them either, because Abuja's bogus -23.6 C overlaps
+Ulaanbaatar's real -23.9 C. Threshold on the CITY'S OWN distribution of frame
+medians (`tools/lst/clean_frames.py`).
+
 **Check the build's EXIT CODE, never its output.** `npx vite build | grep error;
 echo "build ok"` prints success regardless, because `echo` runs either way. That
 masked a genuinely failing build for four steps. Use

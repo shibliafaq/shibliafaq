@@ -272,6 +272,25 @@ html, body {
 .time__date { font-size: .68rem; color: var(--ink); font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
 .time__n { font-size: .58rem; color: var(--faint); }
 
+/* ---- relief control -------------------------------------------------- */
+.relief {
+  position: fixed;
+  right: 16px; bottom: 62px;
+  z-index: 20;
+  width: 168px;
+  padding: 10px 13px 11px;
+  display: grid;
+  gap: 6px;
+}
+.relief__s { width: 100%; accent-color: var(--accent); height: 3px; cursor: pointer; }
+.relief__v {
+  font-size: .62rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  text-align: right;
+}
+.relief[hidden] { display: none; }
+
 /* ---- analysis view -------------------------------------------------- */
 .analysis {
   position: fixed;
@@ -329,6 +348,10 @@ html, body {
 }
 .tbl td { padding: 6px 9px; border-bottom: 1px solid rgba(255, 255, 255, .05); }
 .tbl td.num { text-align: right; font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+/* The header has to follow the cells it labels. The numbers were already right
+   aligned while their headings sat left, which reads as a column that does not
+   line up with its own name. */
+.tbl th.num { text-align: right; }
 .tbl tr:hover td { background: rgba(224, 163, 85, .06); }
 .tbl tr.is-on td { background: rgba(224, 163, 85, .12); }
 

@@ -1569,3 +1569,87 @@ Secondary text is off-white rather than grey, at the user's request. The three
 tiers still exist so hierarchy survives, but they are compressed into the top of
 the range: most labelling here is at 0.58rem, and a mid grey at that size on a
 near-black ground is genuinely hard to read.
+
+---
+
+## 27. Three wrong models, and why the columns looked flat (2026-08-20)
+
+Four complaints about the Landsat dashboard turned out to share two root causes.
+
+### Cloud that survived the physical filter
+
+`repair_lst.py` masks pixels outside a physical −70/+80 °C window. That catches
+raw fill but not thin cloud, whose brightness temperature is a perfectly
+"physical" −30 °C. What survived was not scattered noise but **entire frames**:
+Abuja 2025‑07‑22 had a median of −23.6 °C, Rome 2025‑11‑25 −57.6 °C, Bulawayo
+2025‑01‑13 −61.5 °C. Abuja ended up with **12% of its pixels below 0 °C**, in
+Nigeria. Singapore's colour range read **−46.4 to 48.8 °C**.
+
+An absolute threshold cannot fix this, and that is the interesting part: Abuja's
+bogus −23.6 °C overlaps Ulaanbaatar's entirely genuine −23.9 °C in February.
+Cloud is cold *relative to the city's own seasonal envelope*, so `clean_frames.py`
+thresholds on the city's own distribution of frame medians, rejecting a frame
+more than 25 °C below the 25th percentile of them. Result: **12 frames across 11
+of 135 cities**, every one obviously cloud, and no legitimate winter frame
+touched anywhere, including Yakutsk, Harbin, Tromso, Murmansk and Ulaanbaatar.
+Northern R² went 0.755 → 0.780.
+
+### Colour and height were doing the same job
+
+Both read the cell's position in the city's whole‑year range, so on any single
+date every column stood at nearly the same height. Measured: **Dammam had 839 m
+of relief across a 28.8 km footprint, a 2.9% slope**. Singapore 3.2%. That is
+flat, and the user said so.
+
+Giving the channels different jobs fixes it without inventing contrast that is
+not in the data. Colour still carries absolute temperature on a range fixed for
+the whole city, so the timeline still shows the season. **Height is normalised
+within the frame**, at full range every time. The span scales with the city's
+ground width, so every city now gets the same visual slope instead of the
+accidental spread from 3.2% (Singapore) to 17.7% (Tromso):
+
+| city | before | after, at 1× |
+|---|---|---|
+| Dammam | 3.5% | 16.0% |
+| Singapore | 3.2% | 16.0% |
+| Kampala | 12.3% | 16.0% |
+
+A `Relief` slider (0.2× to 3.2×) exposes the exaggeration, because there is no
+single right value: how steep a slope must be before the eye reads it as
+structure depends on camera pitch and on what the reader is looking for.
+
+### Three models, and the two that were wrong
+
+The user reported that "the equation and values are not matching". They were
+right, and it was not a plotting bug. It was the model.
+
+**A straight line** ran about five degrees above every equatorial city, because
+it had to reach the mid‑latitudes. Surface temperature does not peak at the
+equator; it peaks across the arid subtropics, because the equator is humid,
+cloudy and vegetated and evaporation cools it. The five hottest cities here are
+Khartoum (16°), N'Djamena (12°), Aswan (24°), Dammam (26°) and Livingstone
+(18°), none equatorial. The southern hemisphere paid most: R² 0.613.
+
+**A quadratic** fixed the equator and broke the pole. R² 0.802 south, but a
+parabola forced through a maximum at 11° must dive afterwards, and with only
+**one** southern city beyond 50° nothing holds the tail down. It undershot Punta
+Arenas by 4.5 °C, visibly peeling away from the last point on the chart.
+
+**A hinge** is the shape the physics has, and cannot run away because its
+poleward limb is straight:
+
+| | linear | quadratic | hinge |
+|---|---|---|---|
+| North | 0.780 | 0.801 | **0.826** |
+| South | 0.613 | 0.802 | **0.819** |
+
+Flat at 36.4 °C to 20° north then −5.7 °C per ten degrees; flat at 32.7 °C to
+24° south then −8.3 °C. Residuals are small and no longer structured: worst band
+off by 2.8 °C where the straight line was off by 5.1 °C, and Punta Arenas lands
+at 8.0 against 9.3 observed.
+
+Two smaller fixes in the same pass. The curve is now **sampled only across
+latitudes that have cities**; the old line was drawn 0°–72° regardless of where
+the data stopped, which was half the reported mismatch on its own. And the
+hemisphere accents went to near‑maximum chroma (`#22e0ff`, `#ff5c2b`), because a
+3.6px scatter dot has very little area in which to make its case.

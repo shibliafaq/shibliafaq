@@ -75,12 +75,17 @@ const RAMP = [
   [1,    [250, 201,  52]],   // gold
 ];
 
-/* Hemisphere identity colours: ice blue and ember. Both sit on the temperature
-   ramp's own axis, which is deliberate here — north IS the cold half of this
-   dataset and south the warm one, so the series colours agree with the imagery
-   instead of fighting it. Ember is a deeper amber than the chrome gold, so an
-   interface element and a data series are never the same colour. */
-const HEMI = { N: '#63b8d4', S: '#e0742f' };
+/* Hemisphere identity colours, at full brightness.
+
+   The first pass used a muted ice blue and ember, picked to sit politely
+   against the glass panels. On a near-black ground that politeness read as
+   washed out, and a 3.4px scatter dot has very little area in which to make its
+   case. These are the same two hues pushed to near-maximum chroma.
+
+   Both stay clear of the gold chrome so an interface element is never mistaken
+   for a data series: the south is pushed toward red, away from the chrome's
+   amber, rather than being merely a brighter version of it. */
+const HEMI = { N: '#22e0ff', S: '#ff5c2b' };
 
 const $ = (id) => document.getElementById(id);
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -158,6 +163,65 @@ function fitCanvas(c) {
   return { ctx, w: r.width, h: r.height };
 }
 
+/* A hinge: flat across the tropics, then a straight poleward decline.
+
+   THREE MODELS WERE TRIED, AND THE FIRST TWO WERE WRONG IN DIFFERENT WAYS.
+
+   A straight line came first, and the chart showed it failing: the fitted line
+   ran about five degrees above every equatorial city, because it had to reach
+   the mid latitudes. That is not a plotting bug, it is the model being wrong.
+   Surface temperature does not peak at the equator. It peaks across the arid
+   subtropics, because the equator is humid, cloudy and vegetated, and
+   evaporation cools it. The five hottest cities here are Khartoum at 16°,
+   N'Djamena at 12°, Aswan at 24°, Dammam at 26° and Livingstone at 18°, none of
+   them equatorial. The southern hemisphere paid the most for this: R² 0.613.
+
+   A quadratic fixed the equator and broke the pole. It fits well in the middle
+   (R² 0.802 south) but a parabola forced through a maximum at 11° has to dive
+   afterwards, and with only ONE southern city beyond 50° nothing holds the tail
+   down. It undershot Punta Arenas by 4.5°C, and you could see the curve peel
+   away from the last point.
+
+   A hinge is the shape the physics actually has, and it cannot run away because
+   its poleward limb is a straight line. Flat at 36.4°C to 20° north then losing
+   5.7°C per ten degrees; flat at 32.7°C to 24° south then losing 8.3°C. R² 0.826
+   and 0.819, better than either alternative in both hemispheres, with residuals
+   that are small and no longer structured: the worst band is off by 2.8°C where
+   the straight line was off by 5.1°C, and Punta Arenas lands at 8.0 against 9.3
+   observed.
+
+   The breakpoint is found by scanning, because with one free parameter inside a
+   max() there is no closed form worth deriving for 78 points. */
+function fitHinge(xs, ys) {
+  const n = xs.length;
+  const my = ys.reduce((a2, b2) => a2 + b2, 0) / n;
+  let best = null;
+  for (let brk = 5; brk <= 35.0001; brk += 0.5) {
+    let md = 0;
+    for (let i = 0; i < n; i++) md += Math.max(xs[i] - brk, 0);
+    md /= n;
+    let sdy = 0; let sdd = 0;
+    for (let i = 0; i < n; i++) {
+      const d = Math.max(xs[i] - brk, 0) - md;
+      sdy += d * (ys[i] - my); sdd += d * d;
+    }
+    const slope = sdd === 0 ? 0 : sdy / sdd;
+    const plateau = my - slope * md;
+    let ss = 0;
+    for (let i = 0; i < n; i++) {
+      ss += (ys[i] - (plateau + slope * Math.max(xs[i] - brk, 0))) ** 2;
+    }
+    if (best === null || ss < best.ss) best = { ss, brk, plateau, slope };
+  }
+  let sst = 0;
+  for (let i = 0; i < n; i++) sst += (ys[i] - my) ** 2;
+  return {
+    ...best, n,
+    r2: 1 - best.ss / (sst || 1),
+    at: (x) => best.plateau + best.slope * Math.max(x - best.brk, 0),
+  };
+}
+
 function fit(xs, ys) {
   const n = xs.length;
   const mx = xs.reduce((a, b) => a + b, 0) / n;
@@ -183,6 +247,11 @@ function fit(xs, ys) {
   let query = '';
   let active = null;        // loaded city payload
   let frame = 0;
+  /* Vertical exaggeration, under the reader's control. There is no single right
+     value: a 3D view is a picture of a slope, and how steep a slope has to be
+     before the eye reads it as structure rather than noise depends on the pitch
+     of the camera and on what the reader is looking for. */
+  let exag = 1;
   let playing = false;
   const cache = new Map();
 
@@ -238,6 +307,37 @@ function fit(xs, ys) {
     return [at(0.02), at(0.98)];
   }
 
+  /* Height is normalised WITHIN each frame; colour stays fixed across the city.
+
+     They used to do the same job: both read the cell's position in the city's
+     whole-year range, so on any single date every column stood at almost the
+     same height and the city rendered as a slab. Dammam measured 839 m of
+     relief across a 28.8 km footprint, a 2.9% slope, which the eye reads as
+     flat.
+
+     Giving the two channels different jobs fixes it without inventing contrast
+     that is not in the data. Colour still carries absolute temperature on a
+     range fixed for the whole city, so a colour means the same thing in January
+     as in July and the timeline still shows the season. Height is freed to show
+     structure inside the frame you are looking at, at full range every time.
+
+     The span scales with the city's ground width so a 32 km city and an 11 km
+     one get the same visual slope rather than the same absolute metres. */
+  function frameRange(values) {
+    const v = [];
+    for (let i = 0; i < values.length; i++) if (Number.isFinite(values[i])) v.push(values[i]);
+    if (!v.length) return [0, 1];
+    v.sort((a, b) => a - b);
+    const at = (q) => v[Math.min(v.length - 1, Math.max(0, Math.round(q * (v.length - 1))))];
+    const lo = at(0.02);
+    const hi = at(0.98);
+    return [lo, hi > lo ? hi : lo + 1];
+  }
+
+  function reliefSpan(city) {
+    return 2 * WIN * 111320 * Math.cos((city.lat * Math.PI) / 180) * 0.16;
+  }
+
   function cellsFor(city, values, range) {
     /* The range is passed in, not read from `active`. This runs while the
        payload is still being built, so `active` is whatever was selected
@@ -247,6 +347,7 @@ function fit(xs, ys) {
     const lon0 = city.lon - WIN;
     const out = [];
     const [lo, hi] = range;
+    const [flo, fhi] = frameRange(values);
     for (let r = 0; r < GRID; r++) {
       for (let c = 0; c < GRID; c++) {
         const v = values[r * GRID + c];
@@ -259,7 +360,7 @@ function fit(xs, ys) {
           polygon: [[ln, la], [ln + step, la], [ln + step, la + step], [ln, la + step]],
           t: v,
           color: ramp(t),
-          h: 40 + Math.max(0, Math.min(1, t)) * 5200,
+          hn: Math.max(0, Math.min(1, (v - flo) / (fhi - flo))),
         });
       }
     }
@@ -276,7 +377,8 @@ function fit(xs, ys) {
         pickable: true,
         getPolygon: (d) => d.polygon,
         getFillColor: (d) => [...d.color, 235],
-        getElevation: (d) => d.h,
+        getElevation: (c) => 25 + c.hn * active.span,
+        elevationScale: exag,
         material: { ambient: 0.7, diffuse: 0.5, shininess: 20, specularColor: [60, 60, 60] },
       }));
     }
@@ -311,6 +413,7 @@ function fit(xs, ys) {
       d.values = d.frames.map((f) => decode(f, d.nodata));
       d.range = robustRange(d.values);
       d.cells = d.values.map((v) => cellsFor(d.summary, v, d.range));
+      d.span = reliefSpan(d.summary);
       cache.set(slug, d);
     }
     active = d;
@@ -355,6 +458,8 @@ function fit(xs, ys) {
   const fitN = fit(N.map((c) => Math.abs(c.lat)), N.map((c) => c.mean));
   const fitS = fit(S.map((c) => Math.abs(c.lat)), S.map((c) => c.mean));
   const fitAll = fit(CITIES.map((c) => Math.abs(c.lat)), CITIES.map((c) => c.mean));
+  const q2N = fitHinge(N.map((c) => Math.abs(c.lat)), N.map((c) => c.mean));
+  const q2S = fitHinge(S.map((c) => Math.abs(c.lat)), S.map((c) => c.mean));
 
   /* The subtitle is written from the index for the same reason the notes are:
      it read "82 cities · 69°N to 34°S" long after neither number was right. */
@@ -368,17 +473,25 @@ function fit(xs, ys) {
   }
 
   function paintAnalysis() {
-    const put = (pre, f, g) => {
+    /* The equation printed here is the curve actually drawn on the chart. They
+       disagreed before, because the card reported a straight line while the
+       data plainly bends, and a reader comparing the two was right to say the
+       equation and the values did not match. */
+    const put = (pre, q, lin, g) => {
       $(`eq${pre}`).textContent =
-        `T = ${f.slope.toFixed(3)} × |latitude| + ${f.intercept.toFixed(1)}`;
+        `T = ${q.plateau.toFixed(1)}°C up to ${q.brk.toFixed(0)}°, `
+        + `then ${q.slope < 0 ? '−' : '+'}${Math.abs(q.slope).toFixed(3)}°C per degree`;
+      const lats = g.map((c) => Math.abs(c.lat));
       $(`stat${pre}`).innerHTML = [
-        ['r', f.r.toFixed(3)], ['R²', (f.r * f.r).toFixed(3)],
-        ['per 10°', `${(f.slope * 10).toFixed(1)}°C`], ['cities', String(f.n)],
-        ['range', `${Math.min(...g.map((c) => Math.abs(c.lat))).toFixed(0)}–${Math.max(...g.map((c) => Math.abs(c.lat))).toFixed(0)}°`],
+        ['R² hinge', q.r2.toFixed(3)],
+        ['R² line', (lin.r * lin.r).toFixed(3)],
+        ['per 10° poleward', `${(q.slope * 10).toFixed(1)}°C`],
+        ['cities', String(q.n)],
+        ['range', `${Math.min(...lats).toFixed(0)}°–${Math.max(...lats).toFixed(0)}°`],
       ].map(([k, v]) => `<div><div class="stat__v">${v}</div><div class="stat__k">${k}</div></div>`).join('');
     };
-    put('N', fitN, N);
-    put('S', fitS, S);
+    put('N', q2N, fitN, N);
+    put('S', q2S, fitS, S);
     $('eqN').style.cssText = `color:${HEMI.N};background:${HEMI.N}14;border-color:${HEMI.N}44`;
     $('eqS').style.cssText = `color:${HEMI.S};background:${HEMI.S}14;border-color:${HEMI.S}44`;
     $('statN').querySelectorAll('.stat__v').forEach((e) => { e.style.color = HEMI.N; });
@@ -403,9 +516,12 @@ function fit(xs, ys) {
     const weaker = fitS.r * fitS.r < fitN.r * fitN.r;
 
     $('noteN').innerHTML =
-      `Autumn. A clean gradient across ${fitN.n} cities and ${spanN.toFixed(0)} degrees of `
-      + `latitude — <strong>${Math.abs(fitN.slope * 10).toFixed(1)}°C for every ten degrees `
-      + `north</strong>.`;
+      `Autumn, across ${q2N.n} cities and ${spanN.toFixed(0)} degrees of latitude. `
+      + `Flat at about <strong>${q2N.plateau.toFixed(0)}°C</strong> all the way to `
+      + `${q2N.brk.toFixed(0)}°, then falling `
+      + `<strong>${Math.abs(q2N.slope * 10).toFixed(1)}°C for every ten degrees</strong>. `
+      + `Letting the fit bend once lifts R² from ${(fitN.r * fitN.r).toFixed(2)} to `
+      + `${q2N.r2.toFixed(2)}.`;
 
     /* Three branches rather than two, because the size of the gap is the whole
        point. On the original Europe-Africa corridor the southern R² was 0.25
@@ -415,36 +531,31 @@ function fit(xs, ys) {
        span from 34 degrees to 53 and the sample from 30 cities to 57, and R²
        went to 0.61. The lesson generalises past this chart: a weak fit over a
        third of the range is a statement about the range. */
-    const gap = (fitN.r * fitN.r) - (fitS.r * fitS.r);
-    $('noteS').innerHTML = gap > 0.25
-      ? `Spring, and a much weaker relationship: R² of ${(fitS.r * fitS.r).toFixed(2)} against `
-        + `the north's ${(fitN.r * fitN.r).toFixed(2)}. Mostly the lever arm — `
-        + `<strong>${fitS.n} cities across ${spanS.toFixed(0)} degrees</strong> against `
-        + `${fitN.n} across ${spanN.toFixed(0)}. A weak fit over a third of the range is a `
-        + `statement about the range.`
-      : gap > 0.05
-        ? `Spring. <strong>${Math.abs(fitS.slope * 10).toFixed(1)}°C for every ten degrees `
-          + `south</strong> across ${fitS.n} cities and ${spanS.toFixed(0)} degrees of latitude. `
-          + `R² of ${(fitS.r * fitS.r).toFixed(2)} trails the north's `
-          + `${(fitN.r * fitN.r).toFixed(2)}, and the remaining gap is continentality: the `
-          + `southern cities are spread across three ocean-dominated land masses rather than `
-          + `one continent.`
-        : `Spring, and a gradient that matches the north's. `
-          + `<strong>${Math.abs(fitS.slope * 10).toFixed(1)}°C for every ten degrees south</strong> `
-          + `across ${fitS.n} cities and ${spanS.toFixed(0)} degrees, R² of `
-          + `${(fitS.r * fitS.r).toFixed(2)}.`;
+    $('noteS').innerHTML =
+      `Spring, across ${q2S.n} cities and ${spanS.toFixed(0)} degrees of latitude. `
+      + `Flat at about <strong>${q2S.plateau.toFixed(0)}°C</strong> to ${q2S.brk.toFixed(0)}°, `
+      + `then falling <strong>${Math.abs(q2S.slope * 10).toFixed(1)}°C for every ten `
+      + `degrees</strong>, a steeper descent than the north's. The shape matters far more `
+      + `here: R² goes from ${(fitS.r * fitS.r).toFixed(2)} straight to `
+      + `<strong>${q2S.r2.toFixed(2)} hinged</strong>, because so many southern cities sit `
+      + `on the flat part.`;
 
     $('splitNote').innerHTML =
       `Fitted separately because the hemispheres are in opposite seasons. Pooling all `
-      + `${fitAll.n} cities gives r = ${fitAll.r.toFixed(3)} (R² = ${(fitAll.r * fitAll.r).toFixed(3)}), `
-      + `<strong>weaker than the northern fit alone</strong> — a single line across both describes neither.`;
+      + `${fitAll.n} cities gives R² = ${(fitAll.r * fitAll.r).toFixed(3)}, `
+      + `<strong>weaker than either hemisphere on its own</strong>, so a single line across `
+      + `both describes neither. Each fit is flat across the tropics and straight `
+      + `poleward of a breakpoint, because surface temperature does not peak at the `
+      + `equator. It peaks across the arid subtropics: the equator is humid, cloudy and `
+      + `vegetated, and evaporation cools it.`;
 
     $('tblNote').textContent =
       `${CITIES.length} cities, ${idx.source}. Mean is across each city's own Landsat acquisitions; `
       + `cloud limits how many each gets.`;
 
     $('tbl').innerHTML =
-      '<thead><tr><th>City</th><th>Lat</th><th>Mean °C</th><th>Min</th><th>Max</th><th>Scenes</th></tr></thead><tbody>'
+      '<thead><tr><th>City</th><th class="num">Lat</th><th class="num">Mean °C</th>'
+      + '<th class="num">Min</th><th class="num">Max</th><th class="num">Scenes</th></tr></thead><tbody>'
       + CITIES.map((c) => `<tr data-slug="${c.slug}"${active && active.summary.slug === c.slug ? ' class="is-on"' : ''}>
           <td>${c.name} <span style="color:var(--faint)">${c.country}</span></td>
           <td class="num">${c.lat.toFixed(2)}</td>
@@ -472,8 +583,8 @@ function fit(xs, ys) {
     const Y = (t) => T + ph - ((t - y0) / (y1 - y0)) * ph;
 
     ctx.font = '10px "JetBrains Mono", monospace';
-    ctx.strokeStyle = 'rgba(255,255,255,.07)';
-    ctx.fillStyle = 'rgba(255,255,255,.4)';
+    ctx.strokeStyle = 'rgba(255,255,255,.09)';
+    ctx.fillStyle = 'rgba(247,243,236,.72)';
     for (let g = 0; g <= 4; g++) {
       const v = y0 + ((y1 - y0) * g) / 4;
       const y = Math.round(Y(v)) + 0.5;
@@ -483,27 +594,38 @@ function fit(xs, ys) {
     ctx.textAlign = 'center';
     for (let lat = 0; lat <= 70; lat += 10) ctx.fillText(`${lat}°`, X(lat), h - 9);
 
-    const draw = (g, f, col) => {
+    /* The curve is sampled only across latitudes that actually have cities.
+
+       The straight line before it was drawn from 0° to 72° regardless of where
+       the data stopped, so at the left edge it sat five degrees above every
+       equatorial city and at the right edge it ran past the last one. Half of
+       the reported mismatch between the equation and the values was this:
+       drawing a model outside the range it was fitted on. */
+    const draw = (g, q, col) => {
+      const lats = g.map((c) => Math.abs(c.lat));
+      const lo = Math.min(...lats);
+      const hi = Math.max(...lats);
       g.forEach((c) => {
         ctx.beginPath();
-        ctx.arc(X(c.lat), Y(c.mean), 3.4, 0, Math.PI * 2);
+        ctx.arc(X(c.lat), Y(c.mean), 3.6, 0, Math.PI * 2);
         ctx.fillStyle = col;
-        ctx.globalAlpha = 0.75;
+        ctx.globalAlpha = 0.92;
         ctx.fill();
         ctx.globalAlpha = 1;
       });
       ctx.beginPath();
-      ctx.moveTo(X(0), Y(f.intercept));
-      ctx.lineTo(X(72), Y(f.slope * 72 + f.intercept));
+      for (let i = 0; i <= 72; i++) {
+        const x = lo + ((hi - lo) * i) / 72;
+        const px = X(x);
+        const py = Y(q.at(x));
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
       ctx.strokeStyle = col;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.6;
       ctx.stroke();
     };
-    /* Bright, and deliberately neither the cyan chrome nor anything on the
-       temperature ramp — these encode hemisphere, not heat, and a reader should
-       never have to wonder which. */
-    draw(N, fitN, HEMI.N);
-    draw(S, fitS, HEMI.S);
+    draw(N, q2N, HEMI.N);
+    draw(S, q2S, HEMI.S);
 
     ctx.font = '600 12px Jost, sans-serif';
     ctx.textAlign = 'left';
@@ -524,6 +646,12 @@ function fit(xs, ys) {
     if (!row) return;
     show('map');
     select(row.dataset.slug);
+  });
+
+  $('rex').addEventListener('input', (e) => {
+    exag = Number(e.target.value) / 100;
+    $('rexV').textContent = `${exag.toFixed(exag < 1 ? 2 : 1)}×`;
+    paintMap();
   });
 
   $('search').addEventListener('input', (e) => { query = e.target.value.toLowerCase(); paintList(); });
@@ -550,7 +678,7 @@ function fit(xs, ys) {
   function show(v) {
     view = v;
     $('analysis').hidden = v !== 'analysis';
-    ['rail', 'read', 'time'].forEach((id) => { $(id).style.display = v === 'map' ? '' : 'none'; });
+    ['rail', 'read', 'time', 'relief'].forEach((id) => { $(id).style.display = v === 'map' ? '' : 'none'; });
     document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('is-on', t.dataset.view === v));
     if (v === 'analysis') paintAnalysis();
     paintMap();
