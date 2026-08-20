@@ -201,7 +201,7 @@ const LISS = {
    reverted: it re-tilts the curve, and both the right-hand side and the path
    itself read worse for it. */
 const FREQ_Y = 2;
-const PHI_Z = 0.05;
+const PHI_Z = 0.03;
 
 function lissAt(th) {
   return {
@@ -762,7 +762,7 @@ function setupWheel(root) {
          Holding the plane a clear 5% of Rz behind the leading card removes the
          ambiguity rather than narrowing it. Expressed as a fraction so it means
          the same thing at any viewport. */
-      const PLANE_MARGIN = 0.05;
+      const PLANE_MARGIN = 0.07;
       root.style.setProperty('--liss-plane',
         Math.min(PLANE_CEILING, maxLz / Rz - PLANE_MARGIN).toFixed(4));
 

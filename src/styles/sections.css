@@ -2390,6 +2390,22 @@
    resize. */
 
 
+/* A SOFT OUTER GLOW ON THE HUB LABEL.
+
+   Two shadows rather than one: a tight halo that reads as the type being lit,
+   and a wide low-opacity bloom that lifts it off the black without drawing an
+   edge. Sized in em so both scale with the label, which is solved per viewport
+   by fitLabel() and can be anything from ~150px to ~240px.
+
+   It has to out-specify `.wheels .wheel__title`, which sets text-shadow: none.
+   Kept subtle deliberately: the cards now pass BOTH in front of and behind
+   this word, and a heavy glow would read as a light source the tiles in front
+   of it are not respecting. */
+.wheels .wheel--liss .wheel__title {
+  text-shadow:
+    0 0 .10em rgba(255, 212, 41, .30),
+    0 0 .34em rgba(255, 212, 41, .16);
+}
 /* THE LABEL IS PARKED AT A REAL DEPTH AMONG THE CARDS.
 
    `.wheels .wheel__head` puts it at z = -r, the cylinder axis, which on this

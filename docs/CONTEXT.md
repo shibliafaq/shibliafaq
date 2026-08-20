@@ -2767,3 +2767,29 @@ the centre of the flow, which was asked for several rounds back and refused then
 because 0.42 put the peak 0.849 away from the middle. One constant was serving
 three different requirements, and only once all three were on the table did the
 value that satisfies them become obvious.
+
+### Final tuning and the label glow (2026-08-21)
+
+`PHI_Z` 0.05 -> **0.03**, moving the depth peak a little closer still to the
+visual centre, and `PLANE_MARGIN` 0.05 -> **0.07**, widening the gap the label is
+held behind the leading card.
+
+The hub label gained a soft outer glow: two shadows, a tight halo at `.10em` and
+a wide bloom at `.34em`, both amber at low opacity. Sized in `em` so they scale
+with the label, which `fitLabel()` solves per viewport and can be anywhere from
+about 150px to 240px. It has to out-specify `.wheels .wheel__title`, which sets
+`text-shadow: none`. Kept subtle on purpose: cards now pass both in front of and
+behind this word, and a heavy glow would read as a light source that the tiles in
+front of it are not respecting.
+
+Verified per frame over an eased scroll in both directions, 108 frames:
+
+| | |
+|---|---|
+| frames the centre tile is behind the word | **0** |
+| frames the leading tile is behind | **0** |
+| smallest depth margin | **33px**, up from 24 |
+| frames the top two cards are within 6px wide | 16 of 108 |
+| rendered title width | 1218px, unchanged by the glow |
+
+Accepted by the reader at this setting.
