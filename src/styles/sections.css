@@ -2079,13 +2079,16 @@
      visible at once. Section 31 merged them into one figure of fourteen, so the
      arrangement that 44vh existed to produce no longer exists -- and 44vh is
      now why a 390px phone gets a 371px stage, a 98px front card and a 4.5pt
-     title. Left at 44vh deliberately for now: raising it is a visible change to
-     how the section reads on a phone, not a bug fix. See CONTEXT 38.
+     title. Now 58vh: the arrangement 44vh existed to produce stopped existing
+     when the wheels merged, and the extra height is vertical room for the
+     larger front card the type floor asks for. It does NOT change the card's
+     size -- Rz is min(W, H) and W is the smaller axis on a phone -- so this
+     buys spread, and LISS.minTitlePt buys the legibility. See CONTEXT 40.
 
      The `.wheels { grid-template-columns: 1fr; gap: 0 }` that sat here went
      with the second wheel. `.wheels` is `display: block` and holds a single
      section, so both declarations were inert. */
-  .wheel__stage { height: 44vh; }
+  .wheel__stage { height: 58vh; }
   /* VERTICAL BELONGS TO THE PAGE ONCE THE WHEEL'S OWN AXIS IS HORIZONTAL.
 
      `data-wheel="auto"` flips the wheel to its horizontal axis at exactly this

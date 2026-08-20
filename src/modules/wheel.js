@@ -122,6 +122,35 @@ const LISS = {
      See CONTEXT section 34. */
   front: 0.28,
 
+  /* A FRACTION OF THE STAGE CANNOT BE THE WHOLE RULE, BECAUSE TYPE HAS AN
+     ABSOLUTE FLOOR.
+
+     0.28 of a 1296px desktop stage is a 363px card carrying an 11.2pt title,
+     which is the size this was tuned to. 0.28 of a 350px phone stage is a 98px
+     card carrying a 4.5pt title, and on a phone NONE of the fourteen titles
+     reached 8pt. The constant was doing exactly what it says and the result was
+     still unreadable, because legibility is measured in points and 0.28 is
+     measured in stages.
+
+     So the fraction has a floor solved from the type itself. Rearranging the
+     measurement in CONTEXT section 34 --
+     pt = fontSize x (rendered / cardBox) x 0.75, and rendered = W x front --
+     gives the front needed to clear a target:
+
+         front = pt x cardBox / (0.75 x fontSize x W)
+
+     On a 1440 desktop that asks for 0.222, below the 0.28 already set, so the
+     desktop is untouched and stays exactly as tuned. On a 390px phone it asks
+     for 0.56, and that is the whole fix. The cap stops a very narrow screen
+     solving for a card wider than its own stage.
+
+     CONTEXT section 34 is still right that the card's own type is the cheap
+     lever and geometry is the expensive one; it is just that on a phone the
+     cheap lever is already at its stop -- the title is clamped to 1.15rem and
+     the card is only 300px wide, so there is no more type to give. */
+  minTitlePt: 9,
+  frontMax: 0.62,
+
   /* THE FAR CARDS SHRINK; THE NEAR ONE DOES NOT GROW.
 
      Perspective already enlarges with depth, so a scale ramp that ALSO grows
@@ -291,11 +320,15 @@ function thetaAtFraction(f) {
    the same trick the scale uses. */
 const FIT_STEPS = 512;
 
-function lissFit(W, H, cardW, cardH, P) {
+function lissFit(W, H, cardW, cardH, P, titleFs) {
   const upright = H > W;
   const Rz = Math.min(W, H) * LISS.rz;
   const mFront = P / (P - Rz);
-  const sBase = (W * LISS.front) / (cardW * mFront);
+  /* The larger of the tuned fraction and whatever the type floor demands,
+     capped so a narrow screen cannot ask for a card wider than its stage. */
+  const needed = titleFs > 0 ? (LISS.minTitlePt * cardW) / (0.75 * titleFs * W) : 0;
+  const front = Math.min(LISS.frontMax, Math.max(LISS.front, needed));
+  const sBase = (W * front) / (cardW * mFront);
 
   const n = FIT_STEPS;
   const ux = new Float64Array(n);   // rendered x offset per unit amplitude
@@ -343,7 +376,7 @@ function lissFit(W, H, cardW, cardH, P) {
   const fx = solve(ux, hw, W * LISS.fillX);
   const fy = solve(uy, hh, H * LISS.fillY);
   return {
-    upright, Rz, sBase,
+    upright, Rz, sBase, front,
     ampX: fx.amp, ampY: fy.amp,
     // Negated: the envelope's centre is where it currently sits, and we want
     // that moved to the stage's centre.
@@ -514,6 +547,10 @@ function setupWheel(root) {
      either one per frame would thrash layout on every tick of the flywheel. */
   let cardW0 = 0;
   let cardH0 = 0;
+  /* The card title's own rendered size, read rather than assumed: it is a
+     clamp() on vw, so it differs per viewport and the front-card floor is
+     solved from it. */
+  let titleFs0 = 0;
   /* The solved envelope fit, and the key it was solved for. Re-solved only when
      the stage or the card box actually changes -- it is 16 secant steps over 512
      samples, which is nothing once but wasteful every frame. */
@@ -766,6 +803,8 @@ function setupWheel(root) {
     if (!h) return;
     cardW0 = cards[0].offsetWidth || cardW0;
     cardH0 = cards[0].offsetHeight || cardH0;
+    const t0 = cards[0].querySelector('.pcard__title');
+    if (t0) titleFs0 = parseFloat(getComputedStyle(t0).fontSize) || titleFs0;
     /* Read, never assumed to be 1000. The value is set in sections.css and a
        drift between the two would put the front card at the wrong size with
        nothing to show why. */
@@ -922,9 +961,9 @@ function setupWheel(root) {
          is both enlarged and pushed further from centre -- which is what threw
          two cards off the viewport before, and what makes the figure lopsided
          once the curve is tilted in depth. Both are handled in lissFit(). */
-      const key = `${W}x${H}x${cardW0}x${cardH0}x${persp}`;
+      const key = `${W}x${H}x${cardW0}x${cardH0}x${persp}x${titleFs0}`;
       if (!fit || fitKey !== key) {
-        fit = lissFit(W, H, cardW0 || W * 0.4, cardH0 || H * 0.48, persp);
+        fit = lissFit(W, H, cardW0 || W * 0.4, cardH0 || H * 0.48, persp, titleFs0);
         fitKey = key;
       }
       const { upright, Rz, sBase } = fit;

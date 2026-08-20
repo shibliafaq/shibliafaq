@@ -3072,3 +3072,77 @@ seen, and a key read before the thing it keys is just a list.
 The counts are written by `wheel.js` from the cards themselves, never typed into
 the markup -- the same rule the five dashboards follow, so an eighth project
 cannot leave the key quietly claiming seven.
+
+## 40. The phone titles, and a fraction that could not be constant (2026-08-21)
+
+The one thing section 38 recorded and left open: on a 390x844 phone the front
+card rendered 97px wide with a 4.5pt title, the smallest was 1.2pt, and **0 of
+14 titles reached 8pt**.
+
+### Why the existing constant could not fix it
+
+`LISS.front = 0.28` is the front card as a fraction of the stage, and it does
+exactly what it says at every viewport. That is the problem. 0.28 of a 1296px
+desktop stage is a 363px card carrying an 11.2pt title, which is what it was
+tuned for; 0.28 of a 350px phone stage is a 98px card carrying 4.5pt. The
+constant was never wrong -- **legibility is measured in points and 0.28 is
+measured in stages**, so a single fraction cannot serve both.
+
+Section 34's lever, the card's own type, is genuinely the cheap one on a desktop
+and it does not help here: on a phone it is already at its stop. The title is
+clamped to `1.15rem` at that width and the card box is only 300px, so there is
+no more type to give.
+
+### The fraction gets a floor solved from the type
+
+Rearranging section 34's own measurement --
+`pt = fontSize x (rendered / cardBox) x 0.75`, with `rendered = W x front` --
+gives the fraction needed to clear a target size:
+
+    front = pt x cardBox / (0.75 x fontSize x W)
+
+`lissFit()` now takes the measured title size and uses the larger of the tuned
+0.28 and whatever that floor demands, capped at 0.62 so a very narrow screen
+cannot solve for a card wider than its own stage.
+
+The font size is READ from the rendered title rather than assumed, because it is
+a `clamp()` on vw and therefore differs per viewport -- the same reason `persp`
+is read from the stylesheet rather than hardcoded to 1000.
+
+### What it does at each end
+
+| | desktop 1440x900 | phone 390x844 |
+|---|---|---|
+| floor asks for | 0.222 | 0.557 |
+| front actually used | **0.28, unchanged** | **0.557** |
+| front card | 359px | 97 -> **195px** |
+| front title | 11.2pt | 4.5 -> **8.9pt** |
+| titles at or above 8pt | 4 | 0 -> **3** |
+| cards clipped | 0 | 0 |
+
+The floor is below the tuned value on any normal desktop, so it never binds
+there and the composition is untouched -- measured 0.277 against 0.278 before,
+which is rounding.
+
+### The stage height is a separate dial, and it is not the fix
+
+`44vh` on mobile was sized so two stages fitted in 88vh, an arrangement section
+31 deleted. It is now 58vh. Worth being exact about what that buys, because it
+is easy to assume it is what made the titles readable: **it changes nothing
+about type size at all.** Rz is `min(W, H)` and W is the smaller axis on a
+phone, so height does not touch the card scale. It only buys vertical spread:
+
+| mobile stage | overlap | titles at or above 8pt |
+|---|---|---|
+| 44vh | 1.6% | 0 |
+| 58vh (shipped) | 30.3% | 3 |
+| 68vh | 22.6% | 3 |
+
+So height trades density against how much of the screen the section eats, and
+nothing else. 68vh measures better and 58vh was preferred on sight; the reader
+picked, which is right, because the measurement has nothing to say about it.
+
+Thirty percent overlap would be a failure on the desktop, where it was budgeted
+at 12%. On a phone with fourteen tiles and a 350px stage it is what a dominant
+centre card costs, and eight of the fourteen are `is-plate` images at that
+moment rather than text competing with text.
