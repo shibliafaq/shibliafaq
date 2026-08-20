@@ -1421,3 +1421,151 @@ of 1440 giving "day 14 of 7", an `elevationScale` applied on top of an already
 metric range making 1.4 km columns 36 km tall, and a map framing routine that
 measured its container while the shell was still hidden and fell back to a
 160 px floor.
+
+---
+
+## 26. The global Landsat dashboard, and designing a colour ramp by measurement (2026-08-20)
+
+`lst-twin.html` is the fourth dashboard: surface temperature for cities across
+both hemispheres, extracted from Landsat 8/9 Collection 2 Level 2 at 30 m via
+the Microsoft Planetary Computer STAC (no credentials needed), 24 acquisitions
+per city, rendered as extruded 30 m cells with a timeline and a second tab of
+per-hemisphere regressions.
+
+### What the resolution argument settled
+
+The first attempt used Open-Meteo reanalysis grids, and the user's response was
+"this is very coarse". They were right, and the number says why: Open-Meteo puts
+**21 cells across Dammam with a 2.40 °C spread**. MODIS gives 617 cells. Landsat
+gives **892 × 805 cells at 30 m**. Urban heat island structure is a street-level
+phenomenon; at reanalysis resolution the thing being studied does not exist.
+
+Two extraction traps cost real time:
+
+**Landsat fill values are not zero.** ST_B10 has a valid DN range starting at
+**293**; masking only `DN == 0` leaves sub-293 fill in place, and it scales to
+about −122 °C. One such frame gave Kinshasa a mean of **12.0 °C** and flattened
+the entire Southern Hemisphere regression to R² 0.076. After masking to a
+physical −70/+80 °C window, Kinshasa reads 33.3 °C and Southern R² is 0.249.
+The dangerous part is that 12 °C looks merely surprising rather than obviously
+broken — it would have shipped. The repair pass caught fourteen more cities when
+the dataset expanded: **Manila 7.8 → 32.6 °C, Jakarta 9.3 → 36.5, Mumbai
+19.1 → 32.5**. Humid tropical cities are the worst affected, because they are
+the ones whose scenes are most often part-cloudy.
+
+**A cloud-free scene is not a complete scene.** A scene reporting 0% cloud
+covered only 6% of the AOI, yielding 13% valid pixels. Scene selection now
+requires `COVER_MIN = 0.98` and gets 100% valid.
+
+### The colour ramp, and why eyeballing it failed three times
+
+Three ramps were rejected in a row, and the useful part is that each failed for
+a different, measurable reason:
+
+1. **Inferno** — the dark end is near-black, so cool ground sank into the dark
+   basemap and the coldest cities rendered as holes.
+2. **Blue → white → red** — fixed that and introduced worse: a pale midpoint
+   reads as blank, so the middle of every city looked like missing data.
+3. **Indigo → blue → ice → sand → gold** — the same mistake wearing a warmer
+   name. Scored in CIELAB it put **22 near-grey samples on the scale, starting
+   at t = 0.50**, exactly where most cells sit.
+
+The third rejection is the one worth remembering, because it was caught by
+measurement rather than by taste, and only after the same complaint had already
+been made twice about other ramps. `scratchpad/ramp_check.py` scores a candidate
+on the three properties this page actually needs: L\* rising monotonically so
+hotter always reads brighter, minimum ΔE across a 5% step so no window goes
+flat, and distance from the grey axis so nothing reads as missing data.
+
+**But the endpoints were never the real constraint.** The binding one is that a
+single scene occupies only about a third of the scale, so it is not enough for
+cold and hot to differ — *every one-third window has to differ from itself*. The
+shipped ramp turns through **teal** rather than sand: L\* 11 → 83 without a
+reversal, every 5% step above ΔE 7, **zero** low-chroma samples, and ΔE 46–68
+across a realistic scene window where 2.3 is a just-noticeable difference.
+
+### The range mattered more than the ramp
+
+Colour is fixed per city and shared across its scenes, so that a colour means
+the same temperature in January as in July and the timeline shows seasonal
+change rather than a rescaling artefact. That part was right. Using **min and
+max** for it was not: pooled across 24 scenes those are set by a handful of
+outlier pixels in the two most extreme frames, and they stretch the scale so far
+that an ordinary scene lands in a sliver of it.
+
+| city | scene span, min/max range | scene span, p2–p98 range |
+|---|---|---|
+| Tromso | 22% | 32% |
+| Kampala | 27% | **63%** |
+| Cape Town | 29% | **54%** |
+| Dammam | 11% | 16% |
+
+Tromso in winter occupied **8%** of the ramp and rendered as one flat blue. The
+2nd–98th percentile of all pixels across all scenes roughly doubles what a
+typical scene uses. The extremes clip, which is the right trade: two frames
+losing their tails beats twenty-four frames losing their structure.
+
+Dammam stays low because it genuinely has a huge seasonal swing — November reads
+25.6–44.1 °C and June 32.8–65.8 °C. That flatness is true to the data, and
+pushing contrast past what the data holds would be a lie.
+
+### A map ramp is not a text ramp
+
+The city rail and the results table print each mean in its own ramp colour. A
+ramp that must start dark for the map is unreadable as type on the same ground:
+Tromso's mean measured **1.19:1** against the page, where WCAG AA wants 4.5:1.
+`rampText()` keeps hue and chroma and floors lightness only, so the colour still
+carries temperature while clearing the background — 5.24:1 at the coldest row.
+
+### The southern fit was a statement about the range, not the relationship
+
+This is the finding worth keeping. On the original Europe–Africa corridor the
+southern regression came out at **R² 0.249 across 30 cities and 34 degrees**,
+against the north's 0.79 across 52 cities and 69 degrees. The natural reading is
+that latitude governs surface temperature less well in the south — season,
+maritime influence, something physical.
+
+It was none of those. The corridor was chosen to hold longitude roughly fixed so
+that latitude was the only variable, which is defensible, but in that band the
+land stops at Cape Agulhas. The southern group had **half the lever arm on half
+the sample**, and that alone accounts for the weak fit.
+
+Adding Asia, Australasia and South America — Punta Arenas at −53.2°, Dunedin at
+−45.9° — costs the fixed-longitude control and buys back the range:
+
+| | Europe–Africa corridor | worldwide |
+|---|---|---|
+| North | R² 0.793, 52 cities, 69° | R² **0.755**, 78 cities, 69° |
+| South | R² 0.249, 30 cities, 34° | R² **0.611**, 57 cities, 53° |
+
+The northern fit barely moved, which is the control: adding longitude variation
+did not damage a relationship that had enough range to show itself. The southern
+fit more than doubled. **A weak fit over a third of the range is a statement
+about the range**, and the Analysis tab now says so in those words.
+
+Final dataset: **135 cities, 78 N / 57 S, 70°N to 53°S**. Polokwane yielded no
+scene meeting the 98% coverage bar and was dropped.
+
+### Copy that cannot go stale
+
+The Analysis tab asserted "34 degrees against the north's 70" and blamed Cape
+Agulhas for the southern span. Both were true of the original Europe–Africa
+corridor and both became false the moment South America and Australasia were
+added — Punta Arenas sits at −53.2°. Every figure in those notes, the header
+subtitle and the document title are now **derived from the index at runtime**,
+including the comparison between hemispheres, so the prose cannot contradict the
+chart above it. This is the same discipline as the Dammam twin's readouts, and
+for the same reason: a typed number drifts, a computed one cannot.
+
+### Palette
+
+Chrome is gold `#e0a355`; hemispheres are ice blue `#63b8d4` (north) and ember
+`#e0742f` (south). The chosen palette named the same gold for chrome and for the
+southern series — an interface colour and a measurement wearing one colour — so
+the southern line was moved to a deeper amber. **The accent never carries data**
+still holds across all four dashboards.
+
+Secondary text is off-white rather than grey, at the user's request. The three
+tiers still exist so hierarchy survives, but they are compressed into the top of
+the range: most labelling here is at 0.58rem, and a mid grey at that size on a
+near-black ground is genuinely hard to read.

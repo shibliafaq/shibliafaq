@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Surface Temperature — 135 Cities, Landsat 30 m | KFUPM</title>
+  <meta name="description" content="Landsat surface temperature for 135 cities worldwide, in 3D at 30 m, with separate latitude regressions for each hemisphere.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="boot" id="boot">
+    <div class="boot__mark"></div>
+    <p class="boot__label">Global Surface Temperature</p>
+    <p class="boot__sub">Loading Landsat index…</p>
+  </div>
+
+  <canvas id="deck"></canvas>
+
+  <header class="bar glass">
+    <div class="bar__brand">
+      <span class="dot"></span>
+      <div>
+        <h1 class="bar__title">Global Surface Temperature</h1>
+        <p class="bar__sub">Landsat 8/9 · 30 m · 135 cities · 70°N to 53°S</p>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab is-on" type="button" data-view="map">3D map</button>
+      <button class="tab" type="button" data-view="analysis">Analysis</button>
+    </nav>
+  </header>
+
+  <!-- ══ city rail ══ -->
+  <aside class="rail glass" id="rail">
+    <p class="label">Cities</p>
+    <input class="search" id="search" type="search" placeholder="Search…" autocomplete="off">
+    <div class="hemi" id="hemi">
+      <button type="button" class="is-on" data-h="all">All</button>
+      <button type="button" data-h="N">North</button>
+      <button type="button" data-h="S">South</button>
+    </div>
+    <ul class="clist" id="clist"></ul>
+  </aside>
+
+  <!-- ══ readout ══ -->
+  <aside class="read glass" id="read">
+    <h2 class="read__city" id="rCity">—</h2>
+    <p class="read__meta" id="rMeta">—</p>
+
+    <div><span class="big" id="rMean">—</span><div class="big__k">mean surface temp</div></div>
+
+    <div class="pair">
+      <div><span class="big" id="rMin">—</span><div class="big__k">coolest</div></div>
+      <div><span class="big" id="rMax">—</span><div class="big__k">hottest</div></div>
+    </div>
+
+    <div class="pair">
+      <div><span class="big" id="rSpread">—</span><div class="big__k">this scene</div></div>
+      <div><span class="big" id="rDates">—</span><div class="big__k">acquisitions</div></div>
+    </div>
+
+    <p class="label" style="margin-top:16px">Scale</p>
+    <div class="scale">
+      <div class="scale__bar" id="rBar"></div>
+      <div class="scale__ends"><span id="rLo">—</span><span id="rHi">—</span></div>
+    </div>
+  </aside>
+
+  <!-- ══ timeline ══ -->
+  <div class="time glass" id="time">
+    <button class="pbtn" id="play" type="button" aria-label="Play or pause"><span id="playIcon">▶</span></button>
+    <div class="time__track">
+      <input class="time__slider" id="slider" type="range" min="0" max="0" value="0" step="1">
+    </div>
+    <div>
+      <div class="time__date" id="tDate">—</div>
+      <div class="time__n" id="tN">—</div>
+    </div>
+  </div>
+
+  <!-- ══ analysis ══ -->
+  <div class="analysis glass" id="analysis" hidden>
+    <section class="acard glass acard--wide">
+      <div class="ahead">
+        <p class="label">Temperature against latitude, per hemisphere</p>
+        <p class="anote" id="splitNote">—</p>
+      </div>
+      <canvas id="fit" class="fitchart"></canvas>
+    </section>
+
+    <section class="acard glass">
+      <div class="ahead"><p class="label">Northern hemisphere</p></div>
+      <code class="eq" id="eqN">—</code>
+      <div class="stats" id="statN"></div>
+      <p class="anote" id="noteN"></p>
+    </section>
+
+    <section class="acard glass">
+      <div class="ahead"><p class="label">Southern hemisphere</p></div>
+      <code class="eq" id="eqS">—</code>
+      <div class="stats" id="statS"></div>
+      <p class="anote" id="noteS"></p>
+    </section>
+
+    <section class="acard glass acard--wide">
+      <div class="ahead">
+        <p class="label">All cities</p>
+        <p class="anote" id="tblNote">—</p>
+      </div>
+      <div class="tblwrap"><table class="tbl" id="tbl"></table></div>
+    </section>
+  </div>
+
+  <div class="loading glass" id="loading" hidden>Loading city…</div>
+  <div class="tip" id="tip" hidden></div>
+
+  <p class="attrib">
+    Landsat 8/9 Collection 2 Level 2 (USGS) via Microsoft Planetary Computer ·
+    basemap © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>,
+    © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> ·
+    S. Afaq, KFUPM
+  </p>
+
+  <script type="module" src="/src/lst-twin.js"></script>
+</body>
+</html>

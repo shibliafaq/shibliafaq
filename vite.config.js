@@ -217,6 +217,7 @@ export default defineConfig({
         gisTwin: 'gis-twin.html',
         iotTwin: 'iot-twin.html',
         mcTwin: 'mc-twin.html',
+        lstTwin: 'lst-twin.html',
       },
       output: {
         manualChunks: {

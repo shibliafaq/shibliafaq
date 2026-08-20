@@ -174,7 +174,18 @@ export const projects = {
        each city separately, which is why the finding needed a scatter plot to
        explain it: separately scaled, all three look the same. Sharing the scale
        makes the gradient visible before anything is read. */
+    /* The Landsat build supersedes the MODIS one: 82 cities instead of 3, 30 m
+       instead of 1 km, and both hemispheres fitted separately. mc-twin.html is
+       still built and still correct; this is simply the larger instrument. */
     twin: {
+      sec: 'Surface temperature, 82 cities',
+      lead: 'Landsat 8/9 thermal imagery at 30 m for 82 cities along a north–south transect, from Tromsø at 69°N to Gqeberha at 34°S. Pick a city to see its heat surface in 3D and scrub a year of acquisitions; the analysis tab fits each hemisphere separately.',
+      title: 'Global surface temperature — Landsat 30 m',
+      src: '/lst-twin.html',
+      hint: '82 cities · 30 m · a year of acquisitions · two hemispheres',
+      note: 'Landsat 8/9 Collection 2 Level 2 (USGS) via Microsoft Planetary Computer, band ST_B10, cloud and shadow masked per pixel with QA_PIXEL. Cities carry between 6 and 24 usable acquisitions depending on cloud. Basemap © Esri, © OpenStreetMap contributors.',
+    },
+    twinLegacy: {
       sec: 'Three cities, one scale',
       lead: 'All 25,905 MODIS measurements as 3D hexbins, the three cities side by side on a single shared temperature scale, with the latitude fit and the fourteen-day record beneath. Scrub the days or pool them.',
       title: 'Multi-city surface temperature — 3D comparison',

@@ -1,6 +1,6 @@
 # Shibli Afaq — portfolio v2
 
-_Last updated: 2026-08-19 (session 2)._
+_Last updated: 2026-08-20 (session 3)._
 
 Vanilla JS + Vite 7. No React. GSAP ScrollTrigger + Lenis for scroll, three.js
 for the globe, canvas for the pixel valley. Multi-page build via
@@ -109,6 +109,24 @@ testing. If a card "will not open", check the ring rotation first.
 **Build image maps from measured pixel content, never from filenames.** The
 Olaya before/after pair arrived twice with the meaning of "before" flipped.
 
+**A colour ramp is a measurable object, so measure it.** Three ramps were
+rejected in a row on this project, and the third — indigo/blue/ice/sand/gold —
+had 22 near-grey samples starting at t=0.50, the same pale-midpoint failure that
+had already been complained about twice. `scratchpad/ramp_check.py` scores L*
+monotonicity, minimum dE per 5% step, and distance from the grey axis. And the
+endpoints are rarely the constraint: here a single scene occupies only a third
+of the scale, so every one-third window has to differ from itself or a whole
+city renders flat. See CONTEXT §26.
+
+**A ramp built for a dark map is unreadable as text on it.** The same values
+printed as type in the city rail measured 1.19:1 against the page. Floor the
+lightness and keep hue and chroma (`rampText()`), rather than compromising the
+map ramp.
+
+**Fixed colour ranges should be percentiles, not min/max.** Pooled across 24
+scenes, min/max are set by outlier pixels in two extreme frames; ordinary scenes
+then land in a sliver. p2-p98 roughly doubled the usable span.
+
 **Check the build's EXIT CODE, never its output.** `npx vite build | grep error;
 echo "build ok"` prints success regardless, because `echo` runs either way. That
 masked a genuinely failing build for four steps. Use
@@ -153,11 +171,11 @@ through q94 because hard edges are the DCT's worst case. Never upscale a source.
 
 ---
 
-## The four dashboards
+## The five dashboards
 
-Both live inside project cards as **iframes**, never merged into this site's JS
-tree, and both are full-viewport apps. Inside an iframe `100vh` resolves to the
-iframe's height rather than the window's, so the property that makes them
+They all live inside project cards as **iframes**, never merged into this site's
+JS tree, and they are all full-viewport apps. Inside an iframe `100vh` resolves
+to the iframe's height rather than the window's, so the property that makes them
 impossible to merge is the same one that makes them trivial to embed.
 
 | card | page | weight |
@@ -166,6 +184,7 @@ impossible to merge is the same one that makes them trivial to embed.
 | Dammam 3D twin (GIS card) | `gis-twin.html` | 1.25 MB payload |
 | IoT monitoring (IoT card) | `iot-twin.html` | 12 KB JS + 12 KB CSS, no map libs |
 | Multi-city temperature (temp card) | `mc-twin.html` | 0.45 MB payload |
+| Global Landsat LST (temp card) | `lst-twin.html` | ~45 MB, one file per city, fetched on demand |
 
 The embed has three states, and the middle one is the point: **cold** (nothing
 fetched), **live** (running and visible behind a transparent shield), **armed**
@@ -177,8 +196,11 @@ while animating, and a transformed ancestor re-bases `position: fixed`.
 Declared per project via `twin: {...}` in `src/data/projects.js`. deck.gl and
 maplibre are a separate rollup chunk so the front page bundle is unchanged.
 
-All four share one rule: **the accent never carries data**. Chrome is `#0369a1`
-and each dataset has its own scale, so no colour on screen is ambiguous.
+All five share one rule: **the accent never carries data**. Chrome is `#0369a1`
+on the four light dashboards and gold `#e0a355` on the dark Landsat one, and
+each dataset has its own scale, so no colour on screen is ambiguous. Watch for
+the case where a chosen palette names one colour for both — the Landsat southern
+hemisphere series had to move to a deeper amber for exactly this reason.
 
 Two of them were built twice, both times because the brief was read as "copy the
 idiom" rather than "copy the design language and cover the same components".
