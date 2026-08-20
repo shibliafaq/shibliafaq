@@ -112,7 +112,7 @@ Olaya before/after pair arrived twice with the meaning of "before" flipped.
 **A colour ramp is a measurable object, so measure it.** Three ramps were
 rejected in a row on this project, and the third — indigo/blue/ice/sand/gold —
 had 22 near-grey samples starting at t=0.50, the same pale-midpoint failure that
-had already been complained about twice. `scratchpad/ramp_check.py` scores L*
+had already been complained about twice. `tools/lst/ramp_check.py` scores L*
 monotonicity, minimum dE per 5% step, and distance from the grey axis. And the
 endpoints are rarely the constraint: here a single scene occupies only a third
 of the scale, so every one-third window has to differ from itself or a whole
@@ -151,7 +151,9 @@ invisible. Slide, do not fade — and prepend rows rather than rebuilding
 ## Asset pipeline
 
 Originals are never committed. Conversion scripts live in the scratchpad and are
-documented in CONTEXT.md.
+documented in CONTEXT.md — except the Landsat pipeline, which is committed at
+`tools/lst/` because without it the 57 MB under `public/assets/data/lst/` cannot
+be rebuilt, only re-downloaded by hand.
 
 Architecture pages ship in **two tiers** because the book zooms to 4×: a
 half-spread is ~750 CSS px, so full zoom is a 3000px rendering.
