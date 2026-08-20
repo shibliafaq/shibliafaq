@@ -7,9 +7,11 @@ import * as THREE from 'three';
  * for at least two of these projects the geography IS the finding:
  *
  *   Multi-City Surface Temperature runs Dammam 26N -> Dublin 53N -> Reykjavik
- *   64N and reports r = -0.995 between latitude and temperature. That is a
- *   north-south line on a sphere. On a card it is a number; on a globe it is
- *   the shape of the result.
+ *   64N, which is a north-south line on a sphere. On a card that is a list of
+ *   three place names; on a globe it is the transect the pipeline renders.
+ *   (It used to say the card "reports r = -0.995 between latitude and
+ *   temperature". It does not any more, and neither does this comment: three
+ *   cities cannot carry that claim. See CONTEXT section 33.)
  *
  *   The thesis covers five Saudi cities. On a card that is a list; on a globe
  *   it is a region.
@@ -63,7 +65,7 @@ export const STOPS = [
   {
     id: 'temp', label: 'Multi-City Surface Temperature Analysis',
     // The one where the map is the result rather than the location.
-    note: '3 cities · 3 continents · r = −0.995 latitude vs temperature',
+    note: '3 cities · 3 continents · GPU hexbin pipeline in Kepler.gl',
     points: [
       ['Reykjavik 64°N', 64.1466, -21.9426],
       ['Dublin 53°N', 53.3498, -6.2603],

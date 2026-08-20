@@ -35,7 +35,7 @@ node tools/sync-site-copy.mjs --write   # apply it
 - <span class="hero__name-line">Shibli</span> <span class="hero__name-line hero__name-line--2">Afaq</span>
 
 ### hero.desc
-- Architect evolving into an <strong>urban data scientist</strong>, driven by a passion for building climate-resilient cities through spatial data. Expanding my toolkit to include GIS, machine learning, and remote sensing — currently finishing my M.Sc. at KFUPM (GPA&nbsp;4.0/4.0). <strong>Open to innovative smart city roles, research collaborations, and fully funded PhD opportunities.</strong>
+- Architect evolving into an <strong>urban data scientist</strong>, driven by a passion for building climate-resilient cities through spatial data. Expanding my toolkit to include GIS, machine learning, and remote sensing. Currently finishing my M.Sc. at KFUPM (GPA&nbsp;4.0/4.0). <strong>Open to innovative smart city roles, research collaborations, and fully funded PhD opportunities.</strong>
 
 ### hero.2
 - <span data-i18n="hero.cta.research">View Research</span> <span class="btn__arrow">↓</span>
@@ -70,7 +70,7 @@ node tools/sync-site-copy.mjs --write   # apply it
 - The same planet.<br><em>If we fail.</em>
 
 ### future.lead
-- Deserts where the tropics were, ice gone from both poles, dust over every ocean. This is not a different world — it is this one, with the heat left unchecked. Everything below is work aimed at the other version.
+- Deserts where the tropics were, ice gone from both poles, dust over every ocean. This is not a different world. It is this one, with the heat left unchecked. Everything below is work aimed at the other version.
 
 ## About
 
@@ -81,13 +81,13 @@ node tools/sync-site-copy.mjs --write   # apply it
 - The <em>problem</em><br>I’m solving
 
 ### about.p1
-- This is Olaya, Riyadh — surface temperature on a summer afternoon. I’m a licensed architect with <strong>4+ years of design and delivery</strong> who pivoted after realising the crises I was watching could not be solved one building at a time.
+- This is Olaya, Riyadh: surface temperature on a summer afternoon. I’m a licensed architect with <strong>4+ years of design and delivery</strong> who pivoted after realising the crises I was watching could not be solved one building at a time.
 
 ### about.pull
-- “To effectively tackle the climate crisis in our cities, I needed a deeper understanding of city-scale informatics — so I set out to build it.”
+- “To effectively tackle the climate crisis in our cities, I needed a deeper understanding of city-scale informatics, so I set out to build it.”
 
 ### about.p2
-- Now finishing an <strong>M.Sc. at KFUPM</strong>, I pair spatial design thinking with satellite remote sensing, GIS and machine learning — building heat adaptation tools for the Arabian Peninsula. <strong>Move across the map to see what intervention does.</strong>
+- Now finishing an <strong>M.Sc. at KFUPM</strong>, I pair spatial design thinking with satellite remote sensing, GIS and machine learning, building heat adaptation tools for the Arabian Peninsula. <strong>Move across the map to see what intervention does.</strong>
 
 ## Research direction
 
@@ -98,13 +98,13 @@ node tools/sync-site-copy.mjs --write   # apply it
 - Why <em>climate</em><br>drives everything
 
 ### direction.p1
-- There's a reason all my work circles back to the same thing: the planet is getting hotter, and cities are making it worse. Urban Heat Islands aren't a niche academic curiosity — they are a measurable, preventable cause of heat deaths, worsening air quality, and mounting energy demand in some of the world's most vulnerable communities. That bothers me. A lot.
+- There's a reason all my work circles back to the same thing: the planet is getting hotter, and cities are making it worse. Urban Heat Islands aren't a niche academic curiosity. They are a measurable, preventable cause of heat deaths, worsening air quality, and mounting energy demand in some of the world's most vulnerable communities. That bothers me. A lot.
 
 ### direction.pull
 - “I don't want to spend my career describing a problem. I want to build the tools that let cities actually fix it.”
 
 ### direction.p2
-- Everything I've built — the satellite pipelines, the GIS vulnerability frameworks, the IoT dashboards — is oriented toward one goal: making urban climate data <strong>actionable</strong>, not just publishable. That means getting it to the right resolution, the right people, and in time for it to matter.
+- Everything I've built (the satellite pipelines, the GIS vulnerability frameworks, the IoT dashboards) is oriented toward one goal: making urban climate data <strong>actionable</strong>, not just publishable. That means getting it to the right resolution, the right people, and in time for it to matter.
 
 ### direction.c1l
 - PhD Target
@@ -122,7 +122,7 @@ node tools/sync-site-copy.mjs --write   # apply it
 - Arabian Peninsula &amp; Global South arid cities
 
 ### direction.c2s
-- Where extreme heat stress is most acute and urban climate data is most scarce — and where good tools could save the most lives
+- Where extreme heat stress is most acute and urban climate data is most scarce, and where good tools could save the most lives
 
 ### direction.c3l
 - Open To
@@ -131,7 +131,7 @@ node tools/sync-site-copy.mjs --write   # apply it
 - Fully funded PhD · Smart city research roles · GIS analytics consultancy
 
 ### direction.c3s
-- Based in Dhahran — open to relocation globally for the right opportunity
+- Based in Dhahran, open to relocation globally for the right opportunity
 
 ## Thermal sequence
 
@@ -142,7 +142,7 @@ node tools/sync-site-copy.mjs --write   # apply it
 - Three cities.<br><em>Three continents.</em>
 
 ### thermal.2
-- 25,905 real NASA MODIS measurements. Every 10° northward, 9.1&thinsp;°C colder.
+- 25,905 real NASA MODIS measurements. Three cities, fourteen days, rendered as GPU hexbins in Kepler.gl.
 
 ### thermal.3
 - <span class="thermal__dot" style="--c:#f59e0b"></span>Dammam <em>26°N</em> <b>31.5&thinsp;°C</b>
@@ -202,16 +202,16 @@ node tools/sync-site-copy.mjs --write   # apply it
 - Research <em>Output</em>
 
 ### pubs.lead
-- Three papers produced in one M.Sc. year — building toward a peer-reviewed publication record for doctoral research.
+- Three papers produced in one M.Sc. year, building toward a peer-reviewed publication record for doctoral research.
 
 ### publications.1
-- <span class="pub__n display">01</span> <div class="pub__body"> <h3 class="pub__title">A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments</h3> <p class="pub__meta">Shibli Afaq · Advisors: Dr. Yusuf A. Adenle &amp; Dr. Muhammad Aamir Basheer · 2025 · Target: Landscape and Urban Planning / Urban Climate</p> <span class="pub__status pub__status--review">⏳ Under Review</span> <p class="pub__abs">Systematic review of 22 articles (2005–2025) examining how soundscape design affects thermal comfort in hot-arid cities. Findings show soundscapes can reduce perceived heat stress and support psychological recovery through green and blue infrastructure, yielding evidence-based recommendations for walkable public spaces aligned with Vision 2030.</p> </div>
+- <span class="pub__n display">01</span> <div class="pub__body"> <h3 class="pub__title">A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments</h3> <p class="pub__meta">Shibli Afaq, Yusuf A. Adenle, Muhammad Aamir Basheer · <em>Discover Cities</em> (Springer Nature) · 2026 · 3:123 · Open Access · <a href="https://doi.org/10.1007/s44327-026-00314-z" target="_blank" rel="noopener">doi.org/10.1007/s44327-026-00314-z</a></p> <span class="pub__status pub__status--published">✅ Published · June 2026</span> <p class="pub__abs">PRISMA-guided systematic review of 22 peer-reviewed studies (2005–2025) on soundscape design, outdoor thermal comfort and urban space quality in hot-arid environments. Five interlinked themes emerge. Under moderate thermal stress, positive soundscapes built from natural sound and green–blue infrastructure reduce perceived heat stress and encourage active use of public space, but the benefit narrows sharply in extreme heat and is predominantly psychological rather than a direct sensory response. Introduces the Integrated Thermo-Acoustic Planning (ITAP) Framework and a persona-based Interdisciplinary Implementation Toolkit for Vision 2030 public space design.</p> </div>
 
 ### publications.2
 - <span class="pub__n display">02</span> <div class="pub__body"> <h3 class="pub__title">GIS and Remote Sensing-Based Assessment of Urban Heat Island in the Dammam Metropolitan Area, Saudi Arabia</h3> <p class="pub__meta">Shibli Afaq, Sultan Aldhafeeri · Supervisor: Dr. Baqer Al-Ramadan · 2026 · Target: Urban Climate / Sustainable Cities and Society</p> <span class="pub__status pub__status--prep">✍️ Manuscript in Preparation</span> <p class="pub__abs">Five-step GIS and remote sensing model assessing LST and heat vulnerability across the Dammam Metropolitan Area using Landsat 8/9, Sentinel-2, and WorldPop over a 500&nbsp;m fishnet (12,954 cells). NDBI is the strongest LST predictor (r&nbsp;=&nbsp;0.715). Composite HVI classified 92.6% of cells as High vulnerability, with the HVI hot spot 4.18× larger than temperature-only mapping, revealing planning priorities hidden by single-factor analysis.</p> </div>
 
 ### publications.3
-- <span class="pub__n display">03</span> <div class="pub__body"> <h3 class="pub__title">ITS-Based Congestion Management for Event Corridors in Arid Cities: A Case Study of the Aramco Stadium Corridor, Al Khobar</h3> <p class="pub__meta">Shibli Afaq, H. Alnasser, H. Alghamdi, S. Aldhafeeri · Instructor: Dr. Muhammad Abdullah · 2026 · Target: Journal of Intelligent Transportation Systems / Transportation Research Part C</p> <span class="pub__status pub__status--prep">✍️ Manuscript in Preparation</span> <p class="pub__abs">Al Khobar's Aramco Stadium corridor (47,000-seat capacity) suffers 48.5% evening congestion, set to worsen before the 2034 FIFA World Cup. Four cumulative ITS alternatives were evaluated via weighted multi-criteria analysis, ranging from adaptive signal control to demand-management pricing. The optimal strategy projects 20–35% travel time reduction within a SAR 28–47M plan, piloting Vision 2030 smart mobility.</p> </div>
+- <span class="pub__n display">03</span> <div class="pub__body"> <h3 class="pub__title">ITS-Based Congestion Management for Event Corridors in Arid Cities: A Case Study of the Aramco Stadium Corridor, Al Khobar</h3> <p class="pub__meta">Shibli Afaq, H. Alnasser, H. Alghamdi, S. Aldhafeeri · Instructor: Dr. Muhammad Abdullah · 2026 · Target: Journal of Intelligent Transportation Systems / Transportation Research Part C</p> <span class="pub__status pub__status--prep">✍️ Manuscript in Preparation</span> <p class="pub__abs">Al Khobar's Aramco Stadium corridor (47,000 capacity) already runs at 48.5% evening congestion with 44 hours lost per driver per year, and faces concentrated event surges before the 2027 AFC Asian Cup and 2034 FIFA World Cup. Four cumulative ITS alternatives were scored on a weighted multi-criteria matrix, from adaptive signal control through to demand-management pricing. The recommended alternative layers ATSC, ATMS/ATIS, smart parking and park-and-ride, at an indicative planning-level cost of $4.3–12.1M; the ATSC literature reports 10–20% travel-time savings. Costs and KPIs are estimates from published sources, not measured results.</p> </div>
 
 ## Skills
 
@@ -394,7 +394,7 @@ node tools/sync-site-copy.mjs --write   # apply it
 - <span data-i18n="contact.send">Send message</span> <span class="btn__arrow">→</span>
 
 ### contact.ok
-- ✓ Message sent — thank you.
+- ✓ Message sent. Thank you.
 
 ### contact.3
 - LinkedIn <span class="btn__arrow">↗</span>
@@ -452,29 +452,6 @@ node tools/sync-site-copy.mjs --write   # apply it
 ### nav.contact
 - Contact
 
-### projects.60
-- B.Arch Thesis · BIT Mesra · 2021
-
-### projects.61
-- Twin Tower Complex — Net-Zero Mixed-Use Development
-
-### projects.62
-- 69 storeys · Net-zero energy · Diagrid structure · Full BIM
-
-### projects.63
-- Revit BIM
-
-### projects.64
-- Net-Zero
-
-### projects.65
-- Diagrid
-
-### projects.66
-- AutoCAD
-
-### projects.67
-- 01 / 07
 
 ### _nav.20
 - © 2026 Shibli Afaq

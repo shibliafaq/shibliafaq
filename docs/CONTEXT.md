@@ -2134,3 +2134,593 @@ Committing was offered and not chosen as a task, so it was done rather than
 deferred: the ~600 uncommitted lines of Lissajous wheel work are now committed
 and pushed, because a handoff that leaves work only on one disk is the actual
 risk. Nothing was rewritten to do it.
+
+---
+
+## 33. The three-city statistic, removed from four places (2026-08-21)
+
+Task 1 of the section 32 handoff. The Multi-City card presented `r = -0.995`,
+`R2 = 0.990`, "Latitude explains 99% of temp" and "every 10 degrees northward =
+9.1 C colder" as findings. All of it is computed from **three cities**, and any
+three points fall near a line, so the number measures the sample rather than the
+world.
+
+### It was in more places than the handoff recorded
+
+Section 32 named `src/data/projects.js` lines 158, 161, 162 and 168. Grepping for
+the figures found the same claim in three further files, and leaving any of them
+would have left the contradiction on the page:
+
+| file | what it said |
+|---|---|
+| `src/data/projects.js` | desc, two metric tiles, the scatter caption |
+| `src/modules/projectatlas.js` | the globe pin note, and the module header comment |
+| `src/modules/thermal.js` | Reykjavik caption: "Latitude alone explains 99% of the variance" |
+| `docs/site-copy.md` + `index.html` | front page: "Every 10 degrees northward, 9.1 C colder" |
+
+### The replacement numbers were measured, not copied
+
+Fitted directly from `public/assets/data/lst/index.json` rather than trusting the
+handoff:
+
+| fit | n | R2 | per 10 degrees |
+|---|---|---|---|
+| pooled, abs(lat) vs mean | 134 | **0.688** | -4.2 C |
+| north, poleward of 20 | 55 | 0.727 | -5.7 C |
+| north, tropics 0 to 20 | 23 | **0.148** | +3.4 C |
+| south, poleward of 24 | 27 | 0.847 | -7.9 C |
+
+The tropical fit is the one that kills the old claim: R2 0.148 with a slightly
+**positive** slope. There is no gradient there at all, so a single straight line
+through three cities was never describing the physics.
+
+The card keeps the Kepler.gl clips and is now framed as what it is, a GPU hexbin
+pipeline demonstration on three cities, and it points at the Landsat dashboard
+for the statistics. The scatter caption still quotes `r = -0.995` but now states
+`n = 3` beside it, which is more honest than hiding a number the figure visibly
+shows.
+
+### 135 cities that were never there
+
+The `twin` block claimed 135 cities in three places. `index.json` holds 134. The
+comment directly above it already said to read the count off that file rather
+than trust the comment, which is exactly the check that had not been run.
+`src/lst-twin.js` had the same rot in its header, at 82. Both now say 134.
+
+### The copy pipeline refused to write, and it was right
+
+`tools/sync-site-copy.mjs` blocked on seven `projects.60` to `projects.66` keys
+present in `docs/site-copy.md` but absent from `index.html`. They anchor a card
+whose markup was later rewritten without anchors, so they were orphaned.
+
+Clearing them exposed something worse. With the block lifted, the dry run also
+wanted to change `publications.1` and `publications.3`, and those were not
+whitespace: `docs/site-copy.md` still held the **pre-publication** text, so
+`--write` reverted a paper that is published with a DOI back to "Under Review".
+It was caught only by reading `git diff` after applying, which is the CLAUDE.md
+rule about checking the diff earning its place a second time.
+
+**So `docs/site-copy.md` is not automatically the newer copy.** `index.html` gets
+hand-edited too, and nothing reconciles them. Before `--write`, check that every
+line the dry run wants to change is a line you actually changed. The stale blocks
+here were refreshed by running `--export` into a scratch copy and splicing the
+two entries back.
+
+---
+
+## 34. Fourteen cards, and the one lever the scan could not see (2026-08-21)
+
+Tasks 2 and 3. Measured first, at 1440x900, stage 1296x792, card 518x360,
+perspective 1000.
+
+### The overlap was never the problem
+
+Section 31 shipped this on an overlap budget and the number holds up: **3.0%
+overlap, 6 overlapping pairs, 0 cards clipped.** Better than the 10% section 31
+recorded, because that was measured on a wider 1728px stage.
+
+What is wrong is legibility, and it is a different quantity. A card is scaled by
+`--liss-s` and then magnified by the stage perspective, so the title a reader
+actually sees is the card's own font size times `rendered width / 518`. Measured
+across the fourteen:
+
+    14.4  13.4  10.5  9.3  6.5  6.1  3.8  3.4  2.7  2.6  2.2  2.1  2.0  1.9  pt
+
+Ten of fourteen sat below 7pt. The rearmost card was 42px wide carrying a 1.3pt
+title, which is not small text, it is noise arranged in the shape of a word.
+
+**An instrument note.** The first pass at this multiplied the font size by
+`--liss-s` and reported a 6.1pt front card. That is wrong: `--liss-s` is the
+pre-perspective scale and the front card is magnified 1.9x on top of it. The
+right measure is `getBoundingClientRect().width / offsetWidth`. Same failure mode
+as the font probe in section 23, one term short of the real transform.
+
+### The scan said geometry could not fix it
+
+A model of `paint()` plus `lissFit()` plus the perspective divide reproduced all
+fourteen live card widths to within **0.63px**, so it could be scanned offline.
+Over amplitude, depth, scale, falloff and card count, with clipping forbidden and
+overlap capped at 12%, the best any configuration reaches is **five** readable
+titles out of fourteen, and buying that fifth one costs five times the overlap
+and flattens the very size ramp that carries depth. Even at the most generous
+setting that still fits the stage, the rearmost title renders at 2.4pt.
+
+So yes, fourteen cards on one curve is too many **for readable content**. It is a
+perfectly good number for a path.
+
+### The lever the scan could not see is the card's own type
+
+The scan only ever moved geometry, and geometry is the expensive lever:
+
+| lever | front title | overlap |
+|---|---|---|
+| shipped | 11.1pt | 1.8% |
+| `front` 0.28 to 0.36 | 14.3pt | **12.3%** |
+| card font size 16.56 to 21.6px | **14.4pt** | **1.8%** |
+
+The card is scaled as a unit, so its type scales with it and the geometry never
+hears about it. Same legibility, none of the collisions. `LISS.front` therefore
+did not move at all, and the fix lives in the stylesheet.
+
+### What actually changed
+
+- `fillX` 0.99 to **0.94**, `fillY` 0.92 to **0.88**. At 0.99 the envelope is
+  fitted to 99% of the stage by construction, so cards graze the edge: closest
+  approach across a full rotation was **7px**. Now 39px. That was the "several
+  cards sit tight against the top-left stage edge" report.
+- `back` 0.32 to **0.40**. The rearmost card goes 41px to 52px.
+- Card title `clamp(.95rem, 1.15vw, 1.12rem)` to `clamp(1.15rem, 1.5vw, 1.45rem)`.
+- **`is-plate`** below `--depth` 0.55: the card drops its body and keeps its
+  image. Fading `.pcard__body` takes the dark scrim with it, because the scrim is
+  a gradient on the body rather than a separate element, so a plate ends up as
+  the bare photograph. This is the honest answer to "should the back fade rather
+  than shrink": neither on its own, because no size rescues 2pt text. It stops
+  carrying text instead, and that costs no geometry.
+- **`is-front`**: a hairline accent frame on the frontmost card. Section 31
+  removed hover-to-enlarge because size already carries depth, and left nothing
+  in its place, so the layout never said which card was clickable. The cue cannot
+  be size, for the same reason the hover went.
+- The click target now matches the readable set. It was `t > 0.34`, eight cards
+  clickable against three legible. A click target you cannot read is a blind
+  click.
+
+Verified over 24 rotation states: the card marked `is-front` and the card
+`frontCard()` derives from projected area are the same card every time, with 0
+disagreements, so the mark and the click cannot drift apart.
+
+| | before | after |
+|---|---|---|
+| front title | 11.5pt | **15.1pt** |
+| titles at or above 8pt | 3 | **4** |
+| rearmost card | 42px | 52px |
+| overlap | 3.0% | 3.7% |
+| clipped | 0 | 0 |
+| closest edge approach | 7px | 39px |
+| front card marked | none | 1 |
+
+### The heading: moved, then moved back
+
+Task 3 was the giant PROJECTS label with cards riding across it. The handoff
+pointed at `sections.css` `clamp(2.6rem, 8vw, 6.5rem)`, but that clamp is only a
+fallback. The real size is solved in `fitLabel()` and published as `--hub-size`:
+measured **241.42px**, the label **1218px wide**, which is `HUB_FILL = 0.94` of a
+1296px stage. Editing the clamp alone does nothing.
+
+The label was moved above the stage, and it measured clean, with cards-over-label
+going to zero. Rejected on sight: the label in the middle with the cards crossing
+it is the effect the section is for. It is back on the axis at 241.42px,
+unchanged. Small caps were tried as a middle path and also rejected.
+
+Worth knowing that the section already carries its own `<h2>` above the wheel, so
+the hub label is a second heading. That was the argument for moving it, and it
+did not survive contact with how it looks.
+
+### Two real bugs found while doing it
+
+**`getComputedStyle().font` can be empty, and it fails silently.** While small
+caps were briefly on the label, `fitLabel()`'s probe inherited no font at all,
+measured the label at the browser default 16px, and the solver answered with a
+**2500px** hub, one letterform taller than the viewport. The shorthand serialises
+to `""` whenever a font property outside it has a non-initial value, and
+`font-feature-settings` is outside it. The probe now copies the longhands one at
+a time, and any fit taller than the stage is clamped, because a hub taller than
+the stage is a broken measurement rather than a bold choice. This is the second
+time this one property has caused a bug here; section 23 is the first.
+
+**The wheel was claiming a fraction of its own figure.** `overRing()` decides
+whether a scroll turns the ring or scrolls the page, and it derived the band from
+one card's box: correct on a cylinder, where every card sits in the same place.
+On the path it described a narrow moving strip. Measured, it claimed a band
+**208px** wide against a figure **1190px** wide, covering **14.3%** of it, so most
+of the figure fell through to the page. It also picked the first card in DOM
+order rather than the front one, via `cards.find(aria-hidden === 'false')`, so the
+strip did not even track the card it was named after. It now uses the union of
+all card boxes and covers 100%.
+
+---
+
+## 35. Connecting dashes, by construct rather than by character (2026-08-21)
+
+Task 4. The character appears in constructs that are not the same thing, so the
+work was classification rather than replacement.
+
+**Front page, 11 changed.** Full stop where the dash joined two independent
+clauses (`hero.desc`, `future.lead`, `direction.p1`, `contact.ok`); colon where it
+introduced a gloss on the noun before it (`about.p1`, "This is Olaya, Riyadh:
+surface temperature on a summer afternoon"); comma where it introduced a trailing
+clause or participial phrase (`about.pull`, `about.p2`, `direction.c2s`,
+`direction.c3s`, `pubs.lead`).
+
+**The parenthetical pair took parentheses, not commas.** `direction.p2` reads
+"Everything I've built, the satellite pipelines, the GIS vulnerability
+frameworks, the IoT dashboards, is oriented toward one goal" if commas are used,
+which is five commas in a row and a lost subject. The interruption is itself a
+comma-separated list of three, so only parentheses keep the spine readable.
+
+**Kept, deliberately.** Title separators: `direction.c1t`, the B.Arch degree line,
+the four wheel card titles, and the `projects.js` titles. Also the
+`01 / 14 - scroll to travel` chrome, which is a label separator rather than a
+sentence connector and sits outside the copy tool's anchors.
+
+**Untouched, as instructed.** The minus sign in `-3.7 C`, and the en dashes in
+`2005-2025`, `$4.3-12.1M` and `10-20%`. Also `green-blue infrastructure`, which is
+a compound en dash and correct.
+
+**`src/lst-twin.js`: 19 found, 4 changed.** Fourteen of the nineteen are in code
+comments, which are not site copy, and the file's house style uses them
+throughout. Only five reach the page, and one of those is the document title, a
+separator. The four real connectors were fixed. Zero rendered em dashes remain
+outside the title.
+
+One further connector was fixed that no list named: the `publications.1` abstract
+gained "public space - but the benefit narrows" when that block was refreshed
+from `index.html` during section 33.
+
+### Method note that generalises
+
+The task list gave line numbers against commit 196935d. Section 33 had already
+inserted and deleted lines in the same file, so those numbers had moved before
+the work started. Everything here was located by **content and by construct**,
+then cross-checked against the named lines. All 13 named lines were confirmed to
+contain a dash, and the three protected ones were confirmed to be the minus sign
+and two ranges. Three further occurrences turned out to be the markdown file's
+own scaffolding, its preamble bullets and its section headings, which are not
+page copy.
+
+---
+
+## 36. The word gets crossed, and a merge that had been opening two projects (2026-08-21)
+
+Follow-on to section 34, driven by looking at it rather than by measuring it.
+
+### Every click was opening two projects
+
+The real bug of the session, and it had been shipped. `modal.js` and `book.js`
+each end their click handler with the same geometric fallback, because a real
+click on a card resolves its target to the ancestor `.wheel` rather than to the
+card:
+
+    if (wheel) el = frontCard(wheel, '[data-modal]');   // modal.js
+    if (wheel) t  = frontCard(wheel, '[data-book]');    // book.js
+
+That asks "of the cards I care about, which is furthest forward". It was safe
+while there were two wheels: the research wheel held no `[data-book]` and the
+architecture wheel held no `[data-modal]`, so one of the two handlers always came
+up empty. **Section 31 merged both wheels into one figure of fourteen**, seven of
+each, and from that moment both selectors always matched something. Every click
+ran both fallbacks and opened a research modal *and* an architecture book.
+
+Fixed by resolving the front card across **all** cards and then testing what it
+is, so exactly one handler can act:
+
+    const front = frontCard(wheel, '.wheel__card');
+    el = front && front.hasAttribute('data-modal') ? front : null;
+
+Verified both ways from a clean state: with a `data-modal` card frontmost only
+the modal opens, with a `data-book` card frontmost only the book opens, one
+dialog each time.
+
+A note on testing this: the first attempt reported two dialogs open and it was
+wrong. A modal left over from the previous probe was still open, because the
+synthetic Escape had not closed it. The check has to read the before state as
+well as the after state, or it measures the residue of the last test.
+
+### Where the label sits in depth is a plane, and z-index is NOT how you set it
+
+Section 34 put the label at `z-index: 150`, the value a card reaches at
+`--depth 0.5`, and reasoned that a stacking index on a sibling would decide
+paint order. It does not. **Inside a preserve-3d subtree the browser sorts by 3D
+position and ignores z-index between transformed siblings.**
+
+This cost three rounds before it was caught, because the numbers looked like they
+were working: the index was taken 150 -> 190 -> 196, and each time the rendering
+appeared slightly different. It was not. The wheel had simply turned to a
+different phase between screenshots, and the correlation between a card's
+z-index and its depth made the readings look consistent. The reader said twice
+that nothing had changed, and the reader was right.
+
+The test that settled it: force the label to `z-index: 99999` and screenshot.
+Nothing moved by a pixel. One deliberate extreme beat three plausible
+increments, which is the general lesson. If a lever is doing nothing, push it
+to an absurd value before tuning it again.
+
+**The lever that works is translateZ.** The label is now parked at 0.95 of Rz,
+nearly the front of the cards range, so only the tile actually arriving at the
+centre comes through: it surfaces from under the type, is largest crossing it,
+and drops behind immediately after. Measured: 1 card in front of the word and it
+is the marked front card, 4 of 4 right-hand cards behind.
+
+Rz is solved per viewport in `lissFit()`, so it cannot be written into the
+stylesheet. `paint()` publishes it as `--liss-rz` and `--liss-rz-num`.
+
+**The counter-scale is not optional.** Moving the label forward puts it under the
+stage perspective, which magnifies it by P/(P - z); undoing that with (P - z)/P
+keeps the rendered size exactly what `fitLabel()` solved for. Verified: the title
+renders 1218px wide at 241.42px both before and after, so the depth is tunable
+without the type resizing. Same trick, opposite sign, as the cylinder rule.
+
+### PHI_Z, and both things it controls
+
+`PHI_Z` sets the depth lean at the ends of the figure, `sin(phi)`, which is what
+makes cards pass behind the word on one side and in front on the other. It also
+puts the size peak at `(sin phi, sin 2phi)` from the centre crossing, so the same
+constant decides how far the largest card sits from the middle of the
+composition. The two pull opposite ways:
+
+| phi | peak off centre | phases with a near-tie at the front |
+|---|---|---|
+| 0.00 | 0.000 | 64.7% |
+| **0.20 (now)** | **0.437** | **56.4%** |
+| 0.42 (was) | 0.849 | 31.9% |
+
+0.42 was chosen in section 31 when a near-tie meant there was no way to tell
+which card was frontmost. That is no longer true: `.is-front` marks it outright
+and the click target follows the same card, so a tie now costs a little size
+ambiguity rather than the cue failing. A 0.02 depth tie is about a 6% size
+difference, and one of the two wears an accent frame. Measured after the change:
+overlap 5.1% against a 10% budget, 0 clipped, 50px edge clearance, largest card
+46px right and 49px below the figure centre.
+
+### Also
+
+The hub label measures 241.42px and is centred on the stage to the pixel, offset
+(0, 0), with the figure's own centre 3px away. `HUB_FILL` was briefly taken to
+0.7787 for a 200px label and reverted.
+
+`01 / 14 — scroll to travel` removed, along with its now-orphaned `projects.67`
+copy key, so `sync-site-copy.mjs` stays clean.
+
+A margin of `clamp(1.75rem, 5vh, 4rem)` now separates the lead question from the
+figure. The cards reach within about 40px of the stage edge, so without it the
+question ran straight into the top of the curve.
+
+### The sign of PHI_Z is the shape of the figure, not a knob (2026-08-21)
+
+Tried and reverted in one round. The request was that tiles crossing the R and
+the O should ride OVER the word while the right-hand side stays behind it, and
+the sign of `PHI_Z` is exactly the control for which half of the flow comes
+forward: at +0.20 the size peak sits at x = +0.199, right of centre; at -0.20 it
+mirrors to x = -0.199, left of centre.
+
+It did what it was supposed to. Measured over 20 phases at -0.20, the cards
+crossing in front ran from x = -314 to +158 with a mean of -73, so the near half
+had genuinely moved left. But the same constant tilts the curve in depth, and
+the reader judged both the right-hand side and the path itself worse for it.
+Reverted to +0.20.
+
+**The constraint, stated plainly, so it is not rediscovered:** with the label as
+a flat plane, "near on the left AND far on the right" is the sign of `PHI_Z`, and
+that sign is the tilt of the figure. There is no setting that puts the near half
+on the left while leaving the curve as it renders at +0.20. Two levers exist and
+they do different jobs:
+
+- `PHI_Z` sign: which side comes forward. Changes the curve.
+- `--liss-label-z`: how much of the flow crosses in front at all. Changes nothing
+  about the curve. Measured sweep, at -0.20, in-front cards per phase and their
+  x range: 0.90 -> 2.29 cards, -401..269; 0.95 -> 1.67, -314..158; 0.985 -> 0.83,
+  -229..50; 0.992 -> 0.54, -140..-4.
+
+So the plane can decide *how many* tiles cross the word, but only the sign can
+decide *which side* they cross on, and the sign is not free.
+
+---
+
+## 37. The eight could not do what was being asked, and the check came far too late (2026-08-21)
+
+The section is meant to read as a channel: tiles sweep forward across one
+diagonal and return behind the hub label along the other. Green forward, blue
+behind, in the reader's own annotation.
+
+### The reachability check that should have come first
+
+Six rounds went into tuning constants toward that: the label plane at 0.72, 0.95,
+1.02; `PHI_Z` at 0.42, 0.20, then negated to -0.20 and reverted. Each round the
+reader said it was wrong, and each time the response was another constant.
+
+The target was not in the parameter space at all.
+
+On a 1:2 Bowditch curve, `y = sin(2t)`, so `y(t + pi) = y(t)`. The near and far
+extremes of `z = sin(t + phi)` are exactly pi apart in t. Therefore **the nearest
+point and the farthest point are forced to the same height, for every value of
+phi.** Measured vertical separation: 0.000. Forward-above and behind-below is not
+a tuning problem on that curve, it is unreachable.
+
+| ratio | forward point | behind point | vertical gap |
+|---|---|---|---|
+| 1:2, the eight | y = 0.39 | y = 0.39 | **0.000** |
+| 1:1, an ellipse | y = -0.59 | y = 0.59 | **1.96** |
+| 1:3 | y = -0.83 | y = 0.83 | 1.65 |
+
+**The lesson, and it generalises past this component.** When a reader rejects
+three successive settings of the same constant, the next move is not a fourth
+setting. It is to ask whether the thing being asked for is reachable at all.
+That check took one short script and it invalidated every round that preceded it.
+It is the same failure as CONTEXT 31's "widths are monotonic" pass and section
+34's z-index: the instrument was fine, the question was wrong.
+
+### What changed
+
+`FREQ_Y` is now 1, so the figure is an ellipse rather than a figure-eight, and
+`PHI_Z = -2.2` puts the nearest point at (-0.81, -0.59), upper left, and the
+farthest at (+0.81, +0.59), lower right. Screen y grows downward, so negative y
+is up. `--liss-label-z` is 0, the midpoint of the depth range, which splits the
+loop exactly in half: the near semicircle crosses in front of the word, the far
+one passes behind it.
+
+It measures better than what it replaced, which was not the reason for the
+change but is worth recording:
+
+| | eight | ellipse |
+|---|---|---|
+| overlap | 5.1% | **1.3%** |
+| overlapping pairs | 7 | **3** |
+| cards clipped | 0 | 0 |
+| in front / behind | 1 / 13 | **7 / 7** |
+| titles at or above 8pt | 4 | 4 |
+| front card title | 15.1pt | 15.0pt |
+
+### What was given up
+
+The figure-eight came off the Bowditch reference table in CONTEXT 31 and was the
+section's identity, including a genuine crossing point in the middle where the
+two lobes met in depth. An ellipse has no crossing. That cost was put to the
+reader explicitly before the change and accepted.
+
+`FREQ_Y` is a named constant precisely so this is one edit to reverse. Setting it
+back to 2 restores the eight, and everything downstream re-solves from the shape,
+because the arc-length table and the envelope fit both read the curve rather than
+assuming it.
+
+### Also settled in this stretch
+
+- `01 / 14 - scroll to travel` removed, with its orphaned `projects.67` copy key.
+- A `clamp(1.75rem, 5vh, 4rem)` margin now separates the lead question from the
+  figure; the cards reach within about 40px of the stage edge, so without it the
+  question ran into the top of the curve.
+- The hub label stays at 241.42px, centred on the stage to the pixel. `HUB_FILL`
+  was taken to 0.7787 for a 200px label and reverted.
+
+### REVERSED: the ellipse was rejected on sight, the eight is back (2026-08-21)
+
+Everything above about WHY the eight cannot stack its halves vertically still
+stands and is still worth knowing. The conclusion drawn from it does not: the
+ellipse was built, measured better than the eight on every collision metric, and
+was rejected immediately. The eight is the shape the section is meant to have,
+and that outranks the measurements.
+
+Current state: `FREQ_Y = 2`, `PHI_Z = 0.20`, `--liss-label-z: 0`.
+
+The label plane at 0 is the part worth keeping from the whole exercise. It sits
+at the midpoint of the cards' depth range, so the loop splits **7 cards in front
+of the word and 7 behind it** — a real front-and-back effect on the eight, which
+is what was being asked for all along. What it does not do, and cannot, is put
+the front half above and the back half below; on a 1:2 curve those halves
+interleave across the figure.
+
+| | eight at plane 0 (now) | ellipse (rejected) |
+|---|---|---|
+| overlap | 5.1% | 1.3% |
+| overlapping pairs | 7 | 3 |
+| clipped | 0 | 0 |
+| in front / behind | **7 / 7** | 7 / 7 |
+| front card title | 15.1pt | 15.0pt |
+
+**The process lesson is the expensive one, and it is not about geometry.** Six
+rounds went into tuning constants toward an unreachable target, then a seventh
+into changing the curve to reach it, and the answer was that the reader wanted
+the original shape. The reachability check was worth doing and came far too late;
+but it should have been followed by asking which of the two constraints to drop,
+not by assuming the newer one won. When a request and an existing design conflict,
+the question is which gives way, and that is the reader's call rather than a thing
+to infer from measurements.
+
+### Confining the in-front set to one side: how close it gets (2026-08-21)
+
+Asked for: the left of the flow entirely behind the word, the right side's
+behaviour preserved exactly. Both levers were scanned before touching anything.
+
+**It is not fully reachable with a flat label.** The in-front set is whatever
+clears the label plane, and a plane cuts by DEPTH, which does not separate left
+from right. The set is always a band centred on the depth peak, and the peak sits
+at x = sin(PHI_Z), only slightly right of centre. Raising the plane thins the
+band from both ends; raising PHI_Z slides the peak right but re-tilts the whole
+curve, so the right side changes too.
+
+Scanned over 240 phases, left-in-front vs right-in-front events:
+
+| PHI_Z | plane 0.85 | plane 0.95 |
+|---|---|---|
+| 0.20 | 302 / 340 | 146 / 256 |
+| 0.42 | 228 / 330 | **56 / 264** |
+| 0.55 | 172 / 338 | 4 / 258 |
+
+Nothing reaches zero on the left. 0.55 gets closest but throws the size peak
+1.03 from the centre, which contradicts the earlier ask that the largest tile sit
+near the middle.
+
+Shipped `PHI_Z = 0.42` (CONTEXT 31's original value) with the plane at 0.95, and
+verified in BOTH scroll directions, which matter because the flywheel is
+symmetric and a one-direction check would miss an asymmetry:
+
+| | scrolling down | scrolling up |
+|---|---|---|
+| left in front | 7 / 30 phases | 6 / 30 phases |
+| right in front | 34 / 30 phases | 31 / 30 phases |
+
+Per phase that is 0.22 left against 1.08 right. Against the previous setting
+(PHI_Z 0.20, plane 0) at 3.33 left and 3.67 right, the left drops 93% and the
+right drops 71%. So the left is very nearly clear, but the right is NOT preserved
+untouched, and no setting delivers both. Tilting the label with rotateY is the
+only thing that would separate the sides geometrically, and it needs about 23
+degrees, which magnifies the word's left end nearly 2x against its right end.
+Rejected as a visible distortion of the type rather than a depth change.
+
+### The leading tile flicking behind the word, and why sampling missed it (2026-08-21)
+
+Reported as: the tile arriving at the centre drops behind PROJECTS for a
+microsecond. It was real, and two rounds of measurement failed to see it.
+
+**Why the first checks came back clean.** They drove the wheel with synthetic
+`WheelEvent`s and read the DOM once per step, which samples the phase in jumps
+and skips the frames in between. An analytic sweep also came back clean: with
+`PHI_Z = 0.42` the leading card's depth bottoms at 0.9723 of Rz against a fixed
+plane at 0.95, so it is never *actually* behind. Both instruments agreed and both
+were answering the wrong question.
+
+**What was really happening.** The margin, not the sign. Measured at a 1049px
+stage the leading card cleared the plane by as little as **10px out of 457**,
+about 2%. `--lz` is written to one decimal and the plane comes out of a `calc()`,
+so at that separation subpixel rounding decides the 3D sort, and at the handover
+from one leading card to the next it can flip for a frame. A "never behind"
+result and a visible flicker are both true when the margin is that thin.
+
+**The fix.** The plane stopped being a constant. `paint()` tracks the deepest
+card while it is already walking them and publishes
+
+    --liss-plane = min(0.95, maxLz / Rz - 0.05)
+
+so 0.95 is now a ceiling and the plane is held a clear 5% of Rz behind whatever
+card is leading. The label's counter-scale is computed from the same variable and
+cancels the perspective exactly, so the type does not change size as the plane
+moves: measured 1218px wide at every frame.
+
+Verified per-frame rather than per-step, over a real eased scroll in both
+directions:
+
+| | before | after |
+|---|---|---|
+| frames with the leading tile behind | flickering | **0 of 2202** |
+| smallest depth margin | 10px | **23-24px** |
+| plane fraction | fixed 0.95 | tracks 0.923 to 0.95 |
+| cards in front, left / right per frame | 0.22 / 1.08 | 0.27 / 1.15 |
+
+The last row is the check that everything else still behaves as it did; the plane
+dipping slightly lets marginally more cards through, and that is the whole cost.
+
+**The lesson is about the instrument again, and it is a new failure mode.** Both
+earlier checks were correct and neither could see a one-frame event, because both
+sampled state per interaction rather than per frame. Anything described as a
+flicker has to be measured with `requestAnimationFrame` against a real eased
+input. And "never crosses the threshold" is not the same claim as "cannot flip":
+when the margin approaches the precision the values are written at, the ordering
+is decided by rounding.

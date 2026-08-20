@@ -88,7 +88,14 @@ const LISS = {
 
      Rz is deep enough that the near card is clearly in front without the far
      one shrinking to nothing. */
-  fillX: 0.99, fillY: 0.92, rz: 0.60,
+  /* 0.94/0.88 rather than 0.99/0.92. At 0.99 the envelope is fitted to 99% of
+     the stage by construction, so cards necessarily graze the edge: measured
+     across a full rotation the closest approach was 7px, which is what read as
+     "several cards sit tight against the top-left stage edge". Pulling the fit
+     in buys a real margin cheaply -- 7px -> 39px of clearance for 2 points of
+     overlap -- and it is the only lever that touches the edges without touching
+     card size, because fillX moves the amplitude and leaves the scale alone. */
+  fillX: 0.94, fillY: 0.88, rz: 0.60,
 
   /* THE FRONT CARD IS A FRACTION OF THE STAGE, NOT A SCALE FACTOR.
 
@@ -106,6 +113,13 @@ const LISS = {
      Expressed as a fraction of the stage and divided back through the
      perspective, the front card is 0.28 of the stage at every viewport and the
      constant means what it says. */
+  /* Left at 0.28. Raising it is the expensive way to get a readable title and
+     the scan says so plainly: 0.28 -> 0.36 takes the front card's rendered
+     title from 11.1pt to 14.3pt and the overlap from 1.8% to 12.3%, a sevenfold
+     cost. The card's OWN type size buys the same 14.4pt for nothing, because
+     the whole card is scaled by --liss-s and the type scales with it. So the
+     legibility fix moved to the stylesheet and this constant did not move.
+     See CONTEXT section 34. */
   front: 0.28,
 
   /* THE FAR CARDS SHRINK; THE NEAR ONE DOES NOT GROW.
@@ -126,7 +140,17 @@ const LISS = {
      where cards are being read, and steep at the back, where they are
      structure. Linear left the front three near-identical and the ordering
      stopped being legible. */
-  back: 0.32, falloff: 2.2,
+  /* back 0.40, up from 0.32. At 0.32 the rearmost card measured 41px wide --
+     not a small card, a speck -- and the extra depth gradient it bought was
+     spent on cards nobody can read anyway. 0.40 puts the rear card at 52px for
+     2 points of overlap.
+
+     What it does NOT do is make the back readable, and no setting does: even at
+     back 0.46 with front 0.36 the rearmost title renders at 2.4pt. That is the
+     measured answer to "should the back fade rather than shrink" -- neither, on
+     its own. The back stops carrying text instead (is-plate below), which costs
+     no geometry at all. */
+  back: 0.40, falloff: 2.2,
 };
 
 /** Position on the 1:2, pi/2 Lissajous curve at phase `th`, in unit amplitudes. */
@@ -144,12 +168,49 @@ const LISS = {
    is 1:1 with a phase offset, x against y is still the 1:2 of the reference
    figure -- and viewed head-on the drawing is unchanged, because the front
    projection never involved z. It only tilts the curve in depth. */
+/* THE 1:2 BOWDITCH EIGHT, WITH HALF THE LOOP IN FRONT OF THE HUB LABEL.
+
+   FREQ_Y is 2, so this is the figure-eight from the reference table in
+   CONTEXT 31. It was briefly swapped for a 1:1 ellipse and swapped back: the
+   ellipse separates the near and far halves vertically, which the eight cannot
+   do, but the eight is the shape the section is meant to have.
+
+   KNOWN AND MEASURED, so it is not re-litigated by tuning. On a 1:2 curve
+   y = sin(2t), so y(t + pi) = y(t); the near and far extremes of z sit exactly
+   pi apart in t, so the nearest point and the farthest point are FORCED to the
+   same height. Measured vertical separation 0.000, at every value of phi. The
+   front and back halves therefore interleave across the figure rather than
+   stacking above and below it, and no constant in this file changes that.
+   The only lever that does is FREQ_Y, and that changes the shape.
+
+   PHI_Z 0.20 tilts the curve in depth. The magnitude sets both the depth lean
+   at the ends, sin(phi), and how far the size peak sits from the centre
+   crossing, (sin phi, sin 2phi):
+
+     phi    peak off centre    phases with a near-tie at the front
+     0.00       0.000                    64.7%
+     0.20       0.437                    56.4%
+     0.42       0.849                    31.9%
+
+   0.42 was CONTEXT 31's value, chosen when a near-tie meant there was no way
+   to tell which card was frontmost. .is-front now marks it outright and the
+   click target follows the same card, so a tie costs a little size ambiguity
+   rather than the cue failing, and 0.20 buys back a more central peak.
+
+   The sign was flipped to -0.20 to move the near half to the left and
+   reverted: it re-tilts the curve, and both the right-hand side and the path
+   itself read worse for it. */
+const FREQ_Y = 2;
 const PHI_Z = 0.42;
 
 function lissAt(th) {
   return {
     x: Math.cos(th),
-    y: Math.sin(2 * th),
+    // FREQ_Y is 2, the Bowditch eight. Set it to 1 for an ellipse, which is the
+    // only way to get the near and far halves at different heights; everything
+    // downstream re-solves itself from the shape, because the arc table and the
+    // envelope fit both read the curve rather than assuming it.
+    y: Math.sin(FREQ_Y * th),
     z: Math.sin(th + PHI_Z),
   };
 }
@@ -478,15 +539,33 @@ function setupWheel(root) {
     let widest = 0;
     for (const t of titles) {
       const cs = getComputedStyle(t);
-      /* The font shorthand alone is NOT enough. It carries size and family but
-         not text-transform or letter-spacing, and this label is uppercased and
-         tracked out — so the probe measured lowercase untracked "Architecture"
-         at 384px while the element rendered "ARCHITECTURE" at 559px. The fit
-         then solved for a label 46% wider than it asked for, which is most of
-         why it kept coming out too big. */
-      probe.style.font = cs.font;
-      probe.style.textTransform = cs.textTransform;
+      /* NEVER THE `font` SHORTHAND. Twice now it has been the bug.
+
+         First it was not ENOUGH: it carries size and family but not
+         text-transform or letter-spacing, and this label is tracked out, so the
+         probe measured lowercase untracked "Architecture" at 384px while the
+         element rendered "ARCHITECTURE" at 559px -- a fit 46% too wide.
+
+         Then it was EMPTY. getComputedStyle().font serialises to "" whenever a
+         font property outside the shorthand has a non-initial value, and adding
+         font-feature-settings for the small caps did exactly that. The probe
+         inherited no font at all, measured the label at the default 16px, and
+         the solver answered with a 2500px hub -- one letterform taller than the
+         viewport. It is a silent failure: the shorthand does not throw, it just
+         hands back an empty string.
+
+         So the longhands are copied one by one. They cannot silently vanish. */
+      probe.style.fontFamily = cs.fontFamily;
+      probe.style.fontSize = cs.fontSize;
+      probe.style.fontWeight = cs.fontWeight;
+      probe.style.fontStyle = cs.fontStyle;
       probe.style.letterSpacing = cs.letterSpacing;
+      /* text-transform and letter-spacing are not in the shorthand either, and
+         this label is uppercased and tracked out. font-variant-caps is copied
+         for the same reason: if a label is ever set in small caps, its measured
+         width is not its cap-height width. */
+      probe.style.textTransform = cs.textTransform;
+      probe.style.fontVariantCaps = cs.fontVariantCaps;
       for (const line of t.innerHTML.split(/<br\s*\/?>/i)) {
         probe.textContent = line.replace(/<[^>]*>/g, '').trim();
         host.appendChild(probe);
@@ -497,7 +576,13 @@ function setupWheel(root) {
     if (!widest) return;
 
     const base = parseFloat(getComputedStyle(titles[0]).fontSize);
-    const size = base * ((colW * HUB_FILL) / widest);
+    let size = base * ((colW * HUB_FILL) / widest);
+    /* A hub taller than the stage is never a correct answer, it is a broken
+       measurement -- and this solver has produced one. Clamping turns a silent
+       catastrophe into a merely wrong size, which is the difference between
+       "the section looks off" and "the section is a wall of amber". */
+    const cap = root.clientHeight || colW;
+    if (!(size > 0) || size > cap) size = Math.min(cap, colW * 0.22);
     host.style.setProperty('--hub-size', `${size.toFixed(2)}px`);
   }
 
@@ -543,7 +628,25 @@ function setupWheel(root) {
       }
       const { upright, Rz, sBase } = fit;
 
+      /* PUBLISH THE DEPTH SCALE SO THE STYLESHEET CAN PARK THE LABEL IN IT.
+
+         The hub label has to sit at a chosen depth among the cards, and depth
+         here means a real translateZ: inside preserve-3d the browser sorts by
+         3D position and IGNORES z-index. That was established the hard way --
+         the label's stacking index was taken from 150 to 190 to 196 and then
+         forced to 99999, and the picture did not change by a pixel.
+
+         Rz is solved per viewport in lissFit(), so it cannot be written into
+         the CSS. Both forms are published because calc() needs the raw number
+         for the counter-scale and a px length for the translate. */
+      root.style.setProperty('--liss-rz', `${Rz.toFixed(1)}px`);
+      root.style.setProperty('--liss-rz-num', Rz.toFixed(1));
+
       ring.style.transform = 'none';
+      /* The frontmost card's depth, tracked while the loop is already walking
+         every card, so this costs nothing extra. It is what the hub label's
+         plane is clamped against below. */
+      let maxLz = -Infinity;
       for (let i = 0; i < n; i++) {
         // Fraction of the way round the curve, by DISTANCE, offset by the
         // scroll phase. i/n is then genuinely even spacing on the path.
@@ -560,7 +663,9 @@ function setupWheel(root) {
         const sy = (upright ? p.x : p.y) * fit.ampY + fit.shiftY / m;
         c.style.setProperty('--lx', `${sx.toFixed(1)}px`);
         c.style.setProperty('--ly', `${sy.toFixed(1)}px`);
-        c.style.setProperty('--lz', `${(p.z * Rz).toFixed(1)}px`);
+        const lz = p.z * Rz;
+        if (lz > maxLz) maxLz = lz;
+        c.style.setProperty('--lz', `${lz.toFixed(1)}px`);
 
         /* z runs -1 (far) .. +1 (near); t is the same 1-at-the-front scale the
            cylinder used, so every depth rule downstream is untouched. */
@@ -589,17 +694,95 @@ function setupWheel(root) {
            as structure. */
         c.style.setProperty('--vis', Math.max(0, Math.min(1, (t - 0.12) / 0.5)).toFixed(3));
 
-        // Same rule as the ring: only the card nearest the reader takes a click.
-        /* Lower than the ring's 0.72. On a cylinder everything past the front
-           three overlapped, so only the front card could safely take a
-           pointer. The curve separates cards in x and y as well as z, so the
-           whole near half can be hovered -- which is what makes
-           hover-to-enlarge usable rather than a front-card-only trick. */
-        const live = t > 0.34;
+        /* BELOW THIS DEPTH A CARD STOPS BEING A CARD AND BECOMES A PLATE.
+
+           Measured at 1440x900: the rendered title size is the card's own font
+           size times its rendered scale, and it falls off a cliff. Front card
+           14.4pt, then 13.4, 10.5, 9.3, 6.5, 6.1, 3.8, 3.4 and down to 1.7pt at
+           the back. Past about a third of the way down that list the text is not
+           small, it is noise -- pixels arranged in the shape of a word.
+
+           No geometry fixes it. Scanned over amplitude, depth, scale and the
+           card count, the best any setting achieves is five readable titles out
+           of fourteen, and buying that fifth one costs five times the overlap
+           AND flattens the size ramp that carries depth in the first place. So
+           the far cards stop carrying text rather than carrying it badly: they
+           keep their image and lose their body, which is what turns them from
+           failed content into the structure of the path. This is the honest
+           version of "let the back fade rather than shrink" -- it fades what
+           cannot be read and keeps what can still be seen.
+
+           0.55 is where the rendered title passes ~6pt at the shipped type
+           size. */
+        const plate = t <= 0.55;
+        c.classList.toggle('is-plate', plate);
+
+        /* A CLICK TARGET YOU CANNOT READ IS A BLIND CLICK.
+
+           This was t > 0.34, which made eight of the fourteen cards clickable
+           while only three carried a legible title. Tying it to the same
+           threshold as the text means the rule is now one rule: if the card is
+           showing you what it is, you can open it; if it is a plate on the
+           path, it is not a target. */
+        const live = !plate;
         c.style.pointerEvents = live ? 'auto' : 'none';
         c.setAttribute('aria-hidden', live ? 'false' : 'true');
         c.tabIndex = live ? 0 : -1;
       }
+
+      /* THE LABEL NEVER SITS IN FRONT OF THE LEADING CARD.
+
+         The plane was a constant, 0.95 of Rz. But the leading card's depth
+         OSCILLATES as the figure turns: it peaks when a card reaches the
+         nearest point of the curve and sags between peaks, and whenever that
+         sag dipped under the constant, nothing was in front of the word at all.
+         The tile arriving at the centre flicked behind the type for a few
+         frames and came back out, which is exactly what it looked like.
+
+         So 0.95 becomes a CEILING rather than the value. The plane is the
+         lower of that ceiling and just behind the leading card, which means
+         the centre tile is in front of the word at every phase, while every
+         other card keeps the relationship the ceiling gives it. The 1px is
+         simply so the comparison is strict and the two never land coplanar,
+         where paint order would fall back to DOM order and flicker again.
+
+         The label does not change size when this moves. Its counter-scale is
+         computed from the same variable and cancels the perspective exactly,
+         which is the whole reason the plane is expressed as a fraction of Rz
+         rather than as a depth in pixels. */
+      const PLANE_CEILING = 0.95;
+      /* The margin is 0.05 of Rz, not a pixel or two, and that size is the whole
+         point. Measured at a 1049px stage the leading card cleared the fixed
+         plane by as little as 10px out of 457, about 2%. It was never actually
+         behind, but that is thin enough for subpixel rounding to decide the 3D
+         sort -- --lz is written to one decimal and the plane comes out of a
+         calc() -- so at the handover from one leading card to the next it could
+         flip for a frame and flick the centre tile behind the type.
+
+         Holding the plane a clear 5% of Rz behind the leading card removes the
+         ambiguity rather than narrowing it. Expressed as a fraction so it means
+         the same thing at any viewport. */
+      const PLANE_MARGIN = 0.05;
+      root.style.setProperty('--liss-plane',
+        Math.min(PLANE_CEILING, maxLz / Rz - PLANE_MARGIN).toFixed(4));
+
+      /* WHICH ONE IS THE FRONT CARD, SAID OUT LOUD.
+
+         Section 31 removed hover-to-enlarge because size carries depth and two
+         cues cannot own one channel. Nothing replaced it, so the layout had no
+         signal at all for which card is frontmost and clickable -- the reader
+         had to infer it from relative size, which is exactly the judgement the
+         perspective makes hard.
+
+         The cue is therefore anything BUT size: a hairline accent frame. It is
+         put on the card with the largest depth, which is the same card
+         frontCard() derives from projected area, so the mark and the click
+         target cannot disagree. */
+      let fi = 0;
+      for (let i = 1; i < n; i++) {
+        if (+cards[i].style.getPropertyValue('--depth') > +cards[fi].style.getPropertyValue('--depth')) fi = i;
+      }
+      for (let i = 0; i < n; i++) cards[i].classList.toggle('is-front', i === fi);
       return;
     }
 
@@ -706,6 +889,36 @@ function setupWheel(root) {
      of the band responds, while the strip above and below the cards still
      belongs to the page. */
   function overRing(e) {
+    /* THE PATH IS NOT A COLUMN, SO IT CANNOT BE ONE CARD WIDE.
+
+       The rule below asks "is the pointer over the front card's column", which
+       is right for a cylinder: every card sits at the same place, so one card's
+       box IS the ring's footprint. On the Lissajous layout the cards are spread
+       across the whole stage and the frontmost one is wherever the curve has
+       carried it, so that box described a narrow moving strip -- and scrolling
+       anywhere else over the figure, above the cards especially, fell through
+       to the page. Worse, `cards.find(aria-hidden === 'false')` returns the
+       first LIVE card in DOM order rather than the front one, so the strip did
+       not even track the card it was named after.
+
+       The figure's real footprint is the union of the cards, which is what this
+       measures. Outside it the page still scrolls, so the principle the ring
+       established -- the margins belong to the page -- survives. */
+    if (path === 'lissajous') {
+      let l = Infinity, r = -Infinity, t = Infinity, b2 = -Infinity;
+      for (const c of cards) {
+        const r2 = c.getBoundingClientRect();
+        if (!r2.width) continue;
+        if (r2.left < l) l = r2.left;
+        if (r2.right > r) r = r2.right;
+        if (r2.top < t) t = r2.top;
+        if (r2.bottom > b2) b2 = r2.bottom;
+      }
+      if (!isFinite(l)) return false;
+      const pad = 24;
+      return e.clientX >= l - pad && e.clientX <= r + pad
+          && e.clientY >= t - pad && e.clientY <= b2 + pad;
+    }
     const front = cards.find((c) => c.getAttribute('aria-hidden') === 'false') || cards[0];
     const b = front.getBoundingClientRect();
     if (!b.width) return false;

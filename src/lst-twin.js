@@ -1,5 +1,8 @@
 /**
- * Global Surface Temperature — 82 cities, Landsat at 30 m.
+ * Global Surface Temperature — 134 cities, Landsat at 30 m.
+ *
+ * The count is read off public/assets/data/lst/index.json rather than kept here:
+ * this line said 82 while the payload held 134. Re-check it there.
  *
  * WHY LANDSAT
  * Measured rather than assumed. Open-Meteo resolved 21 distinct cells across
@@ -569,14 +572,14 @@ function fit(xs, ys) {
         .join(', ');
       return `<strong>Across the first ${q.brk.toFixed(0)}° there is no gradient at `
         + `all.</strong> Those ${r.nFlat} cities run from ${r.lo.toFixed(0)} to `
-        + `${r.hi.toFixed(0)}°C — ${(r.hi - r.lo).toFixed(0)} degrees of spread that `
+        + `${r.hi.toFixed(0)}°C, ${(r.hi - r.lo).toFixed(0)} degrees of spread that `
         + `latitude does not explain, because the tropics are humid and cloudy and it `
         + `is the arid subtropics that get hottest. Past ${q.brk.toFixed(0)}° the `
         + `decline is steady: <strong>${Math.abs(q.slope * 10).toFixed(1)}°C colder for `
         + `every ten degrees</strong> poleward.<br><br>`
         + `Latitude alone places a ${season} city within about `
         + `<strong>±${r.rmse.toFixed(1)}°C</strong>, ${r.within3}% of them inside 3°C. `
-        + `Where it misses it misses for reasons latitude cannot see — the largest are `
+        + `Where it misses it misses for reasons latitude cannot see: the largest are `
         + `${miss}.`;
     };
 
@@ -618,12 +621,12 @@ function fit(xs, ys) {
         + `usable winter scenes: cities beyond 55° are `
         + `<strong>${Math.round(warmHi * 100)}% warm-season</strong> against `
         + `${Math.round(warmLo * 100)}% within 15° of the equator. That lifts the cold `
-        + `end of the curve, so the decline quoted above is a <strong>lower bound</strong> — `
-        + `the real gradient is steeper.`;
+        + `end of the curve, so the decline quoted above is a <strong>lower bound</strong>. `
+        + `The real gradient is steeper.`;
     }
 
     $('splitNote').innerHTML =
-      `<strong>T</strong> is mean surface temperature in °C and <strong>φ</strong> is degrees of latitude from the equator, unsigned — so each fit runs from its own equator to its own pole.<br><br>`
+      `<strong>T</strong> is mean surface temperature in °C and <strong>φ</strong> is degrees of latitude from the equator, unsigned. Each fit therefore runs from its own equator to its own pole.<br><br>`
       + `Fitted separately because the hemispheres are different populations, not because `
       + `of season: each city's mean spans a full year of acquisitions, and both `
       + `hemispheres come out evenly sampled`

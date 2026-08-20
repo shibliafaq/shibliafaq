@@ -140,32 +140,32 @@ export const projects = {
        each city separately, which is why the finding needed a scatter plot to
        explain it: separately scaled, all three look the same. Sharing the scale
        makes the gradient visible before anything is read. */
-    /* The Landsat build REPLACED the MODIS one on 2026-08-20: 135 cities
+    /* The Landsat build REPLACED the MODIS one on 2026-08-20: 134 cities
        instead of 3, 30 m instead of 1 km, and both hemispheres fitted
        separately. mc-twin.html has been deleted. The counts below are read
        off public/assets/data/lst/index.json — if the payload is rebuilt,
        re-check them there rather than trusting this comment. */
     twin: {
-      sec: 'Surface temperature, 135 cities',
-      lead: 'Landsat 8/9 thermal imagery at 30 m for 135 cities along a north–south transect, from Tromsø at 70°N to Punta Arenas at 53°S. Pick a city to see its heat surface in 3D and scrub a year of acquisitions; the analysis tab fits each hemisphere separately.',
+      sec: 'Surface temperature, 134 cities',
+      lead: 'Landsat 8/9 thermal imagery at 30 m for 134 cities along a north–south transect, from Tromsø at 70°N to Punta Arenas at 53°S. Pick a city to see its heat surface in 3D and scrub a year of acquisitions; the analysis tab fits each hemisphere separately.',
       title: 'Global surface temperature — Landsat 30 m',
       src: '/lst-twin.html',
-      hint: '135 cities · 30 m · a year of acquisitions · two hemispheres',
+      hint: '134 cities · 30 m · a year of acquisitions · two hemispheres',
       note: 'Landsat 8/9 Collection 2 Level 2 (USGS) via Microsoft Planetary Computer, band ST_B10, cloud and shadow masked per pixel with QA_PIXEL. Cities carry between 6 and 24 usable acquisitions depending on cloud. Basemap © Esri, © OpenStreetMap contributors.',
     },
     cat: 'ICS 574: Big Data Analytics · KFUPM · Fall 2025 · Co-author: Sultan Aldhafeeri',
-    title: 'Multi-City Surface Temperature Analysis — 3 Cities · 3 Continents',
-    desc: '25,905 real NASA MODIS/061/MOD11A1 measurements across Dammam (26°N), Dublin (53°N), and Reykjavik (64°N) over 14 days. Near-perfect latitude–temperature correlation: r = −0.995, R² = 0.990. Every 10° northward = 9.1°C colder. GPU-accelerated Kepler.gl 3D hexbin maps at 60 FPS. The 3D clips below are direct recordings of the live Kepler.gl visualisation.',
+    title: 'Multi-City Surface Temperature — 3 Cities · GPU Hexbin Pipeline',
+    desc: '25,905 NASA MODIS/061/MOD11A1 measurements across Dammam (26°N), Dublin (53°N), and Reykjavik (64°N) over 14 days, rendered as GPU-accelerated 3D hexbin layers in Kepler.gl at 60 FPS. This is a demonstration of the pipeline rather than a study of latitude. Three cities give three points, and three points always fall near a line, so the correlation it produces describes the sample and is not evidence of a gradient. The Landsat dashboard on this card measures the same relationship across 134 cities and finds a pooled R² of 0.688, with no gradient at all across the first 20° of latitude. The 3D clips below are direct recordings of the live Kepler.gl visualisation.',
     metrics: [
-      { v: '25,905', l: 'Real MODIS measurements' },
-      { v: 'r=−0.995', l: 'Pearson correlation' },
-      { v: 'R²=0.990', l: 'Latitude explains 99% of temp' },
-      { v: '58.2°C', l: 'Temperature range' },
+      { v: '25,905', l: 'MODIS measurements · 3 cities, 14 days' },
+      { v: '3', l: 'Cities · a demo sample, not a study population' },
+      { v: '60 FPS', l: 'GPU hexbin rendering · Kepler.gl, WebGL 2.0' },
+      { v: '58.2°C', l: 'Temperature range across the three cities' },
     ],
     method: 'MODIS/061/MOD11A1 (Terra) via Google Earth Engine API → Python/Colab (earthengine-api 0.1.400, pandas 2.0.3) → Cloud filter (≤10%) → Kelvin conversion → CSV export (25,905 rows) → Kepler.gl 2.5.5 WebGL 2.0 3D hexbin visualisation → Pearson r & linear regression',
     tags: ['NASA MODIS/061/MOD11A1', 'Google Earth Engine', 'Python (Colab)', 'Kepler.gl 2.5.5', 'WebGL 2.0', 'Pandas 2.0.3', 'Pearson Correlation', 'Linear Regression', 'GPU Rendering'],
     images: [
-      { src: `${IMG}/mc_scatter.webp`, cap: 'Latitude–Temperature Regression · r = −0.995 · R² = 0.990 · T = −0.911φ + 56.0' },
+      { src: `${IMG}/mc_scatter.webp`, cap: 'Latitude–temperature regression on three city means, r = −0.995 with n = 3. Three points always fall near a line, so this describes the sample rather than a gradient; the 134-city fit is in the Landsat dashboard.' },
       { src: `${IMG}/mc_trends.webp`, cap: 'Temperature Trends Across 14 Days · Dammam (blue) · Dublin (orange) · Reykjavik (green)' },
     ],
     videos: [

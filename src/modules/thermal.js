@@ -3,7 +3,7 @@ import { reducedMotion } from './scroll.js';
 const COPY = {
   dammam:    { title: 'Dammam.<br><em>26° North.</em>',    caption: 'Hot desert. Mean surface temperature 31.5&thinsp;°C across 14 days of MODIS observation.' },
   dublin:    { title: 'Dublin.<br><em>53° North.</em>',    caption: 'Temperate maritime. Mean 9.6&thinsp;°C — 21.9&thinsp;°C cooler than Dammam, 27° of latitude away.' },
-  reykjavik: { title: 'Reykjavík.<br><em>64° North.</em>', caption: 'Subpolar. Mean −3.7&thinsp;°C. Latitude alone explains 99% of the variance: r = −0.995.' },
+  reykjavik: { title: 'Reykjavík.<br><em>64° North.</em>', caption: 'Subpolar. Mean −3.7&thinsp;°C — 35.2&thinsp;°C colder than Dammam, 38° of latitude away.' },
 };
 
 /**

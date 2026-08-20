@@ -372,7 +372,23 @@ export function initModal() {
        facing the reader, which is also what the idiom promises. */
     if (!el) {
       const wheel = e.target.closest?.('.wheel');
-      if (wheel) el = frontCard(wheel, '[data-modal]');
+      /* ASK WHICH CARD IS AT THE FRONT, THEN CHECK IT IS OURS.
+
+         This used to read frontCard(wheel, SELECTOR), which asks "of the cards
+         I care about, which is furthest forward". That was safe while there
+         were two wheels, because the research wheel held no [data-book] and the
+         architecture wheel held no [data-modal], so one of the two handlers
+         always came up empty. CONTEXT 31 merged them into ONE wheel of
+         fourteen, and from then on both selectors always matched something:
+         every click ran both fallbacks and opened two projects at once.
+
+         Resolving the front card across ALL cards and then testing what it is
+         means exactly one handler can act, whichever kind of card is really at
+         the front. */
+      if (wheel) {
+        const front = frontCard(wheel, '.wheel__card');
+        el = front && front.hasAttribute('data-modal') ? front : null;
+      }
     }
     if (!el) return;
     open(el.dataset.modal);

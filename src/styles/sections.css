@@ -1912,6 +1912,10 @@
 .wheels {
   display: block;
   padding-inline: var(--pad-x);
+  /* The figure used to start straight under the lead paragraph, so the question
+     it ends on ran into the top of the curve. The cards reach within about 40px
+     of the stage edge, which leaves nothing to separate the two. */
+  margin-top: clamp(1.75rem, 5vh, 4rem);
 }
 
 .wheel {
@@ -2384,6 +2388,120 @@
    The scale comes from --liss-s, set per card per frame in wheel.js. Focus
    still gets a visible ring from the shared card styles; it just does not
    resize. */
+
+
+/* THE LABEL IS PARKED AT A REAL DEPTH AMONG THE CARDS.
+
+   `.wheels .wheel__head` puts it at z = -r, the cylinder axis, which on this
+   layout is far behind every card -- so all fourteen rode over the letterforms.
+
+   z-index CANNOT fix that, and a lot of time went into proving it. Inside a
+   preserve-3d subtree the browser sorts by 3D position and ignores stacking
+   index between transformed siblings. The label was moved from 150 to 190 to
+   196 and finally forced to 99999, and the rendering did not change once. The
+   only lever that works here is translateZ.
+
+   0, the midpoint of the cards depth range, which splits the loop exactly in
+   half: the near seven cards pass in front of the word and the far seven
+   behind it. That is the front-and-back effect the section wants.
+
+   What it cannot do on this curve is stack those halves vertically, because a
+   1:2 figure-eight forces its nearest and farthest points to the same height
+   (see FREQ_Y in wheel.js). So the two halves interleave across the figure
+   instead. Values of 0.72, 0.95 and 1.02 were each tried and each only changed
+   HOW MANY tiles crossed the word, never which part of the figure they crossed
+   on. That is the shape doing it, not this variable.
+
+   THE COUNTER-SCALE IS NOT OPTIONAL. Moving the label forward puts it under
+   the stage perspective, which magnifies it by P/(P - z). Undoing that with
+   (P - z)/P keeps the rendered size exactly what fitLabel() solved for, so the
+   depth can be tuned without the type resizing. Same trick, opposite sign, as
+   the cylinder rule above. P is 1000 to match .wheel__stage. */
+.wheels .wheel--liss .wheel__head {
+  /* --liss-plane is published by paint() every frame: the lower of the 0.95
+     ceiling and just behind the leading card. The literal here is only the
+     fallback for the frames before the first paint, and for reduced motion. */
+  transform:
+    translate(-50%, -50%)
+    translateZ(calc(var(--liss-rz, 0px) * var(--liss-plane, 0.95)))
+    scale(calc((1000 - var(--liss-rz-num, 0) * var(--liss-plane, 0.95)) / 1000));
+}
+
+/* ============================================================
+   LEGIBILITY ON THE PATH
+   ============================================================
+
+   Measured at 1440x900 before any of this was written. The stage is 1296x792,
+   the card lays out at 518x360 and is then scaled by --liss-s and magnified by
+   the stage perspective, so what a reader actually sees is the card's own type
+   size times (rendered width / 518). That product ran from 11.1pt on the front
+   card down to 1.3pt at the back, and it is the number the section is judged
+   on -- not the overlap, which was already fine at 3%.
+
+   Two separate problems came out of that, and they have different fixes. */
+
+/* 1. THE FRONT CARD'S TITLE WAS TOO SMALL, AND THE CHEAP FIX IS HERE.
+
+   Getting the front title from 11.1pt to 14.3pt by growing the card costs
+   1.8% -> 12.3% overlap, because every other card grows with it. Getting the
+   same 14.4pt by growing the TYPE costs nothing at all: the card is scaled as
+   a unit, so its type scales with it and the geometry never hears about it.
+   That is why LISS.front did not move.
+
+   Scoped to .wheel--liss and given three classes so it beats
+   `.wheels .pcard__title` (0,2,0) -- the specificity trap in CLAUDE.md, which
+   has already cost four bugs on this component. */
+.wheels .wheel--liss .pcard__title {
+  font-size: clamp(1.15rem, 1.5vw, 1.45rem);
+  line-height: 1.2;
+}
+.wheels .wheel--liss .pcard__course { font-size: .82rem; }
+.wheels .wheel--liss .pcard__result { font-size: .8rem; }
+
+/* 2. THE FAR CARDS COULD NOT BE FIXED AT ALL, SO THEY STOP TRYING.
+
+   No geometry rescues them: at the most generous setting that still fits the
+   stage, the rearmost title renders at 2.4pt. A card at 52px showing 2pt text
+   is not a small card, it is noise in the shape of a card. So past --depth 0.55
+   the body is dropped and the image is kept, and the tile becomes a plate on
+   the curve -- still an object travelling the path, no longer a failed label.
+
+   The media is left alone deliberately. Fading the whole card out would empty
+   the back of the figure and there would be no path left to read; it is the
+   TEXT that cannot survive the scale, not the picture. */
+.wheels .wheel--liss .wheel__card.is-plate .pcard__body { opacity: 0; }
+.wheels .wheel--liss .wheel__card.is-plate {
+  /* Fading .pcard__body takes the dark gradient with it, because that gradient
+     IS the scrim -- it lives on the body rather than on a separate element. So
+     a plate ends up as the bare photograph, which is what it should be. A
+     defined edge replaces the shape the text used to give it. */
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .10), 0 10px 30px rgba(0, 0, 0, .45);
+}
+.wheels .wheel--liss .pcard__body { transition: opacity .25s ease; }
+
+/* 3. WHICH CARD IS THE LIVE ONE.
+
+   Section 31 removed hover-to-enlarge because size already carries depth, and
+   left nothing in its place -- so the layout said "one of these is clickable"
+   without ever saying which. The replacement cannot be size, for exactly the
+   reason the hover was removed, so it is a hairline accent frame plus a lift in
+   contrast. wheel.js puts .is-front on the card with the greatest --depth,
+   which is the same card frontCard() resolves by projected area, so the mark
+   and the click target are guaranteed to agree. */
+.wheels .wheel--liss .wheel__card.is-front {
+  box-shadow:
+    0 0 0 1.5px var(--amber),
+    0 18px 48px rgba(0, 0, 0, .55);
+}
+.wheels .wheel--liss .wheel__card.is-front .pcard__title { color: #fff; }
+
+/* Reduced motion flattens the path to a grid, so none of the depth-derived
+   states mean anything there. */
+@media (prefers-reduced-motion: reduce) {
+  .wheels .wheel--liss .wheel__card.is-plate .pcard__body { opacity: 1; }
+  .wheels .wheel--liss .wheel__card.is-plate,
+  .wheels .wheel--liss .wheel__card.is-front { box-shadow: none; }
+}
 
 /* Motion off: no path, no travel. Fall back to a plain readable grid rather
    than freezing seven cards on top of each other at 42%. */
