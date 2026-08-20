@@ -273,13 +273,13 @@
     <p class="lead" data-reveal data-i18n="projects.lead"><span class="lead__meta">During the M.Sc</span><span class="lead__body">I was doing architectural projects but now I learned working with real-time satellite pipelines,</span><span class="lead__meta">All the works are based on one question:</span><em class="lead__ask">How do we make cities survive the climate crisis?</em></p>
   </div>
 
-    <!-- TWO WHEELS. Cards live in the HTML rather than being generated from
+    <!-- ONE WHEEL. Cards live in the HTML rather than being generated from
        data/projects.js on purpose: every one of them carries data-copy and
        data-i18n anchors that the copy pipeline and the translation engine both
        read, and a crawler has to see the titles. The wheel module only ever
        transforms what is already here. -->
   <div class="wheels">
-    <section class="wheel" data-wheel="auto" data-lenis-prevent aria-label="Master's research projects" tabindex="0">
+    <section class="wheel" data-wheel="auto" data-wheel-path="lissajous" data-lenis-prevent aria-label="Research and architecture projects" tabindex="0">
       <div class="wheel__stage">
         <!-- One 3D scene holding BOTH the ring and the label, so the browser
              depth-sorts them against each other. The label sits at the ring's
@@ -337,24 +337,7 @@
               <h3 class="pcard__title">Research project 7</h3>
             </div>
           </article>
-        </div>
-        <header class="wheel__head">
-        <p class="eyebrow">Smart &amp; Sustainable Cities · KFUPM</p>
-        <h3 class="wheel__title">M.Sc.<br>Projects</h3>
-        </header>
-        </div>
-      </div>
-    </section>
 
-    <section class="wheel" data-wheel="auto" data-lenis-prevent aria-label="Architecture projects" tabindex="0">
-      <div class="wheel__stage">
-        <!-- One 3D scene holding BOTH the ring and the label, so the browser
-             depth-sorts them against each other. The label sits at the ring's
-             axis, which is why cards in front of the axis pass over it and
-             cards behind it pass under. A z-index overlay cannot do that: it
-             is either always above or always below. -->
-        <div class="wheel__scene">
-        <div class="wheel__ring">
           <article class="wheel__card pcard" data-book="odr" tabindex="0" role="button" aria-label="Open the ODR portfolio — 28 pages">
             <div class="pcard__media"><img src="/assets/arch/odr/hero.webp" alt="ODR" loading="lazy" width="1600" height="900"></div>
             <div class="pcard__body">
@@ -413,15 +396,15 @@
           </article>
         </div>
         <header class="wheel__head">
-        <p class="eyebrow">B.Arch · BIT Mesra · Professional Practice</p>
-        <h3 class="wheel__title">Architecture<br>Projects</h3>
+        <p class="eyebrow">M.Sc. Smart &amp; Sustainable Cities · KFUPM &nbsp;·&nbsp; B.Arch · BIT Mesra</p>
+        <h3 class="wheel__title">Projects</h3>
         </header>
         </div>
       </div>
     </section>
   </div>
 
-  <div class="projects__hint mono" aria-hidden="true"><span data-copy="projects.67" id="projectsCount">01 / 07</span> — scroll to travel</div>
+  <div class="projects__hint mono" aria-hidden="true"><span data-copy="projects.67" id="projectsCount">01 / 14</span> — scroll to travel</div>
 </section>
 
 <!-- ══ ATLAS — WebGL anchor ═════════════════════════════════ -->

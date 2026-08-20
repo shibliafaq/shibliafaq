@@ -48,6 +48,248 @@ const GAP = 0.52;
    is 51.43 * 0.045 / 120 ≈ 0.019. */
 const WHEEL_K = 0.019;
 
+/* ============================================================ LISSAJOUS PATH
+
+   The cards ride a 1:2 Lissajous curve at a phase offset of pi/2 — the
+   figure-eight in the middle of the classic Bowditch table — carried into three
+   dimensions.
+
+       x = Rx * cos(theta)          // sin(theta + pi/2), the pi/2 column
+       y = Ry * sin(2 * theta)      // the 1:2 frequency ratio
+       z = Rz * sin(theta)          // the third dimension
+
+   Look at it head-on, drop z, and what is left is exactly the curve in that
+   table cell: x and y alone trace the figure-eight. What z adds is that the two
+   lobes of the eight are no longer in the same plane — x and z together sweep a
+   circle, so the near lobe swings toward the reader while the far one falls
+   away. The crossing point of the eight becomes a real crossing in depth rather
+   than an overlap on a flat page, which is the whole reason to do it in 3D.
+
+   WHY THE CARDS DO NOT ROTATE WITH THE PATH
+   A card banked into the tangent of the curve is edge-on for much of the loop
+   and unreadable. These are billboards: they travel the path and keep facing
+   the reader. The depth cue is scale and blur from z, which the scene's
+   perspective already provides for free on the scale side.
+
+   WHY z DRIVES EVERYTHING ELSE
+   On the cylinder, "how far is this card from facing me" was an angle. Here
+   there is no facing to speak of, so the same job falls to z: nearest is
+   frontmost, gets full opacity and takes the click; the far half dims, blurs
+   and stops being a hit target. `frontCard()` needs no change at all — the
+   nearest card projects largest, which is the property it was already using. */
+const LISS = {
+  /* HOW MUCH OF THE STAGE THE FIGURE COVERS, not an amplitude.
+
+     These are the rendered envelope -- curve plus the half-card that overhangs
+     each end, after perspective -- as a fraction of the stage. lissFit() solves
+     the amplitude that achieves them and recentres what is left, which is the
+     only way to say "cover the width" about a shape that is not symmetric.
+     See the ENVELOPE FIT block below.
+
+     Rz is deep enough that the near card is clearly in front without the far
+     one shrinking to nothing. */
+  fillX: 0.99, fillY: 0.92, rz: 0.60,
+
+  /* THE FRONT CARD IS A FRACTION OF THE STAGE, NOT A SCALE FACTOR.
+
+     It used to be a scale -- `big: 0.86` -- applied to a card that is itself
+     sized `36vw`. Two separate things then multiplied it before it reached the
+     screen. The card is sized from the VIEWPORT and the amplitudes from the
+     STAGE, so their ratio drifts with the layout; and `.wheel__stage` carries
+     `perspective: 1000px`, which magnifies whatever sits at +Rz. On a 1728px
+     stage that magnification is 1.81x, so a "0.86 scale" card rendered 1076px
+     -- wider than the curve's entire 1036px horizontal span. The path could not
+     possibly show, because a single card covered all of it. Measured at that
+     setting: 82% of all card area was overlap, and two cards hung off the
+     viewport edge.
+
+     Expressed as a fraction of the stage and divided back through the
+     perspective, the front card is 0.28 of the stage at every viewport and the
+     constant means what it says. */
+  front: 0.28,
+
+  /* THE FAR CARDS SHRINK; THE NEAR ONE DOES NOT GROW.
+
+     Perspective already enlarges with depth, so a scale ramp that ALSO grows
+     toward the reader double-counts the same cue -- which is precisely how the
+     front card reached 1076px. This ramp therefore only ever reduces: it is 1
+     at the front and `back` at the rear, so it buys depth gradient by taking
+     size off the far cards instead of adding it to the near one.
+
+     That distinction is worth the whole difference. Scanned across amplitude,
+     depth and scale, a 490px front card costs 31% overlap when the ramp grows
+     forward and 10% when it shrinks backward -- and the shrinking one has the
+     STEEPER gradient (9.1x front-to-back against 2.6x). Same front card, a
+     third of the collisions.
+
+     The exponent is 2.2 so the falloff is gentle across the front of the curve,
+     where cards are being read, and steep at the back, where they are
+     structure. Linear left the front three near-identical and the ordering
+     stopped being legible. */
+  back: 0.32, falloff: 2.2,
+};
+
+/** Position on the 1:2, pi/2 Lissajous curve at phase `th`, in unit amplitudes. */
+/* PHI_Z BREAKS A SYMMETRY THAT PUTS TWO CARDS AT THE FRONT.
+
+   With z = sin(theta) the depth axis is symmetric about theta = pi/2: theta and
+   pi - theta return the SAME z. The arc-length distribution is symmetric about
+   the same axis, so the cards paired up -- measured depths came out 0.99, 0.99,
+   0.91, 0.91, 0.68, 0.68 and so on, seven pairs, two cards permanently sharing
+   the front at identical size. With size carrying depth that is not a near-miss,
+   it is the cue failing: there is no single frontmost card to read.
+
+   Phasing z alone moves the symmetry axis off the one the card set is symmetric
+   about, and the pairing disappears. It stays a genuine Lissajous -- x against z
+   is 1:1 with a phase offset, x against y is still the 1:2 of the reference
+   figure -- and viewed head-on the drawing is unchanged, because the front
+   projection never involved z. It only tilts the curve in depth. */
+const PHI_Z = 0.42;
+
+function lissAt(th) {
+  return {
+    x: Math.cos(th),
+    y: Math.sin(2 * th),
+    z: Math.sin(th + PHI_Z),
+  };
+}
+
+/* EVEN SPACING ALONG THE CURVE, NOT ALONG THETA.
+
+   Placing card i at theta = i * 2pi/N is the obvious thing and it clumps. A
+   Lissajous does not travel at constant speed: it crawls through the turns at
+   the ends of each lobe and races through the crossing in the middle, so equal
+   steps of theta put cards nose-to-tail at the extremes and leave gaps through
+   the centre. With fourteen cards that reads as a pile-up, not a path.
+
+   The fix is to walk the curve once, accumulate real arc length, and invert it:
+   card i goes wherever the curve has travelled i/N of its total distance. Built
+   once at module load because the shape never changes -- only its amplitudes do,
+   and those scale every segment equally, so the same table is correct at any
+   viewport size. */
+const ARC_STEPS = 2048;
+const ARC = (() => {
+  const cum = new Float64Array(ARC_STEPS + 1);
+  let prev = lissAt(0);
+  for (let i = 1; i <= ARC_STEPS; i++) {
+    const th = (i / ARC_STEPS) * 2 * Math.PI;
+    const p = lissAt(th);
+    // Unit amplitudes: the table is a shape, not a size.
+    cum[i] = cum[i - 1] + Math.hypot(p.x - prev.x, p.y - prev.y, p.z - prev.z);
+    prev = p;
+  }
+  return cum;
+})();
+const ARC_TOTAL = ARC[ARC_STEPS];
+
+/** The theta at which the curve has covered fraction `f` of its total length. */
+function thetaAtFraction(f) {
+  const target = ((f % 1) + 1) % 1 * ARC_TOTAL;
+  let lo = 0, hi = ARC_STEPS;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (ARC[mid] < target) lo = mid + 1; else hi = mid;
+  }
+  // Linear interpolation inside the segment we landed on.
+  const i = Math.max(1, lo);
+  const span = ARC[i] - ARC[i - 1] || 1;
+  const t = (target - ARC[i - 1]) / span;
+  return ((i - 1 + t) / ARC_STEPS) * 2 * Math.PI;
+}
+
+/* ============================================================ ENVELOPE FIT
+
+   FITTING THE FIGURE TO THE STAGE, RATHER THAN GUESSING AMPLITUDES.
+
+   `long` and `short` used to be amplitudes: fractions of the stage that the
+   curve's unit radius was multiplied by. The trouble is that what the reader
+   sees is not the curve, it is the curve AFTER perspective, PLUS half a card at
+   each end -- and neither of those is proportional to the amplitude. So a
+   number like 0.27 said nothing about how much of the stage got covered.
+   Measured, it covered 75%, and unevenly: 384px of dead space on the left
+   against 43px on the right.
+
+   That lopsidedness is PHI_Z showing up in the drawing. Tilting the curve in
+   depth is what gives the eight a near lobe and a far one, but the near lobe is
+   magnified (1.25x at theta 0) and the far one shrunk (0.83x at theta pi), so
+   the figure is genuinely wider on the near side. It is not a bug in the curve;
+   it is what a tilted figure-eight looks like. It just cannot be centred by
+   choosing a symmetric amplitude, because the shape itself is not symmetric.
+
+   So the amplitude is SOLVED instead of chosen. Walk the curve, compute each
+   sample's rendered offset (including its magnification) and the half-card that
+   sticks out there, and find the amplitude whose envelope spans exactly
+   `fillX` of the stage. Then shift the whole thing so that envelope is centred.
+   `fillX` is the number a person actually wants to set: "cover the width".
+
+   THE SHIFT HAS TO BE APPLIED AFTER PERSPECTIVE.
+   Adding a constant to --lx does not move the figure by a constant on screen --
+   it is multiplied by each card's own magnification, so the near cards would
+   slide further than the far ones and the curve would shear. Dividing the
+   wanted screen shift by that same magnification cancels it exactly, which is
+   the same trick the scale uses. */
+const FIT_STEPS = 512;
+
+function lissFit(W, H, cardW, cardH, P) {
+  const upright = H > W;
+  const Rz = Math.min(W, H) * LISS.rz;
+  const mFront = P / (P - Rz);
+  const sBase = (W * LISS.front) / (cardW * mFront);
+
+  const n = FIT_STEPS;
+  const ux = new Float64Array(n);   // rendered x offset per unit amplitude
+  const uy = new Float64Array(n);
+  const hw = new Float64Array(n);   // half card width where the curve is there
+  const hh = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const p = lissAt((i / n) * 2 * Math.PI);
+    const m = P / (P - p.z * Rz);
+    const t = (p.z + 1) / 2;
+    const sc = sBase * (LISS.back + (1 - LISS.back) * Math.pow(t, LISS.falloff));
+    // The slow frequency (cos) takes whichever screen axis has room.
+    ux[i] = (upright ? p.y : p.x) * m;
+    uy[i] = (upright ? p.x : p.y) * m;
+    hw[i] = (cardW * sc * m) / 2;
+    hh[i] = (cardH * sc * m) / 2;
+  }
+
+  /* span(amp) is a max of linear functions of amp, so it is convex, piecewise
+     linear and increasing -- a secant lands on the answer in a few steps, and
+     the `amp = 0` seed is exact free information (it is just the widest card). */
+  const solve = (u, half, target) => {
+    const envelope = (amp) => {
+      let hi = -Infinity, lo = Infinity;
+      for (let i = 0; i < n; i++) {
+        const e = amp * u[i];
+        if (e + half[i] > hi) hi = e + half[i];
+        if (e - half[i] < lo) lo = e - half[i];
+      }
+      return { span: hi - lo, mid: (hi + lo) / 2 };
+    };
+    let a0 = 0, s0 = envelope(0).span;
+    let a1 = Math.max(1, target / 2), s1 = envelope(a1).span;
+    for (let k = 0; k < 16 && Math.abs(s1 - target) > 0.25; k++) {
+      const d = s1 - s0;
+      let next = Math.abs(d) < 1e-9 ? a1 * 1.5 : a1 + ((target - s1) * (a1 - a0)) / d;
+      if (!isFinite(next) || next < 0) next = a1 * 1.5;
+      a0 = a1; s0 = s1;
+      a1 = next; s1 = envelope(a1).span;
+    }
+    const f = envelope(a1);
+    return { amp: a1, mid: f.mid };
+  };
+
+  const fx = solve(ux, hw, W * LISS.fillX);
+  const fy = solve(uy, hh, H * LISS.fillY);
+  return {
+    upright, Rz, sBase,
+    ampX: fx.amp, ampY: fy.amp,
+    // Negated: the envelope's centre is where it currently sits, and we want
+    // that moved to the stage's centre.
+    shiftX: -fx.mid, shiftY: -fy.mid,
+  };
+}
+
 /**
  * The card currently at the front of a wheel, found by projected area.
  *
@@ -109,8 +351,28 @@ function setupWheel(root) {
     || (root.dataset.wheel === 'auto' && AUTO_H.matches);
   let horizontal = wanted();
 
+  /* Layout mode. 'lissajous' puts the cards on the Bowditch figure-eight
+     instead of a cylinder; everything else -- the flywheel, the settle, the
+     derived front card -- is shared, which is why this is a branch inside
+     paint() rather than a second module. */
+  const path = root.dataset.wheelPath === 'lissajous' ? 'lissajous' : 'ring';
+  if (path === 'lissajous') root.classList.add('wheel--liss');
+
   const step = 360 / n;
   let radius = 0;
+  /* The card's UNTRANSFORMED box and the stage's perspective, both cached by
+     measure(). The Lissajous branch solves its scale from these, so they have
+     to be the laid-out values rather than the CSS text: the card is
+     `min(100%, 36vw)` and the perspective lives on `.wheel__stage`, and reading
+     either one per frame would thrash layout on every tick of the flywheel. */
+  let cardW0 = 0;
+  let cardH0 = 0;
+  /* The solved envelope fit, and the key it was solved for. Re-solved only when
+     the stage or the card box actually changes -- it is 16 secant steps over 512
+     samples, which is nothing once but wasteful every frame. */
+  let fit = null;
+  let fitKey = '';
+  let persp = 1000;
   /* ENTRANCE. Not a set-piece — a settle.
      The page already spends its 3D budget on the globe sequence, and a second
      elaborate arrival three screens later competes with it rather than adding
@@ -142,6 +404,14 @@ function setupWheel(root) {
     const h = cards.reduce(
       (m, c) => Math.max(m, horizontal ? c.offsetWidth : c.offsetHeight), 0);
     if (!h) return;
+    cardW0 = cards[0].offsetWidth || cardW0;
+    cardH0 = cards[0].offsetHeight || cardH0;
+    /* Read, never assumed to be 1000. The value is set in sections.css and a
+       drift between the two would put the front card at the wrong size with
+       nothing to show why. */
+    const stage = root.querySelector('.wheel__stage');
+    const pv = stage && parseFloat(getComputedStyle(stage).perspective);
+    if (pv) persp = pv;
     radius = ((h / 2) / Math.tan((step / 2) * Math.PI / 180)) * (1 + GAP);
     ring.style.setProperty('--r', `${radius.toFixed(1)}px`);
     /* Also on the wheel root, because the label is a SIBLING of the ring now
@@ -237,10 +507,105 @@ function setupWheel(root) {
     // the resting transform and there is no residue to drift.
     const settle = (1 - intro) * step * 0.6;
     const a = angle + settle;
+    root.style.setProperty('--intro', intro.toFixed(3));
+
+    if (path === 'lissajous') {
+      /* One shared parameter walks the curve; the cards are spread evenly along
+         it. `angle` is still in degrees because the whole input model -- the
+         impulse constant, the friction, the settle-to-nearest -- is expressed in
+         card steps, and reusing it means the flywheel feels identical on both
+         layouts. Only the placement differs. */
+      const th0 = (a * Math.PI) / 180;
+      // Amplitudes from the stage, so the figure scales with the viewport.
+      const W = root.clientWidth || 1;
+      const H = root.clientHeight || 1;
+      /* ORIENTATION FOLLOWS THE CONTAINER.
+
+         The Bowditch table draws this figure lying down, two lobes side by
+         side, and that is what a 1:2 ratio gives when x carries the slow
+         frequency. It needs width. These wheels live in a column beside the
+         section heading -- measured 619x792 on a 1440 desktop -- so laid down
+         the lobes ran straight over the title.
+
+         Standing it up is the same curve with the two axes exchanged: the slow
+         frequency goes on y, the doubled one on x, and the eight is upright.
+         Nothing about the mathematics changes, and a figure-eight has no
+         natural up, so this is a framing decision rather than a different
+         shape. Whichever axis has room gets the slow frequency. */
+      /* Perspective magnifies POSITION as well as size, so a card at the front
+         is both enlarged and pushed further from centre -- which is what threw
+         two cards off the viewport before, and what makes the figure lopsided
+         once the curve is tilted in depth. Both are handled in lissFit(). */
+      const key = `${W}x${H}x${cardW0}x${cardH0}x${persp}`;
+      if (!fit || fitKey !== key) {
+        fit = lissFit(W, H, cardW0 || W * 0.4, cardH0 || H * 0.48, persp);
+        fitKey = key;
+      }
+      const { upright, Rz, sBase } = fit;
+
+      ring.style.transform = 'none';
+      for (let i = 0; i < n; i++) {
+        // Fraction of the way round the curve, by DISTANCE, offset by the
+        // scroll phase. i/n is then genuinely even spacing on the path.
+        const th = thetaAtFraction(th0 / (2 * Math.PI) + i / n);
+        const p = lissAt(th);
+        const c = cards[i];
+        /* This card's own perspective magnification. The recentring shift is
+           divided by it so that what lands on screen is a constant offset
+           rather than one that grows with depth and shears the curve. */
+        const m = persp / (persp - p.z * Rz);
+        // p.x carries cos(theta) -- the SLOW frequency -- and p.y sin(2 theta).
+        // Upright swaps which screen axis each one drives.
+        const sx = (upright ? p.y : p.x) * fit.ampX + fit.shiftX / m;
+        const sy = (upright ? p.x : p.y) * fit.ampY + fit.shiftY / m;
+        c.style.setProperty('--lx', `${sx.toFixed(1)}px`);
+        c.style.setProperty('--ly', `${sy.toFixed(1)}px`);
+        c.style.setProperty('--lz', `${(p.z * Rz).toFixed(1)}px`);
+
+        /* z runs -1 (far) .. +1 (near); t is the same 1-at-the-front scale the
+           cylinder used, so every depth rule downstream is untouched. */
+        const t = (p.z + 1) / 2;
+        c.style.setProperty('--depth', t.toFixed(3));
+
+        /* SIZE IS A FUNCTION OF DEPTH, not of hover.
+
+           The card at the front is the one being read, so it carries full size;
+           everything behind it shrinks smoothly as it recedes. That is the
+           whole depth cue, and it is continuous -- there is no state to enter
+           or leave, and nothing changes size because a pointer happened to
+           cross it. A hover that resized the tile fought this: the card under
+           the cursor jumped to full size wherever it was on the curve, which
+           contradicted the very ordering the path exists to show.
+
+           The shape of the falloff, and why it shrinks the back rather than
+           growing the front, is set out on LISS above. */
+        const ramp = LISS.back + (1 - LISS.back) * Math.pow(t, LISS.falloff);
+        const sc = sBase * ramp;
+        c.style.setProperty('--liss-s', sc.toFixed(3));
+        /* On the cylinder --vis existed because cards bunch near +/-90 degrees
+           and the far side projects back over the front. A path has no such
+           pile-up: the curve separates them in x and y as well as z, so
+           visibility can follow depth directly and the far cards stay legible
+           as structure. */
+        c.style.setProperty('--vis', Math.max(0, Math.min(1, (t - 0.12) / 0.5)).toFixed(3));
+
+        // Same rule as the ring: only the card nearest the reader takes a click.
+        /* Lower than the ring's 0.72. On a cylinder everything past the front
+           three overlapped, so only the front card could safely take a
+           pointer. The curve separates cards in x and y as well as z, so the
+           whole near half can be hovered -- which is what makes
+           hover-to-enlarge usable rather than a front-card-only trick. */
+        const live = t > 0.34;
+        c.style.pointerEvents = live ? 'auto' : 'none';
+        c.setAttribute('aria-hidden', live ? 'false' : 'true');
+        c.tabIndex = live ? 0 : -1;
+      }
+      return;
+    }
+
     ring.style.transform = horizontal
       ? `translateZ(${(-radius).toFixed(1)}px) rotateY(${a.toFixed(3)}deg)`
       : `translateZ(${(-radius).toFixed(1)}px) rotateX(${a.toFixed(3)}deg)`;
-    root.style.setProperty('--intro', intro.toFixed(3));
     for (let i = 0; i < n; i++) {
       // How far this card is from facing the viewer, 0 (front) .. 180 (back).
       let d = Math.abs(((angle - i * step) % 360 + 540) % 360 - 180);

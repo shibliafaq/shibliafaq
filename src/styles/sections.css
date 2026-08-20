@@ -1900,11 +1900,17 @@
    solved from the measured card height rather than guessed, so the geometry
    survives a font swap or a card that turns out taller than its siblings. */
 
+/* ONE wheel, full width.
+
+   Two side-by-side columns were right for two cylinders: a cylinder keeps its
+   cards in a narrow vertical band, so a column suited it and the two sets read
+   as two collections. A Lissajous figure-eight is the opposite -- it is a wide
+   shape, and squeezed into a 619px column it stood upright and ran over its own
+   heading. Merged into a single path across the full width, the curve can lie
+   down the way the Bowditch table draws it, and all fourteen cards ride one
+   figure instead of two half-sized ones. */
 .wheels {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(1.5rem, 4vw, 4rem);
-  align-items: start;
+  display: block;
   padding-inline: var(--pad-x);
 }
 
@@ -2304,3 +2310,90 @@
 .lab__bar h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(1.4rem, 3vw, 2.2rem); }
 .lab__bar a { color: var(--accent); font-family: var(--f-mono); font-size: var(--fs-xs); letter-spacing: .1em; }
 .lab__note { color: var(--t-2); font-size: var(--fs-sm); max-width: 62ch; padding: 0 var(--pad-x); margin-bottom: 2rem; }
+
+/* ============================================================
+   LISSAJOUS PATH LAYOUT
+   Cards ride the 1:2 / pi-over-2 Bowditch figure-eight instead of a cylinder.
+   Placement comes from --lx/--ly/--lz, set per card per frame in wheel.js.
+   ============================================================ */
+
+/* The cards travel SMALL and open on hover. Small is the resting state because
+   seven full-size cards on a figure-eight is a collision, not a composition —
+   at 0.42 the whole curve is legible as a shape and the tiles read as objects
+   moving along it. Enlarging on hover is what gives back the detail, and it is
+   also the affordance: the one that grows is the one that will take the click. */
+.wheel--liss .wheel__card {
+  /* No rotation: these are billboards on a path. A card banked into the
+     tangent spends half the loop edge-on and unreadable. */
+  transform:
+    translate(-50%, -50%)
+    translate3d(var(--lx, 0px), var(--ly, 0px), var(--lz, 0px))
+    scale(var(--liss-s, .42));
+  /* No transform transition: the position and scale are recomputed every frame
+     from the flywheel, so easing them would fight the motion model and lag the
+     card behind its own place on the curve. Only the depth-derived paint
+     settles. */
+  transition: opacity .3s ease, filter .3s ease;
+  /* The ring dimmed the far side hard because it overlapped the front. The
+     curve does not, so the far cards stay readable as structure. */
+  opacity: calc(.34 + .66 * var(--vis, 1));
+  filter: blur(calc((1 - var(--depth, 1)) * 1.6px));
+  z-index: calc(100 + var(--depth, 0) * 100);
+}
+/* HOVER HAS TO RESTATE THE PATH TRANSFORM, exactly as the ring's hover does.
+
+   `.wheels .pcard:hover` (0,3,0) sets the CYLINDER transform -- rotateX(--a)
+   translateZ(--r) -- and it outranks `.wheel--liss .wheel__card` (0,2,0). On
+   the path those two variables still carry the ring's values, and --r measured
+   1298px, so touching a card threw it a thousand pixels along z, out from under
+   the pointer. That un-hovered it, which restored the path transform, which put
+   it back under the pointer, which hovered it again: the card flickered as fast
+   as the pointer could re-enter it. The same rule also replaces `filter:
+   blur()`, so the depth blur popped off on every cycle.
+
+   This is the FOURTH bug caused by `.wheels .pcard` outranking `.wheel__card`
+   -- see the trap list in CLAUDE.md. And blanking the transform is not the fix;
+   that was tried on the ring and dropped every card to the stage origin.
+   Restate it.
+
+   :focus-visible is included because it had the identical fault, so the flicker
+   was reachable by keyboard as well as by pointer. */
+.wheels .wheel--liss .pcard:hover,
+.wheels .wheel--liss .pcard:focus-visible,
+.wheels .wheel--liss .pcard.is-h:hover,
+.wheels .wheel--liss .pcard.is-h:focus-visible {
+  transform:
+    translate(-50%, -50%)
+    translate3d(var(--lx, 0px), var(--ly, 0px), var(--lz, 0px))
+    scale(var(--liss-s, .42));
+  /* The depth blur is kept rather than replaced. Brightness is the entire hover
+     affordance now: size carries depth on this layout, so a card that grew or
+     lifted under the pointer would contradict the one cue the path depends on. */
+  filter: blur(calc((1 - var(--depth, 1)) * 1.6px)) brightness(1.12);
+}
+
+
+/* NO HOVER STATE, deliberately.
+
+   There was one: the tile opened from 42% to 86% under the pointer. It has
+   gone because size now carries depth -- the front card is full size, the
+   receding ones shrink -- and a hover that resized the card contradicted that
+   ordering, jumping whichever tile the cursor crossed to full size wherever it
+   sat on the curve. Two things cannot both own the same channel.
+
+   The scale comes from --liss-s, set per card per frame in wheel.js. Focus
+   still gets a visible ring from the shared card styles; it just does not
+   resize. */
+
+/* Motion off: no path, no travel. Fall back to a plain readable grid rather
+   than freezing seven cards on top of each other at 42%. */
+@media (prefers-reduced-motion: reduce) {
+  .wheel--liss .wheel__card {
+    position: relative;
+    left: auto; top: auto;
+    transform: none;
+    opacity: 1;
+    filter: none;
+    transition: none;
+  }
+}
