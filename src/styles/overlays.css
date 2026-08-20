@@ -651,3 +651,17 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
   .mgal--maps[style*="--map-cols:1"] { max-width: none; }
   .mgal--maps figcaption { font-size: .62rem; }
 }
+
+/* The paper's own abstract. Set apart from .mdesc, which is the pitch: a
+   rule down the left marks it as quoted from the source rather than written
+   for the page, and the slightly smaller measure keeps a 250-word block
+   readable. */
+.mabs {
+  margin-top: .5rem;
+  padding-left: clamp(.9rem, 2vw, 1.4rem);
+  border-left: 2px solid var(--amber-24, rgba(245,158,11,.24));
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--t-2);
+  text-wrap: pretty;
+}

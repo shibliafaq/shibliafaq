@@ -564,6 +564,9 @@
 
 .pub__status--review { color: var(--amber); border-color: var(--amber-24); background: var(--amber-06); }
 .pub__status--prep   { color: var(--t-2);  border-color: var(--line-2);  background: rgba(255, 255, 255, .03); }
+/* Published outranks the other two, so it is the only status that gets the
+   solid treatment -- a badge that reads at a glance without being read. */
+.pub__status--published { color: var(--ink); border-color: var(--amber); background: var(--amber); font-weight: 600; }
 
 .pub__abs { font-size: var(--fs-sm); line-height: 1.72; color: var(--t-2); margin-top: 1.1rem; max-width: 68ch; }
 

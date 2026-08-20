@@ -59,8 +59,12 @@ export const projects = {
   },
 
   gis: {
-    cat: 'CRP 583: Urban Informatics · KFUPM · Jan–May 2026 · Co-author: Sultan Aldhafeeri',
+    cat: 'CRP 583: Urban Informatics · KFUPM · Jan–May 2026 · Unpublished manuscript',
     title: 'GIS & Remote Sensing UHI Assessment — Dammam Metropolitan Area',
+    /* The manuscript's own abstract, verbatim (final version, May 2026).
+       Unpublished, so this is the submitted text rather than a version of
+       record; the entry says so above rather than implying peer review. */
+    abstract: 'The problem of urban heat island (UHIs) is an increasing health concern in hot-arid cities. This paper evaluates patterns of land surface temperature (LST) and heat vulnerability across the Dammam Metropolitan Area (DMA) using a five-step GIS and remote sensing model. LST was derived from Landsat 8/9 TIRS data for 2020, 2023, and 2025, while NDVI and NDBI were derived from Sentinel-2 MSI and population exposure was represented using WorldPop 2020 data. These datasets were processed using a 500 m fishnet grid with 12,954 cells. Pearson correlation, linear regression, two Heat Vulnerability Index (HVI) models, dual-threshold exposure mapping, Getis-Ord Gi* hotspot analysis, and sensitivity testing using three scenarios were used to analyze these data. The results show that NDBI is the strongest LST predictor in all years. In 2020, NDBI had r = 0.715 and R² = 0.511. The regression slope indicates that a 0.10-unit decrease in normalized built-up intensity is associated with an approximate 0.130-unit reduction in normalized LST. Composite HVI classified 92.6% of cells as High vulnerability. The dual-threshold exposure map identified 229 cells, equal to 57.3 km² or 1.8% of the DMA, as Very High Exposure. The HVI 99% Hot Spot covered 505 km², which is 4.18 times larger than the LST-only 99% Hot Spot of 120.8 km². This confirms that multi-factor vulnerability analysis reveals planning priorities that temperature-only mapping does not show.',
     desc: 'Five-step GIS and remote sensing workflow across 12,954 grid cells (500m × 500m, 3,238 km²). Key finding: NDBI is 255× more predictive of LST than NDVI in arid cities — a direct reversal of temperate-city findings. The Composite HVI hotspot is 4.18× larger than LST-only analysis, proving that temperature-only mapping dangerously under-estimates true vulnerability.',
     metrics: [
       { v: '12,954', l: 'Grid cells analysed' },
@@ -88,48 +92,10 @@ export const projects = {
        what went in, how the models disagree, where they disagree most, and what
        survives all of it. Every map is the original A4 layout — click to open
        the 2000px version, because the legend is where the meaning is. */
-    galleries: [
-      {
-        sec: 'The inputs — six rasters on one 500 m grid',
-        note: 'Landsat 8/9 TIRS, Sentinel-2 MSI and WorldPop, each resampled onto the same 12,954-cell fishnet so every later comparison is cell-for-cell.',
-        items: [
-        { src: `${IMG}/gis_lst2020.webp`, zoom: `${IMG}/gis_lst2020@2x.webp`, cap: 'Land Surface Temperature 2020 — Landsat 8/9 TIRS' },
-        { src: `${IMG}/gis_lst2023.webp`, zoom: `${IMG}/gis_lst2023@2x.webp`, cap: 'Land Surface Temperature 2023 — peak recorded 65.8°C' },
-        { src: `${IMG}/gis_lst2025.webp`, zoom: `${IMG}/gis_lst2025@2x.webp`, cap: 'Land Surface Temperature 2025' },
-        { src: `${IMG}/gis_ndvi2023.webp`, zoom: `${IMG}/gis_ndvi2023@2x.webp`, cap: 'NDVI 2023 — vegetation, the weaker predictor in an arid city' },
-        { src: `${IMG}/gis_ndbi2023.webp`, zoom: `${IMG}/gis_ndbi2023@2x.webp`, cap: 'NDBI 2023 — built-up index, the dominant LST predictor (r = 0.715, R² = 0.511)' },
-        { src: `${IMG}/gis_pop2020.webp`, zoom: `${IMG}/gis_pop2020@2x.webp`, cap: 'WorldPop 2020 — population, the exposure term' },
-        ],
-      },
-      {
-        cols: 2,
-        sec: 'One question, four answers',
-        note: 'The same cells, scored by four weightings of the Heat Vulnerability Index. Depending on which model you accept, between roughly half and nine-tenths of the metropolitan area is High vulnerability — the choice of model, not the data, decides who counts.',
-        items: [
-        { src: `${IMG}/gis_hvi_simple.webp`, zoom: `${IMG}/gis_hvi_simple@2x.webp`, cap: 'Simplified HVI — LST 60% / population 40%; the most balanced split' },
-        { src: `${IMG}/gis_hvi_heat.webp`, zoom: `${IMG}/gis_hvi_heat@2x.webp`, cap: 'Heat-weighted sensitivity — vulnerability follows temperature' },
-        { src: `${IMG}/gis_hvi_pop.webp`, zoom: `${IMG}/gis_hvi_pop@2x.webp`, cap: 'Population-weighted sensitivity — vulnerability follows people' },
-        { src: `${IMG}/gis_hvi_built.webp`, zoom: `${IMG}/gis_hvi_built@2x.webp`, cap: 'Built-up-weighted sensitivity — vulnerability follows surface' },
-        ],
-      },
-      {
-        cols: 2,
-        sec: 'Where temperature alone misleads',
-        note: 'Getis-Ord Gi* hot spots at 99% confidence, run twice. On temperature alone the priority area is 120.8 km²; on the Composite HVI it is 505.0 km² — <strong>4.18× larger</strong>. Mapping heat is not the same as mapping who is harmed by it.',
-        items: [
-        { src: `${IMG}/gis_hotspot_lst.webp`, zoom: `${IMG}/gis_hotspot_lst@2x.webp`, cap: 'LST hot spots — 120.8 km² at 99% confidence, 3.7% of the study area' },
-        { src: `${IMG}/gis_hotspot_hvi.webp`, zoom: `${IMG}/gis_hotspot_hvi@2x.webp`, cap: 'Composite HVI hot spots — 505.0 km² at 99% confidence, 15.6%' },
-        ],
-      },
-      {
-        cols: 1,
-        sec: 'What survives every test',
-        note: 'The strictest reading: cells where high temperature and high population coincide. 229 cells — 57.3 km², 1.8% of the metropolitan area. This is the list a budget can actually act on.',
-        items: [
-        { src: `${IMG}/gis_exposure_map.webp`, zoom: `${IMG}/gis_exposure_map@2x.webp`, cap: 'High Exposure — 229 cells · 57.3 km² · central Dammam and the Al-Khobar core' },
-        ],
-      },
-    ],
+    /* The thirteen maps that used to sit here are gone. They were the paper's
+       figures, and the tile is now abstract + metrics + the dashboard: the twin
+       renders the same thirteen layers over one terrain, which is the thing a
+       flat sheet could not do. Kept in git if they are ever wanted back. */
     links: [{ t: 'Manuscript — Under Departmental Review', dev: true }],
   },
 
@@ -214,38 +180,51 @@ export const projects = {
   },
 
   its: {
-    cat: 'CE 584: Intelligent Transportation Systems · KFUPM · Jan–Apr 2026 · Team of 4',
+    cat: 'CE 584: Intelligent Transportation Systems · KFUPM · Jan–Apr 2026 · Team of 4 · Unpublished manuscript',
     title: 'ITS-Based Congestion Management — Aramco Stadium Corridor, Al Khobar',
-    desc: 'Multi-criteria ITS strategy for the Aramco Stadium Corridor, Al Khobar — a 47,000-capacity venue with 48.5% evening peak congestion (TomTom 2025). Four alternatives evaluated through a weighted scoring matrix. Recommended integrated 4-layer framework (Sense → Decide → Act → Influence) projects 20–35% travel time reduction within SAR 28–47M. Benchmarked against Qatar 2022 and London 2012.',
+    desc: 'A corridor-level ITS strategy for the 47,000-capacity Aramco Stadium in Al Khobar, host venue for the 2027 AFC Asian Cup and 2034 FIFA World Cup. The corridor already runs at 48.5% evening congestion with 44 hours lost per driver per year (TomTom 2025), and faces a dual-regime problem: chronic daily load overlaid by concentrated event surges. Four cumulative alternatives were scored on a weighted multi-criteria matrix; the recommended one integrates adaptive signal control, ATMS/ATIS, smart parking and park-and-ride, with demand pricing held back as a conditional final phase.',
+    /* The manuscript's own abstract, verbatim (final version, May 2026).
+       Unpublished and under departmental review, so this is the submitted text.
+       Note it makes no outcome claims of its own -- the paper is careful that
+       its cost and KPI figures are indicative planning estimates drawn from
+       published literature, not measured results, and the metrics below say so. */
+    abstract: 'Urban corridors next to major sports venues present a traffic challenge. Chronic daily congestion that already strains the network is overlaid by concentrated, directional event surges that conventional infrastructure alone cannot absorb. The Aramco Stadium corridor in Al Khobar, Saudi Arabia, illustrates this challenge precisely. According to TomTom\'s 2025 Traffic Index, the Dammam metropolitan area (including Al Khobar) has 48.5 percent congestion during the evening rush hour and an average 44 hours of time lost per driver annually. This paper develops a data-supported, integrated Intelligent Transportation Systems (ITS) strategy to reduce congestion on the corridor under both daily and event conditions. The methodology draws exclusively on peer-reviewed literature, official government and institutional sources, and verified traffic indices. Four cumulative strategy alternatives are evaluated using a weighted multi-criteria scoring matrix. The proposed strategy layers include Adaptive Traffic Signal Control (ATSC) as the operational layer, Advanced Traffic Management System (ATMS) and Advanced Traveler Information System (ATIS) as the monitoring and information layer, smart parking guidance and park-and-ride as the event-access layer, and demand-management pricing as the optional, final layer. This paper proposes a three-stage implementation plan with indicative cost and KPI improvement estimates. The corridor, if managed with the proposed strategy, can be used as a pilot of smart mobility projects in Saudi Arabia\'s Vision 2030.',
+    /* Every figure here is checked against the manuscript. The previous set was
+       not: it claimed 20-35% travel time reduction, a 15-25% emissions cut and a
+       SAR 28-47M budget, none of which appear in the paper. The paper cites
+       10-20% from the ATSC literature and prices Alternative C at roughly
+       $4.3M-$12.1M in indicative US dollars. */
     metrics: [
-      { v: '20–35%', l: 'Travel time reduction projected' },
-      { v: '15–25%', l: 'Emissions cut' },
-      { v: 'SAR 28–47M', l: '3-phase implementation budget' },
+      { v: '48.5%', l: 'Evening peak congestion · TomTom 2025, Dammam metro' },
+      { v: '10–20%', l: 'Travel-time saving from ATSC · published empirical range' },
+      { v: '$4.3–12.1M', l: 'Indicative cost, recommended alternative · planning-level' },
       { v: '4-layer', l: 'Sense → Decide → Act → Influence' },
     ],
-    method: 'Corridor analysis (v/c ratio, peak hour factor) → 4-alternative MCA matrix (efficiency 40%, cost 25%, implementation 20%, environment 15%) → Phased ATMS/ATIS/Smart Parking framework → KPI projection → International benchmarking (Qatar 2022, London 2012)',
-    tags: ['Adaptive Signal Control (ASCT)', 'ATMS / TMC', 'ATIS', 'Variable Message Signs', 'Smart Parking', 'Congestion Pricing', 'Multi-Criteria Analysis', 'Event Mobility', 'Vision 2030'],
-    images: [
-      { src: `${IMG}/its_corridor.webp`, cap: 'Study Area — Aramco Stadium, Al Khobar · King Fahd Road Corridor (48.5% peak congestion)' },
-      { src: `${IMG}/its_traffic.webp`, cap: 'TomTom Traffic Index 2025 — Dammam Metro · Evening peak 48.5% · 44 hrs/year lost' },
-      { src: `${IMG}/its_method.webp`, cap: 'Seven-Step Research Methodology — Define & Review → Analyse & Evaluate → Deliver' },
-    ],
+    method: 'Corridor and dual-regime problem definition → literature and international case review (Qatar 2022, London 2012) → four cumulative alternatives → weighted multi-criteria scoring matrix on seven criteria → Alternative C selected (score 3.75) → four-layer ITS architecture → three-phase implementation plan with indicative costs from FHWA and HDR benchmarks',
+    tags: ['Adaptive Signal Control (ATSC)', 'ATMS / TMC', 'ATIS', 'Variable Message Signs', 'Smart Parking', 'Park-and-Ride', 'Congestion Pricing', 'Multi-Criteria Analysis', 'Event Mobility', 'Vision 2030'],
     links: [{ t: 'Manuscript — Under Departmental Review', dev: true }],
   },
 
   sound: {
-    cat: 'ARC 514: Sustainable Urbanism · KFUPM · Advisors: Dr. Adenle & Dr. Basheer · Under Review',
+    cat: 'Discover Cities (Springer Nature) · 2026 · 3:123 · Open Access · Advisors & co-authors: Dr. Yusuf A. Adenle, Dr. Muhammad Aamir Basheer',
     title: 'A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments',
-    desc: 'PRISMA 2020 systematic review screening 1,011 records on acoustic–thermal comfort interactions in hot-arid urban spaces. Synthesises 22 full-text studies (2005–2025). Developed the Integrated Thermal-Acoustic-Perceptual (ITAP) framework for evidence-based public space design. Submitted to Discovering Cities (Springer Nature). The manuscript contains one toolkit figure which is under review and not reproduced here.',
+    desc: 'Published in Discover Cities, June 2026. A PRISMA 2020 systematic review of how the acoustic environment shapes outdoor thermal comfort in hot-arid cities. 1,011 records screened across Scopus, Semantic Scholar and AI-assisted snowballing; 22 studies (2005–2025) synthesised into five interlinked themes. Introduces the Integrated Thermo-Acoustic Planning (ITAP) Framework and a persona-based Interdisciplinary Implementation Toolkit for Vision 2030 public space design.',
+    /* The published abstract, verbatim from Discover Cities (2026) 3:123.
+       Not a paraphrase: the paper is open access under CC BY-NC-ND, this is the
+       version of record, and a portfolio that restates an abstract in its own
+       words invites the reader to wonder which version they are reading. */
+    abstract: 'In hot-arid cities, the soundscape of public space has been an underutilized element of urban design, often treated as a secondary consideration relative to visual appearance. This neglect contributes to thermal discomfort and the underutilization of urban outdoor public space, a problem that is especially prevalent in the Gulf region, where the lack of shade renders the outdoor public space uninhabitable for a significant portion of the year. To fill this gap, this study aims to conduct a PRISMA-guided systematic review of 22 peer-reviewed studies (2005–2025) that focus on the soundscape design, outdoor thermal comfort, and urban space quality in hot-arid and thermally comparable environments. Thematic content analysis reveals five theme areas that are interlinked: (i) integrated thermal-acoustic design, (ii) the function of green and blue infrastructure in soundscapes, (iii) multisensory perception and psychological restoration, (iv) problems and concerns with human-centered soundscape planning, and (v) the impact of urban morphology on microclimate and sound propagation. The synthesis shows that, under moderate thermal stress conditions, positive soundscapes (created with natural sounds and green-blue infrastructure) can positively influence the thermoceptive comfort perception and decrease the perceived heat stress as well as encourage active use of public space. These benefits, however, are limited, becoming much less pronounced in extreme heat and are predominantly psychological and cognitive in nature, operating through individual appraisal rather than direct sensory response. Based on these findings, the paper introduces the Integrated Thermo-Acoustic Planning (ITAP) Framework as a multi-scalar, evidence-based design model and a persona-based Interdisciplinary Implementation Toolkit. These outputs, combined, offer context-specific guidelines for the design of walkable, thermally comfortable, and acoustically restorative public spaces to support the Saudi Arabia Vision 2030 Quality of Life Programme.',
     metrics: [
-      { v: '1,011', l: 'Records screened (PRISMA 2020)' },
-      { v: '22', l: 'Full-text studies synthesised' },
-      { v: 'ITAP', l: 'New framework developed' },
-      { v: 'Under Review', l: 'Discovering Cities · Springer Nature' },
+      { v: '1,011', l: 'Records screened · Scopus 737, Semantic Scholar 250, Elicit 24' },
+      { v: '22', l: 'Studies synthesised (2005–2025) · from 78 assessed for eligibility' },
+      { v: '5', l: 'Interlinked themes identified' },
+      { v: 'Published', l: 'Discover Cities · 2026 · 3:123 · Open Access' },
     ],
-    method: 'Multi-database search (Scopus, Web of Science, PubMed) → Duplicate removal → Title/abstract screening → Full-text eligibility → Data extraction → Thematic synthesis → ITAP framework development',
-    tags: ['PRISMA 2020', 'Systematic Review', 'Thermal Comfort', 'Soundscape', 'Hot-Arid Cities', 'Urban Public Space', 'Environmental Psychology', 'KFUPM', 'ARC 514'],
-    links: [],
+    method: 'Multi-database search (Scopus, Semantic Scholar) + AI-assisted snowballing (Elicit) → 1,011 records screened → 931 excluded → 80 sought, 78 assessed → 56 excluded on inclusion criteria → 22 included → two-stage thematic content analysis, consensus across all co-authors → five themes → ITAP Framework + Interdisciplinary Implementation Toolkit',
+    tags: ['PRISMA 2020', 'Systematic Review', 'Thermal Comfort', 'Soundscape', 'Hot-Arid Cities', 'Green/Blue Infrastructure', 'Urban Morphology', 'Environmental Psychology', 'Vision 2030', 'Open Access'],
+    links: [
+      { t: 'Read the paper — Discover Cities (Open Access)', h: 'https://doi.org/10.1007/s44327-026-00314-z', primary: true },
+    ],
   },
 
   arch: {

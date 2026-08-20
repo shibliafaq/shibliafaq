@@ -15,6 +15,19 @@ function unlock() { document.body.classList.remove('is-locked'); startScroll(); 
    ============================================================ */
 
 function render(data) {
+  /* The paper's own abstract, verbatim.
+
+     `desc` is the pitch — what the work is and why it matters, written for the
+     card. An abstract is the author's own compression of the paper, and for the
+     three research entries it is the thing a reader actually wants: it says what
+     was done and what was found in the terms the paper itself uses. Kept
+     separate rather than folded into `desc` so it can be quoted exactly and,
+     where the paper is published, matched word for word against the record of
+     version. */
+  const abstract = data.abstract
+    ? `<div class="msec">Abstract</div><p class="mabs">${data.abstract}</p>`
+    : '';
+
   const metrics = data.metrics?.length
     ? `<div class="mmetrics">${data.metrics
         .map((m) => `<div><div class="mmv">${m.v}</div><div class="mml">${esc(m.l)}</div></div>`)
@@ -154,7 +167,7 @@ function render(data) {
     <h2 class="mtitle" id="modalTitle">${esc(data.title)}</h2>
     ${finding}
     <p class="mdesc">${data.desc}</p>
-    ${metrics}${embed}${twin}${diagram}${method}${worked}${gallery}${galleries}${videos}${extra}${tags}${links}
+    ${abstract}${metrics}${embed}${twin}${diagram}${method}${worked}${gallery}${galleries}${videos}${extra}${tags}${links}
   `;
 }
 

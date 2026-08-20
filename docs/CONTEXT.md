@@ -1822,3 +1822,80 @@ instead of asserting it.
 the whole chain runs into a staging directory and only a finished, repaired set
 is swapped into `public/`. The old water-included set was kept aside for
 comparison before the swap.
+
+## 30. Three papers read, and the numbers that did not survive it (2026-08-20)
+
+The soundscape review was published; the other two research tiles were restructured
+to match. Every tile is now **abstract + metrics, no figures** — only the GIS one
+keeps its dashboard.
+
+### The soundscape paper is published, and the site had it wrong three ways
+
+*Discover Cities* (Springer Nature) 2026, 3:123, Open Access CC BY-NC-ND,
+DOI `10.1007/s44327-026-00314-z`. Authors: Shibli Afaq, Yusuf A. Adenle,
+Muhammad Aamir Basheer.
+
+| | the site said | the paper says |
+|---|---|---|
+| Journal | Discovering Cities | **Discover Cities** |
+| ITAP | Integrated Thermal-Acoustic-**Perceptual** | Integrated Thermo-Acoustic **Planning** |
+| Status | Under Review | **Published**, June 2026 |
+
+Crossref resolved the metadata but carries no abstract, and Springer redirects
+both the article and the PDF to an IdP endpoint, so the abstract came from the
+published PDF itself. PRISMA numbers verified against Fig. 1: Scopus 737 +
+Semantic Scholar 250 + Elicit 24 -> **1,011 screened -> 931 excluded -> 80 sought
+-> 78 assessed -> 56 excluded -> 22 included**, five themes. Those the site had
+right.
+
+### The ITS metrics were not in the manuscript
+
+The most important find. Checked against the final manuscript
+(`Final_CE584_ITS_Term_Paper_..._V0.3.docx`):
+
+| | the site claimed | the manuscript says |
+|---|---|---|
+| Travel time | 20-35% reduction | **10-20%**, cited from the ATSC literature |
+| Emissions | 15-25% cut | **absent from the paper entirely** |
+| Budget | SAR 28-47M | **~$4.3M-$12.1M USD**, Alternative C |
+
+The paper is explicit that its costs are "very approximate order of magnitude
+estimates" from FHWA and HDR benchmarks and that KPI figures are literature
+ranges, not results. The tile now says so. Overstated numbers on a portfolio
+aimed at doctoral admissions are exactly what a reviewer checks.
+
+### `galleries`, and a check that was not a check
+
+Asked to remove the figures, the first pass reported all three tiles clean. They
+were not: the GIS figures were in a **`galleries`** field, and the audit only
+looked for `images`, `images2` and `videos`. Thirteen maps, 26 image references,
+sitting in a field the check never named.
+
+The fix afterwards was to audit **every** entry for every media field rather than
+the three that had been asked about. **A field-by-field check is only as good as
+the list of fields**, and the list has to be derived from what the renderer
+actually reads — `modal.js` renders `images`, `images2`, `videos`, `galleries`,
+`worked`, `diagram`, `embed` and `twin`.
+
+The thirteen are no real loss from the page: the dashboard renders the same
+thirteen layers over one terrain, which was the argument for building it.
+
+### Structure
+
+`modal.js` gained an `abstract` block, rendered before the metrics and styled
+with a rule down the left (`.mabs`) so it reads as quoted from the source rather
+than written for the page. It is kept separate from `desc` — `desc` is the pitch,
+the abstract is the author's own compression — so it can be quoted exactly and,
+where published, matched word for word against the version of record.
+
+Word counts: sound 278, gis 226, its 214.
+
+### Also
+
+- `gis` co-author removed from the tile at the user's request. The publications
+  list still carries both authors, because that entry is a citation and the
+  author line is the paper's own.
+- A `pub__status--published` badge, solid rather than outlined: published
+  outranks the other two states and should read without being read.
+- Two other entries still credit the same co-author on the Big Data / multi-city
+  project. Different work, deliberately untouched.
