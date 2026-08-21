@@ -1390,6 +1390,28 @@ function setupWheel(root) {
     measure();
   });
 
+  /* EVERY TILE WITH A RECORDING PLAYS IT, ALL THE TIME.
+
+     A front-card-only swap was tried first, because an animated WebP decodes at
+     full rate however small it renders -- a 52px plate at the back of the curve
+     costs what the 359px card at the front does. That was overruled and the
+     reason is sound: six still tiles around one moving one reads as five images
+     that failed to load, not as a design.
+
+     The poster stays in the markup and the loop is swapped in HERE rather than
+     being the src to begin with, for one reason: an animated image cannot be
+     paused, so `prefers-reduced-motion` has no way to opt out of it. Leaving the
+     still in the HTML means a reader who asked for less motion simply never
+     gets the swap. */
+  if (!reducedMotion) {
+    for (const c of cards) {
+      const loop = c.dataset.loop;
+      if (!loop) continue;
+      const img = c.querySelector('.pcard__media img');
+      if (img) img.setAttribute('src', loop);
+    }
+  }
+
   if (reducedMotion) {
     // No easing loop: jumps straight to the target so the wheel still works,
     // it just does not spin to get there.

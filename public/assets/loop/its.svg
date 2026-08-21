@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540"
+     role="img" aria-label="ITS congestion management: a corridor at 48.5 percent evening congestion, eased through four layers — sense, decide, act, influence">
+<!--
+  ITS-Based Congestion Management — Aramco Stadium Corridor, Al Khobar
+  CE 584, KFUPM, unpublished manuscript
+
+  WHY THIS PICTURE
+  The paper's subject is a DUAL-REGIME problem: chronic daily congestion with
+  event surges on top, addressed by four cumulative layers. So the corridor here
+  runs congested, the four layers arm in sequence, and the flow loosens — the
+  argument of the paper as a single loop.
+
+  The numbers are the paper's own and no others: 48.5% evening congestion and
+  44 hours lost per driver per year are TomTom 2025 for the Dammam metro; the
+  10-20% travel-time saving is the published ATSC range the paper cites. The
+  paper is deliberate that its figures are indicative planning estimates rather
+  than measured outcomes, so nothing here is dressed as a result: the easing is
+  shown as flow loosening, never as a number that improves on screen.
+
+  CSS keyframes rather than SMIL or script: this loads through an <img>, where
+  scripts never run and CSS animation does.
+-->
+<style><![CDATA[
+  .bg   { fill: #09090b; }
+  .ink  { fill: #e8e8ec; font-family: Verdana, Geneva, sans-serif; }
+  .dim  { fill: #8b8b93; font-family: Verdana, Geneva, sans-serif; }
+  .mono { font-family: "Courier New", monospace; }
+
+  /* Vehicles. Each starts bunched and slow, then opens out — the same journey
+     the corridor takes as the layers come on, expressed per vehicle. */
+  .veh { animation: run 6s linear infinite; }
+  @keyframes run {
+    0%   { transform: translateX(-40px); }
+    100% { transform: translateX(1000px); }
+  }
+  .v1{animation-delay:0s}      .v2{animation-delay:.30s}  .v3{animation-delay:.52s}
+  .v4{animation-delay:.68s}    .v5{animation-delay:1.5s}  .v6{animation-delay:1.9s}
+  .v7{animation-delay:2.4s}    .v8{animation-delay:3.1s}  .v9{animation-delay:3.9s}
+  .v10{animation-delay:4.6s}
+
+  /* Congestion wash over the first half of the corridor, thinning as the loop
+     runs so the easing is felt rather than announced. */
+  .jam { animation: ease 6s ease-in-out infinite; }
+  @keyframes ease { 0%,20% { opacity: .85; } 62%,100% { opacity: .18; } }
+
+  /* The four layers arming in order. They stay lit once on: the paper's
+     alternatives are CUMULATIVE, each one built on the last, so a layer that
+     blinked off would misdescribe the strategy. */
+  .layer { animation: arm 6s ease-in-out infinite; }
+  .l1{animation-delay:.2s}.l2{animation-delay:1.4s}.l3{animation-delay:2.6s}.l4{animation-delay:3.8s}
+  @keyframes arm {
+    0%, 8%    { opacity: .22; }
+    14%, 100% { opacity: 1; }
+  }
+  .pulse { animation: beat 6s ease-in-out infinite; transform-origin: center; }
+  .p1{animation-delay:.2s}.p2{animation-delay:1.4s}.p3{animation-delay:2.6s}.p4{animation-delay:3.8s}
+  @keyframes beat {
+    0%, 8%   { transform: scale(1); opacity: 0; }
+    14%      { transform: scale(2.6); opacity: .55; }
+    26%,100% { transform: scale(3.4); opacity: 0; }
+  }
+
+  /* Signal head cycling, the operational layer made visible. */
+  .sig { animation: cyc 3s steps(1) infinite; }
+  @keyframes cyc { 0%,45% { fill: #f87171; } 50%,60% { fill: #e0a355; } 65%,100% { fill: #4ade80; } }
+]]></style>
+
+<rect class="bg" width="960" height="540"/>
+
+<defs>
+  <linearGradient id="jamg" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%"   stop-color="#f87171" stop-opacity=".55"/>
+    <stop offset="55%"  stop-color="#e0a355" stop-opacity=".30"/>
+    <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
+  </linearGradient>
+</defs>
+
+<!-- HEADLINE FIGURE -->
+<text class="ink mono" x="60" y="86" font-size="46" font-weight="bold">48.5%</text>
+<text class="dim mono" x="60" y="110" font-size="13" letter-spacing="1.4">EVENING PEAK CONGESTION · TOMTOM 2025</text>
+<text class="ink mono" x="60" y="152" font-size="20" fill="#e0a355">44 h</text>
+<text class="dim mono" x="132" y="152" font-size="13" letter-spacing="1.2">LOST PER DRIVER, PER YEAR</text>
+
+<!-- THE CORRIDOR -->
+<g transform="translate(0 250)">
+  <rect x="40" y="-34" width="880" height="68" rx="6" fill="#141418"/>
+  <line x1="40" y1="0" x2="920" y2="0" stroke="#2a2a31" stroke-width="2" stroke-dasharray="16 14"/>
+  <rect class="jam" x="40" y="-34" width="560" height="68" rx="6" fill="url(#jamg)"/>
+
+  <!-- vehicles: the bunched leaders, then the freed tail -->
+  <g fill="#f87171"><rect class="veh v1" x="0" y="-26" width="26" height="12" rx="3"/></g>
+  <g fill="#f87171"><rect class="veh v2" x="0" y="-26" width="26" height="12" rx="3"/></g>
+  <g fill="#ef9a6a"><rect class="veh v3" x="0" y="-26" width="26" height="12" rx="3"/></g>
+  <g fill="#e0a355"><rect class="veh v4" x="0" y="-26" width="26" height="12" rx="3"/></g>
+  <g fill="#4ade80"><rect class="veh v5" x="0" y="-26" width="26" height="12" rx="3"/></g>
+  <g fill="#4ade80"><rect class="veh v6" x="0" y="-26" width="26" height="12" rx="3"/></g>
+
+  <g fill="#e0a355"><rect class="veh v7"  x="0" y="10" width="26" height="12" rx="3"/></g>
+  <g fill="#4ade80"><rect class="veh v8"  x="0" y="10" width="26" height="12" rx="3"/></g>
+  <g fill="#38bdf8"><rect class="veh v9"  x="0" y="10" width="26" height="12" rx="3"/></g>
+  <g fill="#4ade80"><rect class="veh v10" x="0" y="10" width="26" height="12" rx="3"/></g>
+
+  <!-- the stadium the surge comes from -->
+  <g transform="translate(880 -74)">
+    <ellipse cx="0" cy="0" rx="26" ry="17" fill="none" stroke="#e0a355" stroke-width="2.5"/>
+    <ellipse cx="0" cy="0" rx="12" ry="7" fill="#e0a355" opacity=".55"/>
+    <text class="dim mono" x="0" y="34" font-size="11" text-anchor="middle" letter-spacing="1">47,000</text>
+  </g>
+
+  <!-- signal head: the operational layer, cycling -->
+  <g transform="translate(470 -62)">
+    <rect x="-9" y="-22" width="18" height="30" rx="4" fill="#141418" stroke="#2a2a31"/>
+    <circle class="sig" cx="0" cy="-7" r="5"/>
+  </g>
+</g>
+
+<!-- THE FOUR CUMULATIVE LAYERS -->
+<g transform="translate(0 400)" class="mono" font-size="12">
+  <g class="layer l1" transform="translate(96 0)">
+    <circle class="pulse p1" cx="0" cy="0" r="9" fill="#38bdf8"/>
+    <circle cx="0" cy="0" r="9" fill="#38bdf8"/>
+    <text class="ink" x="0" y="30" text-anchor="middle" letter-spacing="1.6">SENSE</text>
+    <text class="dim" x="0" y="48" text-anchor="middle" font-size="10">ATMS</text>
+  </g>
+  <g class="layer l2" transform="translate(336 0)">
+    <circle class="pulse p2" cx="0" cy="0" r="9" fill="#5ec8f0"/>
+    <circle cx="0" cy="0" r="9" fill="#5ec8f0"/>
+    <text class="ink" x="0" y="30" text-anchor="middle" letter-spacing="1.6">DECIDE</text>
+    <text class="dim" x="0" y="48" text-anchor="middle" font-size="10">ATSC</text>
+  </g>
+  <g class="layer l3" transform="translate(576 0)">
+    <circle class="pulse p3" cx="0" cy="0" r="9" fill="#e0a355"/>
+    <circle cx="0" cy="0" r="9" fill="#e0a355"/>
+    <text class="ink" x="0" y="30" text-anchor="middle" letter-spacing="1.6">ACT</text>
+    <text class="dim" x="0" y="48" text-anchor="middle" font-size="10">SMART PARKING · P+R</text>
+  </g>
+  <g class="layer l4" transform="translate(816 0)">
+    <circle class="pulse p4" cx="0" cy="0" r="9" fill="#4ade80"/>
+    <circle cx="0" cy="0" r="9" fill="#4ade80"/>
+    <text class="ink" x="0" y="30" text-anchor="middle" letter-spacing="1.6">INFLUENCE</text>
+    <text class="dim" x="0" y="48" text-anchor="middle" font-size="10">ATIS · PRICING</text>
+  </g>
+  <line x1="96" y1="0" x2="816" y2="0" stroke="#2a2a31" stroke-width="1.5"/>
+</g>
+
+<text class="dim mono" x="480" y="512" font-size="12" text-anchor="middle" letter-spacing="1.2">
+  10–20% TRAVEL-TIME SAVING · PUBLISHED ATSC RANGE, INDICATIVE
+</text>
+</svg>

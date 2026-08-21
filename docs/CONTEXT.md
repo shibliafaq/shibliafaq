@@ -3146,3 +3146,126 @@ Thirty percent overlap would be a failure on the desktop, where it was budgeted
 at 12%. On a phone with fourteen tiles and a 350px stage it is what a dominant
 centre card costs, and eight of the fourteen are `is-plate` images at that
 moment rather than text competing with text.
+
+## 41. Moving tiles: recording the dashboards, drawing the papers (2026-08-21)
+
+The six M.Sc. research tiles carried static hero images. They now carry motion:
+four recordings of the dashboards themselves and two animations built from the
+two papers.
+
+### Capture, with nothing installed
+
+`tools/capture-loop.mjs` drives whichever Chromium the machine already has over
+the DevTools Protocol. Node 24 ships a native `WebSocket` and CDP is JSON over
+one, so the whole driver is about sixty lines and needs no Playwright, no
+Puppeteer and no ~200 MB browser download.
+
+Three things had to be learned the hard way:
+
+**`--virtual-time-budget` cannot photograph these pages.** It is the obvious
+tool -- fast-forward the page clock, screenshot, done -- and it fails quietly: at
+6000 it produced the Dammam twin's own LOADING screen, and at 25000 it produced
+no file at all. These dashboards run a continuous `requestAnimationFrame` loop,
+so virtual time never goes idle, the budget never retires and the capture hangs.
+Real time and real delays are the only honest way to photograph something that
+never stops moving.
+
+**Without `--user-data-dir` the launch attaches to the reader's own browser**
+and prints "Opening in existing browser session" instead of starting a
+controllable instance. A throwaway profile also means it never touches theirs.
+
+**A dashboard that does not animate itself has to be DRIVEN.** The first Dammam
+capture looked fine and was worthless: **all thirty frames hashed identically**,
+because deck.gl renders once and stops. It would have shipped as a still image
+under a filename implying motion. Hashing the frames caught it; looking at one
+frame never would. So the tool grew `--init`, `--drive` (evaluated per frame with
+the frame index in scope) and `--clip`.
+
+`--clip` takes a SELECTOR, not coordinates, and is measured at capture time: the
+IoT chart sits at y=445 in a 961px-tall pane and somewhere else entirely at 720,
+so a typed-in rectangle is wrong the moment the viewport changes.
+
+### What each tile plays
+
+| tile | driven how | size |
+|---|---|---|
+| thesis | UHI twin, cycling Riyadh/Jeddah/Dammam/Makkah/NEOM | 67 KB |
+| gis | Dammam twin, clicking through its layer buttons | 79 KB |
+| iot | live sensor graph, clipped to `.panel--chart`, at 20x | 301 KB |
+| temp | from the existing Kepler.gl recording | 104 KB |
+
+`thesis-cover.mp4` was already in the repo and was NOT used: it is unrelated
+footage, which the reader spotted. The tile now shows the dashboard the card
+actually links to.
+
+### Animated WebP, not GIF
+
+The ask was for GIFs. The mechanism GIF offers is the right one -- it drops into
+the existing `<img>` with no markup change, where a `<video>` needs markup and
+autoplay handling -- but the encoding is not: the Dammam loop is **79 KB as
+animated WebP against roughly 1.5-3 MB as GIF**, with 256-colour banding thrown
+in. All four loops together are smaller than one GIF would be. ffmpeg has both
+`libwebp_anim` and `gif`, so GIFs remain one command away from the same frames.
+
+**Delete the frame directories.** They were written under `public/assets/loop/`
+and came to 21.5 MB of PNG, which would have shipped into `dist`.
+
+### The two papers
+
+Neither is decoration; every number is the paper's own.
+
+`sound.svg` puts an acoustic field against a thermal one and overlaps them,
+because the review's subject is their INTERACTION. The overlap brightens and
+fades rather than staying lit: the paper is careful that the benefit is bounded
+-- real under moderate heat, gone in extreme -- and a permanently glowing overlap
+would overclaim it. The cascade is the PRISMA count, 1,011 screened to 22
+synthesised to 5 themes.
+
+`its.svg` runs the corridor congested and loosens it as the four cumulative
+layers arm in order. The layers stay lit once on, because the paper's
+alternatives are cumulative and a blinking layer would misdescribe the strategy.
+Nothing is dressed as a result -- the easing shows as flow, never as a number
+improving on screen -- because the paper states its cost and KPI figures are
+indicative planning estimates rather than measured outcomes.
+
+**Two SVG traps, both silent.** A literal `<g>` inside a CSS comment breaks the
+file: SVG is XML, so anything angle-bracketed inside `<style>` is parsed as
+markup. Both files now wrap their CSS in `CDATA`. And `transform-origin` on a
+`<g>` resolves against the SVG VIEWPORT, not the element -- the heat columns hung
+at staggered heights and the outermost theme dot flew clear of its row entirely.
+`transform-box: fill-box` is the fix, applied to the shape rather than a wrapper.
+
+### Every tile plays, and why the poster stays in the markup
+
+A front-card-only swap was built first, on the argument that an animated WebP
+decodes at full rate however small it renders -- a 52px plate at the back of the
+curve costs what the 359px card at the front does. The reader overruled it, and
+the reason is sound: six still tiles around one moving one reads as five images
+that failed to load. The concern stands as a known cost, not a blocker.
+
+The loop is still swapped in from JS rather than being the `src` in the HTML,
+for one reason: **an animated image cannot be paused, so
+`prefers-reduced-motion` has no way to opt out of it.** Leaving the still in the
+markup means a reader who asked for less motion simply never gets the swap.
+
+### The expensive mistake, and it was not about video
+
+A scripted edit computed a span to delete and got the end index wrong. It ate
+the `return;` that exits the lissajous branch of `paint()`, so execution fell
+through into `tick()` and `paint()` called itself -- `Maximum call stack size
+exceeded`, every frame. It also removed `function tick()` and the ring branch,
+about sixty lines.
+
+**The build passed the whole time.** Rollup parsed the result happily because it
+was still valid JavaScript, just wrong; only the browser console showed it. The
+fix was to restore the file from the commit and re-apply the change as a pure
+INSERT, which is why the diff is +22/-0.
+
+The rule that follows: when scripting an edit to a large file, insert rather
+than replace a computed range. A wrong start index fails loudly; a wrong end
+index deletes structure silently and leaves something that still compiles.
+
+A second-order trap on top of it: the console kept showing the recursion errors
+after the fix. They were stale buffered entries -- the page's script timestamp
+had moved on. Comparing the error's timestamp against the loaded script is what
+separated them; trusting the list would have meant re-diagnosing a solved bug.

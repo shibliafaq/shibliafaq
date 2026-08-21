@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540"
+     role="img" aria-label="Soundscape and thermal comfort: 1,011 records screened, 22 studies synthesised into 5 themes">
+<!--
+  A Systematic Review of Soundscape and Thermal Comfort Interactions in
+  Hot-Arid Environments — Discover Cities (2026) 3:123
+
+  WHY THIS PICTURE AND NOT A GENERIC WAVEFORM
+  Every number here is the paper's own: 1,011 records screened, 22 studies
+  included, 5 interlinked themes. The two halves are the paper's actual subject
+  — an acoustic field on the left, a thermal one on the right — and they overlap
+  in the middle because the finding is about their INTERACTION, not either one
+  alone. The overlap brightens and fades rather than staying lit, because the
+  paper is careful that the benefit is real but bounded: positive soundscapes
+  reduce perceived heat under moderate stress and stop mattering in extreme
+  heat. A constantly glowing overlap would overclaim the result.
+
+  CSS keyframes rather than SMIL or script: this file is loaded through an
+  <img>, where scripts never run and CSS animation does.
+-->
+<style><![CDATA[
+  .bg   { fill: #09090b; }
+  .ink  { fill: #e8e8ec; font-family: Verdana, Geneva, sans-serif; }
+  .dim  { fill: #8b8b93; font-family: Verdana, Geneva, sans-serif; }
+  .mono { font-family: "Courier New", monospace; }
+
+  /* The acoustic side: arcs travelling outward, staggered so the field reads
+     as continuous rather than as three separate pulses. */
+  .wave { fill: none; stroke: #38bdf8; stroke-width: 2.5; stroke-linecap: round;
+          transform-origin: 190px 300px; animation: ring 3.4s ease-out infinite; }
+  .w2 { animation-delay: 1.13s; }
+  .w3 { animation-delay: 2.26s; }
+  @keyframes ring {
+    0%   { transform: scale(.28); opacity: 0; }
+    18%  { opacity: .85; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+
+  /* The thermal side: heat columns breathing at different rates, the way a
+     surface-temperature field does across a day. */
+  /* fill-box + bottom, on the RECT. On the wrapping a group the origin resolves
+     against each group's own bbox, so every column scaled about a different
+     point and the row hung at staggered heights instead of standing on a
+     shared floor. */
+  .heat { animation: breathe 2.8s ease-in-out infinite;
+          transform-box: fill-box; transform-origin: bottom; }
+  .h2 { animation-delay: .35s; } .h3 { animation-delay: .7s; }
+  .h4 { animation-delay: 1.05s; } .h5 { animation-delay: 1.4s; }
+  @keyframes breathe { 0%,100% { transform: scaleY(.72); } 50% { transform: scaleY(1); } }
+
+  /* Where the two fields meet. Bounded on purpose — see the note above. */
+  .overlap { animation: meet 5.2s ease-in-out infinite; }
+  @keyframes meet { 0%,100% { opacity: .18; } 42%,58% { opacity: .60; } }
+
+  /* The screen: 1,011 records falling through to the 22 that survive. */
+  .drop { animation: fall 4.6s linear infinite; }
+  @keyframes fall {
+    0%   { transform: translateY(-26px); opacity: 0; }
+    12%  { opacity: .9; }
+    72%  { opacity: .9; }
+    100% { transform: translateY(96px); opacity: 0; }
+  }
+  .d2{animation-delay:.5s}.d3{animation-delay:1.0s}.d4{animation-delay:1.5s}
+  .d5{animation-delay:2.0s}.d6{animation-delay:2.5s}.d7{animation-delay:3.0s}
+  .d8{animation-delay:3.5s}
+
+  /* The five themes, arriving in turn. */
+  /* transform-box: fill-box, for the same reason as the columns. Without it
+     `transform-origin: center` resolves against the SVG VIEWPORT rather than
+     the element, so every dot scaled about the centre of the picture and the
+     outermost one was thrown clear of the row entirely. */
+  .theme { animation: pop 5s ease-in-out infinite;
+           transform-box: fill-box; transform-origin: center; }
+  .t2{animation-delay:.3s}.t3{animation-delay:.6s}.t4{animation-delay:.9s}.t5{animation-delay:1.2s}
+  @keyframes pop {
+    0%, 62%, 100% { opacity: .30; transform: scale(.86); }
+    70%, 88%      { opacity: 1;   transform: scale(1); }
+  }
+]]></style>
+
+<rect class="bg" width="960" height="540"/>
+
+<!-- soft ground so the two fields have something to sit in -->
+<defs>
+  <radialGradient id="acoustic" cx="20%" cy="56%" r="46%">
+    <stop offset="0%" stop-color="#38bdf8" stop-opacity=".16"/>
+    <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="thermal" cx="80%" cy="56%" r="46%">
+    <stop offset="0%" stop-color="#f87171" stop-opacity=".16"/>
+    <stop offset="100%" stop-color="#f87171" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="meet" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#e0a355" stop-opacity=".55"/>
+    <stop offset="100%" stop-color="#e0a355" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="col" x1="0" y1="1" x2="0" y2="0">
+    <stop offset="0%" stop-color="#e0a355" stop-opacity=".25"/>
+    <stop offset="100%" stop-color="#f87171" stop-opacity=".95"/>
+  </linearGradient>
+</defs>
+<rect width="960" height="540" fill="url(#acoustic)"/>
+<rect width="960" height="540" fill="url(#thermal)"/>
+
+<!-- ACOUSTIC FIELD -->
+<g>
+  <circle class="wave"    cx="190" cy="300" r="52"/>
+  <circle class="wave w2" cx="190" cy="300" r="52"/>
+  <circle class="wave w3" cx="190" cy="300" r="52"/>
+  <circle cx="190" cy="300" r="13" fill="#38bdf8"/>
+  <text class="dim mono" x="190" y="392" font-size="15" text-anchor="middle" letter-spacing="2">SOUNDSCAPE</text>
+</g>
+
+<!-- THERMAL FIELD -->
+<g transform="translate(700 300)">
+  <g>    <rect class="heat" x="-96" y="-70" width="22" height="70" rx="4" fill="url(#col)"/></g>
+  <g> <rect class="heat h2" x="-62" y="-92" width="22" height="92" rx="4" fill="url(#col)"/></g>
+  <g> <rect class="heat h3" x="-28" y="-58" width="22" height="58" rx="4" fill="url(#col)"/></g>
+  <g> <rect class="heat h4" x="6"   y="-104" width="22" height="104" rx="4" fill="url(#col)"/></g>
+  <g> <rect class="heat h5" x="40"  y="-78" width="22" height="78" rx="4" fill="url(#col)"/></g>
+  <text class="dim mono" x="-16" y="118" font-size="15" text-anchor="middle" letter-spacing="2">THERMAL COMFORT</text>
+</g>
+
+<!-- WHERE THEY INTERACT -->
+<ellipse class="overlap" cx="452" cy="300" rx="190" ry="140" fill="url(#meet)"/>
+
+<!-- THE SCREEN: 1,011 -> 22 -->
+<g transform="translate(452 132)">
+  <text class="ink mono" x="0" y="0" font-size="40" text-anchor="middle" font-weight="bold">1,011</text>
+  <text class="dim mono" x="0" y="22" font-size="13" text-anchor="middle" letter-spacing="1.5">RECORDS SCREENED</text>
+  <g fill="#e0a355">
+    <circle class="drop"    cx="-72" cy="44" r="3.5"/>
+    <circle class="drop d2" cx="-48" cy="44" r="3.5"/>
+    <circle class="drop d3" cx="-24" cy="44" r="3.5"/>
+    <circle class="drop d4" cx="0"   cy="44" r="3.5"/>
+    <circle class="drop d5" cx="24"  cy="44" r="3.5"/>
+    <circle class="drop d6" cx="48"  cy="44" r="3.5"/>
+    <circle class="drop d7" cx="72"  cy="44" r="3.5"/>
+    <circle class="drop d8" cx="-96" cy="44" r="3.5"/>
+  </g>
+  <path d="M-104 40 L104 40 L58 96 L-58 96 Z" fill="none" stroke="#2a2a31" stroke-width="1.5"/>
+  <text class="ink mono" x="0" y="146" font-size="40" text-anchor="middle" font-weight="bold" fill="#e0a355">22</text>
+  <text class="dim mono" x="0" y="168" font-size="13" text-anchor="middle" letter-spacing="1.5">STUDIES SYNTHESISED</text>
+</g>
+
+<!-- FIVE INTERLINKED THEMES -->
+<g transform="translate(452 452)">
+  <g class="theme">    <circle cx="-96" cy="0" r="11" fill="#38bdf8"/></g>
+  <g class="theme t2"> <circle cx="-48" cy="0" r="11" fill="#5ec8f0"/></g>
+  <g class="theme t3"> <circle cx="0"   cy="0" r="11" fill="#e0a355"/></g>
+  <g class="theme t4"> <circle cx="48"  cy="0" r="11" fill="#ef9a6a"/></g>
+  <g class="theme t5"> <circle cx="96"  cy="0" r="11" fill="#f87171"/></g>
+  <line x1="-96" y1="0" x2="96" y2="0" stroke="#2a2a31" stroke-width="1.5"/>
+  <text class="dim mono" x="0" y="34" font-size="13" text-anchor="middle" letter-spacing="1.5">5 INTERLINKED THEMES</text>
+</g>
+
+<text class="dim mono" x="480" y="510" font-size="12" text-anchor="middle" letter-spacing="1.2">
+  PRISMA 2020 · HOT-ARID CITIES · DISCOVER CITIES 2026
+</text>
+</svg>
