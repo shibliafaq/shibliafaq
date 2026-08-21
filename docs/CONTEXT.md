@@ -3269,3 +3269,109 @@ A second-order trap on top of it: the console kept showing the recursion errors
 after the fix. They were stale buffered entries -- the page's script timestamp
 had moved on. Comparing the error's timestamp against the loaded script is what
 separated them; trusting the list would have meant re-diagnosing a solved bug.
+
+## 42. The architecture tiles move too, and what that broke (2026-08-22)
+
+The seven architecture tiles carried static renders. Six now carry the project
+walkthroughs; the seventh carries its own sheets. Thirteen of the fourteen tiles
+are now moving, the exception being the "TO ADD" placeholder, which has nothing
+to show.
+
+### The videos were already on the disk, in the archive
+
+`v2/public/assets/Architecture Portfolio/` — six MP4s, all 1280x720, 24 fps, ten
+seconds. CLAUDE.md says the archive is still the source of the architecture
+originals, and this is exactly that case.
+
+Encoded the same way as the dashboard loops but at lower quality, because a
+walkthrough compresses far worse than a UI: flat console colour is cheap and a
+rendered building is not. At q40/440x248 they land at 238-352 KB each against
+67-301 KB for the dashboards.
+
+**Then sped up.** 4 seconds of source played at 1.6x into the same 2.5s loop, so
+each tile shows more of its building without running longer. Cost: 302-422 KB.
+
+### Miscellaneous had no video, so it plays its own pages
+
+Fifteen sheets -- studies, competitions, sketches -- cutting through at 1.9 fps.
+Each is letterboxed on the site's ink rather than cropped, because `arch.js`
+records that those pages are three different shapes (six square boards, five
+photographs in both orientations, four A-series landscape) and a crop would
+butcher the portrait ones. 82 KB, the lightest loop of the set.
+
+### The render comes before the booklet
+
+Opening an architecture project now lands on the render, and the booklet is one
+click further in. The ordering is the argument: the film sells the building, the
+render states it, the sheets explain it.
+
+Built as a LAYER over the book rather than a slot in the paging. `versoOf`,
+`rectoOf` and `lastSlot` map a slot to page numbers and bound the turn;
+threading a cover through them means shifting every slot by one and teaching
+four functions about a page that is not a page. A layer leaves the booklet
+behaving exactly as it did, which is what was asked for. +38/-1, insert-only.
+
+**Unverified in motion.** The browser pane's scroll froze repeatedly, so an
+architecture card could never be brought to the front, and the book resolves by
+front card rather than by what is clicked. Verified at rest instead: the cover
+exists inside the viewport, starts hidden, styles apply, image and hint present.
+One real bug came out of that attempt -- it was starting VISIBLE inside the
+closed modal, because it was never given the hidden class at construction.
+
+### Replacing stills with recordings broke every contrast assumption
+
+The biggest lesson of the day, and it applies past this component.
+
+The tile treatment was tuned when the tiles carried dark hero renders. Three of
+the dashboards are LIGHT -- the UHI twin, the Dammam twin and the IoT console are
+white-backed. Measured on the raw frames, the luminance of the band the title
+sits in:
+
+| tile | band luminance | contrast vs the title |
+|---|---|---|
+| iot | 0.975 | **1.02** |
+| thesis | 0.938 | **1.02** |
+| gis | 0.813 | **1.17** |
+| odr | 0.092 | 7.08 |
+| its | 0.010 | 16.8 |
+
+Against a `rgb(250,250,250)` title, three tiles were white on white. The base
+scrim (0.75 at the foot, gone by 45%) averages about 0.43 alpha across that band
+and left the worst near 2.9:1.
+
+**The line above the wordmark had the same disease and worse.** `--t-4`
+(#45454e) at 8.8px measures **2.05:1** against the page -- barely above nothing --
+with four bright tiles crossing it at any moment. Measuring the whole text scale
+rather than guessing twice: t-4 2.10, t-3 3.89, t-2 7.13, t-1 14.55. It is now
+t-2 at .72rem with a shadow, and the shadow is doing a job rather than
+decorating: a flat colour fails precisely when a bright tile passes behind, and
+that is what the shadow covers.
+
+### The tint carries the collection
+
+Since a wash had to go under the title anyway, it carries meaning instead of
+being neutral: research tiles bleed a deep crimson, architecture a deep azure --
+the same pair already used by the bar on each tile, the legend under the figure,
+and the two arcs of the wave. One more place saying the same thing rather than a
+new thing to learn.
+
+Three constraints held it honest:
+
+- **The hues are dark on purpose.** #260c10 and #08182a measure 0.0071 and
+  0.0087 luminance, so they darken as hard as black does. Measured after: worst
+  tile 7.25 against 7.65 for pure black, everything clear of 4.5. A tint bright
+  enough to actually read as "red" or "blue" would have spent the legibility the
+  gradient exists to buy.
+- **The colour stops before the picture starts** -- tinted through the text band,
+  neutral above it, so nothing washes over the part of a dashboard where colour
+  IS the data.
+- **The stops are placed against where the text sits**, the same method the
+  poster cards' scrim already used.
+
+### An instrument note that matters
+
+The contrast figures above are the RAW FRAME sampled to a canvas, with the scrim
+applied analytically afterwards -- composited pixels cannot be read back from the
+page without rasterising it. The ranking and the direction are solid and the
+before/after gap is far larger than the modelling error, but the exact ratios are
+close estimates rather than readings, and should not be quoted as measurements.

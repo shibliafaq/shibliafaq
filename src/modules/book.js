@@ -1,4 +1,4 @@
-import { archBySlug, archPage, archPageHi } from '../data/arch.js';
+import { archBySlug, archPage, archPageHi, archHero } from '../data/arch.js';
 import { reducedMotion, stopScroll, startScroll } from './scroll.js';
 import { frontCard } from './wheel.js';
 
@@ -442,6 +442,41 @@ export function initBook() {
   viewport.addEventListener('pointercancel', endPointer);
 
   /* ---- open / close -------------------------------------------- */
+  /* ---- THE COVER --------------------------------------------------------
+
+     The tile plays a walkthrough of the project; opening it lands on the render
+     first, and the booklet itself is one click further in. That ordering is the
+     point: the film sells the building, the render states it, and the sheets
+     explain it.
+
+     Deliberately a LAYER over the book rather than an extra slot in the paging.
+     versoOf/rectoOf map a slot to page numbers and lastSlot() bounds the turn;
+     inserting a cover into that scheme means shifting every slot by one and
+     teaching four functions about a page that is not a page. A layer leaves the
+     booklet behaving exactly as it does now, which is what was asked for. */
+  const cover = document.createElement('div');
+  cover.className = 'book__cover is-gone';
+  cover.innerHTML = '<img alt="" draggable="false"><span class="book__cover-hint">Click to open the booklet</span>';
+  const coverImg = cover.querySelector('img');
+  viewport.appendChild(cover);
+
+  let onCover = false;
+  function showCover() {
+    if (!project) return;
+    coverImg.src = archHero(project.slug);
+    coverImg.alt = `${project.title} — render`;
+    onCover = true;
+    cover.classList.remove('is-gone');
+    modal.classList.add('is-cover');
+  }
+  function dismissCover() {
+    if (!onCover) return;
+    onCover = false;
+    cover.classList.add('is-gone');
+    modal.classList.remove('is-cover');
+  }
+  cover.addEventListener('click', dismissCover);
+
   function open(slug) {
     project = archBySlug(slug);
     if (!project) return;
@@ -460,6 +495,7 @@ export function initBook() {
       modal.classList.add('is-open');
       layout();
       render();
+      showCover();
       closeBtn.focus();
     });
     stopScroll();
@@ -474,12 +510,13 @@ export function initBook() {
       modal.hidden = true;
       stage.innerHTML = '';
       project = null;
+      dismissCover();
       lastFocus?.focus?.();
     }, 260);
   }
 
   prevBtn.addEventListener('click', () => turn(-1));
-  nextBtn.addEventListener('click', () => turn(1));
+  nextBtn.addEventListener('click', () => { if (onCover) { dismissCover(); return; } turn(1); });
   zoomIn.addEventListener('click', () => setZoom(zoom + 0.5));
   zoomOut.addEventListener('click', () => setZoom(zoom - 0.5));
   closeBtn.addEventListener('click', close);
@@ -488,7 +525,7 @@ export function initBook() {
   document.addEventListener('keydown', (e) => {
     if (modal.hidden) return;
     if (e.key === 'Escape') close();
-    if (e.key === 'ArrowRight') turn(1);
+    if (e.key === 'ArrowRight') { if (onCover) dismissCover(); else turn(1); }
     if (e.key === 'ArrowLeft') turn(-1);
     if (e.key === '+' || e.key === '=') setZoom(zoom + 0.5);
     if (e.key === '-') setZoom(zoom - 0.5);

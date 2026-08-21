@@ -303,3 +303,56 @@
      where two pages meet. */
   .book__side--right.is-single .book__face::after { display: none; }
 }
+
+/* ---- THE COVER ---------------------------------------------------------
+
+   The render, shown before the booklet. A layer over the viewport rather than
+   a page in the paging: see the note in book.js. It sits above the stage and
+   takes the pointer, so the first click anywhere opens the book. */
+.book__cover {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  gap: 1.25rem;
+  grid-auto-flow: row;
+  background: var(--ink, #09090b);
+  cursor: pointer;
+  transition: opacity .42s ease, visibility .42s;
+}
+.book__cover.is-gone {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.book__cover img {
+  max-width: min(92%, 1180px);
+  max-height: 78%;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, .55);
+}
+.book__cover-hint {
+  font-family: var(--f-mono, ui-monospace, monospace);
+  font-size: .66rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--t-3, #8b8b93);
+  animation: book-cover-breathe 3.2s ease-in-out infinite;
+}
+@keyframes book-cover-breathe {
+  0%, 100% { opacity: .45; }
+  50%      { opacity: .95; }
+}
+
+/* The page chrome has nothing to say about a cover. */
+.book.is-cover .book__count,
+.book.is-cover [data-book-prev],
+.book.is-cover [data-book-zoomin],
+.book.is-cover [data-book-zoomout] { opacity: .25; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .book__cover { transition: none; }
+  .book__cover-hint { animation: none; opacity: .8; }
+}
