@@ -313,10 +313,17 @@
   position: absolute;
   inset: 0;
   z-index: 6;
-  display: grid;
-  place-items: center;
-  gap: 1.25rem;
-  grid-auto-flow: row;
+  /* Flex column, not grid. As a grid the hint was laid out past the bottom
+     of the cover -- measured at y=683 against a cover ending at 603 -- because
+     the implicit row sizing did not account for the image's percentage
+     max-height. A column with the image allowed to shrink keeps both inside
+     the box at any viewport. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  padding: 1.5rem;
   background: var(--ink, #09090b);
   cursor: pointer;
   transition: opacity .42s ease, visibility .42s;
@@ -328,7 +335,8 @@
 }
 .book__cover img {
   max-width: min(92%, 1180px);
-  max-height: 78%;
+  min-height: 0;      /* so it can shrink inside the column */
+  max-height: 100%;
   object-fit: contain;
   border-radius: 10px;
   box-shadow: 0 30px 70px rgba(0, 0, 0, .55);
