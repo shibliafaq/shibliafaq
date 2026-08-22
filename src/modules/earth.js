@@ -161,6 +161,44 @@ function randomCity() {
 }
 
 function visitorLatLon() {
+  /* A WAY TO SEE THIS WORK WITHOUT MOVING HOUSE.
+
+     There is no way to test a location feature from one desk, and the obvious
+     attempt does not work: a VPN reroutes the network, it does not touch the
+     clock, so `Intl` keeps reporting the machine's real zone and the globe
+     keeps going home. That looks exactly like a broken feature and is not one.
+
+       ?tz=Europe/London     pretend to be in a given IANA zone
+       ?at=51.51,-0.13       pretend to be at a given lat,lon
+
+     Only ever read when the parameter is present, so a real visit is untouched.
+     Kept in the shipped build rather than behind a DEV flag because the thing
+     it makes checkable is exactly the thing that cannot be checked in DEV
+     either — and a query string nobody types costs nothing. */
+  try {
+    const q = new URLSearchParams(location.search);
+    const at = q.get('at');
+    if (at) {
+      const [lat, lon] = at.split(',').map(Number);
+      if (Number.isFinite(lat) && Number.isFinite(lon)) {
+        return { lat, lon, zone: `at:${at}`, forced: true };
+      }
+    }
+    const forcedZone = q.get('tz');
+    if (forcedZone) {
+      if (ZONE_LATLON[forcedZone]) {
+        const [lat, lon] = ZONE_LATLON[forcedZone];
+        return { lat, lon, zone: forcedZone, forced: true };
+      }
+      const region = forcedZone.split('/')[0];
+      if (REGION_LAT[region] !== undefined) {
+        return { lat: REGION_LAT[region], lon: visitorLongitude(), zone: forcedZone, forced: true };
+      }
+      const [lat, lon] = randomCity();
+      return { lat, lon, zone: forcedZone, forced: true, random: true };
+    }
+  } catch { /* no URL, no search params — carry on */ }
+
   let zone = null;
   try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || null; } catch {}
 
@@ -394,7 +432,24 @@ export function initEarth(opts = {}) {
 
   // Lifted well above the equator: only the sphere's top cap is in frame, so a
   // low sun leaves the whole visible band near the terminator and reads as dim.
-  const sunDir = new THREE.Vector3(0.52, 0.72, 0.58).normalize();
+  /* Biased toward the camera, so whatever longitude is facing front is lit.
+
+     This used to be (0.52, 0.72, 0.58) — a top-right key light with only a
+     little of it pointing at the viewer. That was fine while the globe always
+     opened on the same meridian, but the opening now turns to the visitor's
+     longitude, and with a side key that means which continent lands in the
+     light is a lottery. Measured: ?tz=Europe/London opened on an almost
+     entirely unlit sphere, terminator hard against the right edge. A visitor
+     cannot recognise a continent that is in shadow, and recognising it is the
+     entire point of aiming the globe at them.
+
+     Rotating the sun along with the opening was tried first and helped in one
+     direction and not the other, because it was treating the symptom: the real
+     problem is that too little of the key was ever pointing forward. Raising Z
+     to 0.74 lights the camera-facing hemisphere at any rotation, while the
+     remaining X and Y keep the raking angle that gives the limb its terminator
+     rather than flattening the sphere into a disc. */
+  const sunDir = new THREE.Vector3(0.38, 0.55, 0.74).normalize();
   // Pure white rather than sky blue — a saturated blue rim reads as a drawn
   // outline, white reads as light.
   const atmoColor = new THREE.Color('#ffffff');
@@ -600,6 +655,7 @@ export function initEarth(opts = {}) {
   const openTilt = Math.max(-0.6, Math.min(0.6,
     THREE.MathUtils.degToRad(HOME.lat) * 0.6));
   const spin = { y: lonToRotation(HOME.lon), x: openTilt };
+
   tiltTarget = openTilt;   // or the idle settle drags it straight back off home
   // idle starts high so the globe is already turning at full speed the moment it
   // appears. Starting at 0 makes it sit still for a beat and then creep up,
