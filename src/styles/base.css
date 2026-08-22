@@ -102,6 +102,16 @@ h3 { font-size: var(--fs-h3); }
   font-weight: 400;
 }
 
+/* .prose p is (0,1,1) and .lead is (0,1,0), so a lead paragraph inside prose
+   took the body colour while keeping the lead size — 18px in --t-2, which is
+   the size of a lead and the colour of body text, and therefore reads as
+   neither. This is the same specificity trap CLAUDE.md already records for
+   .wheels .pcard over .wheel__card; it is worth restating that a class meant to
+   override needs to actually outrank what it is overriding.
+
+   (0,2,1) puts the lead back on top wherever it is used inside prose. */
+.prose p.lead { color: var(--t-1); }
+
 .prose p {
   color: var(--t-2);
   max-width: var(--measure);

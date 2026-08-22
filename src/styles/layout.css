@@ -661,13 +661,39 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 
 @keyframes caret { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
 
+/* THE HERO USES THE SAME LADDER AS EVERY OTHER SECTION.
+
+   Measured before changing anything: every section on this page runs
+   eyebrow 12px amber -> title 79px white -> lead 18px --t-1 -> body 16px --t-2.
+   Four rungs, with colour carrying as much of the hierarchy as size does.
+
+   The hero skipped the lead rung entirely. It went 101px straight to 16px and
+   then repeated 16px --t-2 three times, so the introduction was 706px of
+   undifferentiated grey with no way in — and the reader's eye, having nothing
+   to land on, treats the whole block as optional.
+
+   So the first paragraph takes the lead treatment the rest of the site already
+   defines and the other two stay body. Nothing new is invented here; the hero
+   is simply made to obey the scale that was already there. */
 .hero__desc {
   max-width: 58ch;
   margin-inline: auto;
-  font-size: var(--fs-body);
-  color: var(--t-2);
-  margin-bottom: 2rem;
+  font-size: var(--fs-lead);
+  line-height: 1.58;
+  color: var(--t-1);
+  margin-bottom: 1.35rem;
 }
+
+/* The paragraphs that support the opening one, and recede from it. */
+.hero__desc--2 {
+  max-width: 62ch;
+  font-size: var(--fs-body);
+  line-height: 1.68;
+  color: var(--t-2);
+  margin-bottom: 1.15rem;
+}
+
+.hero__desc--2:last-of-type { margin-bottom: 2rem; }
 
 .hero__desc strong { color: var(--t); font-weight: 600; }
 
