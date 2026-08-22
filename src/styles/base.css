@@ -86,13 +86,15 @@ h3 { font-size: var(--fs-h3); }
   color: var(--amber);
 }
 
-.eyebrow::before {
-  content: "";
-  width: clamp(1.5rem, 4vw, 3.5rem);
-  height: 1px;
-  background: currentColor;
-  opacity: .55;
-}
+/* The rule that used to sit before every eyebrow is gone. It was a 1.5-3.5rem
+   line of currentColor, and at a glance it read as a dash attached to the words
+   rather than as a graphic device — which is a problem when the words after it
+   are a short phrase, because "— THE WHOLE PICTURE" looks like punctuation
+   nobody wrote.
+
+   The hero already opted out of it with `content: none`, which was the tell:
+   the one place it was looked at closely, it was removed. Removed everywhere
+   now, rather than left for each section to switch off. */
 
 .lead {
   font-size: var(--fs-lead);

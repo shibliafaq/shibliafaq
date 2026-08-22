@@ -621,7 +621,6 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 }
 
 /* No leading rule on the hero eyebrow — centred text reads cleaner without it. */
-.hero__hey::before { content: none; }
 
 /* Set on one line, so the scale is driven by how wide "Shibli Afaq" runs rather
    than by the two-line stack the hero used to have. */

@@ -138,7 +138,7 @@
    These are the places that had to stay physical.
    ============================================================ */
 
-.is-rtl .eyebrow::before { transform: scaleX(-1); }
+/* The eyebrow rule it mirrored no longer exists — see base.css. */
 
 .is-rtl .pull {
   padding-left: 0;
