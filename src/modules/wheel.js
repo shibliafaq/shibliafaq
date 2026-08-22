@@ -1708,20 +1708,46 @@ function setupWheel(root) {
      top of the viewport it is too late for an entrance to be worth watching,
      and the only correct thing is to be finished — `snap` jumps intro to 1
      rather than animating, so nothing is ever left half-arrived. */
+  /* IT STARTS WHEN THE SECTION IS ABOUT CENTRED ON THE SCREEN.
+
+     Measured against the section's OWN MIDPOINT rather than a visible fraction,
+     because a fraction answers a different question. "45% visible" happens at a
+     completely different moment on a short stage than a tall one, and on this
+     page the stage is nearly viewport-height, so 45% landed while the top third
+     of it was still empty — that was the version that read as failing to load.
+
+     A midpoint reads the same everywhere: fire once the middle of the section
+     is within a quarter-screen of the middle of the viewport, which is the
+     moment the reader would say they had "reached" it. The 1.4s then runs while
+     they are looking straight at it rather than before they arrive.
+
+     Thresholds are close together so the callback keeps firing across the
+     approach — an observer only reports when a threshold is crossed, and a
+     sparse list would step straight over the centre on a fast scroll. */
+  const CENTRE_BAND = 0.25;   // of viewport height, either side of centre
+
   const introIO = new IntersectionObserver((entries) => {
     for (const e of entries) {
-      /* 15%, not 45%. At 45 the stage was on screen for ~287px with every
-         tile still stacked at the far point (depth 0 = invisible), so it
-         arrived EMPTY and then popped, which reads as failing to load.
-         At 15 the tiles are already moving before there is enough stage
-         visible to look empty, and the 1.4s is still unfolding on
-         arrival rather than finished. */
-      if (e.intersectionRatio >= 0.15) { runIntro(); introIO.disconnect(); return; }
-      if (e.boundingClientRect.top < 0 && e.isIntersecting) {
+      const r = e.boundingClientRect;
+      const sectionMid = r.top + r.height / 2;
+      const screenMid = window.innerHeight / 2;
+
+      if (e.isIntersecting
+          && Math.abs(sectionMid - screenMid) <= window.innerHeight * CENTRE_BAND) {
+        runIntro(); introIO.disconnect(); return;
+      }
+
+      /* Gone past without ever centring — a fast flick, or a stage taller than
+         the window. Too late for an entrance worth watching, and half an
+         entrance is invisible tiles, so snap to the finished state. Keyed on
+         the section LEAVING rather than on its top crossing zero: a tall stage
+         has its top above the fold long before its middle arrives, and the old
+         test fired the snap there and skipped the animation entirely. */
+      if (r.bottom < window.innerHeight * 0.4) {
         runIntro(true); introIO.disconnect(); return;
       }
     }
-  }, { threshold: [0, 0.2, 0.45, 0.7] });
+  }, { threshold: [0, 0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1] });
   introIO.observe(root);
 
   /* Scrolled clean past while the tab was hidden, or jumped to by an anchor:
