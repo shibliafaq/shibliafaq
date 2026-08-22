@@ -1,11 +1,12 @@
 import { gsap, reducedMotion } from './scroll.js';
 
+/* The line under the name. It is a typewriter that cycles, so a single line of
+   "Architect · Urban Designer · Spatial Researcher" becomes three phrases rather
+   than one string — the separators are what the animation replaces. */
 const EN_ROLES = [
-  'Smart Cities Researcher',
-  'GIS & Remote Sensing Specialist',
-  'Urban Data Scientist',
-  'Climate Resilience Analyst',
-  'Architect → Data Science',
+  'Architect',
+  'Urban Designer',
+  'Researcher',
 ];
 
 // Mutable so the language switcher can swap the phrases mid-cycle without

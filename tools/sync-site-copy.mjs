@@ -108,6 +108,7 @@ const SECTIONS = {
   thermal: 'Thermal sequence', projects: 'Projects', atlas: 'Atlas',
   skills: 'Skills',
   background: 'Background — headings and chrome', contact: 'Contact',
+  instagram: 'Instagram',
   _nav: 'Navigation and footer',
 };
 

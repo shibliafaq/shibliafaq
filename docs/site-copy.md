@@ -29,13 +29,19 @@ node tools/sync-site-copy.mjs --write   # apply it
 ## Hero
 
 ### hero.hey
-- Hey, I’m
+- Hey there, I’m
 
 ### hero.1
 - <span class="hero__name-line">Shibli</span> <span class="hero__name-line hero__name-line--2">Afaq</span>
 
 ### hero.desc
-- Architect evolving into an <strong>urban data scientist</strong>, driven by a passion for building climate-resilient cities through spatial data. Expanding my toolkit to include GIS, machine learning, and remote sensing. Currently finishing my M.Sc. at KFUPM (GPA&nbsp;4.0/4.0). <strong>Open to innovative smart city roles, research collaborations, and fully funded PhD opportunities.</strong>
+- I started my journey as an architect in India. From the beginning, I was fascinated by a simple question: <strong>how do the spaces we design affect how we feel and live?</strong> Why do some places feel calm, cool, and inviting, while others feel exhausting and harsh?
+
+### hero.desc2
+- For years in practice, I tried to answer that by designing better spaces for people. But the more I designed, the more I realized something critical: the biggest challenges we face today—like extreme heat, energy stress, and climate change—cannot be solved one building at a time. <strong>The problem is city-wide.</strong>
+
+### hero.desc3
+- To understand cities at a deeper level, I moved to Saudi Arabia to pursue my <strong>M.Sc. in Smart and Sustainable Cities at KFUPM</strong>, where I graduated with a 4.0&nbsp;/&nbsp;4.0 GPA. Today, I combine my architectural background with satellite data, urban analytics, and machine learning to help cities survive and adapt to a changing climate.
 
 ### hero.6
 - #01
@@ -52,30 +58,36 @@ node tools/sync-site-copy.mjs --write   # apply it
 ## The other outcome — second globe
 
 ### future.label
-- The other outcome
+- The Failed Earth
 
 ### future.title
-- The same planet.<br><em>If we fail.</em>
+- The Planet<br><em>If We Do Nothing</em>
 
 ### future.lead
-- Deserts where the tropics were, ice gone from both poles, dust over every ocean. This is not a different world. It is this one, with the heat left unchecked. Everything below is work aimed at the other version.
+- This interactive model shows what happens if extreme heat and greenhouse emissions go unchecked: deserts taking over once-green regions, ice disappearing from the poles, and cities becoming unlivable for human beings.
+
+### future.lead2
+- Drag and explore the globe to see the projected impact of unchecked climate change.
+
+### future.lead3
+- This isn’t just science fiction; it is the trajectory we are on if we don’t act. Seeing this reality is why I shifted my focus to research. I wanted to build tools and workflows that don’t just talk about climate change, but <strong>actively help our planet and cities survive in the long run.</strong>
 
 ## About
 
 ### about.label
-- About
+- Looking at the Bigger Picture
 
 ### about.title
-- The <em>problem</em><br>I’m solving
+- Scaling Up to<br><em>the Whole Planet</em>
 
 ### about.p1
-- This is Olaya, Riyadh: surface temperature on a summer afternoon. I’m a licensed architect with <strong>4+ years of design and delivery</strong> who pivoted after realising the crises I was watching could not be solved one building at a time.
+- Studying smart and sustainable cities changed the way I see the world. I learned that we cannot look at buildings in isolation anymore. <strong>Cities are living, interconnected ecosystems</strong> that actively change the local weather and trap heat.
 
 ### about.pull
 - “To effectively tackle the climate crisis in our cities, I needed a deeper understanding of city-scale informatics, so I set out to build it.”
 
 ### about.p2
-- Now finishing an <strong>M.Sc. at KFUPM</strong>, I pair spatial design thinking with satellite remote sensing, GIS and machine learning, building heat adaptation tools for the Arabian Peninsula. <strong>Move across the map to see what intervention does.</strong>
+- If we want to protect communities from the climate crisis, we have to solve problems at a much larger scale—from neighborhood blocks to entire metropolitan regions. <strong>Move across the map to see what intervention does.</strong>
 
 ## Research direction
 
@@ -378,6 +390,17 @@ node tools/sync-site-copy.mjs --write   # apply it
 
 ### contact.6
 - Live Demo <span class="btn__arrow">↗</span>
+
+## Instagram
+
+### instagram.1
+- Elsewhere
+
+### instagram.2
+- Off the <em>clock</em>
+
+### instagram.3
+- Sketches, site visits, and the occasional sunset over Dhahran. The other half of the person doing the research.
 
 ## Navigation and footer
 
