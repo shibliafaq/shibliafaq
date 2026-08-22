@@ -1,6 +1,6 @@
 {
   "note": "Baseline for tools/sync-site-copy.mjs. Generated - do not edit by hand.",
-  "generated": "2026-08-22T19:50:15.974Z",
+  "generated": "2026-08-22T20:40:50.592Z",
   "keys": {
     "_nav.1": "ac576a66d4563e60",
     "_nav.2": "38835a2db14755c9",
@@ -16,8 +16,9 @@
     "nav.contact": "2b5c3d26721ae9c3",
     "hero.hey": "9d5bac9c6177a3fa",
     "hero.1": "925ed762ed3ded12",
-    "hero.desc": "8d51201413779232",
-    "hero.desc2": "8f104a68e7af7754",
+    "hero.desc": "bd317bc6368ab630",
+    "hero.ask": "1d329c3d2a76f31b",
+    "hero.desc2": "1aa611170abf5096",
     "hero.6": "63e34b055469c0d3",
     "hero.7": "8b71b2536f6e0cc6",
     "hero.8": "a64c62fd04c5f9fb",

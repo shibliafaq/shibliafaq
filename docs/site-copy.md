@@ -35,10 +35,13 @@ node tools/sync-site-copy.mjs --write   # apply it
 - <span class="hero__name-line">Shibli</span> <span class="hero__name-line hero__name-line--2">Afaq</span>
 
 ### hero.desc
-- I was always driven by simple questions:<br><em class="hero__ask">How do the spaces we design shape how we feel and live?</em><br><em class="hero__ask">Why do some places feel better and more welcoming while others feel exhausting and harsh?</em>
+- I was always driven by simple questions:
+
+### hero.ask
+- <em class="hero__ask">How do the spaces we design shape how we feel and live?</em><em class="hero__ask">Why do some places feel better and more welcoming while others feel exhausting and harsh?</em>
 
 ### hero.desc2
-- I began my career as an architect in India, designing with human comfort at the centre. Over four years of practice, I realized our most urgent climate challenges—like extreme heat and changing weather—cannot be solved one building at a time. <strong>The problem is city-wide.</strong> To tackle these challenges at scale, I pursued an <strong>M.Sc. in Smart &amp; Sustainable Cities at KFUPM</strong> (4.0&nbsp;/&nbsp;4.0 GPA).
+- I began my career as an architect in India, designing with human comfort at the centre. Over four years of practice, I realized our most urgent climate challenges, like extreme heat and changing weather, cannot be solved one building at a time. <strong>The problem is city-wide.</strong> To tackle these challenges at scale, I pursued an <strong>M.Sc. in Smart &amp; Sustainable Cities at KFUPM</strong> (<strong>4.0&nbsp;/&nbsp;4.0 GPA</strong>).
 
 ### hero.6
 - #01

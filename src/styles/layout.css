@@ -698,28 +698,70 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 /* The two questions the whole page hangs off. Set apart from the line that
    introduces them rather than run together with it — they are the thing worth
    reading twice. */
+/* THE QUESTIONS GET THEIR OWN MEASURE, WIDER THAN THE PARAGRAPH ABOVE THEM.
+
+   They were inside .hero__desc, which is capped at 58ch, and the second one
+   needs 687px against that 612px measure — so it wrapped onto a second line and
+   the pair read as three. Widening the paragraph to fit would have meant about
+   89ch, which is far too long a line for the prose that shares it.
+
+   So the questions are their own block. They are a different kind of line
+   anyway: two parallel statements meant to be read as a pair, where the prose
+   above is a sentence. */
+/* ONE MEASURE, SHARED BY THE QUESTIONS AND THE PARAGRAPH UNDER THEM.
+
+   Held in rem rather than ch on purpose: the questions are set at --fs-lead and
+   the paragraph at --fs-body, so the same ch count would give them two
+   different widths and the block would step in and out by about 90px. rem is
+   independent of the element's own size, so both edges land on the same pixel.
+
+   54rem is what the longer question needs to stay on one line (measured at
+   687px for the text plus its margins); 94vw keeps it off the screen edge
+   before the nowrap breakpoint releases it. */
+.hero__body { --hero-wide: min(94vw, 54rem); }
+
+.hero__asks {
+  max-width: var(--hero-wide);
+  margin: 0 auto 1.6rem;
+  font-size: var(--fs-lead);
+  line-height: 1.5;
+}
+
 .hero__ask {
-  display: inline-block;
+  display: block;
   font-style: italic;
   color: var(--t);
 }
 
-/* Justified, as asked. `hyphens: auto` is not optional with justify: without it
-   the browser can only stretch word spaces, and at this measure that opens
-   rivers of white down the middle of the block. Hyphenation lets it break words
-   instead and keeps the spacing even.
+/* Held on one line each, but only where one line actually fits. 687px is what
+   the longer question needs; below roughly 780px of viewport there is no width
+   to hold it and nowrap would push it off the screen instead of wrapping it,
+   which is worse than the wrap it was meant to prevent. */
+@media (min-width: 780px) {
+  .hero__ask { white-space: nowrap; }
+}
 
-   text-align stays `start` under 640px — justify needs enough words per line to
-   distribute, and on a phone measure it produces the exact rivers it is meant
-   to avoid. */
+/* Justified, and NO hyphenation — no broken words with dashes at the line ends.
+
+   `hyphens: auto` was here for a reason: justify can only stretch word spaces,
+   and on a narrow measure that opens rivers of white down the block. What makes
+   dropping it safe now is the wider measure — at 54rem there are roughly half
+   again as many words per line as there were at 58ch, so the stretch is spread
+   across more gaps and no single one has to open far.
+
+   text-align stays `start` under 640px, where there are too few words per line
+   for justify to distribute and it produces the rivers it is meant to avoid. */
 .hero__desc--just {
+  /* Same edges as the questions above it, so the block reads as one column
+     rather than three widths stacked. */
+  max-width: var(--hero-wide);
   text-align: justify;
   text-align-last: center;
-  hyphens: auto;
+  hyphens: none;
 }
 
 @media (max-width: 640px) {
-  .hero__desc--just { text-align: start; text-align-last: start; hyphens: none; }
+  .hero__desc--just { text-align: start; text-align-last: start; }
 }
 
 .hero__desc strong { color: var(--t); font-weight: 600; }
@@ -1008,23 +1050,18 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 .future__body { position: relative; }
 
 .ftags {
-  /* VERTICAL from the copy, HORIZONTAL from the viewport, and it has to be both.
+  /* Its own cell in row 2, a sibling of the copy rather than a child of it, so
+     it can span the whole frame while the words sit in their corner. Both are
+     placed explicitly into the same grid area, which is what lets them overlap.
 
-     Tying the sides to the copy block put them off-screen the moment the window
-     narrowed: the offsets are a percentage of a 654px measure, so -44% is 288px
-     of overhang, and once the margins fell below that the tags left the frame
-     entirely (measured at -33px and -51px on a 1052px window).
-
-     So the list spans the viewport for its left/right anchors while staying
-     pinned to the copy for top/bottom. The gutter is a fixed rem, which cannot
-     overshoot however narrow the window gets. */
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: min(100vw, 1500px);
-  transform: translateX(-50%);
-  margin: 0;
+     Stretched and then pulled outward with negative margins, because row 2 is
+     only as tall as the paragraph and these need the height of the planet. */
+  grid-row: 2;
+  grid-column: 1;
+  justify-self: stretch;
+  align-self: stretch;
+  position: relative;
+  margin: -26vh 0;
   padding: 0;
   list-style: none;
   pointer-events: none;
@@ -1063,14 +1100,30 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 /* Hung outside the copy block on both sides. The offsets are percentages of
    that block, so they scale with the measure instead of with the window, and
    the tags keep the same relationship to the words at every width. */
-.ftag--a { top: -16%; left: 1.5rem; }
-.ftag--b { top: 20%; right: 1.5rem; }
-.ftag--c { bottom: 2%; left: 2.5rem; }
-.ftag--d { bottom: -20%; right: 2.5rem; }
+/* SCATTERED, NOT CORNERED. Four tags at four corners read as a frame around the
+   planet; these are meant to drift across it, so the positions are deliberately
+   uneven — different distances in, different heights, nothing mirrored. They
+   stay left of centre because the copy now lives on the right.
+
+   Each drifts on its own cycle at its own offset so they never line up into a
+   pulse. Long durations, small distances: suspended, not animated. */
+.ftag--a { top: 10%; left: 4%;  animation: ftag-drift 11s ease-in-out infinite; }
+.ftag--b { top: 36%; left: 27%; animation: ftag-drift 14s ease-in-out -3s infinite; }
+.ftag--c { top: 62%; left: 8%;  animation: ftag-drift 12.5s ease-in-out -7s infinite; }
+.ftag--d { top: 82%; left: 30%; animation: ftag-drift 15s ease-in-out -11s infinite; }
+
+@keyframes ftag-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(6px, -12px, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ftag { animation: none !important; }
+}
 
 /* Under 900px the copy fills the frame and there are no free corners left, so
    the tags come inline underneath it rather than overlapping the words. */
-@media (max-width: 1100px) {
+@media (max-width: 900px) {
   .ftags {
     position: static;
     display: flex;
@@ -1085,4 +1138,66 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
     max-width: none;
     flex: 0 1 auto;
   }
+}
+
+/* ---- FRAMES 2 AND 3 STEP OUT OF THE MIDDLE ------------------------------
+
+   Both sections used the centred `.future__body`, which put a full-width
+   headline and a centred paragraph straight across the planet's face. The
+   planet is the subject in these two frames and the words are the caption, so
+   the words move to a corner and get smaller — the globe reads first, the copy
+   second, which is the reverse of what centring was saying.
+
+   The grid row is NOT touched. `.future` places the body in row 2 deliberately
+   so it rises into frame exactly as the surface finishes turning (see the note
+   on that grid above), and that timing is worth more than the alignment. Only
+   the horizontal placement and the scale change. */
+#whole .future__body,
+#future .future__body {
+  max-width: min(90vw, 34rem);
+  margin-inline: 0;
+  text-align: left;
+}
+
+#whole .future__body  { justify-self: start; }   /* lower LEFT  — green earth */
+#future .future__body { justify-self: end; }     /* right corner — bad earth  */
+
+/* Smaller and quieter than a section head, because these are captions on a
+   picture rather than the start of a chapter. */
+#whole .sec-title,
+#future .sec-title {
+  font-size: clamp(1.5rem, 3.2vw, 2.5rem);
+  max-width: 18ch;
+  letter-spacing: -.02em;
+}
+
+#whole .future__body .lead,
+#future .future__body .lead {
+  font-size: var(--fs-sm);
+  line-height: 1.62;
+  margin-inline: 0;
+  text-align: justify;
+  hyphens: none;
+}
+
+#whole .future__body .eyebrow,
+#future .future__body .eyebrow { justify-content: flex-start; }
+
+/* Justify needs words per line to distribute. Under 720px this measure has too
+   few, so it goes back to ranged left and the copy re-centres — at that width
+   there are no corners to sit in anyway. */
+@media (max-width: 720px) {
+  #whole .future__body,
+  #future .future__body {
+    justify-self: center;
+    margin-inline: auto;
+    text-align: center;
+    max-width: 90vw;
+  }
+  #whole .future__body .lead,
+  #future .future__body .lead { text-align: left; }
+  #whole .future__body .eyebrow,
+  #future .future__body .eyebrow { justify-content: center; }
+  #whole .sec-title,
+  #future .sec-title { max-width: none; }
 }
