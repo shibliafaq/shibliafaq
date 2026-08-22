@@ -17,6 +17,7 @@ import { initNav, initCursor, initForm } from './modules/ui.js';
 import { initRiyadhReveal } from './modules/riyadh.js';
 import { initBook } from './modules/book.js';
 import { initMediaGuard } from './modules/protect.js';
+import { initInstagram } from './modules/insta.js';
 
 const idleInit = window.requestIdleCallback
   ? (fn) => window.requestIdleCallback(fn)
@@ -41,6 +42,8 @@ initArch();
 initBook();
 initLightbox();
 initForm();
+// Last section on the page and it fetches, so it waits for idle.
+idleInit(() => initInstagram());
 
 // Language switching. Loaded on idle: English is already in the HTML, so
 // nothing on first paint depends on the dictionary.

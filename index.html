@@ -661,6 +661,24 @@
   </div>
 </section>
 
+<!-- ══ INSTAGRAM ════════════════════════════════════════════
+     A funnel, not a gallery: every tile links out to its own post and the row
+     ends on the invitation. Built by src/modules/insta.js from
+     public/assets/insta/posts.json — see the notes in both for why the images
+     are local paths and not Instagram's own CDN links. -->
+<section id="instagram" class="insta section">
+  <div class="wrap">
+    <p class="eyebrow" data-reveal>Elsewhere</p>
+    <h2 class="display sec-title" data-reveal data-split>Off the <em>clock</em></h2>
+    <p class="lead insta__lead" data-reveal>Sketches, site visits, and the occasional sunset over Dhahran. The other half of the person doing the research.</p>
+  </div>
+
+  <!-- Filled in by insta.js. The strip is a scroll container, so it keeps its
+       own tabindex for keyboard users. -->
+  <div class="insta__strip" data-insta-strip tabindex="0" role="list"
+       aria-label="Recent Instagram posts"></div>
+</section>
+
 </main>
 
 <footer class="footer">

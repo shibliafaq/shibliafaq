@@ -3110,3 +3110,133 @@
     z-index: auto;
   }
 }
+
+/* ============================================================
+   INSTAGRAM — the way out
+   ============================================================ */
+
+.insta { padding-bottom: clamp(3rem, 8vh, 5rem); }
+
+.insta__lead { max-width: 54ch; }
+
+/* A row that scrolls sideways, bleeding to the right edge so the last visible
+   tile is cut — the oldest and cheapest signal that there is more along. */
+.insta__strip {
+  display: flex;
+  gap: clamp(.6rem, 1.4vw, 1rem);
+  margin-top: clamp(1.5rem, 4vh, 2.5rem);
+  padding: .35rem var(--pad-x) 1.25rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  /* The browser keeps vertical: this strip is a few hundred pixels tall in the
+     middle of a page people are scrolling down, and taking vertical here would
+     trap them exactly as the projects wheel once did. */
+  touch-action: pan-y pan-x;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-3) transparent;
+}
+
+.insta__strip::-webkit-scrollbar { height: 6px; }
+.insta__strip::-webkit-scrollbar-thumb {
+  background: var(--line-3);
+  border-radius: 99px;
+}
+.insta__strip::-webkit-scrollbar-track { background: transparent; }
+
+.insta__strip:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 4px;
+}
+
+.insta__post,
+.insta__more {
+  flex: 0 0 auto;
+  width: clamp(150px, 21vw, 232px);
+  aspect-ratio: 1;
+  border-radius: var(--r-md, 14px);
+  scroll-snap-align: start;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform .35s var(--e-out, ease);
+}
+
+.insta__post img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* The caption rises on hover rather than sitting there — the pictures are the
+   content and a permanent label on every one turns a strip into a table. */
+.insta__cap {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 1.4rem .8rem .7rem;
+  font-size: var(--fs-label);
+  line-height: 1.45;
+  color: #fff;
+  background: linear-gradient(to top, rgba(9, 9, 11, .92), transparent);
+  opacity: 0;
+  transform: translateY(30%);
+  transition: opacity .3s var(--e-out, ease), transform .3s var(--e-out, ease);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.insta__post:hover,
+.insta__more:hover { transform: translateY(-4px); }
+
+.insta__post:hover .insta__cap,
+.insta__post:focus-visible .insta__cap { opacity: 1; transform: none; }
+
+.insta__post:focus-visible,
+.insta__more:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+
+/* The invitation. Instagram's own gradient, quietly — enough to be recognised
+   at a glance without pasting someone else's brand across the page. */
+.insta__more {
+  display: grid;
+  place-content: center;
+  gap: .4rem;
+  text-align: center;
+  padding: 1rem;
+  color: var(--t);
+  border: 1px solid var(--line-2);
+  background:
+    radial-gradient(120% 120% at 30% 110%, rgba(253, 29, 29, .20) 0%, transparent 55%),
+    radial-gradient(120% 120% at 80% 10%, rgba(131, 58, 180, .22) 0%, transparent 55%),
+    rgba(255, 255, 255, .02);
+}
+
+.insta__more-glyph { color: var(--amber); }
+
+.insta__more-t {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -.02em;
+}
+
+.insta__more-h {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .04em;
+  color: var(--t-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .insta__post,
+  .insta__more,
+  .insta__cap { transition: none; }
+  .insta__post:hover,
+  .insta__more:hover { transform: none; }
+  .insta__cap { opacity: 1; transform: none; }
+}

@@ -1,0 +1,26 @@
+{
+  "_comment": [
+    "The Instagram strip's data source. Hand-written today; written by a fetch",
+    "script later. The shape is deliberately the shape of Meta's /me/media",
+    "response so that swapping one for the other is a script, not a rebuild.",
+    "",
+    "ADDING A POST BY HAND",
+    "  1. Save the image into public/assets/insta/ (square crops look best).",
+    "  2. Add an entry below. Newest first — the strip renders in array order.",
+    "",
+    "  { \"image\": \"/assets/insta/my-post.webp\",",
+    "    \"permalink\": \"https://www.instagram.com/p/XXXXXXXXX/\",",
+    "    \"caption\": \"One line. Shown on hover and read by screen readers.\" }",
+    "",
+    "WHY `image` IS A LOCAL PATH AND NOT THE API'S media_url",
+    "  media_url is a SIGNED CDN link and it expires. Storing it would make the",
+    "  strip work for a while and then silently go blank, which is the worst",
+    "  possible failure because nothing errors. The fetch script must download",
+    "  each image into this folder and write the local path here.",
+    "",
+    "EMPTY IS A VALID STATE. With no posts the section still renders its one",
+    "card inviting people to Instagram, which is the point of the section."
+  ],
+  "profile": "https://www.instagram.com/shibli_afaq",
+  "posts": []
+}
