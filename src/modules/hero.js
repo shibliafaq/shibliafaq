@@ -6,7 +6,7 @@ import { gsap, reducedMotion } from './scroll.js';
 const EN_ROLES = [
   'Architect',
   'Urban Designer',
-  'Researcher',
+  'Spatial Researcher',
 ];
 
 // Mutable so the language switcher can swap the phrases mid-cycle without

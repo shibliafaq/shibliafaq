@@ -35,13 +35,10 @@ node tools/sync-site-copy.mjs --write   # apply it
 - <span class="hero__name-line">Shibli</span> <span class="hero__name-line hero__name-line--2">Afaq</span>
 
 ### hero.desc
-- I started my journey as an architect in India. From the beginning, I was fascinated by a simple question: <strong>how do the spaces we design affect how we feel and live?</strong> Why do some places feel calm, cool, and inviting, while others feel exhausting and harsh?
+- I was always driven by simple questions:<br><em class="hero__ask">How do the spaces we design shape how we feel and live?</em><br><em class="hero__ask">Why do some places feel better and more welcoming while others feel exhausting and harsh?</em>
 
 ### hero.desc2
-- For years in practice, I tried to answer that by designing better spaces for people. But the more I designed, the more I realized something critical: the biggest challenges we face today—like extreme heat, energy stress, and climate change—cannot be solved one building at a time. <strong>The problem is city-wide.</strong>
-
-### hero.desc3
-- To understand cities at a deeper level, I moved to Saudi Arabia to pursue my <strong>M.Sc. in Smart and Sustainable Cities at KFUPM</strong>, where I graduated with a 4.0&nbsp;/&nbsp;4.0 GPA. Today, I combine my architectural background with satellite data, urban analytics, and machine learning to help cities survive and adapt to a changing climate.
+- I began my career as an architect in India, designing with human comfort at the centre. Over four years of practice, I realized our most urgent climate challenges—like extreme heat and changing weather—cannot be solved one building at a time. <strong>The problem is city-wide.</strong> To tackle these challenges at scale, I pursued an <strong>M.Sc. in Smart &amp; Sustainable Cities at KFUPM</strong> (4.0&nbsp;/&nbsp;4.0 GPA).
 
 ### hero.6
 - #01
@@ -61,33 +58,42 @@ node tools/sync-site-copy.mjs --write   # apply it
 - The Failed Earth
 
 ### future.title
-- The Planet<br><em>If We Do Nothing</em>
+- The Cost<br><em>of Inaction</em>
 
 ### future.lead
-- This interactive model shows what happens if extreme heat and greenhouse emissions go unchecked: deserts taking over once-green regions, ice disappearing from the poles, and cities becoming unlivable for human beings.
+- To protect communities, we have to solve climate problems from neighborhood blocks to entire metropolitan regions. This interactive model visualizes the trajectory if extreme heat and emissions continue unchecked.
 
 ### future.lead2
 - Drag and explore the globe to see the projected impact of unchecked climate change.
 
-### future.lead3
-- This isn’t just science fiction; it is the trajectory we are on if we don’t act. Seeing this reality is why I shifted my focus to research. I wanted to build tools and workflows that don’t just talk about climate change, but <strong>actively help our planet and cities survive in the long run.</strong>
+### future.tag1
+- Deserts taking over once-green regions
+
+### future.tag2
+- Ice disappearing from the poles
+
+### future.tag3
+- Cities becoming unlivable for human beings
+
+### future.tag4
+- Oceans getting dirty
 
 ## About
 
 ### about.label
-- Looking at the Bigger Picture
+- Urban Heat Islands
 
 ### about.title
-- Scaling Up to<br><em>the Whole Planet</em>
+- Where the heat<br><em>becomes personal</em>
 
 ### about.p1
-- Studying smart and sustainable cities changed the way I see the world. I learned that we cannot look at buildings in isolation anymore. <strong>Cities are living, interconnected ecosystems</strong> that actively change the local weather and trap heat.
+- Cities worldwide are heating up, and living in an extreme arid climate made the danger of <strong>Urban Heat Islands</strong> personal and visible every day.
 
 ### about.pull
 - “To effectively tackle the climate crisis in our cities, I needed a deeper understanding of city-scale informatics, so I set out to build it.”
 
 ### about.p2
-- If we want to protect communities from the climate crisis, we have to solve problems at a much larger scale—from neighborhood blocks to entire metropolitan regions. <strong>Move across the map to see what intervention does.</strong>
+- <strong>Explore the map to see how targeted urban interventions lower surface temperatures.</strong>
 
 ## Research direction
 
@@ -95,10 +101,10 @@ node tools/sync-site-copy.mjs --write   # apply it
 - Research Direction
 
 ### direction.title
-- Why <em>climate</em><br>drives everything
+- Turning Data<br><em>into Action</em>
 
 ### direction.p1
-- There's a reason all my work circles back to the same thing: the planet is getting hotter, and cities are making it worse. Urban Heat Islands aren't a niche academic curiosity. They are a measurable, preventable cause of heat deaths, worsening air quality, and mounting energy demand in some of the world's most vulnerable communities. That bothers me. A lot.
+- From satellite pipelines to public space planning, my work connects <strong>spatial data science</strong> with practical urban resilience.
 
 ### direction.pull
 - “I don't want to spend my career describing a problem. I want to build the tools that let cities actually fix it.”
@@ -156,13 +162,13 @@ node tools/sync-site-copy.mjs --write   # apply it
 ## Projects
 
 ### projects.label
-- Research &amp; Projects
+- Selected Work
 
 ### projects.title
-- Seven projects
+- Selected Research &amp;<br><em>Architectural Work</em>
 
 ### projects.lead
-- <span class="lead__meta">During the M.Sc</span><span class="lead__body">I was doing architectural projects but now I learned working with real-time satellite pipelines,</span><span class="lead__meta">All the works are based on one question:</span><em class="lead__ask">How do we make cities survive the climate crisis?</em>
+- The projects span satellite thermal mapping, real-time IoT pipelines, published comfort frameworks (Springer Nature), and sustainable architectural design. My journey explores an effort to connect <strong>design, data science, and climate resilience</strong>.
 
 ## Atlas
 

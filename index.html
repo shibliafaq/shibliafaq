@@ -126,9 +126,8 @@
       <span class="hero__name-line">Shibli</span> <span class="hero__name-line hero__name-line--2">Afaq</span>
     </h1>
     <p class="hero__role"><span id="tw"></span><span class="hero__caret" aria-hidden="true"></span></p>
-    <p class="hero__desc" data-i18n="hero.desc">I started my journey as an architect in India. From the beginning, I was fascinated by a simple question: <strong>how do the spaces we design affect how we feel and live?</strong> Why do some places feel calm, cool, and inviting, while others feel exhausting and harsh?</p>
-    <p data-copy="hero.desc2" class="hero__desc hero__desc--2">For years in practice, I tried to answer that by designing better spaces for people. But the more I designed, the more I realized something critical: the biggest challenges we face today—like extreme heat, energy stress, and climate change—cannot be solved one building at a time. <strong>The problem is city-wide.</strong></p>
-    <p data-copy="hero.desc3" class="hero__desc hero__desc--2">To understand cities at a deeper level, I moved to Saudi Arabia to pursue my <strong>M.Sc. in Smart and Sustainable Cities at KFUPM</strong>, where I graduated with a 4.0&nbsp;/&nbsp;4.0 GPA. Today, I combine my architectural background with satellite data, urban analytics, and machine learning to help cities survive and adapt to a changing climate.</p>
+    <p class="hero__desc" data-i18n="hero.desc">I was always driven by simple questions:<br><em class="hero__ask">How do the spaces we design shape how we feel and live?</em><br><em class="hero__ask">Why do some places feel better and more welcoming while others feel exhausting and harsh?</em></p>
+    <p data-copy="hero.desc2" class="hero__desc hero__desc--2 hero__desc--just">I began my career as an architect in India, designing with human comfort at the centre. Over four years of practice, I realized our most urgent climate challenges—like extreme heat and changing weather—cannot be solved one building at a time. <strong>The problem is city-wide.</strong> To tackle these challenges at scale, I pursued an <strong>M.Sc. in Smart &amp; Sustainable Cities at KFUPM</strong> (4.0&nbsp;/&nbsp;4.0 GPA).</p>
   </div>
 
   <div class="hero__stats">
@@ -176,27 +175,50 @@
      lighting, identical rotation, identical drag. If the two diverged in how
      they move or how they are lit, the reader would read the difference as
      styling rather than as the planet. -->
+<!-- ══ FRAME 2 — the whole present-day Earth ════════════════
+     Sits between the hero close-up and the failed Earth, which is exactly the
+     stretch of the scroll where the camera has finished pulling back and the
+     decay has not started. .worlds__two is an unstyled wrapper, so adding a
+     third child changes nothing about the two either side of it. -->
+<section id="whole" class="future">
+  <div class="future__body wrap">
+    <p data-copy="whole.1" class="eyebrow" data-reveal>The Whole Picture</p>
+    <h2 data-copy="whole.2" class="display sec-title" data-reveal data-split>Looking at<br><em>the Whole Picture</em></h2>
+    <p data-copy="whole.3" class="lead" data-reveal>Studying smart and sustainable cities changed how I see the built environment. We can no longer treat buildings in isolation. Cities are living, interconnected ecosystems that actively alter local weather patterns and trap heat. Seeing this reality made my focus clear: combining my architecture background with satellite data, urban analytics, and machine learning to build real, actionable tools for climate adaptation.</p>
+  </div>
+</section>
+
 <section id="future" class="future">
   <div class="future__body wrap">
     <p class="eyebrow" data-reveal data-i18n="future.label">The Failed Earth</p>
-    <h2 class="display sec-title" data-reveal data-split data-i18n="future.title">The Planet<br><em>If We Do Nothing</em></h2>
-    <p class="lead" data-reveal data-i18n="future.lead">This interactive model shows what happens if extreme heat and greenhouse emissions go unchecked: deserts taking over once-green regions, ice disappearing from the poles, and cities becoming unlivable for human beings.</p>
+    <h2 class="display sec-title" data-reveal data-split data-i18n="future.title">The Cost<br><em>of Inaction</em></h2>
+    <p class="lead" data-reveal data-i18n="future.lead">To protect communities, we have to solve climate problems from neighborhood blocks to entire metropolitan regions. This interactive model visualizes the trajectory if extreme heat and emissions continue unchecked.</p>
     <p data-copy="future.lead2" class="lead future__cue" data-reveal>Drag and explore the globe to see the projected impact of unchecked climate change.</p>
-    <p data-copy="future.lead3" class="lead" data-reveal>This isn’t just science fiction; it is the trajectory we are on if we don’t act. Seeing this reality is why I shifted my focus to research. I wanted to build tools and workflows that don’t just talk about climate change, but <strong>actively help our planet and cities survive in the long run.</strong></p>
+  <!-- The four consequences, floated clear of the copy so they read as labels
+       ON the planet rather than as another paragraph under it. aria-hidden
+       because each one is already stated in the sentence above; a screen reader
+       should not hear the list twice. -->
+  <ul class="ftags" aria-hidden="true">
+    <li data-copy="future.tag1" class="ftag ftag--a" data-reveal>Deserts taking over once-green regions</li>
+    <li data-copy="future.tag2" class="ftag ftag--b" data-reveal>Ice disappearing from the poles</li>
+    <li data-copy="future.tag3" class="ftag ftag--c" data-reveal>Cities becoming unlivable for human beings</li>
+    <li data-copy="future.tag4" class="ftag ftag--d" data-reveal>Oceans getting dirty</li>
+  </ul>
   </div>
+
 </section>
   </div><!-- /.worlds__two -->
 
 <section id="about" class="section about--overmap">
   <div class="wrap">
-    <p class="eyebrow" data-reveal data-i18n="about.label">Looking at the Bigger Picture</p>
-    <h2 class="display sec-title" data-reveal data-split data-i18n="about.title">Scaling Up to<br><em>the Whole Planet</em></h2>
+    <p class="eyebrow" data-reveal data-i18n="about.label">Urban Heat Islands</p>
+    <h2 class="display sec-title" data-reveal data-split data-i18n="about.title">Where the heat<br><em>becomes personal</em></h2>
 
     <div class="about__grid">
       <div class="prose about__text">
-        <p class="lead" data-reveal data-i18n="about.p1">Studying smart and sustainable cities changed the way I see the world. I learned that we cannot look at buildings in isolation anymore. <strong>Cities are living, interconnected ecosystems</strong> that actively change the local weather and trap heat.</p>
+        <p class="lead" data-reveal data-i18n="about.p1">Cities worldwide are heating up, and living in an extreme arid climate made the danger of <strong>Urban Heat Islands</strong> personal and visible every day.</p>
         <blockquote class="pull" data-reveal data-i18n="about.pull">“To effectively tackle the climate crisis in our cities, I needed a deeper understanding of city-scale informatics, so I set out to build it.”</blockquote>
-        <p data-reveal data-i18n="about.p2">If we want to protect communities from the climate crisis, we have to solve problems at a much larger scale—from neighborhood blocks to entire metropolitan regions. <strong>Move across the map to see what intervention does.</strong></p>
+        <p data-reveal data-i18n="about.p2"><strong>Explore the map to see how targeted urban interventions lower surface temperatures.</strong></p>
       </div>
     </div>
   </div>
@@ -226,11 +248,11 @@
 <section id="direction" class="section">
   <div class="wrap">
     <p class="eyebrow" data-reveal data-i18n="direction.label">Research Direction</p>
-    <h2 class="display sec-title" data-reveal data-split data-i18n="direction.title">Why <em>climate</em><br>drives everything</h2>
+    <h2 class="display sec-title" data-reveal data-split data-i18n="direction.title">Turning Data<br><em>into Action</em></h2>
 
     <div class="direction__grid">
       <div class="prose">
-        <p class="lead" data-reveal data-i18n="direction.p1">There's a reason all my work circles back to the same thing: the planet is getting hotter, and cities are making it worse. Urban Heat Islands aren't a niche academic curiosity. They are a measurable, preventable cause of heat deaths, worsening air quality, and mounting energy demand in some of the world's most vulnerable communities. That bothers me. A lot.</p>
+        <p class="lead" data-reveal data-i18n="direction.p1">From satellite pipelines to public space planning, my work connects <strong>spatial data science</strong> with practical urban resilience.</p>
         <blockquote class="pull" data-reveal data-i18n="direction.pull">“I don't want to spend my career describing a problem. I want to build the tools that let cities actually fix it.”</blockquote>
         <p data-reveal data-i18n="direction.p2">Everything I've built (the satellite pipelines, the GIS vulnerability frameworks, the IoT dashboards) is oriented toward one goal: making urban climate data <strong>actionable</strong>, not just publishable. That means getting it to the right resolution, the right people, and in time for it to matter.</p>
       </div>
@@ -291,9 +313,9 @@
 <!-- ══ PROJECTS — pinned horizontal travel ══════════════════ -->
 <section id="projects" class="projects">
   <div class="projects__intro wrap">
-    <p class="eyebrow" data-reveal data-i18n="projects.label">Research &amp; Projects</p>
-    <h2 class="display sec-title" data-reveal data-split data-i18n="projects.title">Seven projects</h2>
-    <p class="lead" data-reveal data-i18n="projects.lead"><span class="lead__meta">During the M.Sc</span><span class="lead__body">I was doing architectural projects but now I learned working with real-time satellite pipelines,</span><span class="lead__meta">All the works are based on one question:</span><em class="lead__ask">How do we make cities survive the climate crisis?</em></p>
+    <p class="eyebrow" data-reveal data-i18n="projects.label">Selected Work</p>
+    <h2 class="display sec-title" data-reveal data-split data-i18n="projects.title">Selected Research &amp;<br><em>Architectural Work</em></h2>
+    <p class="lead" data-reveal data-i18n="projects.lead">The projects span satellite thermal mapping, real-time IoT pipelines, published comfort frameworks (Springer Nature), and sustainable architectural design. My journey explores an effort to connect <strong>design, data science, and climate resilience</strong>.</p>
   </div>
 
     <!-- ONE WHEEL. Cards live in the HTML rather than being generated from

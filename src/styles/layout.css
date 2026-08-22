@@ -695,6 +695,33 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 
 .hero__desc--2:last-of-type { margin-bottom: 2rem; }
 
+/* The two questions the whole page hangs off. Set apart from the line that
+   introduces them rather than run together with it — they are the thing worth
+   reading twice. */
+.hero__ask {
+  display: inline-block;
+  font-style: italic;
+  color: var(--t);
+}
+
+/* Justified, as asked. `hyphens: auto` is not optional with justify: without it
+   the browser can only stretch word spaces, and at this measure that opens
+   rivers of white down the middle of the block. Hyphenation lets it break words
+   instead and keeps the spacing even.
+
+   text-align stays `start` under 640px — justify needs enough words per line to
+   distribute, and on a phone measure it produces the exact rivers it is meant
+   to avoid. */
+.hero__desc--just {
+  text-align: justify;
+  text-align-last: center;
+  hyphens: auto;
+}
+
+@media (max-width: 640px) {
+  .hero__desc--just { text-align: start; text-align-last: start; hyphens: none; }
+}
+
 .hero__desc strong { color: var(--t); font-weight: 600; }
 
 .hero__actions { display: flex; flex-wrap: wrap; gap: .7rem; justify-content: center; }
@@ -953,3 +980,109 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    means the heading arrives after the thermal plate has finished leaving,
    instead of the two changing over in the same eyeful. */
 #direction { padding-top: clamp(4rem, 16vh, 11rem); }
+
+/* ---- THE FOUR CONSEQUENCES, FLOATED ON THE PLANET ----------------------
+
+   Absolutely placed so they sit around the globe rather than stacking under
+   the copy — a bulleted list here would read as more prose, which is the one
+   thing this section already has enough of.
+
+   Positioned in percentages off the section box, not the globe: the sphere is
+   drawn on a canvas that spans the whole stage and its rendered size changes
+   with the viewport, so anchoring to it would need JS and would still drift
+   during the pull-back. The corners are stable and read as "around the planet"
+   at every size.
+
+   pointer-events: none because the globe underneath is draggable — a label
+   that swallowed the drag would break the thing it is labelling. */
+/* ANCHORED TO THE COPY, NOT TO THE SECTION.
+
+   The first attempt placed these against `.future`, which is 2105px tall —
+   2.2x the viewport, because it doubles as the scroll track for the globe's
+   decay. Percentages of that box scattered the tags across two screens: two
+   landed in view and two sat 1300px below the fold.
+
+   `.future__body` is the block that is actually centred in the frame when this
+   section is being read, so the tags hang off its edges and land where the
+   reader is looking, at any scroll position and any viewport height. */
+.future__body { position: relative; }
+
+.ftags {
+  /* VERTICAL from the copy, HORIZONTAL from the viewport, and it has to be both.
+
+     Tying the sides to the copy block put them off-screen the moment the window
+     narrowed: the offsets are a percentage of a 654px measure, so -44% is 288px
+     of overhang, and once the margins fell below that the tags left the frame
+     entirely (measured at -33px and -51px on a 1052px window).
+
+     So the list spans the viewport for its left/right anchors while staying
+     pinned to the copy for top/bottom. The gutter is a fixed rem, which cannot
+     overshoot however narrow the window gets. */
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: min(100vw, 1500px);
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ftag {
+  position: absolute;
+  max-width: 15ch;
+  padding: .5rem .8rem;
+  border-radius: var(--r-pill, 999px);
+  border: 1px solid rgba(255, 255, 255, .10);
+  background: rgba(9, 9, 11, .55);
+  backdrop-filter: blur(6px);
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  line-height: 1.45;
+  letter-spacing: .03em;
+  color: var(--t-1);
+  text-wrap: balance;
+}
+
+/* Amber only on the dot, never the text: the tags are four equal facts and
+   colouring one would imply a ranking that is not there. */
+.ftag::before {
+  content: '';
+  display: inline-block;
+  width: .38rem;
+  height: .38rem;
+  margin-right: .5rem;
+  border-radius: 50%;
+  background: var(--amber);
+  vertical-align: middle;
+}
+
+/* Hung outside the copy block on both sides. The offsets are percentages of
+   that block, so they scale with the measure instead of with the window, and
+   the tags keep the same relationship to the words at every width. */
+.ftag--a { top: -16%; left: 1.5rem; }
+.ftag--b { top: 20%; right: 1.5rem; }
+.ftag--c { bottom: 2%; left: 2.5rem; }
+.ftag--d { bottom: -20%; right: 2.5rem; }
+
+/* Under 900px the copy fills the frame and there are no free corners left, so
+   the tags come inline underneath it rather than overlapping the words. */
+@media (max-width: 1100px) {
+  .ftags {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .5rem;
+    margin-top: 1.25rem;
+    padding: 0 var(--pad-x);
+  }
+  .ftag {
+    position: static;
+    max-width: none;
+    flex: 0 1 auto;
+  }
+}
