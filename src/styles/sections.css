@@ -652,12 +652,22 @@
    Four elements rather than four keys: the whole block stays ONE string in
    site-copy.md, edited in one line, and the markup travels with it the way
    `<em class="serif">` already does in the timeline. */
+/* WAS A GRID, FOR A LEAD THAT NO LONGER EXISTS.
+
+   This block used to be four elements — two mono stage directions, a narrative
+   line and a question — and `display: grid` stacked them. The copy is plain
+   prose now, and a grid container makes every child a block-level item, so the
+   one `<strong>` inside it was breaking the paragraph in half: five lines where
+   the text only needs two.
+
+   58rem is measured, not chosen: the sentence runs 1786px on a single line, so
+   two lines need about 913px of measure plus a little slack. 94vw keeps it off
+   the edge on narrower windows, where it simply takes a third line. */
 #projects .lead {
-  max-width: none;
-  display: grid;
-  justify-items: center;
-  gap: .55rem;
+  display: block;
+  max-width: min(94vw, 58rem);
   margin-top: clamp(.5rem, 2vh, 1.25rem);
+  text-wrap: pretty;
 }
 
 /* The framing lines. Quiet, mono, small — they are stage directions, and they

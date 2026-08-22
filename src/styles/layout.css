@@ -845,12 +845,36 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   min-height: 220svh;
   display: grid;
   grid-template-rows: 0.68fr auto 0.32fr;
+  /* The column was never declared, so it was implicit and `auto` — sized to
+     its content rather than to the section. That was invisible while one
+     centred block lived in it, and became visible the moment a second item
+     needed to span the frame: the tag layer measured 206px inside a 1052px
+     section, so every `right:` anchor resolved against the wrong edge and
+     all four tags piled up on the left.
+
+     minmax(0, 1fr) fills the section and, unlike plain 1fr, cannot be
+     forced wider by a long unbreakable child — the tags are nowrap now, so
+     that is a real possibility rather than a precaution. */
+  grid-template-columns: minmax(0, 1fr);
   padding: clamp(3rem, 9vh, 6rem) var(--pad-x) clamp(3rem, 8vh, 5.5rem);
 }
 
 .future__body {
   position: relative;
   grid-row: 2;
+  /* COLUMN 1 EXPLICITLY, or auto-placement invents a second one.
+
+     This said `grid-row: 2` and nothing about the column, which was fine while
+     it was the only item. Adding the tag layer to the same row changed that:
+     the tags claimed column 1, so the copy was auto-placed into an implicit
+     column 2 and the track list became "411px 535px" inside a 947px content
+     box. Everything downstream then measured against the wrong box — the tag
+     layer could never span the frame and its `right:` anchors resolved against
+     411px, which is why all four piled up on the left.
+
+     With both items in the same cell they overlap as intended and `justify-self`
+     is what actually decides which edge each one sits on. */
+  grid-column: 1;
   max-width: 62ch;
   text-align: center;
   margin-inline: auto;
@@ -1060,6 +1084,10 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   grid-column: 1;
   justify-self: stretch;
   align-self: stretch;
+  /* Explicit, because `justify-self: stretch` alone was not filling the
+     track — measured 411px inside a 1052px section even after the column
+     was declared. A stated width does not depend on how the track resolves. */
+  width: 100%;
   position: relative;
   margin: -26vh 0;
   padding: 0;
@@ -1070,7 +1098,10 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 
 .ftag {
   position: absolute;
-  max-width: 15ch;
+  /* One line each. They were capped at 15ch, which turned four short phrases
+     into four four-line paragraphs standing on end. */
+  white-space: nowrap;
+  max-width: none;
   padding: .5rem .8rem;
   border-radius: var(--r-pill, 999px);
   border: 1px solid rgba(255, 255, 255, .10);
@@ -1081,7 +1112,17 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   line-height: 1.45;
   letter-spacing: .03em;
   color: var(--t-1);
-  text-wrap: balance;
+  /* NO `text-wrap: balance` HERE, and it is not an oversight.
+
+     It was on the line below and it silently cancelled the nowrap above.
+     `text-wrap` is a shorthand for text-wrap-mode plus text-wrap-style, so
+     `balance` resets the MODE back to `wrap` — the declaration reads as if
+     it only concerns how lines are balanced, and quietly re-enables
+     wrapping. Computed style said `white-space: normal` with
+     `white-space: nowrap` sitting twelve lines above it.
+
+     Balancing a single-line element is meaningless anyway, so the fix is
+     simply to drop it rather than to fight it with longhands. */
 }
 
 /* Amber only on the dot, never the text: the tags are four equal facts and
@@ -1107,10 +1148,13 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 
    Each drifts on its own cycle at its own offset so they never line up into a
    pulse. Long durations, small distances: suspended, not animated. */
-.ftag--a { top: 10%; left: 4%;  animation: ftag-drift 11s ease-in-out infinite; }
-.ftag--b { top: 36%; left: 27%; animation: ftag-drift 14s ease-in-out -3s infinite; }
-.ftag--c { top: 62%; left: 8%;  animation: ftag-drift 12.5s ease-in-out -7s infinite; }
-.ftag--d { top: 82%; left: 30%; animation: ftag-drift 15s ease-in-out -11s infinite; }
+/* Spread across the whole frame rather than stacked down one side, and kept
+   above and below the copy's band rather than beside it — on one line each they
+   are far too wide to share a row with a 34rem column. */
+.ftag--a { top: 6%;  left: 3%;  animation: ftag-drift 11s ease-in-out infinite; }
+.ftag--b { top: 20%; right: 4%; animation: ftag-drift 14s ease-in-out -3s infinite; }
+.ftag--c { top: 78%; left: 6%;  animation: ftag-drift 12.5s ease-in-out -7s infinite; }
+.ftag--d { top: 92%; right: 7%; animation: ftag-drift 15s ease-in-out -11s infinite; }
 
 @keyframes ftag-drift {
   0%, 100% { transform: translate3d(0, 0, 0); }
@@ -1156,8 +1200,13 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 #future .future__body {
   max-width: min(90vw, 34rem);
   margin-inline: 0;
-  text-align: left;
 }
+
+/* Each frame reads toward its own edge: the living Earth ranges left, the
+   failed one ranges right. Justify still governs the paragraph — text-align
+   here sets where the ragged edge falls on everything else. */
+#whole .future__body  { text-align: left; }
+#future .future__body { text-align: right; }
 
 #whole .future__body  { justify-self: start; }   /* lower LEFT  — green earth */
 #future .future__body { justify-self: end; }     /* right corner — bad earth  */
@@ -1179,6 +1228,16 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   text-align: justify;
   hyphens: none;
 }
+
+/* The last line of a justified block is not stretched, so it needs telling
+   which way to fall — otherwise it ranges left inside a right-ranged frame. */
+#whole .future__body .lead  { text-align-last: left; }
+#future .future__body .lead { text-align-last: right; }
+
+/* The title carries the same edge, and its measure comes off the right in
+   Frame 3 so the short second line hangs under the first rather than away
+   from it. */
+#future .sec-title { margin-left: auto; }
 
 #whole .future__body .eyebrow,
 #future .future__body .eyebrow { justify-content: flex-start; }

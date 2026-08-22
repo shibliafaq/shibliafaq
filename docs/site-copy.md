@@ -57,9 +57,6 @@ node tools/sync-site-copy.mjs --write   # apply it
 
 ## The other outcome — second globe
 
-### future.label
-- The Failed Earth
-
 ### future.title
 - The Cost<br><em>of Inaction</em>
 
@@ -91,9 +88,6 @@ node tools/sync-site-copy.mjs --write   # apply it
 
 ### about.p1
 - Cities worldwide are heating up, and living in an extreme arid climate made the danger of <strong>Urban Heat Islands</strong> personal and visible every day.
-
-### about.pull
-- “To effectively tackle the climate crisis in our cities, I needed a deeper understanding of city-scale informatics, so I set out to build it.”
 
 ### about.p2
 - <strong>Explore the map to see how targeted urban interventions lower surface temperatures.</strong>
