@@ -1204,6 +1204,80 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 /* Each frame reads toward its own edge: the living Earth ranges left, the
    failed one ranges right. Justify still governs the paragraph — text-align
    here sets where the ragged edge falls on everything else. */
+/* AND IT HAS TO BE ON SCREEN WHILE THAT EARTH IS ALIVE.
+
+   Fading it was not enough, because it was never in frame at the right moment.
+   Measured: the pull-back completes at scrollY 583 and the surface starts
+   turning at 863, so the living Earth exists for about 280px of scroll — and
+   the copy did not reach the viewport until 1526, by which point decay was
+   already 0.89. The words about a living planet arrived over a dead one.
+
+   The cause was inherited geometry. `.future` is 220svh with the body at 68% of
+   it, which is right for the failed Earth: that section IS the decay runway and
+   the copy should land after the turn. This section is the opposite — it
+   belongs BEFORE the turn — so it takes the top of a shorter runway instead.
+
+   Sticky holds it there through the green window rather than letting it scroll
+   past in 280px, and the decay-driven opacity above is what finally clears it.
+   Two mechanisms doing two different jobs: sticky decides how long it stays,
+   decay decides when it goes. */
+#whole {
+  min-height: 140svh;
+  grid-template-rows: auto 1fr;
+}
+
+#whole .future__body {
+  /* FIXED, so it does not travel at all.
+
+     Sticky still moves: the block scrolls up from the bottom of the frame until
+     it reaches its offset, which across this section is most of a viewport of
+     visible drift before it settles. What is wanted is a caption that appears,
+     holds perfectly still while the planet turns, and goes — so its position
+     comes from the viewport rather than from the scroll.
+
+     That makes the opacity carry the whole job of deciding when it exists, and
+     decay alone cannot: decay reads 0 during the hero too, so a fixed block
+     keyed only to it would sit over the opening. `--zoom` supplies the other
+     half — nothing shows until the pull-back has finished. */
+  grid-row: 1;
+  position: fixed;
+  left: var(--pad-x);
+  /* Bottom left. Anchored to the bottom edge rather than centred, so the block
+     grows upward as the paragraph wraps and its last line always sits the same
+     distance off the floor — a centred block would drift as the measure changes
+     with the viewport. */
+  bottom: clamp(3rem, 10vh, 7rem);
+  top: auto;
+  z-index: 3;
+}
+
+/* THE WHOLE PICTURE BELONGS TO THE LIVING EARTH, AND LEAVES WITH IT.
+
+   Tied to `--decay` rather than to scroll position, because the thing it is
+   captioning is the state of the planet, not a place on the page. It is fully
+   present while the Earth is intact, and it is gone by the time the surface has
+   turned a quarter of the way to dead — well before anyone would call the globe
+   behind it "the failed Earth", so the words never contradict the picture.
+
+   The multiplier is what makes it leave EARLY rather than fade in step: at
+   decay 0.28 the opacity is already 0. Fading in proportion would leave the
+   copy half-readable over a half-ruined planet, which is the one state that
+   reads as a mistake rather than as a transition.
+
+   Opacity alone leaves the block in the accessibility tree, so `inert` is set
+   from the same signal in main.js — otherwise a keyboard reader tabs into three
+   invisible paragraphs sitting over the failed Earth. */
+#whole .future__body {
+  /* In once the camera has settled, out as soon as the surface starts turning.
+     min() of the two gates means whichever condition fails wins, so it can only
+     be on screen while the Earth is both whole AND alive. */
+  opacity: clamp(0, min(
+      calc(var(--zoom, 0) * 4 - 3),
+      calc(1 - var(--decay, 0) * 3.6)
+    ), 1);
+  transition: opacity .5s var(--e-out, ease);
+}
+
 #whole .future__body  { text-align: left; }
 #future .future__body { text-align: right; }
 

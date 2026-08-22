@@ -77,6 +77,7 @@ idleInit(() => {
 
     const worlds = document.getElementById('worlds');
     const stage = document.getElementById('worldsStage');
+    const wholeCopy = document.querySelector('#whole .future__body');
     if (!worlds || !stage) return;
 
     /* THE TRANSITION, AND THE RESTS BETWEEN IT.
@@ -140,12 +141,30 @@ idleInit(() => {
         // attention and the surface turn gets the frame to itself.
         const z = easeInOut(range(p, 0, Math.max(0.05, pCopyGone - 0.02)));
         earth.setZoom(z);
-        earth.setDecay(smoothstep(range(p, pCopyGone, pDecayEnd)));
+        const d = smoothstep(range(p, pCopyGone, pDecayEnd));
+        earth.setDecay(d);
         // Published as a custom property rather than tweened directly, so the
         // stylesheet still decides what the scrim and the heat glow LOOK like
         // and this only says how far through we are. Writing a property never
         // reads layout, so it cannot force a reflow.
         stage.style.setProperty('--zoom', z.toFixed(3));
+        /* Decay goes on `worlds`, not on `stage`, because the copy needs to read
+           it and the copy is not inside the stage — `.worlds` is the nearest
+           element that is an ancestor of both. Custom properties inherit down
+           and never sideways, which is a trap this project has already paid for
+           once with `--form` on the wheel. */
+        worlds.style.setProperty('--decay', d.toFixed(3));
+        /* Zoom goes on `worlds` as well as on the stage. The stage copy drives
+           the scrim; this one lets the Whole Picture copy know the pull-back has
+           finished, which is the other half of deciding whether it should be on
+           screen — decay alone reads 0 during the hero too. */
+        worlds.style.setProperty('--zoom', z.toFixed(3));
+        /* Invisible is not the same as absent. Once the copy has faded it is
+           still focusable and still read aloud, so a keyboard reader would tab
+           into three paragraphs about the living Earth while looking at the
+           dead one. `inert` takes it out of the tree at the same threshold the
+           stylesheet uses to hide it. */
+        if (wholeCopy) wholeCopy.inert = d > 0.27;
       },
     });
 
