@@ -318,6 +318,22 @@ function thetaAtFraction(f) {
    slide further than the far ones and the curve would shear. Dividing the
    wanted screen shift by that same magnification cancels it exactly, which is
    the same trick the scale uses. */
+/* THE FARTHEST POINT ON THE CURVE — where the tiles come in from.
+
+   Solved rather than guessed: the figure-eight's deepest z is not at a round
+   fraction of its length, and an entrance that starts at "roughly the back"
+   starts visibly off the path. Scanned once at module load, because the curve
+   is fixed — only its on-screen amplitudes change with the viewport. */
+const FAR_FRAC = (() => {
+  let best = 0, bz = Infinity;
+  for (let i = 0; i < 720; i++) {
+    const f = i / 720;
+    const z = lissAt(thetaAtFraction(f)).z;
+    if (z < bz) { bz = z; best = f; }
+  }
+  return best;
+})();
+
 const FIT_STEPS = 512;
 
 function lissFit(W, H, cardW, cardH, P, titleFs) {
@@ -568,6 +584,11 @@ function setupWheel(root) {
      time the section scrolls back into view stops being an entrance and becomes
      a tic. */
   let intro = 0;
+  /* Linear twin of `intro`. The eased value is right for the settle offset
+     but wrong for choreography: cubic-out front-loads, so staging against it
+     fires every stage early and bunches the last tiles together. Timing reads
+     off this, motion reads off `intro`. */
+  let introT = 0;
   let introRunning = false;
 
   let angle = 0;        // current ring rotation, degrees
@@ -990,7 +1011,31 @@ function setupWheel(root) {
       for (let i = 0; i < n; i++) {
         // Fraction of the way round the curve, by DISTANCE, offset by the
         // scroll phase. i/n is then genuinely even spacing on the path.
-        const th = thetaAtFraction(th0 / (2 * Math.PI) + GROUPS.frac[i]);
+        /* THE ENTRANCE: EACH TILE TRAVELS IN FROM THE BACK OF THE CURVE.
+
+           Not a fade and not a slide from off-screen — the card walks the path
+           itself, from the figure's deepest point to its own slot, one after
+           another. Which means it arrives already explaining the shape it is
+           part of, instead of arriving and then being arranged.
+
+           Nothing here fades the card in, and nothing needs to: `--vis` below
+           is already a function of depth, and at the far point depth is 0, so a
+           tile that starts there starts invisible and resolves as it comes
+           forward. The entrance rides the depth cue that was there anyway.
+
+           The stagger is by index, so they arrive in path order rather than
+           all at once — GROUPS.frac spaces them evenly by DISTANCE, so index
+           order is the order they sit on the curve. */
+        const baseFrac = th0 / (2 * Math.PI);
+        let frac = baseFrac + GROUPS.frac[i];
+        if (introT < 1) {
+          const start = ENTER_FROM + (i / n) * ENTER_SPAN;
+          const e = Math.max(0, Math.min(1, (introT - start) / ENTER_EACH));
+          // Cubic ease-out: leaves the back quickly, settles into its slot.
+          const k = 1 - Math.pow(1 - e, 3);
+          frac = FAR_FRAC + (frac - FAR_FRAC) * k;
+        }
+        const th = thetaAtFraction(frac);
         const p = lissAt(th);
         const c = cards[i];
         /* This card's own perspective magnification. The recentring shift is
@@ -1054,8 +1099,33 @@ function setupWheel(root) {
 
            0.55 is where the rendered title passes ~6pt at the shipped type
            size. */
+        const img = c.querySelector('.pcard__media img');
         const plate = t <= 0.55;
         c.classList.toggle('is-plate', plate);
+
+        /* A PLATE HOLDS A STILL FRAME. Measured: scrolling through this section
+           ran at 49.7ms a frame with all thirteen recordings playing and 33.7ms
+           with none — the decoders are the single largest cost here, because an
+           animated WebP decodes at full rate however small it renders, so a
+           52px plate at the back of the curve costs what the 359px card at the
+           front does.
+
+           This is NOT the front-card-only swap that was tried and rejected, and
+           the distinction is the whole point: every tile a reader can actually
+           read as a picture keeps playing. What stops is the handful that have
+           receded into unreadable texture out near the edge of the figure —
+           already `is-plate`, already stripped of their titles for the same
+           reason. Nothing that looks like a still image among moving ones.
+
+           Guarded on a state change so this writes a src only when a card
+           actually crosses the threshold, which at drift speed is seldom. */
+        if (img && img.dataset.loop) {
+          const wantStill = plate;
+          if (wantStill !== (img.dataset.held === '1')) {
+            img.dataset.held = wantStill ? '1' : '0';
+            img.setAttribute('src', wantStill ? img.dataset.still : img.dataset.loop);
+          }
+        }
 
         /* A CLICK TARGET YOU CANNOT READ IS A BLIND CLICK.
 
@@ -1207,25 +1277,96 @@ function setupWheel(root) {
   let vel = 0;
   let settling = false;
 
-  function tick() {
-    if (settling) {
+  /* AMBIENT ROTATION — THE WHEEL TURNS WHETHER OR NOT ANYONE TOUCHES IT.
+
+     Slow on purpose, and the rate is measured rather than guessed: at 2.5
+     degrees a second the figure takes about two and a half minutes to come
+     right round, and the card at the front changes about every eight seconds
+     (measured, not derived: the cards are spread evenly along the CURVE, not
+     evenly in the parameter, so the front-card rate does not scale linearly
+     with this constant -- 3.5 deg/s gave 4.4s, 2.5 gives 8.1s). The
+     front-card rate is the one a reader actually perceives. Fast enough
+     to read as alive at a glance, slow enough never to be the thing you are
+     looking at. One constant, tune it here.
+
+     Three things had to change to allow it, and they are all consequences of
+     the same fact — that the flywheel was built to come to rest.
+
+     1. THE SNAP HAS NO MEANING ON A WHEEL THAT NEVER RESTS. Settling to the
+        nearest card and then immediately drifting off it is incoherent, so
+        while the drift is on, a spent flick decays into the drift instead of
+        handing over to the settle. The settle is still there for every case
+        where the drift is off, which is why it was not deleted.
+
+     2. IT PAUSES WHENEVER SOMEONE IS ACTUALLY THERE. `modal.js` and `book.js`
+        resolve a click through `frontCard()` rather than through what was
+        clicked, so on a moving ring the card you get is the card that happens
+        to be front when the click lands, not the one you aimed at. Pausing on
+        hover, on drag and on keyboard focus means that the moment a reader
+        shows intent the ring settles onto a card and holds still. Ambient when
+        ignored, stable when used.
+
+     3. IT IS TIME-BASED, NOT FRAME-BASED. The impulse physics above counts
+        frames, which is fine for a transient nobody times. A constant drift is
+        not: frame-counting would turn twice as fast on a 120 Hz display as on a
+        60 Hz one. `dt` is clamped so a backgrounded tab cannot bank a jump. */
+  /* Entrance choreography, all as a fraction of `intro` (see runIntro).
+     Tiles begin arriving once the wave is lit and are all home before the
+     wordmark finishes, so the three stages overlap rather than queue — a
+     strict sequence at this speed reads as three separate animations. */
+  const ENTER_FROM = 0.06;   // first tile leaves the back
+  const ENTER_SPAN = 0.52;   // spread between first and last tile
+  const ENTER_EACH = 0.40;   // how long one tile takes to travel in
+
+  const DRIFT_DPS = 2.5;
+  let onScreen = false;
+  let hovering = false;
+  let focused = false;
+  let lastT = 0;
+  let ptrX = 0, ptrY = 0, ptrFresh = false;
+
+  function drifts() {
+    return !reducedMotion && onScreen && intro >= 1
+        && !hovering && !dragging && !focused;
+  }
+
+  function tick(now) {
+    const dt = lastT ? Math.min(0.05, (now - lastT) / 1000) : 0;
+    lastT = now;
+
+    /* Hover is evaluated HERE rather than in the pointermove handler, because
+       overRing() reads bounding boxes and paint() writes transforms every
+       frame. Reading at the top of a frame uses the layout the last frame
+       already committed; reading from an event handler mid-frame forces a
+       synchronous reflow instead. Only re-evaluated when the pointer has
+       actually moved, so an unattended wheel costs nothing. */
+    if (ptrFresh) { hovering = overRing({ clientX: ptrX, clientY: ptrY }); ptrFresh = false; }
+    const drift = drifts();
+
+    if (settling && !drift) {
       const d = target - angle;
-      if (Math.abs(d) < 0.02) { angle = target; paint(); raf = 0; return; }
+      if (Math.abs(d) < 0.02) { angle = target; paint(); raf = 0; lastT = 0; return; }
       angle += d * 0.12;
     } else {
       angle += vel;
       vel *= FRICTION;
-      // Spent. Hand over to the settle, which takes it to the nearest card.
+      // Spent. Hand over to the settle, or to the drift if it is running.
       if (Math.abs(vel) < 0.05) {
         vel = 0;
-        settling = true;
-        target = Math.round(angle / step) * step;
+        if (drift) {
+          settling = false;
+        } else {
+          settling = true;
+          target = Math.round(angle / step) * step;
+        }
       }
     }
+
+    if (drift) angle += DRIFT_DPS * dt;
+
     paint();
     raf = requestAnimationFrame(tick);
   }
-
   function run() { if (!raf) raf = requestAnimationFrame(tick); }
 
   function turn(deltaDeg) {
@@ -1273,19 +1414,44 @@ function setupWheel(root) {
        measures. Outside it the page still scrolls, so the principle the ring
        established -- the margins belong to the page -- survives. */
     if (path === 'lissajous') {
-      let l = Infinity, r = -Infinity, t = Infinity, b2 = -Infinity;
+      /* OVER A TILE, NOT OVER A BOUNDING BOX.
+
+         Three definitions were tried and the first two were both wrong in the
+         same way — they described a REGION rather than the objects in it.
+
+         The union of all fourteen cards claimed x 87..1035 of an 1132px
+         viewport: a rectangle that is mostly the empty space BETWEEN tiles, so
+         the page could not be scrolled from anywhere sensible. Narrowing to the
+         front card fixed the trap and broke the obvious case instead — the
+         cursor sitting squarely on a tile that happened not to be the front one
+         scrolled the page.
+
+         So the test is per card, against each one's own rect: is the pointer on
+         a tile. Gaps in the figure, the margins either side, the heading and the
+         legend all belong to the page. Geometry rather than elementFromPoint,
+         because inside `preserve-3d` hit-testing resolves to the scene plane
+         once the ring turns — that is recorded in CLAUDE.md and is why the rest
+         of this module derives the front card from projected area too.
+
+         The small pad closes the hairline seams between adjacent tiles, so a
+         scroll cannot fall through to the page in the gap between two cards the
+         reader sees as touching. */
+      const pad = 10;
       for (const c of cards) {
-        const r2 = c.getBoundingClientRect();
-        if (!r2.width) continue;
-        if (r2.left < l) l = r2.left;
-        if (r2.right > r) r = r2.right;
-        if (r2.top < t) t = r2.top;
-        if (r2.bottom > b2) b2 = r2.bottom;
+        /* Only the tiles travelling through the FRONT of the figure. A card
+           that has receded far enough to become a plate is 50-odd pixels of
+           unreadable texture out near the edge of the stage, and treating it as
+           a scroll target meant the page stopped scrolling in places that do
+           not look like a control at all. `is-plate` is the same threshold the
+           module already uses to decide a card is no longer a card — reusing it
+           keeps this one rule rather than two that can drift apart. */
+        if (c.classList.contains('is-plate')) continue;
+        const b = c.getBoundingClientRect();
+        if (!b.width || !b.height) continue;
+        if (e.clientX >= b.left - pad && e.clientX <= b.right + pad
+         && e.clientY >= b.top - pad && e.clientY <= b.bottom + pad) return true;
       }
-      if (!isFinite(l)) return false;
-      const pad = 24;
-      return e.clientX >= l - pad && e.clientX <= r + pad
-          && e.clientY >= t - pad && e.clientY <= b2 + pad;
+      return false;
     }
     const front = cards.find((c) => c.getAttribute('aria-hidden') === 'false') || cards[0];
     const b = front.getBoundingClientRect();
@@ -1300,6 +1466,13 @@ function setupWheel(root) {
      and preventDefault stops the page scrolling underneath — but only once the
      pointer is genuinely over the ring. Returning early leaves the event
      untouched, so the page scrolls normally everywhere else. */
+  /* OVER THE RING THE SCROLL TURNS IT; ANYWHERE ELSE IT BELONGS TO THE PAGE.
+
+     That was always the intent, and the bug was never this handler — it was
+     `overRing` claiming almost the whole stage, so "anywhere else" did not
+     really exist. With the region narrowed to the live cards the two behaviours
+     are properly separable again, which is what makes taking the event here
+     legitimate rather than a trap. */
   root.addEventListener('wheel', (e) => {
     if (!overRing(e)) return;
     e.preventDefault();
@@ -1341,6 +1514,49 @@ function setupWheel(root) {
   root.addEventListener('pointerup', endDrag);
   root.addEventListener('pointercancel', endDrag);
 
+  /* WHAT THE DRIFT LISTENS TO.
+
+     `run()` on each of these because the loop still parks itself: whenever the
+     drift is off and the ring has settled, `tick` returns without re-arming.
+     Anything that can turn the drift back on therefore has to be able to
+     restart the loop, and `run()` is a no-op when it is already going.
+
+     The pointer position is only RECORDED here. Deciding whether it is over the
+     ring happens inside tick() — see the note there on reading layout in the
+     same frame that writes it. */
+  root.addEventListener('pointermove', (e) => {
+    ptrX = e.clientX; ptrY = e.clientY; ptrFresh = true;
+    run();
+  }, { passive: true });
+
+  root.addEventListener('pointerleave', () => {
+    hovering = false; ptrFresh = false;
+    run();
+  });
+
+  /* Keyboard counts as presence. A reader arrowing through the cards cannot
+     hover to hold the ring still, and a list that walks away under the arrow
+     keys is worse than one that does not move at all. */
+  root.addEventListener('focusin', () => { focused = true; });
+  root.addEventListener('focusout', () => { focused = false; run(); });
+
+  /* Off screen it does not turn, for the same reason the wave does not draw:
+     a permanent rAF on a section nobody is looking at is pure cost, and this
+     page already runs a globe and a pixel valley. */
+  if (!reducedMotion) {
+    new IntersectionObserver((es) => {
+      onScreen = es.some((e) => e.isIntersecting);
+      /* Leaving the screen also clears the hover. Chrome does not
+         reliably fire pointerleave when an element scrolls out from
+         under a cursor that has not moved, so without this a reader who
+         rests the pointer on a card, scrolls away and comes back finds a
+         wheel frozen by a hover that ended long ago -- and it stays
+         frozen until they happen to move the mouse. */
+      if (onScreen) run();
+      else { hovering = false; ptrFresh = false; }
+    }, { rootMargin: '10% 0px 10% 0px' }).observe(root);
+  }
+
   /* A ResizeObserver on a card, not a list of events that might mean the card
      resized.
 
@@ -1358,24 +1574,137 @@ function setupWheel(root) {
      it slightly early so the settle is already underway by the time the reader
      is looking straight at it — an entrance that begins after you arrive reads
      as a delayed reaction. */
-  function runIntro() {
+  /* THE WORDMARK, ONE LETTER AT A TIME.
+
+     Split in JS so the HTML keeps a plain readable word for crawlers and for
+     the copy pipeline. `fitLabel()` is unaffected: it strips tags out of
+     innerHTML before measuring, so the solver still sees "Projects".
+
+     The letters MUST NOT be allowed to wrap. Per-letter inline-block spans
+     create a break opportunity between every pair, and this label is sized to
+     fill the column — the first version of this trick elsewhere on the page
+     wrapped mid-word and measured 648px against a solved 1218px. The nowrap
+     lives in the stylesheet beside .wl for exactly that reason. */
+  function splitWordmark() {
+    const el = root.querySelector('.wheel__title');
+    if (!el || el.querySelector('.wl')) return;
+    const text = el.textContent;
+    el.textContent = '';
+    [...text].forEach((ch, i) => {
+      const sp = document.createElement('span');
+      sp.className = 'wl';
+      sp.style.setProperty('--li', i);
+      // A space cannot be a flex/inline-block box and still be a space.
+      sp.textContent = ch === ' ' ? ' ' : ch;
+      el.appendChild(sp);
+    });
+  }
+
+  function runIntro(snap) {
     if (introRunning) return;
     introRunning = true;
-    if (reducedMotion) { intro = 1; paint(); return; }
+    /* `snap` means the moment for an entrance has gone — jump to the finished
+       state. Half an entrance left behind is invisible tiles, not a subtle
+       effect. */
+    if (reducedMotion || snap) {
+      intro = 1; introT = 1;
+      root.classList.add('is-lit', 'is-typed');
+      paint();
+      run();
+      return;
+    }
     const t0 = performance.now();
-    const DUR = 900;
+    // Fast on purpose. Three overlapping stages inside 1.4s: the wave lights,
+    // the tiles walk in from the back, the wordmark types itself.
+    const DUR = 1400;
     (function step_(now) {
       const t = Math.min(1, (now - t0) / DUR);
+      introT = t;
       // Cubic ease-out: quick to commit, slow to settle.
       intro = 1 - Math.pow(1 - t, 3);
+      /* The wave first — it is the path the tiles are about to arrive on, so
+         lighting it before they move means they land on something that is
+         already there rather than appearing alongside it. */
+      if (t > 0.02) root.classList.add('is-lit');
+      // The word last, once most of the tiles have found their slots.
+      if (t > 0.46) root.classList.add('is-typed');
       paint();
-      if (t < 1) requestAnimationFrame(step_);
+      if (t < 1) { requestAnimationFrame(step_); return; }
+      /* HAND BACK TO THE FLYWHEEL, or the drift may never start.
+
+         The entrance runs on its own rAF and only calls paint(), while
+         the drift lives in tick(). Their observers have different
+         margins -- the drift's fires early (+10%), the entrance's late
+         (-12%) -- so the usual order is: drift starts tick, tick sees
+         intro still at 0, declines to drift, settles and PARKS itself
+         with raf = 0. The entrance then finishes into a loop that is no
+         longer running, and the wheel sits still until some unrelated
+         event happens to call run().
+
+         It was intermittent rather than dead, which is worse: whether it
+         drifted depended on which observer won, so it worked on a slow
+         scroll into the section and not on a fast one. */
+      run();
     })(t0);
   }
 
-  new IntersectionObserver((entries) => {
-    if (entries.some((e) => e.isIntersecting)) runIntro();
-  }, { rootMargin: '-12% 0px -12% 0px' }).observe(root);
+  /* SPLIT NOW, NOT WHEN THE ENTRANCE STARTS.
+
+     runIntro() fires from an observer with a -12% margin, so by the time it
+     runs the wordmark is already twelve percent inside the viewport and has
+     been on screen as ordinary text. Splitting at that moment makes the word
+     appear, vanish, and then type itself back in. Splitting here means the
+     letters are hidden from the first paint and the only thing anyone sees is
+     the typing.
+
+     Under reduced motion the entrance never runs, so the letters would stay
+     hidden forever -- the stylesheet carries a prefers-reduced-motion rule that
+     forces them visible, which is why this is safe rather than a way to lose
+     the word. */
+  if (!reducedMotion) splitWordmark();
+
+  /* WHEN THE ENTRANCE RUNS — AND A GUARANTEE THAT IT DOES.
+
+     Timing first: a plain "is it on screen" test started the 1.4s while the
+     stage was still crossing the bottom edge, so the whole thing played while
+     the reader was scrolling toward it and they arrived to a finished picture.
+     Waiting for 45% of the stage to be visible starts it when they are actually
+     looking at it.
+
+     But a threshold alone is a trap here, and this one bit: with a tight band
+     the section can be scrolled straight past without the observer ever seeing
+     it satisfied — measured 2756px past the stage with `intro` still 0.000.
+     That is not a missed animation, it is missing content: at intro 0 every
+     tile sits stacked at the far point of the curve with depth 0, which is
+     invisible. A reader who flicks past and scrolls back finds an empty stage.
+
+     So the second clause is the guarantee. Once the stage's top has passed the
+     top of the viewport it is too late for an entrance to be worth watching,
+     and the only correct thing is to be finished — `snap` jumps intro to 1
+     rather than animating, so nothing is ever left half-arrived. */
+  const introIO = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      /* 15%, not 45%. At 45 the stage was on screen for ~287px with every
+         tile still stacked at the far point (depth 0 = invisible), so it
+         arrived EMPTY and then popped, which reads as failing to load.
+         At 15 the tiles are already moving before there is enough stage
+         visible to look empty, and the 1.4s is still unfolding on
+         arrival rather than finished. */
+      if (e.intersectionRatio >= 0.15) { runIntro(); introIO.disconnect(); return; }
+      if (e.boundingClientRect.top < 0 && e.isIntersecting) {
+        runIntro(true); introIO.disconnect(); return;
+      }
+    }
+  }, { threshold: [0, 0.2, 0.45, 0.7] });
+  introIO.observe(root);
+
+  /* Scrolled clean past while the tab was hidden, or jumped to by an anchor:
+     the observer may never report a useful entry at all. One late check that
+     the stage is not sitting there un-entered. */
+  setTimeout(() => {
+    if (introRunning) return;
+    if (root.getBoundingClientRect().top < 0) runIntro(true);
+  }, 2500);
 
   const ro = new ResizeObserver(() => measure());
   ro.observe(cards[0]);
@@ -1408,7 +1737,12 @@ function setupWheel(root) {
       const loop = c.dataset.loop;
       if (!loop) continue;
       const img = c.querySelector('.pcard__media img');
-      if (img) img.setAttribute('src', loop);
+      if (img) {
+        // Keep the poster: a plate falls back to it (see the note in paint()).
+        img.dataset.still = img.getAttribute('src');
+        img.dataset.loop = loop;
+        img.setAttribute('src', loop);
+      }
     }
   }
 

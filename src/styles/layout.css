@@ -65,7 +65,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2rem;
+  gap: clamp(.9rem, 2vw, 2rem);
   transition: background var(--d) var(--e-out),
               backdrop-filter var(--d) var(--e-out),
               border-color var(--d) var(--e-out);
@@ -128,6 +128,22 @@
 .nav__links a.is-current { color: var(--t); }
 
 .nav__cta { padding: .6rem 1.15rem; }
+
+/* GitHub and Resume moved up here from the hero, so the two things a visitor
+   most often wants are reachable from any scroll position rather than only from
+   the top of the page. They sit in a group with the CTA so the nav still has
+   exactly three flex children and `justify-content: space-between` keeps
+   working. Quieter than the CTA on purpose: one action is the primary one. */
+.nav__acts {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+}
+.nav__act {
+  padding: .5rem .85rem;
+  font-size: .68rem;
+  white-space: nowrap;
+}
 
 .nav__burger {
   display: none;
@@ -197,18 +213,158 @@
 .word { display: inline-block; overflow: hidden; vertical-align: bottom; }
 .word > span { display: inline-block; will-change: transform; }
 
+/* Split headings. The words rise out of an overflow:hidden mask, one after
+   another. Expressed as a CSS transition rather than a JS tween on purpose —
+   see the long note in reveals.js: an inline style written by JS is lost the
+   moment anything re-parses the heading's innerHTML, and something on this page
+   does exactly that. A class and a custom property both survive it. */
+[data-split] .word > span {
+  display: inline-block;
+  transform: translateY(118%);
+  transition: transform .95s var(--e-out, cubic-bezier(.16, 1, .3, 1))
+              calc(var(--wi, 0) * 55ms);
+}
+
+[data-split].is-split-in .word > span { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-split] .word > span { transform: none; transition: none; }
+}
+
 /* Generic reveal. JS adds .is-in; without JS the @media rule below
-   makes everything visible so content is never trapped invisible. */
+   makes everything visible so content is never trapped invisible.
+
+   THE STAGGER IS THE POINT, not the fade. Everything in a block arriving on
+   the same frame reads as the page finishing loading; the same elements
+   arriving a beat apart read as the block assembling itself. `--reveal-i` is
+   the element's index among its revealing SIBLINGS, set by reveals.js — not
+   its index in the section, because an element eight screens down would
+   otherwise inherit an eight-step delay and arrive visibly late for no reason.
+
+   Capped at six steps so a long list cannot run up half a second of lag on its
+   last item. */
 [data-reveal] {
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity var(--d-slow) var(--e-out), transform var(--d-slow) var(--e-out);
+  transform: translateY(34px);
+  transition:
+    opacity var(--d-slow) var(--e-out) calc(var(--reveal-i, 0) * 90ms),
+    transform var(--d-slow) var(--e-out) calc(var(--reveal-i, 0) * 90ms);
+  will-change: opacity, transform;
 }
 
 [data-reveal].is-in { opacity: 1; transform: none; }
 
+/* Dropped once it has arrived: will-change on dozens of elements at once costs
+   a layer each, and none of them animate again — the reveal is `once: true`. */
+[data-reveal].is-done { will-change: auto; }
+
 .no-js [data-reveal],
 .no-js .word > span { opacity: 1 !important; transform: none !important; }
+
+/* ============================================================
+   THE OPENING
+   ============================================================ */
+
+/* Black, one word typed, then it clears. Pure CSS: see the note on the markup
+   for why nothing here may depend on a script. */
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  background: #000;
+  /* A long, soft dissolve rather than a cut. 1.4s with an ease-out so it
+     lets go slowly at first and is gone before it can feel like a wait —
+     the word has had its 2s by then, and the page behind is already
+     painted, so this is only the black lifting off it. */
+  animation: boot-clear 1.4s var(--e-out, ease) 2s forwards;
+}
+
+.boot__word {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(1.05rem, 2.4vw, 1.6rem);
+  letter-spacing: -.02em;
+  color: var(--t, #e8e8ec);
+  white-space: nowrap;
+}
+
+/* A typewriter strikes a letter, it does not ease it in — 1ms, and the delay
+   between letters is the whole effect. Seven letters at 95ms puts the word up
+   in 665ms, leaving a beat before the screen clears at 2s. */
+.boot__word > span {
+  display: inline-block;
+  opacity: 0;
+  animation: boot-strike 1ms linear forwards;
+}
+
+.boot__word > span:nth-child(1) { animation-delay: .30s; }
+.boot__word > span:nth-child(2) { animation-delay: .395s; }
+.boot__word > span:nth-child(3) { animation-delay: .49s; }
+.boot__word > span:nth-child(4) { animation-delay: .585s; }
+.boot__word > span:nth-child(5) { animation-delay: .68s; }
+.boot__word > span:nth-child(6) { animation-delay: .775s; }
+.boot__word > span:nth-child(7) { animation-delay: .87s; }
+
+/* The caret, blinking while the word is struck and gone with it. */
+.boot__word::after {
+  content: '';
+  display: inline-block;
+  width: .06em;
+  height: .78em;
+  margin-left: .06em;
+  background: var(--amber, #FFD429);
+  animation: boot-caret .5s steps(1) 0s 4 forwards;
+}
+
+@keyframes boot-strike { to { opacity: 1; } }
+@keyframes boot-caret { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+@keyframes boot-clear {
+  /* visibility flips only at the very end, so the fade is not cut short by the
+     element disappearing while it is still partly opaque. */
+  0%   { opacity: 1; visibility: visible; }
+  99%  { visibility: visible; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+/* THE PAGE COMES UP BEHIND IT, in the order the eye should take it: the earth
+   is already there when the black clears, the copy follows, the bar last.
+
+   Delays are absolute rather than chained, so a slow frame in one of them
+   cannot push the others out of sequence. All three start after the 2s hold and
+   are done by 3s — the brief was "fast animation" and a staged entrance that
+   outstays the word it followed is just a slower page. */
+.hero__body,
+.hero__stats {
+  animation: boot-rise .55s var(--e-out, ease) 2.25s backwards;
+}
+
+.hero__stats { animation-delay: 2.4s; }
+
+.nav {
+  animation: boot-drop .5s var(--e-out, ease) 2.55s backwards;
+}
+
+@keyframes boot-rise {
+  from { opacity: 0; transform: translateY(18px); }
+}
+
+@keyframes boot-drop {
+  from { opacity: 0; transform: translateY(-100%); }
+}
+
+/* Reduced motion gets the page, not the performance. The overlay still clears
+   itself — it must, or the site is a black rectangle — but instantly. */
+@media (prefers-reduced-motion: reduce) {
+  .boot { animation: boot-clear .01s linear .6s forwards; }
+  .boot__word > span { opacity: 1; animation: none; }
+  .boot__word::after { display: none; }
+  .hero__body,
+  .hero__stats,
+  .nav { animation: none; }
+}
 
 /* ============================================================
    HERO
@@ -519,8 +675,12 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 
 .hero__stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--gap);
+  /* Five, on one line. The fifth (architecture) was added after the grid was
+     written for four, so it wrapped onto a row of its own and read as an
+     afterthought rather than as part of the set. The column gap tightens to
+     pay for the extra column. */
+  grid-template-columns: repeat(5, 1fr);
+  gap: clamp(.75rem, 1.6vw, var(--gap));
   padding-top: clamp(1.25rem, 3vh, 2rem);
   border-top: 1px solid var(--line);
 }
@@ -653,7 +813,7 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 }
 
 @media (max-width: 860px) {
-  .nav__links, .nav__cta { display: none; }
+  .nav__links, .nav__cta, .nav__act { display: none; }
   .nav__burger { display: flex; }
   .hero__name-line--2 { padding-left: clamp(1rem, 6vw, 3rem); }
   .hero__photo { object-position: 66% center; }

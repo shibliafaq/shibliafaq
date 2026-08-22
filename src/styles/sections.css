@@ -506,69 +506,6 @@
   color: var(--t-4);
 }
 
-/* ============================================================
-   PUBLICATIONS
-   ============================================================ */
-
-.pubs { display: grid; gap: 0; margin-top: clamp(2rem, 5vh, 4rem); }
-
-.pub {
-  display: grid;
-  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
-  gap: clamp(1.5rem, 5vw, 5rem);
-  padding: clamp(2.5rem, 6vh, 4.5rem) 0;
-  border-top: 1px solid var(--line);
-  align-items: start;
-}
-
-.pub:last-child { border-bottom: 1px solid var(--line); }
-
-.pub__n {
-  font-size: clamp(2.5rem, 7vw, 6rem);
-  line-height: 1;
-  color: transparent;
-  -webkit-text-stroke: 1px var(--line-3);
-  transition: -webkit-text-stroke-color var(--d) var(--e-out);
-}
-
-.pub:hover .pub__n { -webkit-text-stroke-color: var(--amber); }
-
-.pub__title {
-  font-family: var(--f-display);
-  font-weight: 700;
-  font-size: clamp(1.15rem, 2.1vw, 1.85rem);
-  letter-spacing: -.025em;
-  line-height: 1.25;
-  color: var(--t);
-  max-width: 30ch;
-}
-
-.pub__meta {
-  font-family: var(--f-mono);
-  font-size: var(--fs-label);
-  line-height: 1.7;
-  color: var(--t-3);
-  margin: .9rem 0;
-  letter-spacing: .04em;
-}
-
-.pub__status {
-  display: inline-block;
-  padding: .3rem .8rem;
-  border-radius: var(--r-pill);
-  font-family: var(--f-mono);
-  font-size: var(--fs-label);
-  letter-spacing: .06em;
-  border: 1px solid;
-}
-
-.pub__status--review { color: var(--amber); border-color: var(--amber-24); background: var(--amber-06); }
-.pub__status--prep   { color: var(--t-2);  border-color: var(--line-2);  background: rgba(255, 255, 255, .03); }
-/* Published outranks the other two, so it is the only status that gets the
-   solid treatment -- a badge that reads at a glance without being read. */
-.pub__status--published { color: var(--ink); border-color: var(--amber); background: var(--amber); font-weight: 600; }
-
-.pub__abs { font-size: var(--fs-sm); line-height: 1.72; color: var(--t-2); margin-top: 1.1rem; max-width: 68ch; }
 
 /* ============================================================
    SKILLS
@@ -713,10 +650,29 @@
    Built by skills.js from the tag list above; never shown without it.
    ============================================================ */
 
+/* LEGEND LEFT, BRAIN RIGHT AND BIGGER.
+
+   The key used to sit under the canvas as a centred wrapping row, which cost
+   the illustration a band of vertical space in the one direction it is
+   constrained — the brain is fitted by aspect into the box, so height is what
+   decides how big it renders. Moving the key into a column beside it gives
+   that height back and lets the box grow wider too. */
 .skillfield {
   position: relative;
-  width: min(100%, 1180px);
+  width: min(100%, 1440px);
   margin: clamp(1.5rem, 4vh, 3rem) auto 0;
+  display: grid;
+  /* THREE columns, and the third is empty on purpose. With only two, the brain
+     took whatever the key left over and sat off to the right — the key was
+     moved to give the illustration more height, not to push it off centre. A
+     matching empty column on the right balances it, so the canvas is centred on
+     the section while the key still reads hard left. */
+  grid-template-columns:
+    minmax(9.5rem, 12rem)
+    minmax(0, 1fr)
+    minmax(9.5rem, 12rem);
+  align-items: center;
+  gap: clamp(1rem, 2.5vw, 2.5rem);
 }
 
 .skillfield[hidden] { display: none; }
@@ -724,6 +680,10 @@
 /* No border or panel here on purpose — the brain outline drawn on the canvas
    is the container, so a rectangle around it would fight it. */
 .skillfield__canvas {
+  /* Middle column, so it is centred on the section regardless of how wide the
+     key runs in any given language. */
+  grid-column: 2;
+  grid-row: 1;
   display: block;
   width: 100%;
   /* The brain is 1000x870 and is fitted into this box preserving its aspect,
@@ -735,7 +695,12 @@
      and the leftover space falls either side of the brain, where it belongs. */
   aspect-ratio: 1000 / 870;
   height: auto;
-  max-height: clamp(480px, 76vh, 780px);
+  /* Strictly viewport-bound. A clamp() with a px MINIMUM can exceed the
+     screen on a short window — at 600px tall, 86vh is 516px but a 520px
+     floor wins and the brain runs off the bottom, before the heading above
+     it is even counted. min() has no floor to lose to, so this can never
+     be taller than the space there is. */
+  max-height: min(72vh, 900px);
   background: none;
   /* Taps and drags still reach the canvas, but a vertical swipe scrolls the
      page — losing the ability to scroll past this section on a phone would be
@@ -770,11 +735,17 @@
 
 /* The legend — the same hot-to-cold key that sits beside a thermal raster. */
 .skillkey {
+  /* Placed explicitly rather than by source order: the canvas comes first in
+     the DOM because it is the content and the key describes it. */
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: center;
-  gap: .7rem 1.9rem;
-  margin-top: 1.6rem;
+  gap: 1rem;
+  margin-top: 0;
   list-style: none;
 }
 
@@ -790,13 +761,28 @@
   color: var(--t-2);
 }
 
-/* Zero-height full-width item: forces the wrap point so the keys read 3 then 2
-   in every language, instead of breaking wherever the text happens to run out. */
-.skillkey__break {
-  flex-basis: 100%;
-  height: 0;
-  margin: 0;
-  padding: 0;
+/* Was a zero-height full-width item forcing a 3-then-2 wrap while the key was
+   a row. A column has no wrap point to control, so it is simply not rendered —
+   removing it from the markup would mean touching the module that builds the
+   key, for no gain. */
+.skillkey__break { display: none; }
+
+/* Below this the two columns fight: the key needs ~10rem and the brain stops
+   being legible under ~26rem. Back to the original stacked arrangement. */
+@media (max-width: 720px) {
+  .skillfield { grid-template-columns: 1fr; gap: 1.2rem; }
+  .skillfield__canvas { grid-column: 1; grid-row: 1; }
+  .skillkey {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: stretch;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .7rem 1.6rem;
+    margin-top: 1.2rem;
+  }
+  .skillkey__break { display: block; flex-basis: 100%; height: 0; }
 }
 
 .skillkey__dot {
@@ -1451,8 +1437,6 @@
 
 @media (max-width: 960px) {
   .about__grid, .direction__grid { grid-template-columns: 1fr; }
-  .pub { grid-template-columns: 1fr; gap: 1rem; }
-  .pub__n { font-size: 2.5rem; }
 }
 
 @media (max-width: 900px) {
@@ -2398,6 +2382,205 @@
 
 @media (max-width: 900px) {
   .wheels .wheel--liss .wheel__head .eyebrow { font-size: .6rem; letter-spacing: .1em; }
+}
+
+/* ---- THE PROJECTS ENTRANCE ----------------------------------------------
+
+   Three overlapping stages driven from wheel.js: the wave lights, the tiles
+   walk in from the back of the curve, then the wordmark types itself. The tile
+   motion is not here — it happens along the curve in paint(), because a tile
+   arriving by CSS transform would arrive off the path it belongs to.
+
+   Everything below is gated on classes the module adds, never on a media query
+   or a scroll position, so with no JS the section renders in its final state
+   rather than blank. */
+
+/* The wave is the path the tiles land on, so it arrives first. */
+.wheels .wheel--liss .wheel__wave {
+  opacity: 0;
+  transition: opacity .55s var(--e-out, ease);
+}
+
+.wheels .wheel--liss.is-lit .wheel__wave { opacity: 1; }
+
+/* NOWRAP IS LOAD-BEARING, NOT TIDINESS. Per-letter inline-block spans create a
+   break opportunity between every pair of letters, and this label is solved to
+   fill its column — without this it wraps mid-word and the fit collapses. */
+.wheels .wheel--liss .wheel__title { white-space: nowrap; }
+
+/* A TYPEWRITER STRIKES A LETTER, IT DOES NOT EASE IT IN.
+
+   So there is no fade and no travel: 1ms is effectively instant, and the
+   per-letter delay is the whole effect — the rhythm is the animation. An eased
+   fade-up reads as a stagger, which is a different thing and is what this was
+   before. 55ms a letter puts "Projects" on screen in 440ms. */
+.wheels .wheel--liss .wheel__title .wl {
+  display: inline-block;
+  opacity: 0;
+  transition: opacity 1ms linear calc(var(--li, 0) * 55ms);
+}
+
+.wheels .wheel--liss.is-typed .wheel__title .wl { opacity: 1; }
+
+/* The line above the wordmark, and the legend under the figure. Both were the
+   only text in this section arriving with no transition at all.
+
+   Driven from the entrance classes rather than given their own data-reveal, for
+   two different reasons. The eyebrow sits inside the ring's preserve-3d scene,
+   where the module writes the transforms — a reveal that animated translateY
+   would fight the 3D placement, so this one moves opacity only. The legend is
+   outside the scene and could take a normal reveal, but it belongs to the same
+   moment as the figure it explains, and a separate ScrollTrigger would drift
+   out of step with it. */
+.wheels .wheel--liss .wheel__head .eyebrow {
+  opacity: 0;
+  transition: opacity .5s var(--e-out, ease) .12s;
+}
+
+.wheels .wheel--liss.is-lit .wheel__head .eyebrow { opacity: 1; }
+
+.wheels .wheel--liss .wheel__legend-item {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity .45s var(--e-out, ease),
+    transform .45s var(--e-out, ease);
+}
+
+.wheels .wheel--liss .wheel__legend-item:nth-child(2) { transition-delay: .1s; }
+
+.wheels .wheel--liss.is-typed .wheel__legend-item {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wheels .wheel--liss .wheel__head .eyebrow,
+  .wheels .wheel--liss .wheel__legend-item {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* The caret. It blinks while the word is being struck and then stops, rather
+   than blinking forever — a permanent cursor on a heading reads as an unfinished
+   input, not as a wordmark. Four blinks covers the 440ms of typing with a beat
+   either side, and the final keyframe leaves it hidden. */
+.wheels .wheel--liss .wheel__title::after {
+  content: '';
+  display: inline-block;
+  width: .055em;
+  height: .72em;
+  margin-left: .05em;
+  background: currentColor;
+  opacity: 0;
+}
+
+.wheels .wheel--liss.is-typed .wheel__title::after {
+  animation: wl-caret .28s steps(1) 0s 5 forwards;
+}
+
+@keyframes wl-caret {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* Reduced motion never runs the entrance at all — runIntro() jumps intro to 1
+   and returns before splitWordmark() — but the stylesheet must not be the thing
+   that leaves content hidden if that path ever changes. */
+@media (prefers-reduced-motion: reduce) {
+  .wheels .wheel--liss .wheel__wave { opacity: 1; transition: none; }
+  .wheels .wheel--liss .wheel__title .wl { opacity: 1; transition: none; }
+  .wheels .wheel--liss .wheel__title::after { display: none; }
+}
+
+/* ---- THE MAP ARRIVES, IT IS NOT JUST THERE -------------------------------
+
+   Mounted several screens early so it is ready, but faded in only when the
+   stage actually reaches the viewport (experience.js adds .is-ready). Opacity
+   alone: the stage is the pinned element, and a transform or filter on it would
+   re-base the pin, while opacity creates a stacking context but not a
+   containing block.
+
+   No starting transform for the same reason, so this is a fade rather than a
+   rise — the section is a full-bleed canvas, and a canvas that slides is a
+   canvas with a visible edge. */
+.journey {
+  opacity: 0;
+  transition: opacity .8s var(--e-out, ease);
+}
+
+.journey.is-ready { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .journey { opacity: 1; transition: none; }
+}
+
+/* ---- THE WAY OUT OF THE WALK -------------------------------------------
+
+   Hidden until `.has-played`, which experience.js sets the first time the walk
+   is scrolled to its end (and remembers for the session). See the note there:
+   offering to skip something before it has been shown is offering nothing.
+
+   Highlighted rather than quiet. Every other control on this stage -- the
+   chapter rail, the hint -- is deliberately faint so it does not compete with
+   the map. This one is the exception: a reader hunting for the exit is already
+   slightly frustrated, and a subtle escape hatch is not an escape hatch. */
+.journey__skip {
+  position: absolute;
+  right: clamp(1rem, 3vw, 2.25rem);
+  bottom: clamp(1rem, 3vh, 2rem);
+  z-index: 8;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .62rem 1.15rem;
+  border-radius: 999px;
+  border: 1px solid var(--amber, #FFD429);
+  background: var(--amber, #FFD429);
+  color: var(--ink, #09090b);
+  font-weight: 700;
+  font-size: .68rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  /* A ring of the page's own ink, so the pill keeps a hard edge wherever it
+     sits -- the map behind it is bright pixel art in some places and dark
+     canopy in others, and amber-on-straw would otherwise dissolve. */
+  box-shadow: 0 0 0 3px rgba(9, 9, 11, .55), 0 10px 30px rgba(0, 0, 0, .5);
+
+  /* Absent, not merely transparent: it must not take a click while hidden. */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: opacity .4s ease, transform .4s var(--e-out, cubic-bezier(.2,.7,.3,1)), visibility .4s;
+}
+
+.journey.has-played .journey__skip {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.journey__skip:hover,
+.journey__skip:focus-visible {
+  background: var(--amber-hi, #FFE86B);
+  border-color: var(--amber-hi, #FFE86B);
+  box-shadow: 0 0 0 3px rgba(9, 9, 11, .55), 0 8px 40px var(--amber-40, rgba(255, 212, 41, .4));
+}
+
+.journey__skip-arrow { transition: transform var(--d-fast, .18s) var(--e-out, ease); }
+.journey__skip:hover .journey__skip-arrow { transform: translateY(2px); }
+
+@media (max-width: 900px) {
+  .journey__skip { font-size: .6rem; padding: .5rem .9rem; letter-spacing: .1em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey__skip,
+  .journey__skip-arrow { transition: none; }
 }
 
 /* ---- THE TINT UNDER THE TITLE ------------------------------------------

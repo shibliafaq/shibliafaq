@@ -27,6 +27,19 @@
 </head>
 <body>
 
+<!-- THE OPENING. Black, one word typed out, then it clears and the page comes
+     up behind it: earth, then the copy, then the top bar.
+
+     Entirely CSS, and the letters are spans in the MARKUP rather than split by
+     JS, for one reason — this thing covers the whole viewport, so if the script
+     that dismisses it never runs the site is a black rectangle. With no JS
+     involved there is nothing to fail: the animation clears it on its own and
+     `forwards` holds it cleared. aria-hidden because a screen reader should
+     land on the page, not on a decorative word. -->
+<div class="boot" id="boot" aria-hidden="true">
+  <p class="boot__word"><span>W</span><span>e</span><span>l</span><span>c</span><span>o</span><span>m</span><span>e</span></p>
+</div>
+
 <div class="grain" aria-hidden="true"></div>
 <a data-copy="_nav.1" href="#main" class="skip-link">Skip to content</a>
 
@@ -41,10 +54,13 @@
   <ul class="nav__links">
     <li data-copy="_nav.3"><a href="#about" data-i18n="nav.about">About</a></li>
     <li data-copy="_nav.4"><a href="#projects" data-i18n="nav.research">Research</a></li>
-    <li data-copy="_nav.5"><a href="#publications" data-i18n="nav.publications">Publications</a></li>
     <li data-copy="_nav.6"><a href="#background" data-i18n="nav.background">Background</a></li>
   </ul>
-  <a data-copy="_nav.7" href="#contact" class="btn btn--solid nav__cta"><span data-i18n="nav.contact">Get in touch</span> <span class="btn__arrow">↗</span></a>
+  <div class="nav__acts">
+    <a href="https://github.com/shibliafaq" target="_blank" rel="noopener" class="btn nav__act">GitHub <span class="btn__arrow">↗</span></a>
+    <a href="/assets/doc/Shibli_Afaq_Resume.pdf" download class="btn nav__act">⇩ Resume</a>
+    <a data-copy="_nav.7" href="#contact" class="btn btn--solid nav__cta"><span data-i18n="nav.contact">Get in touch</span> <span class="btn__arrow">↗</span></a>
+  </div>
   <div class="nav__lang" id="langMount"></div>
   <button class="nav__burger" id="navBurger" aria-label="Open menu" aria-expanded="false"><span></span><span></span></button>
 </nav>
@@ -53,10 +69,11 @@
   <a href="#about" data-i18n="nav.about">About</a>
   <a href="#direction" data-i18n="nav.direction">Direction</a>
   <a href="#projects" data-i18n="nav.research">Research</a>
-  <a href="#publications" data-i18n="nav.publications">Publications</a>
   <a href="#skills" data-i18n="nav.skills">Skills</a>
   <a href="#background" data-i18n="nav.background">Background</a>
   <a href="#contact" data-i18n="nav.contact">Contact</a>
+  <a href="https://github.com/shibliafaq" target="_blank" rel="noopener">GitHub ↗</a>
+  <a href="/assets/doc/Shibli_Afaq_Resume.pdf" download>⇩ Resume</a>
 </div>
 
 <main id="main">
@@ -107,12 +124,6 @@
     </h1>
     <p class="hero__role"><span id="tw"></span><span class="hero__caret" aria-hidden="true"></span></p>
     <p class="hero__desc" data-i18n="hero.desc">Architect evolving into an <strong>urban data scientist</strong>, driven by a passion for building climate-resilient cities through spatial data. Expanding my toolkit to include GIS, machine learning, and remote sensing. Currently finishing my M.Sc. at KFUPM (GPA&nbsp;4.0/4.0). <strong>Open to innovative smart city roles, research collaborations, and fully funded PhD opportunities.</strong></p>
-    <div class="hero__actions">
-      <a data-copy="hero.2" href="#projects" class="btn btn--solid"><span data-i18n="hero.cta.research">View Research</span> <span class="btn__arrow">↓</span></a>
-      <a data-copy="hero.3" href="https://github.com/shibliafaq" target="_blank" rel="noopener" class="btn">GitHub <span class="btn__arrow">↗</span></a>
-      <a data-copy="hero.4" href="https://shibliafaq-iot-dashboard.streamlit.app" target="_blank" rel="noopener" class="btn"><span data-i18n="hero.cta.demo">Live Demo</span> <span class="btn__arrow">↗</span></a>
-      <a data-copy="hero.5" href="/assets/doc/Shibli_Afaq_Resume.pdf" download class="btn">⇩ <span data-i18n="hero.cta.resume">Resume</span></a>
-    </div>
   </div>
 
   <div class="hero__stats">
@@ -120,28 +131,35 @@
       <span data-copy="hero.6" class="hstat__idx">#01</span>
       <div>
         <div class="hstat__val" data-target="4.0" data-dec="1" data-suf="/4.0">4.0</div>
-        <div class="hstat__lbl" data-i18n="hero.stat.gpa">GPA · KFUPM</div>
+        <div class="hstat__lbl" data-i18n="hero.stat.gpa">GPA<br>KFUPM</div>
       </div>
     </div>
     <div class="hstat">
       <span data-copy="hero.7" class="hstat__idx">#02</span>
       <div>
         <div class="hstat__val" data-target="4" data-dec="0" data-suf="+ yrs">4+</div>
-        <div class="hstat__lbl" data-i18n="hero.stat.exp">Industry Experience</div>
+        <div class="hstat__lbl" data-i18n="hero.stat.exp">Industry<br>Experience</div>
       </div>
     </div>
     <div class="hstat">
       <span data-copy="hero.8" class="hstat__idx">#03</span>
       <div>
-        <div class="hstat__val" data-target="6" data-dec="0" data-suf="">6</div>
-        <div class="hstat__lbl" data-i18n="hero.stat.projects">Research Projects</div>
+        <div class="hstat__val" data-target="6" data-dec="0" data-suf="+">6+</div>
+        <div class="hstat__lbl">Architectural<br>Projects</div>
       </div>
     </div>
     <div class="hstat">
       <span data-copy="hero.9" class="hstat__idx">#04</span>
       <div>
+        <div class="hstat__val" data-target="6" data-dec="0" data-suf="">6</div>
+        <div class="hstat__lbl" data-i18n="hero.stat.projects">Research<br>Projects</div>
+      </div>
+    </div>
+    <div class="hstat">
+      <span class="hstat__idx">#05</span>
+      <div>
         <div class="hstat__val" data-target="3" data-dec="0" data-suf="">3</div>
-        <div class="hstat__lbl" data-i18n="hero.stat.papers">Papers</div>
+        <div class="hstat__lbl" data-i18n="hero.stat.papers">Research<br>Papers</div>
       </div>
     </div>
   </div>
@@ -439,38 +457,6 @@
   <p data-copy="atlas.6" class="atlas__fallback mono" id="atlasFallback" hidden>Interactive map unavailable on this device</p>
 </section>
 
-<!-- ══ PUBLICATIONS ═════════════════════════════════════════ -->
-<section id="publications" class="section">
-  <div class="wrap">
-    <p class="eyebrow" data-reveal data-i18n="pubs.label">Publications</p>
-    <h2 class="display sec-title" data-reveal data-split data-i18n="pubs.title">Research <em>Output</em></h2>
-    <p class="lead" data-reveal data-i18n="pubs.lead">Three papers produced in one M.Sc. year, building toward a peer-reviewed publication record for doctoral research.</p>
-
-    <ol class="pubs">
-      <li data-copy="publications.1" class="pub" data-reveal><span class="pub__n display">01</span> <div class="pub__body"> <h3 class="pub__title">A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments</h3> <p class="pub__meta">Shibli Afaq, Yusuf A. Adenle, Muhammad Aamir Basheer · <em>Discover Cities</em> (Springer Nature) · 2026 · 3:123 · Open Access · <a href="https://doi.org/10.1007/s44327-026-00314-z" target="_blank" rel="noopener">doi.org/10.1007/s44327-026-00314-z</a></p> <span class="pub__status pub__status--published">✅ Published · June 2026</span> <p class="pub__abs">PRISMA-guided systematic review of 22 peer-reviewed studies (2005–2025) on soundscape design, outdoor thermal comfort and urban space quality in hot-arid environments. Five interlinked themes emerge. Under moderate thermal stress, positive soundscapes built from natural sound and green–blue infrastructure reduce perceived heat stress and encourage active use of public space, but the benefit narrows sharply in extreme heat and is predominantly psychological rather than a direct sensory response. Introduces the Integrated Thermo-Acoustic Planning (ITAP) Framework and a persona-based Interdisciplinary Implementation Toolkit for Vision 2030 public space design.</p> </div></li>
-
-      <li data-copy="publications.2" class="pub" data-reveal>
-        <span class="pub__n display">02</span>
-        <div class="pub__body">
-          <h3 class="pub__title">GIS and Remote Sensing-Based Assessment of Urban Heat Island in the Dammam Metropolitan Area, Saudi Arabia</h3>
-          <p class="pub__meta">Shibli Afaq, Sultan Aldhafeeri · Supervisor: Dr. Baqer Al-Ramadan · 2026 · Target: Urban Climate / Sustainable Cities and Society</p>
-          <span class="pub__status pub__status--prep">✍️ Manuscript in Preparation</span>
-          <p class="pub__abs">Five-step GIS and remote sensing model assessing LST and heat vulnerability across the Dammam Metropolitan Area using Landsat 8/9, Sentinel-2, and WorldPop over a 500&nbsp;m fishnet (12,954 cells). NDBI is the strongest LST predictor (r&nbsp;=&nbsp;0.715). Composite HVI classified 92.6% of cells as High vulnerability, with the HVI hot spot 4.18× larger than temperature-only mapping, revealing planning priorities hidden by single-factor analysis.</p>
-        </div>
-      </li>
-
-      <li data-copy="publications.3" class="pub" data-reveal>
-        <span class="pub__n display">03</span>
-        <div class="pub__body">
-          <h3 class="pub__title">ITS-Based Congestion Management for Event Corridors in Arid Cities: A Case Study of the Aramco Stadium Corridor, Al Khobar</h3>
-          <p class="pub__meta">Shibli Afaq, H. Alnasser, H. Alghamdi, S. Aldhafeeri · Instructor: Dr. Muhammad Abdullah · 2026 · Target: Journal of Intelligent Transportation Systems / Transportation Research Part C</p>
-          <span class="pub__status pub__status--prep">✍️ Manuscript in Preparation</span>
-          <p class="pub__abs">Al Khobar's Aramco Stadium corridor (47,000 capacity) already runs at 48.5% evening congestion with 44 hours lost per driver per year, and faces concentrated event surges before the 2027 AFC Asian Cup and 2034 FIFA World Cup. Four cumulative ITS alternatives were scored on a weighted multi-criteria matrix, from adaptive signal control through to demand-management pricing. The recommended alternative layers ATSC, ATMS/ATIS, smart parking and park-and-ride, at an indicative planning-level cost of $4.3–12.1M; the ATSC literature reports 10–20% travel-time savings. Costs and KPIs are estimates from published sources, not measured results.</p>
-        </div>
-      </li>
-    </ol>
-  </div>
-</section>
 
 <!-- ══ SKILLS ═══════════════════════════════════════════════ -->
 <section id="skills" class="section">
@@ -482,7 +468,7 @@
          hidden. Keeping the list as the source means the full skill names stay
          in the DOM for search, and the section still works with no JS or with
          reduced motion, where the field never initialises. -->
-    <div class="skillfield" id="skillField" hidden>
+    <div class="skillfield" id="skillField" data-reveal hidden>
       <canvas class="skillfield__canvas" id="skillCanvas"></canvas>
       <ul class="skillkey" id="skillKey" aria-hidden="true"></ul>
       <p class="skillfield__hint" data-i18n="skills.hint">Push them around · click to scatter</p>
@@ -531,6 +517,7 @@
     <p class="eyebrow" data-reveal data-i18n="bg.label">Background</p>
     <h2 class="display sec-title" data-reveal data-split data-i18n="bg.title">Experience &amp; <em>Education</em></h2>
     <p class="lead" data-reveal data-i18n="bg.lead">Let me walk you through the Journey so far.</p>
+
   </div>
 
   <!-- The pixel-art overworld. Mounted by src/modules/experience.js, which
@@ -551,6 +538,14 @@
            tagged element's innerHTML, so a chip styled on the <p> would need the
            text to be its only child. The span is the chip. -->
       <p data-copy="background.1" class="journey__hint"><span data-i18n="bg.hint">Keep scrolling</span></p>
+      <!-- Shown only once the walk has been completed at least once this
+           session (experience.js sets .has-played). Scrolling back up replays
+           the whole walk, which is a delight the first time and a toll every
+           time after, so the way out only appears to someone who has already
+           seen it. A plain anchor, because that is what the nav uses and it is
+           the one scroll mechanism Lenis already cooperates with. Its target
+           flips with the direction of travel -- see experience.js. -->
+      <a class="journey__skip" href="#contact"><span data-i18n="bg.skip">Skip the walk</span> <span class="journey__skip-arrow">↓</span></a>
     </div>
   </div>
 
@@ -656,6 +651,7 @@
     <div class="contact__links" data-reveal>
       <a data-copy="contact.3" href="https://www.linkedin.com/in/shibliafaq" target="_blank" rel="noopener">LinkedIn <span class="btn__arrow">↗</span></a>
       <a data-copy="contact.4" href="https://github.com/shibliafaq" target="_blank" rel="noopener">GitHub <span class="btn__arrow">↗</span></a>
+      <a href="/assets/doc/Shibli_Afaq_Resume.pdf" download>⇩ Resume</a>
       <a data-copy="contact.5" href="https://www.instagram.com/shibli_afaq" target="_blank" rel="noopener">Instagram <span class="btn__arrow">↗</span></a>
       <a data-copy="contact.6" href="https://shibliafaq-iot-dashboard.streamlit.app" target="_blank" rel="noopener">Live Demo <span class="btn__arrow">↗</span></a>
     </div>

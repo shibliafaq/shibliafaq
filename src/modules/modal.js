@@ -111,6 +111,33 @@ function render(data) {
         .join('')}</div>`
     : '';
 
+  /* THE PUBLICATION RECORD, RELOCATED FROM THE RETIRED "RESEARCH OUTPUT"
+     SECTION.
+
+     A paper introduces itself in a fixed order — who wrote it, where it
+     appeared, whether it is real yet — and that order is why this sits directly
+     under the title instead of being folded into the prose below it. Authors,
+     supervisors and target journals were stated on the front page and nowhere
+     else; once the section is gone they have to live on the entry itself or the
+     only claim to peer review goes with it.
+
+     `state` drives the badge, and only 'published' gets the solid amber fill.
+     That rule is carried over from the retired section rather than reinvented:
+     published outranks the other statuses, so it is the one that should read at
+     a glance without being read. */
+  const pub = data.pub
+    ? `<div class="mpub">
+         <p class="mpub__authors">${esc(data.pub.authors)}</p>
+         ${data.pub.venue ? `<p class="mpub__venue">${esc(data.pub.venue)}</p>` : ''}
+         <p class="mpub__row">
+           <span class="mpub__status mpub__status--${data.pub.state === 'published' ? 'published' : 'prep'}">${data.pub.state === 'published' ? '✅' : '✍️'} ${esc(data.pub.status)}</span>
+           ${data.pub.doi
+             ? `<a class="mpub__doi" href="${esc(data.pub.doi)}" target="_blank" rel="noopener">${esc(data.pub.doi.replace('https://', ''))} ↗</a>`
+             : ''}
+         </p>
+       </div>`
+    : '';
+
   const tags = data.tags?.length
     ? `<div class="msec">Stack &amp; Methods</div><div class="tags">${data.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>`
     : '';
@@ -165,6 +192,7 @@ function render(data) {
   return `
     <p class="mcat">${esc(data.cat)}</p>
     <h2 class="mtitle" id="modalTitle">${esc(data.title)}</h2>
+    ${pub}
     ${finding}
     <p class="mdesc">${data.desc}</p>
     ${abstract}${metrics}${embed}${twin}${diagram}${method}${worked}${gallery}${galleries}${videos}${extra}${tags}${links}

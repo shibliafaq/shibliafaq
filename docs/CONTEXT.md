@@ -3375,3 +3375,498 @@ applied analytically afterwards -- composited pixels cannot be read back from th
 page without rasterising it. The ranking and the direction are solid and the
 before/after gap is far larger than the modelling error, but the exact ratios are
 close estimates rather than readings, and should not be quoted as measurements.
+
+## 43. Calls to action move, and the walk gets an exit (2026-08-22)
+
+Five changes, four of them a single argument about where a call to action
+belongs and one about a delight that becomes a toll.
+
+### The hero stopped asking for four things at once
+
+The hero carried four buttons — View Research, GitHub, Live Demo, Resume — and a
+row of four counters. Four equal-weight buttons is not a call to action, it is a
+menu, and none of them was the thing the page actually wants.
+
+They are gone. GitHub and Resume moved to the top bar next to Get in touch,
+which is where a reader looks for them and where they stay reachable from every
+section rather than only from the top. They were also added to the contact
+section at the foot, so the two ends of the page offer the same three exits.
+Nothing was lost: View Research and Live Demo already exist as their own
+sections, reachable from the nav.
+
+### A fifth stat, and why it had to stay on one line
+
+"6+ Architectural Projects" now sits alongside the research counters. It is the
+half of the work the stats had been silent about.
+
+Five into a grid built for four wrapped to two rows, which reads as two
+categories of fact rather than one. `repeat(5, 1fr)` with a clamped gap keeps the
+row intact; the nav gap became `clamp(.9rem, 2vw, 2rem)` for the same reason, and
+measured clear — links end at 796, the new group starts at 823. Below 860px the
+links and both new buttons drop out and the burger menu carries them, which is
+why they were added to `.navmenu` as well.
+
+### The walk needed a way out, and the way out has a direction
+
+Scrolling back up through the Experience section replays the whole walk. That is
+correct behaviour — the walk is scrubbed by scroll position, it is not a one-shot
+animation — but it means a reader who has already seen it has to sit through it
+again to get past. A delight on first meeting is a toll on second.
+
+So a skip appears, and two constraints shaped it:
+
+**It appears only to someone who has already finished it.** `experience.js` sets
+`.has-played` on the stage when the ScrollTrigger progress passes 0.98, and
+remembers it in `sessionStorage`. Offering to skip something before it has been
+shown is offering nothing. Remembered for the session rather than forever,
+because a fresh visit should still get the walk.
+
+**Its target follows the direction of travel.** This is the part that is easy to
+get wrong, and I got it wrong first: the button pointed at `#contact`
+unconditionally. But getting past the section means leaving by the NEAR edge, and
+which edge that is depends on which way the reader is going. Coming down, that is
+`#contact` below; coming back up — the exact case that prompted the request — it
+is `#skills` above. A fixed `#contact` would have sent someone scrolling up back
+DOWN through the walk they were trying to escape. The arrow glyph flips with it,
+so the button says which way it goes.
+
+Verified in both directions from a clean session: hidden on first load, armed at
+the end of the walk, `#contact` with a down arrow while descending, `#skills` with
+an up arrow while ascending, and the click lands on the right section either way.
+`visibility: hidden` rather than opacity alone, so it cannot take a click while
+invisible — checked with `elementFromPoint`, which returns the canvas behind it.
+
+**Styled as the site's own highlighter, not a new quiet thing.** First attempt was
+a translucent amber outline, which disappeared against bright pixel art.
+Everything else on that stage — the chapter rail, the hint — is deliberately faint
+so it does not compete with the map, and this is the one control that must not be:
+a reader hunting for the exit is already slightly frustrated, and a subtle escape
+hatch is not an escape hatch. It is now solid `--amber` on `--ink`, the same pair
+as Get in touch, with a 3px ring of page ink so the pill keeps a hard edge over
+both bright straw and dark canopy.
+
+Bottom-right, clear of everything at both sizes: on the desktop the visible
+journey card ends at 940 and the button starts at 1033; on the phone the chapter
+rail moves to the top of the stage, so the foot is empty. Translated into all five
+locales as `bg.skip`, because the hint sitting beside it is translated and an
+English button next to an Arabic hint reads as breakage.
+
+### Three instrument notes
+
+All three looked like findings and none of them was.
+
+A scroll loop reported the page frozen — 200 wheel events moved it 2px. It was
+not frozen: dispatching a wheel and reading `getBoundingClientRect()` 30ms later
+reads a rect mid-Lenis-animation, so the loop's exit test kept seeing a stale
+position. Ten events with a 50ms settle moved it 5943px. Settle before measuring,
+or the measurement describes the animation rather than the layout.
+
+`.journey__cards` is a full-stage wrapper, so testing the button against it
+reported an overlap with something that has no pixels. The visible card is its
+child, and it ends 93px short. Test against what is drawn, not against the box
+that holds it.
+
+And the one caught only by reading `git diff --stat`: a 44-line edit to
+`experience.js` reported **639 changed lines**. A scripted edit had appended the
+line terminator to its replacement text and only then converted line endings
+across the whole string, converting the terminator it had just appended and
+leaving one doubled carriage return mid-file. That single stray character was
+enough to stop git normalising the file, so every line read as changed and the
+real diff was invisible. `--ignore-cr-at-eol` separated the two in one command;
+normalised, the diff was +44/-1. Do the conversion first, then append — and treat
+a diffstat far larger than the edit as a line-ending problem until proven
+otherwise, because it buries the change you meant to review.
+
+## 44. Retiring "Research Output" into the tiles (2026-08-22)
+
+The Publications section sat directly under Projects and described three papers
+that already had tiles on the wheel. Two descriptions of the same three things,
+a screen apart. It is gone, and what it knew that the tiles did not has moved
+onto the tiles.
+
+### What the tiles were actually missing
+
+Far less than the section's length suggested. Compared field by field, the tiles
+already carried each paper's abstract verbatim, its metrics, its method, its
+tags and, for the published one, the DOI. The section's own abstracts were
+compressions of text the tiles held in full.
+
+What was genuinely only in the section was the publication metadata:
+
+| | sound | gis | its |
+|---|---|---|---|
+| co-authors | had it in `cat` | **missing** | only "Team of 4" |
+| supervisor / instructor | n/a | **missing** | **missing** |
+| target journals | n/a | **missing** | **missing** |
+| status pill | in `metrics` | **missing** | implied only |
+
+So the migration is a new `pub` record on those three tiles — authors, venue,
+state, status, optional DOI — rendered by `modal.js` directly under the title,
+because that is the order in which a paper introduces itself: who wrote it,
+where it appeared, whether it is real yet. `cat` was trimmed on all three: on
+`sound` it *was* the venue line and would otherwise have said it twice, and on
+the other two it said "Unpublished manuscript", which is now the pill's job.
+
+### The one thing that is genuinely gone
+
+The section lead — "Three papers produced in one M.Sc. year, building toward a
+peer-reviewed publication record for doctoral research." It is a claim about the
+body of work rather than about any one paper, so no tile can hold it. The hero
+counter still says 3 Papers; the sentence framing them as a doctoral trajectory
+is not stated anywhere now. Recorded here rather than quietly dropped.
+
+The wider cost is reach, not content: a reader could previously see "peer
+reviewed, Springer Nature, DOI" without opening anything, and now must open a
+tile. That was raised before the work and the instruction stood.
+
+### Four traps, three of which a hand-sweep missed
+
+`grep '#publications'` returns three lines and would have left the site broken.
+
+**The copy tool hard-blocks between the two halves of this edit.**
+`sync-site-copy.mjs` exits 1 if any key in `docs/site-copy.md` has no anchor in
+`index.html`. Deleting the section orphans eight keys, so from that moment until
+`--export` runs, *every* copy operation on *every* string on the page refuses.
+Delete and re-export in one sitting or leave the repo unusable. And never reach
+for `--force`: it cannot bypass that check anyway, and it is the reflex.
+
+**The two nav links owned different doc keys.** The desktop `<li>` owns
+`_nav.5`; the burger `<a>` owns `nav.publications`, because the collector keeps
+only outermost anchors and the desktop anchor is swallowed by its parent `<li>`.
+Removing one and not the other orphans a key *and* leaves a dead link.
+
+**`.is-rtl .pub__meta` was one line inside a six-selector group** shared with
+`.tag`, `.pcard__result`, `.hstat__val`, `.m-v` and `.mmv`. Deleting the rule
+would have silently broken RTL digit isolation across tags, project cards and
+hero stats. It was not deleted but *moved*: `.mpub__venue` carries the same mix
+of Arabic numerals and Latin journal names that earned the isolation, so the
+rule followed the content. Verified in Arabic: `unicode-bidi: isolate` resolves
+on the relocated element.
+
+**The responsive `.pub` lines live inside a shared `@media`** whose other line
+styles `.about__grid` and `.direction__grid`. Two lines out, not the block.
+
+Also worth stating: `_nav.N` ids are literal attributes, not positional. The gap
+left by `_nav.5` is correct and must not be closed by renumbering — the doc
+headings must match character for character, and gaps are already the norm
+(`_nav.8`–`_nav.19` appear nowhere).
+
+### Two process notes
+
+I edited `projects.js` while a read-only audit of that same file was still
+running, so one auditor reported the supervisor and target journals as "already
+covered" — reading my own edit rather than the original state. The content is
+right, but that agent's result on that point is not independent evidence and is
+not counted as such. Do not write to files an audit is reading.
+
+The adversarial verification of the removal plan did not run: it died on a
+session limit. The plan was executed on the strength of two independent sweeps
+plus a hand-check, with every claim verified in the browser afterward — section
+gone, zero dead anchors, all three records rendering, RTL intact, console clean.
+That is weaker than the intended check and is recorded as such.
+
+### The verification landed, and it found the debris next door
+
+The adversarial pass eventually ran and confirmed the removal independently:
+zero `publications` in `index.html`, zero `.pub__` in `sections.css`, zero
+`pubs.*` in `strings.js`, `_nav.6` correctly not renumbered, zero dead anchors
+across all five entry points, no JSON-LD or sitemap to update, no test suite or
+build-config reference, both copy pipelines green. It read `modal.js` and
+`overlays.css` rather than trusting the claim that the relocated record renders,
+and established something the sweeps had not: `modal.js` is the ONLY importer of
+`projects.js` — `book.js` imports `arch.js` — so there is no second, unstyled
+render path for the new `pub` block.
+
+It also endorsed moving rather than deleting the RTL rule, noting that following
+the original plan literally would now strip bidi isolation from the live modal.
+
+**But it made the same process mistake twice over.** The plan it was auditing
+described the repository at git HEAD, while the work had already been executed
+on disk — because the audit was again running against files being written. Its
+own headline is that the plan is stale. The verification is still worth having:
+it re-derived from disk and checked the *result*. But the intended shape — audit,
+verify, then act — collapsed into acting while both ran. Twice in one task is a
+habit, not an accident: **do not start a read-only audit of files you are about
+to edit, or the audit describes a repository that no longer exists.**
+
+**What it found that was genuinely missed:** eighteen orphaned i18n entries from
+the *adjacent* change in the same uncommitted diff. `hero.cta.research`,
+`hero.cta.demo` and `hero.cta.resume` were anchored in HEAD's `index.html` three
+times and nowhere on disk after §43 removed the hero buttons — dead in all six
+locales, referenced nowhere in `src/`. Exactly the silent-orphan class this
+section describes for `pubs.*`, missed on the other half of the change set,
+because orphaned keys produce no error, no warning and no build failure. Removed.
+
+A consequence worth stating: the Resume button *was* translated in six locales
+when it lived in the hero. It moved to the nav without a `data-i18n` anchor, so
+it and the GitHub button beside it are now English-only. Deleting the orphan is
+correct — the key was dead — but the coverage loss is real and unaddressed.
+
+Two more it surfaced, both left alone deliberately. `tools/sync-copy.mjs` is a
+SECOND copy pipeline (timeline text) that no sweep had mentioned; it is
+unaffected, but that was luck rather than coverage, and it is checked now.
+And `README.md` still calls the published paper "Under review" and misspells the
+journal as *Discovering* Cities — untouched, because that file is the GitHub
+profile page.
+
+## 45. The wheel turns on its own (2026-08-22)
+
+The projects wheel was a flywheel: it moved when pushed and came to rest on a
+card. It now turns continuously at 2.5 degrees a second whenever nobody is
+using it — about two and a half minutes for a full circuit, with the front card
+changing roughly every eight seconds.
+
+Three consequences had to be dealt with, all of them downstream of the fact that
+the old loop was built to STOP.
+
+**The snap has no meaning on a wheel that never rests.** Settling to the nearest
+card and then immediately drifting off it is incoherent, so while the drift runs
+a spent flick decays into the drift instead of handing over to the settle. The
+settle was not deleted — it still runs in every case where the drift is off,
+which is what makes hovering feel like the wheel parking rather than freezing
+mid-stride.
+
+**It pauses whenever anyone is actually there.** `modal.js` and `book.js`
+resolve a click through `frontCard()` rather than through what was clicked (see
+the standing note in CLAUDE.md), so on a moving ring the card you open is the
+one that happens to be front when the click lands, not the one you aimed at.
+Hover, drag and keyboard focus all stop the drift, so the instant a reader shows
+intent the ring settles onto a card and holds still. Ambient when ignored,
+stable when used. Keyboard focus counts because a reader arrowing through the
+cards cannot hover, and a list that walks away under the arrow keys is worse
+than one that never moves.
+
+**It is time-based, not frame-based.** The impulse physics counts frames, which
+is fine for a transient nobody times; a constant drift is not, because
+frame-counting turns twice as fast on a 120 Hz display. `dt` is clamped at 50 ms
+so a backgrounded tab cannot bank a jump.
+
+Off screen it does not run at all — measured 0 rAF callbacks while away, against
+~40 per 1.5 s in view. Hover is evaluated at the TOP of a frame rather than in
+the pointermove handler, because `overRing()` reads bounding boxes while
+`paint()` writes transforms every frame; reading from the event handler forces a
+synchronous reflow, reading before the paint uses the layout the previous frame
+already committed. It is only re-evaluated when the pointer has actually moved,
+so an unattended wheel costs nothing extra.
+
+### The bug that only appeared on a fast scroll
+
+Worth recording because it was intermittent rather than dead, which is the
+harder kind.
+
+The entrance animation runs on its own rAF and only calls `paint()`; the drift
+lives in `tick()`. Their observers have different margins — the drift's fires
+early (+10%), the entrance's late (-12%) — so the usual order is: the drift
+observer starts `tick`, `tick` sees `intro` still at 0, declines to drift,
+settles, and **parks itself with `raf = 0`**. The entrance then finishes into a
+loop that is no longer running, and the wheel sits perfectly still until some
+unrelated event happens to call `run()`.
+
+So whether it drifted depended on which observer won, which depended on how fast
+the reader scrolled in. It worked in the first test and not the second, and the
+difference was scroll speed. `runIntro()` now calls `run()` when it completes.
+
+A second, latent one fixed at the same time: Chrome does not reliably fire
+`pointerleave` when an element scrolls out from under a cursor that has not
+moved, so a reader who rested the pointer on a card, scrolled away and came back
+would find a wheel frozen by a hover that ended long ago — and frozen until they
+happened to move the mouse. The intersection observer now clears the hover when
+the wheel leaves the screen.
+
+### Instrument notes
+
+Three readings during this work were wrong before they were right, all the same
+shape: **testing the wrong element's geometry.**
+
+Scrolling to `#projects`'s top does not put the wheel on screen — the `.wheel`
+element begins ~865 px further down, so "the drift did not resume" was a scroll
+target, not a bug. Centring on the wheel by bisection then overshot the other
+way, because the section is pinned and scrolling inside it drives the rotation
+rather than moving the element; stepping down until the element is genuinely
+visible is the only reliable approach.
+
+And `document.hasFocus()` is `false` in the automated pane, so `element.focus()`
+sets `activeElement` without dispatching `focusin` at all. The first focus test
+therefore "proved" that focus did not pause the drift, when nothing had been
+delivered to the handler. Dispatching the event directly tested the code; the
+residual 3 px it then showed was the settle easing to the nearest card, not a
+failure to pause — visible only after allowing the settle time to finish.
+
+Finally, the rate does **not** scale linearly with the constant: the cards are
+spread evenly along the CURVE, not evenly in the parameter, so 3.5 deg/s gave a
+front-card change every 4.4 s and 2.5 deg/s gives 8.1 s. The comment in the code
+quotes the measured figure rather than a derived one, having first quoted a
+derived one that was wrong.
+
+## 46. Sections arrive instead of being there (2026-08-22)
+
+Everything after the heat-map section was simply present as you reached it. Now
+each block assembles as it comes into view, the projects wheel has a
+choreographed entrance, and the pixel map is loaded on request rather than for
+everyone.
+
+### The reveal system existed; the stagger is what was missing
+
+`[data-reveal]` → `.is-in` was already there and already working — 19 below-fold
+elements measured at opacity 0 on load. What made it read as "everything is just
+visible" is that a whole block arrived on one frame, which reads as the page
+finishing loading rather than as the block assembling.
+
+So `--reveal-i` now carries the element's index among its revealing SIBLINGS,
+and the transition delays by that. Siblings, not section position: an element
+eight screens down would otherwise inherit an eight-step delay and arrive
+visibly late for no reason. Capped at six steps. The trigger also moved from
+`top 92%` to `top 88%` — at 92 the element has barely crossed the edge and the
+move reads as a twitch at the bottom of the screen.
+
+**Two sections could not take a generic reveal, and the reason is the same.**
+`.wheels` contains a `position: sticky` stage and `.journey-bleed` contains a
+ScrollTrigger pin. The reveal applies a `transform`, and a transformed ancestor
+re-bases both. Those two needed their own entrances — which is what the rest of
+this section is.
+
+### The projects entrance
+
+Three overlapping stages inside 1.4s, driven from `runIntro`:
+
+1. **The wave lights first.** It is the path the tiles are about to arrive on,
+   so lighting it before they move means they land on something already there.
+2. **The tiles walk in from the farthest point**, one after another. Not a fade
+   and not a slide from off-screen — each card travels along the curve itself,
+   from the figure's deepest z to its own slot, so it arrives already explaining
+   the shape it belongs to. `FAR_FRAC` is solved at module load by scanning the
+   curve, because the figure-eight's deepest point is not at a round fraction of
+   its length and "roughly the back" starts visibly off the path.
+3. **The wordmark types itself**, one letter at a time, once most tiles have
+   landed.
+
+Nothing in stage 2 fades anything: `--vis` is already a function of depth, and
+depth at the far point is 0, so a tile that starts there starts invisible and
+resolves as it comes forward. The entrance rides the depth cue that existed.
+
+Measured: tile spread goes 0 → 255 → 352 → 381px across the entrance, so they
+genuinely stack at one point and separate along the path.
+
+**Two traps this walked into.**
+
+The staging must read off LINEAR time, not `intro`. `intro` is cubic-eased,
+which front-loads — staging against it fires every stage early and bunches the
+last tiles. `introT` is the linear twin; timing reads off it, motion off `intro`.
+
+And the wordmark had to be split at SETUP, not when the entrance starts.
+`runIntro` fires from an observer with a -12% margin, so by then the word has
+already been on screen as ordinary text — splitting at that moment makes it
+appear, vanish, then type back in. Splitting early means the letters are hidden
+from the first paint. The `white-space: nowrap` beside `.wl` is load-bearing for
+the reason recorded in §23: per-letter inline-block spans create a break
+opportunity between every pair, and this label is solved to fill its column.
+Verified after the change: `getClientRects().length === 1`, hub 189.82px.
+
+### The map now asks first, and the old reasoning is superseded not contradicted
+
+The walk used to mount eagerly, several screens early. Deferring had been tried
+once and rejected, because the timeline list stayed on screen until the reader
+arrived and the section then visibly changed identity under them.
+
+That objection was about a change the reader did not ask for and could not
+predict — and a button removes exactly that. They press Load, so the swap is the
+answer to their own question. The ~220 KB of sheets that every visitor used to
+fetch, including everyone who never reached the section, is now fetched only by
+people who want the map. Verified: nothing matching `walk|valleyjourney` appears
+in the resource timing until the button is pressed.
+
+One real defect found by testing: `apply()` did not return `mount()`'s promise,
+so `Promise.resolve(apply())` settled on the same tick and the prompt was
+dismissed before a single sheet had decoded — the is-loading state was already
+gone 200ms after the click, and the code comment claimed the opposite. It now
+returns the promise and the prompt holds for the ~815ms the load actually takes.
+
+### Instrument note, third occurrence
+
+Two "regressions" during this work were both the same broken measurement:
+scrolling in 700px steps with 45ms between them reads bounding boxes mid-Lenis
+animation, so the loop overshoots the section entirely and everything reports
+inert. The wheel was at top -4723 with `--intro` still 0 — never entered, not
+broken. Small steps with ~110ms of settle between them find it every time. This
+is now the third time in two days that a stale rect has been mistaken for a bug;
+the rule from §45 stands and clearly needs applying by default, not after a
+false alarm.
+
+## 47. Why the headings kept vanishing (2026-08-22)
+
+Reported as "important text missing, especially the yellow headings". It was
+real, it was intermittent, and the first two fixes were both wrong in
+instructive ways.
+
+### The measurement
+
+The Experience heading measured `translateY(92.1691px)` on its word spans while
+sitting at y=202 in a 674px viewport — hundreds of pixels past its own 88%
+trigger. `.word` is `overflow: hidden`, so a word pushed 118% down is not late,
+it is gone, and nothing on the page ever brings it back. `gsap.from` applies
+that start state the instant it is created, which is what makes this failure
+absolute rather than cosmetic.
+
+### Two wrong diagnoses, and what each one taught
+
+**First: stale ScrollTrigger offsets.** Plausible — ScrollTrigger caches each
+start as a scroll offset measured at build time, and this page changes height
+afterwards (the skills field unhides, the map adds or removes a pin spacer,
+fonts land). Added a refresh on real height change. It helped and it was not
+enough, because any height change the observer misses leaves every offset below
+it wrong again.
+
+**Second: move the headings to an IntersectionObserver.** An IO has no cached
+geometry, so this should have been airtight. Every heading was still stuck —
+and that is what exposed the real cause, because now the tween reported
+`progress: 1` and `played: true` while the words had not moved.
+
+**The actual cause:** `targets().filter(n => document.contains(n)).length === 0`.
+Every node the tween held was DETACHED. Something round-trips each heading's
+innerHTML after the split; the live DOM held freshly parsed spans carrying
+`transform: translate(0%, 118%)` as a serialised attribute, while GSAP animated
+orphans. The tween was working perfectly on elements nobody could see.
+
+### The fix
+
+An inline style written by JS cannot survive an innerHTML round-trip. A class
+and a custom property can, because both serialise into the new markup unchanged.
+So the motion is now a CSS transition keyed off one class on the heading, with
+`--wi` carrying the per-word stagger, and the only thing JS does is add the
+class from an observer. Whatever re-parses the markup, the rule still applies to
+whatever is actually on screen.
+
+Verified from the top of the page at a human scroll speed: all seven visible
+headings animate on arrival, none stuck.
+
+### The same failure shape, twice more
+
+**The wheel entrance could be skipped entirely.** Tightening its trigger so the
+animation would start on arrival rather than finishing before the reader got
+there made it possible to scroll straight past the band — measured 2756px past
+the stage with `intro` still 0.000. At intro 0 every tile sits stacked at the far
+point with depth 0, which is invisible. So there is now a second clause: once the
+stage's top has passed the top of the viewport, `runIntro(true)` snaps to the
+finished state. Half an entrance is missing content, not a subtle effect.
+
+**And the general lesson.** Three separate mechanisms on this page hide content
+first and reveal it on a signal — `data-reveal`, the split headings, the wheel
+entrance. Every one of them has now failed at least once by never receiving the
+signal. Anything built this way needs a guarantee, not just a trigger: a path
+that ends in the visible state no matter what was missed.
+
+### Also in this pass
+
+- The wheel no longer swallows page scroll. It called `preventDefault()` over a
+  region spanning x 87..1035 of an 1132px viewport, so twelve consecutive
+  scrolls with the cursor near the middle moved the page 0px and the only escape
+  was a ~90px margin at the screen edge. Fair when the ring only moved if you
+  moved it; not fair now that it turns by itself. Drag and arrow keys still turn
+  it deliberately.
+- Reveal triggers moved from `top 92%` to `top 82%`, and the heading observer to
+  `-22%`. At 92 the whole transition happened below the reader's eye — the
+  complaint was exactly "it is already there".
+- The Education prompt is one centred button. The written timeline is hidden but
+  NOT deleted: `renderCard` builds every arrival card in the walk by reading
+  those `<li>` elements, so they are the map's data source as well as its no-JS
+  fallback. Deleting them would empty the game.

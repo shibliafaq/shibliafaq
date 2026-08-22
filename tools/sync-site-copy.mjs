@@ -106,7 +106,7 @@ const SECTIONS = {
   hero: 'Hero', future: 'The other outcome — second globe',
   about: 'About', direction: 'Research direction',
   thermal: 'Thermal sequence', projects: 'Projects', atlas: 'Atlas',
-  publications: 'Publications', skills: 'Skills',
+  skills: 'Skills',
   background: 'Background — headings and chrome', contact: 'Contact',
   _nav: 'Navigation and footer',
 };

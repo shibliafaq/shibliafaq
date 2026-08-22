@@ -176,7 +176,7 @@
    they reorder around punctuation. */
 .is-rtl .tag,
 .is-rtl .pcard__result,
-.is-rtl .pub__meta,
+.is-rtl .mpub__venue,
 .is-rtl .hstat__val,
 .is-rtl .m-v,
 .is-rtl .mmv { unicode-bidi: isolate; }

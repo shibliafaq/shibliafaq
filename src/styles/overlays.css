@@ -82,6 +82,73 @@
   max-width: 22ch;
 }
 
+/* ---- THE PUBLICATION RECORD ---------------------------------------------
+
+   Relocated from the retired "Research Output" section. It sits between the
+   title and the body, which is where a paper states its own provenance, and it
+   is separated by a rule rather than a box: it is a credential, not a callout,
+   and a panel here would compete with the metrics band further down.
+
+   The status vocabulary is inherited from the old section verbatim, including
+   its rule that only "published" gets the solid amber. A badge that reads at a
+   glance without being read is worth more than three badges that all look the
+   same, and there is exactly one status here that has earned it. */
+.mpub {
+  margin: -.4rem 0 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+  max-width: 72ch;
+}
+
+.mpub__authors {
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  color: var(--t-2);
+}
+
+.mpub__venue {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .04em;
+  line-height: 1.7;
+  color: var(--t-3);
+  margin-top: .3rem;
+}
+
+.mpub__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .6rem 1rem;
+  margin-top: .85rem;
+}
+
+.mpub__status {
+  display: inline-block;
+  padding: .3rem .8rem;
+  border-radius: var(--r-pill);
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .06em;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.mpub__status--prep { color: var(--t-2); border-color: var(--line-2); background: rgba(255, 255, 255, .03); }
+.mpub__status--published { color: var(--ink); border-color: var(--amber); background: var(--amber); font-weight: 600; }
+
+.mpub__doi {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .03em;
+  color: var(--amber);
+  text-decoration: none;
+  border-bottom: 1px solid var(--amber-24);
+  word-break: break-all;
+}
+
+.mpub__doi:hover { border-bottom-color: var(--amber); }
+
 .mdesc { font-size: var(--fs-body); line-height: 1.75; color: var(--t-2); max-width: 72ch; }
 
 .mmetrics {

@@ -40,6 +40,28 @@ const MIN_W = 320;
 
 export function initExperience() {
   const stage = document.getElementById('journeyStage');
+  let skipped = false;
+  try { skipped = sessionStorage.getItem('journeyPlayed') === '1'; } catch { /* private mode */ }
+  if (skipped && stage) stage.classList.add('has-played');
+
+  /* THE SKIP HAS TO GO THE WAY THE READER IS ALREADY GOING.
+
+     Getting past this section means leaving it by the near edge, and which edge
+     that is depends on travel: coming down, the way out is #contact below;
+     coming back up -- which is the case that prompted this -- it is #skills
+     above. A skip that always jumped to #contact would send someone scrolling
+     up back DOWN through the walk they were trying to escape, which is the
+     opposite of the favour. */
+  const skipBtn = stage?.querySelector('.journey__skip');
+  const skipArrow = skipBtn?.querySelector('.journey__skip-arrow');
+  let skipDir = 0;
+  function aimSkip(dir) {
+    if (!skipBtn || dir === skipDir) return;
+    skipDir = dir;
+    const up = dir < 0;
+    skipBtn.setAttribute('href', up ? '#skills' : '#contact');
+    if (skipArrow) skipArrow.textContent = up ? '↑' : '↓';
+  }
   const list = document.getElementById('experienceList');
   const rail = document.getElementById('journeyRail');
   if (!stage || !list) return;
@@ -195,7 +217,39 @@ export function initExperience() {
         // The ramp table is measured in stage pixels, so it has to be rebuilt
         // before ScrollTrigger asks for `end`. onRefreshInit runs first.
         onRefreshInit: () => api.refresh(),
-        onUpdate: (self) => api.setScroll(self.progress * api.total),
+        onUpdate: (self) => {
+          api.setScroll(self.progress * api.total);
+          aimSkip(self.direction);
+          /* THE WAY OUT APPEARS ONLY TO SOMEONE WHO HAS ALREADY WALKED IT.
+
+             The walk is scrubbed by scroll position, so scrolling back up plays
+             it again from the end. That is the right behaviour -- it is a
+             position, not a one-shot animation -- but it means a reader who has
+             seen the whole thing and comes back has to sit through it a second
+             time to get past.
+
+             So a skip appears once, and only once, they have actually reached
+             the end. Offering it before then would be offering to skip
+             something they have not been shown yet. Remembered for the session
+             rather than forever, because a fresh visit should still get the
+             walk. */
+          /* Reaching the end RECORDS the crossing but does not offer the
+             skip. Showing it here would put the button on screen during the
+             very first descent, in the last moments of the walk the reader is
+             still watching — offering to skip something they are in the middle
+             of enjoying. */
+          if (!skipped && self.progress > 0.98) {
+            skipped = true;
+            try { sessionStorage.setItem('journeyPlayed', '1'); } catch { /* private mode */ }
+          }
+        },
+        /* The offer is made on a LATER pass, which is the only time it is worth
+           anything: they have seen the walk, they are meeting it again, and the
+           replay is now a toll rather than a delight. Both directions count —
+           coming back up after crossing it, or arriving a second time from
+           above. */
+        onEnter: () => { if (skipped) stage.classList.add('has-played'); },
+        onEnterBack: () => { if (skipped) stage.classList.add('has-played'); },
       });
 
       buildRail(journey.REGIONS, journey.STOPS);
@@ -208,6 +262,25 @@ export function initExperience() {
         { rootMargin: '400px' },
       );
       io.observe(stage);
+
+      /* THE ARRIVAL IS A TRANSITION, NOT A STATE.
+
+         The 400px observer above exists so the canvas is already drawing before
+         the stage rises into view — it must not double as the reveal, or the
+         map would fade in while still 400px below the fold and be finished
+         before anyone saw it. This one has no margin: it fires when the stage
+         is genuinely on screen.
+
+         Opacity only. The stage is the pinned element, and a transform or a
+         filter on it would re-base the pin; opacity creates a stacking context
+         but not a containing block, so it is the one property that is safe to
+         animate here. */
+      const revealIO = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        requestAnimationFrame(() => stage.classList.add('is-ready'));
+        revealIO.disconnect();
+      }, { rootMargin: '0px 0px -8% 0px' });
+      revealIO.observe(stage);
 
       // The canvas backing store and the ramp table are both measured in stage
       // pixels, so they must follow the stage's real box — and that box changes
@@ -271,24 +344,37 @@ export function initExperience() {
 
   /** Only the mount/unmount decision lives here. Geometry is the
       ResizeObserver's job, so crossing MIN_W is all this has to notice. */
+  /* Returns mount()'s promise, which matters for the Load button: without it
+     `Promise.resolve(apply())` settles on the same tick and the prompt is
+     dismissed before a single sheet has decoded, leaving a gap where the map
+     is about to be. Measured: the is-loading state was already gone 200ms
+     after the click. */
   function apply() {
-    if (!wide()) { setEnabled(false); return; }
-    if (mounted) setEnabled(true); else mount();
+    if (!wide()) { setEnabled(false); return undefined; }
+    if (mounted) { setEnabled(true); return undefined; }
+    return mount();
   }
 
-  // Nothing is downloaded at phone width at all — the check comes before the
-  // dynamic import, not after it.
-  //
-  // Mounted eagerly, NOT when the section comes near. Deferring it was tried,
-  // to give a loading animation something to cover, and the cost was that the
-  // timeline list stayed on screen until the reader arrived — so the section
-  // visibly changed identity under them. Loading several screens early means
-  // the map is simply already there.
+  /* MOUNTED EAGERLY, several screens before the reader arrives.
+
+     A Click-to-load button was tried here and removed: it made the reader ask
+     for the section instead of finding it, and the map is the section. The
+     original reasoning stands — deferring leaves the timeline list on screen
+     until the reader arrives, so the section visibly changes identity under
+     them; loading early means the map is simply already there.
+
+     It does not appear abruptly, though. `is-ready` fades it in when the stage
+     actually reaches the viewport, so the arrival is a transition rather than a
+     thing that was always there. Nothing is downloaded at phone width at all:
+     the width check comes before the dynamic import, not after it. */
   apply();
 
   let rt = 0;
   window.addEventListener('resize', () => {
     clearTimeout(rt);
+    // Once mounted, resizing is a geometry question and apply() handles it.
+    // Before that it is an OFFER question — crossing back above 320px should
+    // put the button back, not silently start a download.
     rt = setTimeout(apply, 200);
   });
 

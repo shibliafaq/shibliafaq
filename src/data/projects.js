@@ -59,7 +59,16 @@ export const projects = {
   },
 
   gis: {
-    cat: 'CRP 583: Urban Informatics · KFUPM · Jan–May 2026 · Unpublished manuscript',
+    cat: 'CRP 583: Urban Informatics · KFUPM · Jan–May 2026',
+    /* Supervisor, co-author and target journals existed only in the retired
+       "Research Output" section. The status pill now carries "unpublished",
+       which `cat` used to say, so `cat` no longer repeats it. */
+    pub: {
+      authors: 'Shibli Afaq, Sultan Aldhafeeri · Supervisor: Dr. Baqer Al-Ramadan',
+      venue: '2026 · Target: Urban Climate / Sustainable Cities and Society',
+      state: 'prep',
+      status: 'Manuscript in Preparation',
+    },
     title: 'GIS & Remote Sensing UHI Assessment — Dammam Metropolitan Area',
     /* The manuscript's own abstract, verbatim (final version, May 2026).
        Unpublished, so this is the submitted text rather than a version of
@@ -180,7 +189,15 @@ export const projects = {
   },
 
   its: {
-    cat: 'CE 584: Intelligent Transportation Systems · KFUPM · Jan–Apr 2026 · Team of 4 · Unpublished manuscript',
+    cat: 'CE 584: Intelligent Transportation Systems · KFUPM · Jan–Apr 2026',
+    /* "Team of 4" was all the tile said about authorship; the retired section
+       actually named them, and named the instructor and the target journals. */
+    pub: {
+      authors: 'Shibli Afaq, H. Alnasser, H. Alghamdi, S. Aldhafeeri · Instructor: Dr. Muhammad Abdullah',
+      venue: '2026 · Target: Journal of Intelligent Transportation Systems / Transportation Research Part C',
+      state: 'prep',
+      status: 'Manuscript in Preparation',
+    },
     title: 'ITS-Based Congestion Management — Aramco Stadium Corridor, Al Khobar',
     desc: 'A corridor-level ITS strategy for the 47,000-capacity Aramco Stadium in Al Khobar, host venue for the 2027 AFC Asian Cup and 2034 FIFA World Cup. The corridor already runs at 48.5% evening congestion with 44 hours lost per driver per year (TomTom 2025), and faces a dual-regime problem: chronic daily load overlaid by concentrated event surges. Four cumulative alternatives were scored on a weighted multi-criteria matrix; the recommended one integrates adaptive signal control, ATMS/ATIS, smart parking and park-and-ride, with demand pricing held back as a conditional final phase.',
     /* The manuscript's own abstract, verbatim (final version, May 2026).
@@ -206,7 +223,20 @@ export const projects = {
   },
 
   sound: {
-    cat: 'Discover Cities (Springer Nature) · 2026 · 3:123 · Open Access · Advisors & co-authors: Dr. Yusuf A. Adenle, Dr. Muhammad Aamir Basheer',
+    cat: 'Peer-reviewed journal article · Open Access',
+    /* THE PUBLICATION RECORD, MOVED HERE FROM THE RETIRED "RESEARCH OUTPUT"
+       SECTION. Authors, venue and status used to be stated once on the front
+       page and nowhere else; folded into the tile they have to live on the
+       entry itself, or the only claim to peer review disappears with the
+       section. `cat` was the venue line before this and would now say it
+       twice, so it is back to naming the kind of work. */
+    pub: {
+      authors: 'Shibli Afaq, Yusuf A. Adenle, Muhammad Aamir Basheer',
+      venue: 'Discover Cities (Springer Nature) · 2026 · 3:123 · Open Access',
+      state: 'published',
+      status: 'Published · June 2026',
+      doi: 'https://doi.org/10.1007/s44327-026-00314-z',
+    },
     title: 'A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments',
     desc: 'Published in Discover Cities, June 2026. A PRISMA 2020 systematic review of how the acoustic environment shapes outdoor thermal comfort in hot-arid cities. 1,011 records screened across Scopus, Semantic Scholar and AI-assisted snowballing; 22 studies (2005–2025) synthesised into five interlinked themes. Introduces the Integrated Thermo-Acoustic Planning (ITAP) Framework and a persona-based Interdisciplinary Implementation Toolkit for Vision 2030 public space design.',
     /* The published abstract, verbatim from Discover Cities (2026) 3:123.

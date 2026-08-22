@@ -91,6 +91,14 @@ Cards carry both classes. This has caused three separate bugs — `transform`,
 rather than the real rule below it, and the replacement swallowed 154 lines.
 Check `git diff --stat` before building.
 
+**Convert line endings BEFORE appending them, and read the diffstat.** A scripted
+edit that appends the terminator to its text and only then converts line endings
+across the whole string converts the terminator it just appended, leaving one
+doubled carriage return mid-file. A single stray CR stops git normalising the
+file, so a 44-line change reported 639 and the real diff was unreviewable. Run
+`git diff --stat` after every scripted edit; a count far larger than the edit is a
+line-ending problem, and `--ignore-cr-at-eol` proves it in one command.
+
 **Backticks inside GLSL comments terminate the JS template literal.**
 
 **`position: sticky` dies inside any `overflow: hidden` ancestor,** and is

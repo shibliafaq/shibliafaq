@@ -37,18 +37,6 @@ node tools/sync-site-copy.mjs --write   # apply it
 ### hero.desc
 - Architect evolving into an <strong>urban data scientist</strong>, driven by a passion for building climate-resilient cities through spatial data. Expanding my toolkit to include GIS, machine learning, and remote sensing. Currently finishing my M.Sc. at KFUPM (GPA&nbsp;4.0/4.0). <strong>Open to innovative smart city roles, research collaborations, and fully funded PhD opportunities.</strong>
 
-### hero.2
-- <span data-i18n="hero.cta.research">View Research</span> <span class="btn__arrow">↓</span>
-
-### hero.3
-- GitHub <span class="btn__arrow">↗</span>
-
-### hero.4
-- <span data-i18n="hero.cta.demo">Live Demo</span> <span class="btn__arrow">↗</span>
-
-### hero.5
-- ⇩ <span data-i18n="hero.cta.resume">Resume</span>
-
 ### hero.6
 - #01
 
@@ -192,26 +180,6 @@ node tools/sync-site-copy.mjs --write   # apply it
 
 ### atlas.6
 - Interactive map unavailable on this device
-
-## Publications
-
-### pubs.label
-- Publications
-
-### pubs.title
-- Research <em>Output</em>
-
-### pubs.lead
-- Three papers produced in one M.Sc. year, building toward a peer-reviewed publication record for doctoral research.
-
-### publications.1
-- <span class="pub__n display">01</span> <div class="pub__body"> <h3 class="pub__title">A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments</h3> <p class="pub__meta">Shibli Afaq, Yusuf A. Adenle, Muhammad Aamir Basheer · <em>Discover Cities</em> (Springer Nature) · 2026 · 3:123 · Open Access · <a href="https://doi.org/10.1007/s44327-026-00314-z" target="_blank" rel="noopener">doi.org/10.1007/s44327-026-00314-z</a></p> <span class="pub__status pub__status--published">✅ Published · June 2026</span> <p class="pub__abs">PRISMA-guided systematic review of 22 peer-reviewed studies (2005–2025) on soundscape design, outdoor thermal comfort and urban space quality in hot-arid environments. Five interlinked themes emerge. Under moderate thermal stress, positive soundscapes built from natural sound and green–blue infrastructure reduce perceived heat stress and encourage active use of public space, but the benefit narrows sharply in extreme heat and is predominantly psychological rather than a direct sensory response. Introduces the Integrated Thermo-Acoustic Planning (ITAP) Framework and a persona-based Interdisciplinary Implementation Toolkit for Vision 2030 public space design.</p> </div>
-
-### publications.2
-- <span class="pub__n display">02</span> <div class="pub__body"> <h3 class="pub__title">GIS and Remote Sensing-Based Assessment of Urban Heat Island in the Dammam Metropolitan Area, Saudi Arabia</h3> <p class="pub__meta">Shibli Afaq, Sultan Aldhafeeri · Supervisor: Dr. Baqer Al-Ramadan · 2026 · Target: Urban Climate / Sustainable Cities and Society</p> <span class="pub__status pub__status--prep">✍️ Manuscript in Preparation</span> <p class="pub__abs">Five-step GIS and remote sensing model assessing LST and heat vulnerability across the Dammam Metropolitan Area using Landsat 8/9, Sentinel-2, and WorldPop over a 500&nbsp;m fishnet (12,954 cells). NDBI is the strongest LST predictor (r&nbsp;=&nbsp;0.715). Composite HVI classified 92.6% of cells as High vulnerability, with the HVI hot spot 4.18× larger than temperature-only mapping, revealing planning priorities hidden by single-factor analysis.</p> </div>
-
-### publications.3
-- <span class="pub__n display">03</span> <div class="pub__body"> <h3 class="pub__title">ITS-Based Congestion Management for Event Corridors in Arid Cities: A Case Study of the Aramco Stadium Corridor, Al Khobar</h3> <p class="pub__meta">Shibli Afaq, H. Alnasser, H. Alghamdi, S. Aldhafeeri · Instructor: Dr. Muhammad Abdullah · 2026 · Target: Journal of Intelligent Transportation Systems / Transportation Research Part C</p> <span class="pub__status pub__status--prep">✍️ Manuscript in Preparation</span> <p class="pub__abs">Al Khobar's Aramco Stadium corridor (47,000 capacity) already runs at 48.5% evening congestion with 44 hours lost per driver per year, and faces concentrated event surges before the 2027 AFC Asian Cup and 2034 FIFA World Cup. Four cumulative ITS alternatives were scored on a weighted multi-criteria matrix, from adaptive signal control through to demand-management pricing. The recommended alternative layers ATSC, ATMS/ATIS, smart parking and park-and-ride, at an indicative planning-level cost of $4.3–12.1M; the ATSC literature reports 10–20% travel-time savings. Costs and KPIs are estimates from published sources, not measured results.</p> </div>
 
 ## Skills
 
@@ -373,6 +341,9 @@ node tools/sync-site-copy.mjs --write   # apply it
 ### background.1
 - <span data-i18n="bg.hint">Keep scrolling</span>
 
+### bg.skip
+- Skip the walk
+
 ## Contact
 
 ### contact.label
@@ -422,9 +393,6 @@ node tools/sync-site-copy.mjs --write   # apply it
 ### _nav.4
 - <a href="#projects" data-i18n="nav.research">Research</a>
 
-### _nav.5
-- <a href="#publications" data-i18n="nav.publications">Publications</a>
-
 ### _nav.6
 - <a href="#background" data-i18n="nav.background">Background</a>
 
@@ -439,9 +407,6 @@ node tools/sync-site-copy.mjs --write   # apply it
 
 ### nav.research
 - Research
-
-### nav.publications
-- Publications
 
 ### nav.skills
 - Skills

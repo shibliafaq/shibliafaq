@@ -499,11 +499,17 @@ export function initEarth(opts = {}) {
      sin(82) = 0.990, so the sphere still stops short of the camera. */
   const ANG_LOW = 82;
 
-  // How much of the frame the fully pulled-back sphere is allowed to fill.
-  // 1.0 would have the limb touch both edges exactly; this leaves the planet
-  // visibly surrounded by space, which is what makes it read as pulled back
-  // rather than merely smaller.
-  const FIT_MARGIN = 0.82;
+  /* How much of the frame the fully pulled-back sphere is allowed to fill.
+     1.0 would have the limb touch both edges exactly; this leaves the planet
+     visibly surrounded by space, which is what makes it read as pulled back
+     rather than merely smaller.
+
+     0.82 was measured too tight on a short window. On 1165x603 the sphere came
+     to 452px of a 603px frame, and since the nav occupies the top ~66px of that
+     frame the planet arrived with its limb almost against the nav and the only
+     visible breathing room underneath — geometrically centred, optically
+     notched into the top. 0.72 restores a margin that survives the nav. */
+  const FIT_MARGIN = 0.72;
 
   // Where the idle settle eases back to, and the centre of the drag clamp.
   // A variable rather than the constant, because the comfortable tilt for a
@@ -587,7 +593,14 @@ export function initEarth(opts = {}) {
        0.45 moves it up about 60px and puts the text under the disc rather than
        through it. Desktop is wide enough that the copy clears the sphere on its
        own, so it stays centred. */
-    const toY = narrow ? 0.45 : 0;
+    /* Centred in the space BELOW the nav rather than in the raw frame. The nav
+       is fixed over the top of the stage, so a sphere centred on the canvas
+       sits high by half the nav's height — which is exactly the "notched at the
+       top" it was reported as. Converted from CSS pixels into world units via
+       the visible half-height so it holds at any viewport. */
+    const navPx = 66;
+    const navDrop = (navPx / 2) / (canvas.clientHeight || 1) * (halfH * 2);
+    const toY = (narrow ? 0.45 : 0) - navDrop;
 
     /* The dive rides ON TOP of the pulled-back framing rather than replacing
        it, so the two never fight: `zoom` decides where the globe sits, `dive`
