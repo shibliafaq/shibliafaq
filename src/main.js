@@ -16,12 +16,15 @@ import { initModal, initArch, initLightbox } from './modules/modal.js';
 import { initNav, initCursor, initForm } from './modules/ui.js';
 import { initRiyadhReveal } from './modules/riyadh.js';
 import { initBook } from './modules/book.js';
+import { initMediaGuard } from './modules/protect.js';
 
 const idleInit = window.requestIdleCallback
   ? (fn) => window.requestIdleCallback(fn)
   : (fn) => setTimeout(fn, 200);
 
 initScroll();
+// Two delegated listeners; cheap, and must be live before media appears.
+initMediaGuard();
 initNav();
 initCursor();
 initHero();

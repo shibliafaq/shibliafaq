@@ -262,3 +262,31 @@ h3 { font-size: var(--fs-h3); }
     scroll-behavior: auto !important;
   }
 }
+
+/* ---- MEDIA GUARD ---------------------------------------------------------
+
+   Paired with src/modules/protect.js and gated on the same attribute, so the
+   whole thing is one switch on <html>. Read the note in that file for what this
+   can and cannot do — in short, it closes the casual save paths and does not
+   pretend to be a download block.
+
+   `-webkit-touch-callout: none` is the one that matters most in practice: it
+   suppresses the long-press sheet on iOS, which is how images actually leave a
+   site on a phone. The drag properties cover the desktop half, and the JS
+   handles Firefox, which honours neither. */
+[data-protect-media] img,
+[data-protect-media] video,
+[data-protect-media] canvas {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* The booklet pages and project stills are the images worth the friction, and
+   they are also the ones a reader has no reason to select as text. */
+[data-protect-media] .pcard__media,
+[data-protect-media] .book__page,
+[data-protect-media] .mgal {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
