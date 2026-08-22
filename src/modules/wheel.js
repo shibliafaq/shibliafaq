@@ -1414,44 +1414,37 @@ function setupWheel(root) {
        measures. Outside it the page still scrolls, so the principle the ring
        established -- the margins belong to the page -- survives. */
     if (path === 'lissajous') {
-      /* OVER A TILE, NOT OVER A BOUNDING BOX.
+      /* A FIXED ZONE, BECAUSE THE TILES MOVE AND THE READER DOES NOT.
 
-         Three definitions were tried and the first two were both wrong in the
-         same way — they described a REGION rather than the objects in it.
+         Three tile-derived definitions were tried and all three failed, and the
+         reason is the same for every one: the wheel now turns on its own, so any
+         region derived from where the tiles ARE is a region that slides out from
+         under a stationary cursor. Measured mid-drift, 31% of the stage was over
+         a tile and 69% was not — so a reader scrolling in a gap would have a tile
+         drift under the pointer and the page would stop dead in the middle of the
+         gesture. That is the intermittent trap, and it is unfixable by choosing a
+         better set of tiles.
 
-         The union of all fourteen cards claimed x 87..1035 of an 1132px
-         viewport: a rectangle that is mostly the empty space BETWEEN tiles, so
-         the page could not be scrolled from anywhere sensible. Narrowing to the
-         front card fixed the trap and broke the obvious case instead — the
-         cursor sitting squarely on a tile that happened not to be the front one
-         scrolled the page.
+         So the zone is geometric and still: the middle of the stage, which is
+         where the front of the figure travels and the only part anyone would
+         point at to turn it. Edges and corners are the page. It never changes
+         under a cursor that is not moving, which is what makes the two
+         behaviours learnable instead of a lottery.
 
-         So the test is per card, against each one's own rect: is the pointer on
-         a tile. Gaps in the figure, the margins either side, the heading and the
-         legend all belong to the page. Geometry rather than elementFromPoint,
-         because inside `preserve-3d` hit-testing resolves to the scene plane
-         once the ring turns — that is recorded in CLAUDE.md and is why the rest
-         of this module derives the front card from projected area too.
-
-         The small pad closes the hairline seams between adjacent tiles, so a
-         scroll cannot fall through to the page in the gap between two cards the
-         reader sees as touching. */
-      const pad = 10;
-      for (const c of cards) {
-        /* Only the tiles travelling through the FRONT of the figure. A card
-           that has receded far enough to become a plate is 50-odd pixels of
-           unreadable texture out near the edge of the stage, and treating it as
-           a scroll target meant the page stopped scrolling in places that do
-           not look like a control at all. `is-plate` is the same threshold the
-           module already uses to decide a card is no longer a card — reusing it
-           keeps this one rule rather than two that can drift apart. */
-        if (c.classList.contains('is-plate')) continue;
-        const b = c.getBoundingClientRect();
-        if (!b.width || !b.height) continue;
-        if (e.clientX >= b.left - pad && e.clientX <= b.right + pad
-         && e.clientY >= b.top - pad && e.clientY <= b.bottom + pad) return true;
-      }
-      return false;
+         Written as fractions of the stage rather than pixels so it holds at
+         every viewport, and read from the stage rather than the section because
+         the section also contains the heading and the legend, which belong to
+         the page. */
+      const stage = root.querySelector('.wheel__stage') || root;
+      const b = stage.getBoundingClientRect();
+      if (!b.width || !b.height) return false;
+      const ZONE_W = 0.46;   // middle 46% of the stage's width
+      const ZONE_H = 0.66;   // middle 66% of its height
+      const halfW = (b.width * ZONE_W) / 2;
+      const halfH = (b.height * ZONE_H) / 2;
+      const cx = b.left + b.width / 2;
+      const cy = b.top + b.height / 2;
+      return Math.abs(e.clientX - cx) <= halfW && Math.abs(e.clientY - cy) <= halfH;
     }
     const front = cards.find((c) => c.getAttribute('aria-hidden') === 'false') || cards[0];
     const b = front.getBoundingClientRect();
@@ -1489,22 +1482,55 @@ function setupWheel(root) {
 
   // Drag, for trackpads and touch. Vertical only — horizontal is not this
   // control's axis and stealing it would break page gestures.
-  let dragging = false;
+  /* THE GESTURE IS JUDGED BEFORE IT IS CLAIMED.
+
+     On a phone this was the whole ambiguity. Touching the ring captured the
+     pointer immediately, so the browser lost the gesture before anyone knew
+     whether it was a swipe along the ring or a scroll down the page — and on a
+     stage that fills most of a phone screen, most touches that LAND on the ring
+     are people trying to scroll past it.
+
+     So a touch on the ring now starts as undecided. The first few pixels decide
+     it: if the dominant direction matches the axis the ring actually travels on
+     it becomes a ring drag and the pointer is captured; if it does not, the ring
+     lets go for the rest of the gesture and the page keeps it. Below 900px the
+     ring is horizontal, so a vertical swipe is a page scroll, every time.
+
+     8px is enough to have a direction and short enough that the ring does not
+     feel like it lags at the start of a real drag. */
+  let dragging = false;   // the ring has claimed this gesture
+  let pending = false;    // started on the ring, direction not yet known
+  let startX = 0, startY = 0;
   let lastY = 0;
   let lastX = 0;
+  const AXIS_LOCK = 8;
+
   root.addEventListener('pointerdown', (e) => {
     if (e.target.closest('a, button')) return;
     if (!overRing(e)) return;
-    dragging = true; lastY = e.clientY; lastX = e.clientX;
-    root.setPointerCapture?.(e.pointerId);
+    // Deliberately no setPointerCapture here — see the note above.
+    pending = true;
+    startX = lastX = e.clientX;
+    startY = lastY = e.clientY;
   });
+
   root.addEventListener('pointermove', (e) => {
+    if (pending) {
+      const dx = Math.abs(e.clientX - startX);
+      const dy = Math.abs(e.clientY - startY);
+      if (Math.max(dx, dy) < AXIS_LOCK) return;      // too early to tell
+      pending = false;
+      if (horizontal ? dx <= dy : dy <= dx) return;  // the page's gesture
+      dragging = true;
+      root.setPointerCapture?.(e.pointerId);
+    }
     if (!dragging) return;
     const d = horizontal ? (e.clientX - lastX) : (e.clientY - lastY);
     lastY = e.clientY; lastX = e.clientX;
     turn((horizontal ? -1 : 1) * d * WHEEL_K * 1.6);
   });
   const endDrag = (e) => {
+    pending = false;
     if (!dragging) return;
     dragging = false;
     root.releasePointerCapture?.(e.pointerId);

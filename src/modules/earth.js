@@ -200,7 +200,11 @@ const SURFACE_FRAG = /* glsl */ `
 
     // Ambient is deliberately generous — this is a backdrop, not a physics demo,
     // and a hard falloff to black leaves most of the visible cap unreadable.
-    vec3 lit = day * (0.30 + 1.15 * max(ndl, 0.0));
+    // Lifted from 0.30/1.15: the crescent that opens the page is mostly the
+    // terminator, where the diffuse term is near zero and the ambient is doing
+    // all the work, so raising the ambient is what actually brightens the shot
+    // rather than blowing out the sunlit limb.
+    vec3 lit = day * (0.42 + 1.24 * max(ndl, 0.0));
     lit += vec3(0.55, 0.72, 0.95) * spec * max(ndl, 0.0);
 
     // Night side: pulled down hard and warmed. The raw VIIRS composite is far
@@ -567,7 +571,12 @@ export function initEarth(opts = {}) {
     const fromScale = narrow ? 1.58 : 1.74;
     baseScale = fromScale;   // the drag reference for THIS breakpoint
     const fromY = narrow ? -1.28 : -1.45;
-    const fromX = narrow ? 0 : 0.1;
+    /* 0, not 0.1. The desktop close-up carried a small rightward offset, so
+       the opening crescent sat off centre against a hero whose copy is
+       centred — the two disagreed by about a tenth of the sphere's radius,
+       which is small enough to look like a mistake rather than a choice.
+       Phones were already 0. */
+    const fromX = 0;
 
     // TO: the whole sphere, in frame. DERIVED from the viewport rather than
     // hardcoded per breakpoint, because which edge the sphere hits first
