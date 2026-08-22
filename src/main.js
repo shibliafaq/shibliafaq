@@ -8,7 +8,7 @@ import './styles/i18n.css';
 
 import { initScroll, ScrollTrigger } from './modules/scroll.js';
 import { initReveals } from './modules/reveals.js';
-import { initHero } from './modules/hero.js';
+import { initHero, heroExit } from './modules/hero.js';
 import { initWheels } from './modules/wheel.js';
 import { initSkills } from './modules/skills.js';
 import { initExperience } from './modules/experience.js';
@@ -118,10 +118,46 @@ idleInit(() => {
     const smoothstep = (t) => t * t * (3 - 2 * t);
 
     const HERO_COPY_FADE = 0.55;   // must match hero.js
+    /* THE LIVING EARTH NEEDS A BEAT OF ITS OWN.
+
+       The decay used to start at pCopyGone, the exact point the zoom finished,
+       so the whole planet existed for one frame and immediately began dying.
+       That left nowhere to put the Whole Picture caption, which is why it kept
+       arriving on top of the departing hero: not because it was early, but
+       because the only slot available to it was already occupied.
+
+       This hold is that window. Measured, the scrub had 54.7% of its range
+       (1884px) sitting idle AFTER the decay finished, so the beat is paid for
+       out of scroll that was doing nothing at all. */
+    const HOLD = 0.14;             // the planet stays whole for this much scrub
     const DECAY_SPAN = 0.30;       // how much of the scrub the surface turn takes
+    const WHOLE_IN = 0.05;         // the caption arrives, after the hero clears
+    const WHOLE_OUT = 0.05;        // and leaves again, as the turn begins
 
     let pCopyGone = 0.4;           // recomputed on every refresh, below
-    let pDecayEnd = 0.54;
+    let pDecayStart = 0.54;
+    let pDecayEnd = 0.84;
+
+    /* Painting the caption is its own function because two different clocks
+       need to call it: the scroll, and the hero timeline settling after the
+       scroll has stopped. Returns how far the hero has cleared, so the caller
+       can tell whether the value just painted is final or still chasing. */
+    let captionRaf = 0;
+    const paintCaption = (p) => {
+      const cleared = smoothstep(range(heroExit.progress(), 0.9, 1));
+      const w = cleared
+              * smoothstep(range(p, pCopyGone, pCopyGone + WHOLE_IN))
+              * (1 - smoothstep(range(p, pDecayStart, pDecayStart + WHOLE_OUT)));
+      /* On `worlds` rather than on the stage: custom properties inherit down
+         and never sideways, and the caption is not inside the stage. */
+      worlds.style.setProperty('--whole', w.toFixed(3));
+      /* Invisible is not the same as absent. Once the caption has faded it is
+         still focusable and still read aloud, so a keyboard reader would tab
+         into three paragraphs about the living Earth while looking at the dead
+         one. Set from the same signal the stylesheet uses to hide it. */
+      if (wholeCopy) wholeCopy.inert = w < 0.02;
+      return cleared;
+    };
 
     ScrollTrigger.create({
       trigger: document.querySelector('.worlds__two') || worlds,
@@ -133,7 +169,11 @@ idleInit(() => {
         const px = self.end - self.start;                 // this scrub, in pixels
         if (!px) return;
         pCopyGone = Math.min(0.6, (window.innerHeight * HERO_COPY_FADE) / px);
-        pDecayEnd = Math.min(0.85, pCopyGone + DECAY_SPAN);
+        /* Clamped on the START rather than on the end, so that on a short
+           scrub it is the hold that gives way under pressure and never the turn
+           the hold exists to make room for: DECAY_SPAN survives either way. */
+        pDecayStart = Math.min(0.62, pCopyGone + HOLD);
+        pDecayEnd = Math.min(0.92, pDecayStart + DECAY_SPAN);
       },
       onUpdate: (self) => {
         const p = self.progress;
@@ -141,7 +181,7 @@ idleInit(() => {
         // attention and the surface turn gets the frame to itself.
         const z = easeInOut(range(p, 0, Math.max(0.05, pCopyGone - 0.02)));
         earth.setZoom(z);
-        const d = smoothstep(range(p, pCopyGone, pDecayEnd));
+        const d = smoothstep(range(p, pDecayStart, pDecayEnd));
         earth.setDecay(d);
         // Published as a custom property rather than tweened directly, so the
         // stylesheet still decides what the scrim and the heat glow LOOK like
@@ -159,12 +199,49 @@ idleInit(() => {
            finished, which is the other half of deciding whether it should be on
            screen — decay alone reads 0 during the hero too. */
         worlds.style.setProperty('--zoom', z.toFixed(3));
-        /* Invisible is not the same as absent. Once the copy has faded it is
-           still focusable and still read aloud, so a keyboard reader would tab
-           into three paragraphs about the living Earth while looking at the
-           dead one. `inert` takes it out of the tree at the same threshold the
-           stylesheet uses to hide it. */
-        if (wholeCopy) wholeCopy.inert = d > 0.27;
+        /* THE CAPTION WAITS FOR THE HERO'S STATE, NOT FOR A SCROLL POSITION.
+
+           Two earlier attempts failed for the same underlying reason. The
+           first rebuilt this in CSS from `--zoom` and `--decay`; both are flat
+           through the hold, so the fade-in had nowhere to go but the last 14%
+           of the zoom, which is scroll the hero is still using. The second
+           gave the caption its own trigger at `scrub: 0.8` to match the hero's
+           lag — but the caption's fade window is 172px against the hero's
+           526px, so an equal lag in TIME is an unequal lag in PROGRESS, and it
+           still arrived first.
+
+           Gating on `heroExit.progress()` ends the class of bug rather than
+           the instance: the caption cannot start until the hero timeline has
+           actually finished, however fast the reader is moving.
+
+           The EXIT deliberately stays on this instant scrub rather than a
+           lagged one. It has to stay locked to the decay it is leaving ahead
+           of — a lagged exit would let the words about a living planet linger
+           over a visibly turning one, which is the exact state this whole
+           sequence exists to avoid. */
+        const settling = paintCaption(p) < 1;
+        /* THIS TRIGGER GOING QUIET IS NOT THE END OF THE STORY.
+
+           The hero eases toward the scroll on a 0.8s follow of its own. A
+           reader who flicks into the hold and then stops to look leaves the
+           scroll motionless while the hero is still catching up behind them —
+           no more scroll events, so no more updates here, and the caption
+           would stay hidden over a living Earth that is just sitting there
+           waiting for it. Measured: a fast flick skipped the caption
+           completely, peak opacity 0 across the entire section.
+
+           So when the value just painted was still chasing, keep painting
+           until it is not. Bounded by the scrub follow itself: the loop stops
+           the moment the hero reports it has cleared. */
+        if (settling) {
+          cancelAnimationFrame(captionRaf);
+          const settle = () => {
+            if (paintCaption(self.progress) < 1) {
+              captionRaf = requestAnimationFrame(settle);
+            }
+          };
+          captionRaf = requestAnimationFrame(settle);
+        }
       },
     });
 

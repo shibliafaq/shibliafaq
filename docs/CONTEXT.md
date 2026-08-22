@@ -3870,3 +3870,95 @@ that ends in the visible state no matter what was missed.
   NOT deleted: `renderCard` builds every arrival card in the walk by reading
   those `<li>` elements, so they are the map's data source as well as its no-JS
   fallback. Deleting them would empty the game.
+
+
+## 48. Giving the living Earth a beat of its own (2026-08-23)
+
+The report was two things in one sentence: "can you add a better transition
+here? also this paragraph is starting to appear when the previous page has not
+finished disappearing". The second half turned out to be the cause of the first.
+
+**There was no gap to transition INTO.** The timing model had
+`zoom` finishing at `pCopyGone - 0.02` and `decay` starting at `pCopyGone`. The
+whole planet therefore existed for one frame before it began dying, and the
+Whole Picture caption had nowhere to be except on top of the departing hero. It
+was not early; there was no slot.
+
+Measured, the scrub had **54.7% of its range (1884px) idle after the decay
+finished**, so a hold cost nothing that was in use. `HOLD = 0.14` now sits
+between them, and `pDecayStart` is clamped rather than `pDecayEnd` so that on a
+short scrub the hold gives way under pressure and never the turn it exists to
+make room for.
+
+### Three attempts, and why the first two could not have worked
+
+**1. Reconstruct the caption's opacity in CSS from `--zoom` and `--decay`.**
+This is what was there. It needed the magic multiplier `calc(var(--zoom) * 7 - 6)`,
+and the multiplier is the tell: both inputs are FLAT through the window the
+caption cares about — zoom pinned at 1, decay at 0 for the whole hold. The only
+resolution left was the last 14% of the zoom, which is scroll the hero is still
+using. A signal that is constant where you need detail cannot be rescued by
+scaling it.
+
+**2. Match the hero's lag with a second trigger at `scrub: 0.8`.** The hero copy
+is tweened in `hero.js` on a 0.8s follow, while `--whole` rode the worlds
+trigger's `scrub: true`. Equal lag looked like the fix and was not: the
+caption's fade window is **172px against the hero's 526px**, so an equal lag in
+TIME is an unequal lag in PROGRESS. Measured under a fast flick, the hero was
+still at **0.58 opacity with the caption already at 1**.
+
+**3. Gate on the hero's actual state.** `hero.js` now exports
+`heroExit = { progress: () => ... }` and the caption multiplies by
+`smoothstep(range(heroExit.progress(), 0.9, 1))`. This ends the class of bug
+rather than the instance — "gone" is a state, not a scroll position, and no
+fixed offset can express it because the required offset is a function of scroll
+velocity. It defaults to `1` ("already gone") so a timeline that is never built
+cannot block the caption out of existence forever.
+
+### The bug the fix caused
+
+Gating on the hero made the fast flick clean and made the caption **never appear
+at all** — peak opacity 0 across the whole section. The hero eases on its own
+clock, so a reader who flicks into the hold and stops leaves the scroll
+motionless while the hero is still catching up: no more scroll events, no more
+`onUpdate`, and the caption stays hidden over a living Earth that is just
+sitting there. `paintCaption()` is therefore callable from two clocks, and the
+scroll handler starts a short rAF settle whenever the value it just painted was
+still chasing. Bounded by the follow itself — it stops the moment the hero
+reports clear.
+
+### Measured, before and after
+
+| | before | after |
+|---|---|---|
+| overlap at reading pace | 476px | **0** |
+| overlap under a fast flick | hero 0.58 vs caption 1.0 | **0** |
+| caption peak opacity | 0.90 | **1.00** |
+| fully readable hold | — | **360px** |
+| decay when the caption is gone | 0.89 | **0.10** |
+
+Reading pace: caption first visible at y=585, the exact sample at which the hero
+clears. Gone by y=1216 with the surface only a tenth turned, so the words about
+a living planet are never on a visibly dying one.
+
+### And a rule that was being broken quietly
+
+The first pass at this added a CSS fade on `.hero__body, .hero__stats` keyed to
+`--zoom`. It could not have worked and the failure is worth keeping:
+
+- `.hero__stats` is tweened by GSAP, which writes an **inline** opacity. The
+  stylesheet lost that half outright, so the stats sat at full strength while
+  the body faded and the two halves of one block came apart mid-exit. This is
+  why the first measurement read `stats: 1` while `hero: 0`.
+- `.hero__body` failed more quietly: GSAP fades its **children** individually
+  (`.hero__hey`, `.hero__role`, `.hero__desc`, `.hero__actions`), so a rule on
+  the parent MULTIPLIED with them and the body left at roughly twice the
+  intended rate. It also flattened `.hero__name`, which the timeline
+  deliberately holds at 0.12 rather than taking to 0.
+
+**One element, one owner.** The hero timeline owns the hero's exit; `layout.css`
+only decides when the caption that follows may arrive. The stylesheet also
+carries **no transition** on `--whole`: it is already scrubbed, and a transition
+on top of a scrubbed value re-eases on every tick and only adds the lag that
+caused this in the first place. The easing lives in the smoothstep that produces
+the number.

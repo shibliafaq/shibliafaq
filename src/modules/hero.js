@@ -37,6 +37,24 @@ function typewriter(el) {
   tick();
 }
 
+/* THE HERO'S EXIT, READABLE FROM OUTSIDE.
+
+   The Whole Picture caption in main.js has to wait until this copy is actually
+   gone, and "gone" is not a scroll position. This timeline is scrubbed with a
+   0.8s follow, so how far it trails the scroll depends on how fast the reader
+   is moving: measured under a fast flick, the hero was still at 0.58 opacity
+   238px PAST the end of its own range, with the caption already at full
+   strength on top of it. No fixed offset fixes that, because the offset would
+   have to be a function of scroll velocity.
+
+   Publishing the timeline's own progress lets the caption gate on the state
+   rather than on the position, which is correct at every speed. It is a
+   property read, not a style read, so it costs nothing per tick.
+
+   Defaults to 1, meaning "already gone": if this timeline is never built the
+   caption must not be blocked out of existence forever. */
+export const heroExit = { progress: () => 1 };
+
 export function initHero() {
   const tw = document.getElementById('tw');
   if (tw) typewriter(tw);
@@ -83,7 +101,7 @@ export function initHero() {
   const scrub = { ease: 'none', immediateRender: false };
 
   intro.eventCallback('onComplete', () => {
-    gsap.timeline({
+    const exit = gsap.timeline({
       /* Ends at 55% of a screen, not at the hero's bottom edge.
          The camera finishes pulling back at 602px of scroll (0.72 of an 837px
          range) while 'bottom top' put this fade's end at 910px — so the
@@ -120,5 +138,7 @@ export function initHero() {
       .fromTo('.hero__stats',
         { y: 0, opacity: 1 },
         { y: -20, opacity: 0, ...scrub }, 0.15);
+
+    heroExit.progress = () => exit.progress();
   });
 }
