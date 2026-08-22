@@ -123,6 +123,43 @@ const REGION_LAT = {
 /**
  * @returns {{lat:number, lon:number, zone:string|null}}
  */
+/* WHERE TO GO WHEN THE BROWSER WILL NOT SAY.
+
+   The last resort used to be latitude 25 paired with the offset-derived
+   longitude, which is a real place only by accident and is always the SAME
+   accident: every unknown visitor got the same patch of Arabian desert.
+
+   A random city is the better answer, for the same reason the opening is a
+   globe and not a map. The shot is meant to say "this is a whole planet and the
+   work is about cities on it" — somewhere real and different each time says
+   that; one fixed default says the feature is broken.
+
+   Rolled ONCE per page load and cached, because this is asked twice — once to
+   aim the opening globe and once to aim the dive — and a fresh roll each time
+   would send the two to different continents. */
+const FALLBACK_CITIES = [
+  [35.68, 139.69],   // Tokyo
+  [-23.55, -46.63],  // Sao Paulo
+  [40.71, -74.01],   // New York
+  [51.51, -0.13],    // London
+  [-33.87, 151.21],  // Sydney
+  [19.43, -99.13],   // Mexico City
+  [-1.29, 36.82],    // Nairobi
+  [55.75, 37.62],    // Moscow
+  [1.35, 103.82],    // Singapore
+  [30.04, 31.24],    // Cairo
+  [-34.60, -58.38],  // Buenos Aires
+  [37.57, 126.98],   // Seoul
+];
+
+let rolledFallback = null;
+function randomCity() {
+  if (!rolledFallback) {
+    rolledFallback = FALLBACK_CITIES[Math.floor(Math.random() * FALLBACK_CITIES.length)];
+  }
+  return rolledFallback;
+}
+
 function visitorLatLon() {
   let zone = null;
   try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || null; } catch {}
@@ -131,10 +168,17 @@ function visitorLatLon() {
     const [lat, lon] = ZONE_LATLON[zone];
     return { lat, lon, zone };
   }
-  const lon = visitorLongitude();
+
+  /* A region prefix still beats a guess: "America/Boise" is not in the table
+     but "America" is, and the offset puts it at roughly the right longitude.
+     That lands on the right part of the right landmass, which is the job. */
   const region = zone ? zone.split('/')[0] : null;
-  const lat = (region && REGION_LAT[region] !== undefined) ? REGION_LAT[region] : 25;
-  return { lat, lon, zone };
+  if (region && REGION_LAT[region] !== undefined) {
+    return { lat: REGION_LAT[region], lon: visitorLongitude(), zone };
+  }
+
+  const [lat, lon] = randomCity();
+  return { lat, lon, zone, random: true };
 }
 
 /** three.js maps u=0.25 to +Z, so 90W faces the camera at rotation 0. */
@@ -434,6 +478,24 @@ export function initEarth(opts = {}) {
 
      Falls back to Riyadh when the zone is unrecognised — the research region,
      and the city the thermal plates below actually show. */
+  /* WHERE THE VISITOR IS — and the descent goes there too.
+
+     The opening shot faces their continent and the dive lands on their city, so
+     the whole sequence is about where they actually are.
+
+     One knowing compromise, decided deliberately rather than overlooked: the
+     plate the descent reveals is Riyadh's Olaya district and stays Riyadh for
+     everyone, because that is the only city whose heat/cool imagery exists in
+     the repo. So a visitor in London is flown to London and handed Riyadh's
+     surface temperature. The call was that the arrival reads as "a city, from
+     above, in thermal" and nobody cross-references the street grid — and the
+     alternative, flying everyone to Arabia, throws away the one part of this
+     that is actually about them.
+
+     Worth knowing if that ever changes: making the plate follow too is not a
+     code problem, it is an imagery problem — a heat/cool pair per city, and
+     this constant becomes a lookup. The About copy also names Olaya, Riyadh
+     out loud, so that line would need to move with it. */
   const HOME = visitorLatLon();
   const DIVE_LON = Number.isFinite(HOME.lon) ? HOME.lon : 46.6753;
   const DIVE_LAT = Number.isFinite(HOME.lat) ? HOME.lat : 24.7136;
@@ -520,7 +582,25 @@ export function initEarth(opts = {}) {
   // cropped close-up is not the comfortable tilt for a full sphere.
   let tiltTarget = BASE_TILT_X;
 
-  const spin = { y: lonToRotation(visitorLongitude()), x: BASE_TILT_X };
+  /* THE OPENING SHOT FACES THE VISITOR'S OWN CONTINENT.
+
+     Longitude now comes from HOME rather than visitorLongitude(). The
+     offset-derived guess is a 15-degree bucket and is simply wrong wherever a
+     country's clock does not match its geography — Spain runs on Berlin time,
+     the whole of China on Beijing's, India on a half-hour offset. The IANA zone
+     name gives the city instead. Using HOME also means the opening and the dive
+     are aimed by the SAME lookup, so the two can never disagree.
+
+     Latitude is applied too, which it was not before: a fixed tilt showed the
+     same band of Earth to everyone, so a visitor in Stockholm and one in
+     Johannesburg opened an identical planet. Damped to 0.6 and clamped to about
+     +/-34 degrees, because the tilt is also a camera angle — at full strength a
+     high-latitude visitor opens the page looking down at an ice cap, which
+     reads as a broken shot rather than as home. */
+  const openTilt = Math.max(-0.6, Math.min(0.6,
+    THREE.MathUtils.degToRad(HOME.lat) * 0.6));
+  const spin = { y: lonToRotation(HOME.lon), x: openTilt };
+  tiltTarget = openTilt;   // or the idle settle drags it straight back off home
   // idle starts high so the globe is already turning at full speed the moment it
   // appears. Starting at 0 makes it sit still for a beat and then creep up,
   // which reads as a stutter rather than as a planet.
