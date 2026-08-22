@@ -539,6 +539,69 @@
 
 /* .skills sets display:grid, which outranks the UA [hidden] rule — without
    this the tag list stays visible underneath the field. */
+/* ---- THE LIST THE LEGEND OPENS -----------------------------------------
+
+   Same markup the balls were built from, revealed rather than rebuilt. It
+   arrives as a panel under the brain: bordered off so it reads as a drawer that
+   opened, not as content that was there all along and missed. */
+.skills.is-open {
+  margin-top: clamp(1.5rem, 4vh, 2.75rem);
+  padding-top: clamp(1.5rem, 4vh, 2.5rem);
+  border-top: 1px solid var(--line);
+  animation: skills-open .45s var(--e-out, ease) both;
+}
+
+@keyframes skills-open {
+  from { opacity: 0; transform: translateY(14px); }
+}
+
+/* The group that was asked for. The others stay legible rather than dimming to
+   nothing — the reason to open all five is to read them against each other, and
+   greying four of them would undo that. */
+.skills.is-open .sgroup {
+  transition: opacity .3s var(--e-out, ease);
+}
+
+.skills.is-open .sgroup:not(.is-active) { opacity: .62; }
+
+.skills.is-open .sgroup.is-active .sgroup__t {
+  color: var(--amber);
+}
+
+.skills.is-open .sgroup.is-active .sgroup__t::after {
+  content: '';
+  display: block;
+  width: 2.2rem;
+  height: 2px;
+  margin-top: .45rem;
+  background: var(--amber);
+}
+
+/* The keys are controls now. */
+.skillkey__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  transition: color .2s var(--e-out, ease);
+}
+
+.skillkey__btn:hover,
+.skillkey__btn:focus-visible { color: var(--t); }
+
+.skillkey__btn[aria-expanded="true"] { color: var(--amber); }
+
+/* A quiet affordance that these do something, without adding chrome to what is
+   still primarily a key. */
+.skillkey__i--btn { position: relative; }
+
 .skills[hidden] { display: none; }
 .sgroup[hidden] { display: none; }
 
@@ -2091,6 +2154,16 @@
      pan-y is the exact mirror of the axis the wheel actually uses here: the
      browser keeps vertical, JS keeps horizontal, and both gestures work. */
   .wheel { touch-action: pan-y; }
+  /* THE TILES OWN THE GESTURE; THE REST OF THE FIGURE DOES NOT.
+
+     pan-y above keeps vertical for the page, which is what makes it possible to
+     scroll past the section — but it also meant a vertical swipe ON a tile was
+     taken by the browser before the wheel ever saw it, so the phone had no way
+     to turn the ring the way a desktop cursor does. `none` on the tiles hands
+     those gestures to JS and leaves every other pixel of the section scrolling
+     the page, which is the same bargain the desktop already makes with its
+     centre zone. */
+  .wheel__card { touch-action: none; }
   /* The card has to be comfortably shorter than its stage or the neighbours
      are clipped rather than curving away. */
   .wheel__card { height: clamp(150px, 26vh, 210px); width: min(100%, 300px); }

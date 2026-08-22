@@ -168,7 +168,15 @@ export function initSkills() {
   function buildKey() {
     const items = groups.slice(0, GROUPS.length).map((g, i) => {
       const name = g.querySelector('.sgroup__t')?.textContent.trim() ?? '';
-      return `<li class="skillkey__i"><i class="skillkey__dot" style="--c:${GROUPS[i].c}"></i>${name}</li>`;
+      /* A real <button>, not a styled <li>. The keys open the written list
+         below, which makes them a control — and a control has to be reachable
+         by keyboard and announce its own state, which a list item cannot. */
+      return `<li class="skillkey__i skillkey__i--btn">
+        <button type="button" class="skillkey__btn" data-group="${i}"
+                aria-expanded="false" aria-controls="skillList">
+          <i class="skillkey__dot" style="--c:${GROUPS[i].c}"></i>${name}
+        </button>
+      </li>`;
     });
     // Forced break so the keys read 3 then 2, rather than wrapping wherever the
     // longest translation happens to push them — German and Arabic wrap at a
@@ -176,6 +184,53 @@ export function initSkills() {
     if (items.length > KEY_ROW) items.splice(KEY_ROW, 0, '<li class="skillkey__break"></li>');
     key.innerHTML = items.join('');
   }
+
+  /* ---- the legend opens the written list --------------------------
+
+     The brain is a lovely object and a poor index: the balls carry short labels
+     and drift, so "what exactly is under Research Methods" is a question it
+     cannot answer. The full list already exists in the markup — it is the
+     source the balls are built from and it is only `hidden` once the field
+     mounts — so the legend reveals that rather than duplicating it anywhere.
+
+     Clicking a key opens all five groups and highlights the one asked for.
+     All five, not just that one, because the value of the list is comparison:
+     it is the only place the collections can be read against each other. The
+     same key closes it again, and Escape closes it from anywhere. */
+  let openGroup = -1;
+
+  function closeList() {
+    openGroup = -1;
+    list.hidden = true;
+    list.classList.remove('is-open');
+    groups.forEach((g) => g.classList.remove('is-active'));
+    key.querySelectorAll('.skillkey__btn').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+  }
+
+  function openList(i) {
+    if (openGroup === i) { closeList(); return; }
+    openGroup = i;
+    list.hidden = false;
+    list.classList.add('is-open');
+    groups.forEach((g, gi) => g.classList.toggle('is-active', gi === i));
+    key.querySelectorAll('.skillkey__btn').forEach((b) => {
+      b.setAttribute('aria-expanded', String(Number(b.dataset.group) === i));
+    });
+    // Bring the opened group into view without yanking the page.
+    groups[i]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  /* Delegated, because buildKey() replaces these buttons whenever the language
+     changes — a listener bound to the elements would die on the first switch. */
+  key.addEventListener('click', (e) => {
+    const btn = e.target.closest('.skillkey__btn');
+    if (!btn) return;
+    openList(Number(btn.dataset.group));
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && openGroup >= 0) closeList();
+  });
 
   const tip = document.createElement('div');
   tip.className = 'skillfield__tip';

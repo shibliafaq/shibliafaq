@@ -1482,6 +1482,27 @@ function setupWheel(root) {
 
   // Drag, for trackpads and touch. Vertical only — horizontal is not this
   // control's axis and stealing it would break page gestures.
+  /* Is the point on an actual tile? Geometry, not hit-testing — inside
+     `preserve-3d` elementFromPoint resolves to the scene plane once the ring
+     turns, which is the trap recorded in CLAUDE.md. Plates are excluded for the
+     same reason they are excluded everywhere else: 50px of unreadable texture
+     out near the edge is not a control.
+
+     This is what the pointer drag is gated on, and it is deliberately NOT the
+     same region the mouse wheel uses. The wheel gets a fixed centre zone
+     because a cursor sits still while the tiles drift past it; a finger arrives
+     once and leaves, so it can be judged against what is under it at that
+     instant. Each input is gated by the thing that is stable for that input. */
+  function onTile(x, y) {
+    for (const c of cards) {
+      if (c.classList.contains('is-plate')) continue;
+      const b = c.getBoundingClientRect();
+      if (!b.width || !b.height) continue;
+      if (x >= b.left - 8 && x <= b.right + 8 && y >= b.top - 8 && y <= b.bottom + 8) return true;
+    }
+    return false;
+  }
+
   /* THE GESTURE IS JUDGED BEFORE IT IS CLAIMED.
 
      On a phone this was the whole ambiguity. Touching the ring captured the
@@ -1507,7 +1528,7 @@ function setupWheel(root) {
 
   root.addEventListener('pointerdown', (e) => {
     if (e.target.closest('a, button')) return;
-    if (!overRing(e)) return;
+    if (!onTile(e.clientX, e.clientY)) return;
     // Deliberately no setPointerCapture here — see the note above.
     pending = true;
     startX = lastX = e.clientX;
@@ -1518,16 +1539,29 @@ function setupWheel(root) {
     if (pending) {
       const dx = Math.abs(e.clientX - startX);
       const dy = Math.abs(e.clientY - startY);
-      if (Math.max(dx, dy) < AXIS_LOCK) return;      // too early to tell
+      if (Math.max(dx, dy) < AXIS_LOCK) return;      // too early to tell, keep waiting
       pending = false;
-      if (horizontal ? dx <= dy : dy <= dx) return;  // the page's gesture
       dragging = true;
       root.setPointerCapture?.(e.pointerId);
     }
     if (!dragging) return;
-    const d = horizontal ? (e.clientX - lastX) : (e.clientY - lastY);
+    /* WHICHEVER WAY THE FINGER ACTUALLY WENT.
+
+       This used to insist the drag match the ring's own axis and hand anything
+       else back to the page. Below 900px the ring is horizontal, so that
+       rejected every vertical swipe — and a vertical swipe over the tiles is
+       exactly what turns the wheel on a desktop. The phone behaved like a
+       different control.
+
+       Now the dominant axis drives it, so swiping up or swiping left both
+       advance, and the page keeps everything that does not start on a tile.
+       Same bargain as the desktop: over the tiles it is the wheel's, elsewhere
+       it is the page's. */
+    const my = e.clientY - lastY;
+    const mx = e.clientX - lastX;
+    const d = Math.abs(my) >= Math.abs(mx) ? -my : -mx;
     lastY = e.clientY; lastX = e.clientX;
-    turn((horizontal ? -1 : 1) * d * WHEEL_K * 1.6);
+    turn(d * WHEEL_K * 1.6);
   });
   const endDrag = (e) => {
     pending = false;

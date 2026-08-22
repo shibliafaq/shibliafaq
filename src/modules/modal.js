@@ -389,35 +389,38 @@ export function initModal() {
      as the architecture books in book.js. */
   document.addEventListener('click', (e) => {
     if (!modal.hidden) return;                 // never re-open from under an open modal
-    let el = e.target.closest?.('[data-modal]');
-    if (!el && e.clientX != null) {
+    /* INSIDE A WHEEL, THE FRONT CARD IS THE ONLY ANSWER.
+
+       This used to try the event target first, then elementFromPoint, and
+       only fall back to the front card. That ordering is what let two
+       projects open at once again: a click on the thesis tile resolves
+       [data-modal] straight from the event target, while over in book.js
+       the same click finds no [data-book] on the target and drops to
+       elementFromPoint — which inside `preserve-3d` does not return what
+       is visually in front (CLAUDE.md records this) and happily landed on
+       the Miscellaneous tile behind. Modal opened the thesis, book opened
+       misc, from one click.
+
+       CONTEXT 31 fixed this for the LAST fallback and left the first two
+       branches able to disagree. Resolving through frontCard() whenever
+       the click is inside a wheel means both handlers ask the same
+       question and exactly one of them can answer yes. Outside a wheel
+       there is no depth to get wrong, so the ordinary lookups stand. */
+    const inWheel = e.target.closest?.('.wheel');
+    let el = null;
+    if (inWheel) {
+      const front = frontCard(inWheel, '.wheel__card');
+      el = front && front.hasAttribute('data-modal') ? front : null;
+      if (!el) return;
+    }
+    if (!inWheel) el = e.target.closest?.('[data-modal]');
+    if (!inWheel && !el && e.clientX != null) {
       el = document.elementFromPoint(e.clientX, e.clientY)?.closest('[data-modal]');
     }
-    /* Last resort, and the one that actually carries the wheel: derive the front
-       card from geometry. Neither the event target nor elementFromPoint can be
-       trusted once the ring is rotated off zero — see frontCard() in wheel.js
-       for the measurement. A click anywhere in the wheel opens whatever is
-       facing the reader, which is also what the idiom promises. */
-    if (!el) {
-      const wheel = e.target.closest?.('.wheel');
-      /* ASK WHICH CARD IS AT THE FRONT, THEN CHECK IT IS OURS.
-
-         This used to read frontCard(wheel, SELECTOR), which asks "of the cards
-         I care about, which is furthest forward". That was safe while there
-         were two wheels, because the research wheel held no [data-book] and the
-         architecture wheel held no [data-modal], so one of the two handlers
-         always came up empty. CONTEXT 31 merged them into ONE wheel of
-         fourteen, and from then on both selectors always matched something:
-         every click ran both fallbacks and opened two projects at once.
-
-         Resolving the front card across ALL cards and then testing what it is
-         means exactly one handler can act, whichever kind of card is really at
-         the front. */
-      if (wheel) {
-        const front = frontCard(wheel, '.wheel__card');
-        el = front && front.hasAttribute('data-modal') ? front : null;
-      }
-    }
+    /* The old event-target and elementFromPoint fallbacks for the wheel
+       lived here. They are gone: inside a wheel the front card is now
+       resolved up front and nothing else may answer, which is what stops
+       this handler and the other one disagreeing. */
     if (!el) return;
     open(el.dataset.modal);
   });
