@@ -5981,3 +5981,64 @@ look related.
 
 Parked unless on screen, and under reduced motion it draws one static frame and
 stops — the figure is still there, it simply does not travel.
+
+## 86. The wave earns its place, and fourteen tiles float behind the work (2026-08-24)
+
+### The wave
+
+Four sinusoids: each colour a PAIR at two amplitudes, which draws a ribbon
+rather than a line, and the second colour the exact negation of the first.
+Negating rather than phase-shifting matters — a half-wavelength shift looks like
+a mirror only where the curve is symmetric and drifts visibly out of register
+everywhere else.
+
+**Amplitude follows the scroll**, measured from the section crossing the
+viewport rather than from page offset, so it behaves the same wherever the
+section ends up as the page grows. It is read in the draw loop rather than in a
+scroll listener: the loop is already running whenever this is on screen, and a
+listener would repeat the same layout read on a different clock. A 0.30 floor,
+because a background that disappears entirely reads as a rendering fault rather
+than as a response.
+
+**It grows outward from the seam, squared.** A linear ramp is already visibly
+wide a fifth of the way out, so "starting small" reads as a brief flat spot;
+squaring holds it near zero across the middle third and then opens quickly.
+
+**Two colour corrections, both mine.** "Amber" was taken at face value and given
+`--amber`, the site's yellow — but the projects section's warm tone is
+`--tag-msc`, a red, and the whole point of the palette was to rhyme with that
+section. Then the mirror tint went yellow and came back to blue.
+
+**And the meeting point was 46px off.** The canvas spans the section; the
+headings are a centred PAIR inside a narrower wrap, and the two columns are
+different widths because their text is. Measured: the seam sat at x=510 while
+the canvas centre was 557, so a wave meeting at w/2 met 46px away from the thing
+it was supposed to meet. It reads the columns now and hands over where they
+actually meet — measured after at 508 against 510.
+
+That is the sort of near-miss worth naming: it does not look like a bug, it
+looks like carelessness, and nothing about "meet in the middle" suggests the
+middle of the canvas is not the middle of the layout.
+
+### The tiles
+
+Fourteen, one per card, at their own depths behind the wheel. Each has its own
+duration and its own NEGATIVE delay, so they start mid-cycle and scattered
+through the loop — everything setting off together is the giveaway that a field
+is animated rather than adrift. Durations are deliberately not multiples of each
+other so it never resynchronises.
+
+**The parallax is on the FIELD, not on the tiles**, and that is forced rather
+than chosen: every tile already animates `transform` for its drift, so a second
+transform on the same property would simply lose to the running animation. The
+drift stays on the tile, the parallax goes on the parent, and the browser
+composes them. CONTEXT 48's one-owner rule, applied to a property.
+
+Depth then comes free: one rotation of a parent with perspective becomes
+fourteen different displacements, without the parallax code knowing any depths.
+
+**Device orientation is never prompted for.** iOS gates it behind
+`requestPermission()`, which needs a user gesture and shows a system dialog.
+Firing that at someone who has scrolled past a decorative background would be
+indefensible, so it listens only where the events arrive unasked. The tiles
+still drift there; they just do not tilt.

@@ -3374,12 +3374,23 @@
 .dirs__col--r { text-align: right; }
 .dirs__col--l { text-align: left; }
 
-/* ITALIC HERE, AND ONLY HERE. The site-wide change in base.css took the italic
-   off `.display em` because weight plus italic was two signals for one job.
-   This section has no weight contrast to fall back on — both halves of each
-   title are the same size and the second half is the whole point — so the
-   italic comes back as the only thing distinguishing them. */
-.dirs .sec-title em { font-style: italic; }
+/* WHOLLY ITALIC AND NOT BOLD, which is the opposite call to the rest of the
+   site and deliberately so.
+
+   Everywhere else a display heading is heavy sans, because it is announcing a
+   section and has a page of content under it to anchor. These two announce
+   nothing and have nothing under them — they ARE the section — so the weight
+   was doing no work and simply made two short lines shout.
+
+   With the whole title italic the `em` no longer needs a style of its own: it
+   keeps only its colour, which is now the single thing separating the halves.
+   That is the same reasoning as base.css, arrived at from the other end — one
+   signal per distinction, whichever signal is left. */
+.dirs .sec-title {
+  font-style: italic;
+  font-weight: 400;
+}
+.dirs .sec-title em { font-style: inherit; font-weight: inherit; }
 /* NO max-width HERE. Both titles already carry a <br> at the line they are
    meant to break on, and a character measure on top of that broke them again:
    "Turning Data" became two lines and "Making better spaces for people" three,
@@ -3423,3 +3434,95 @@
   contain: strict;
 }
 .dirs__wave canvas { display: block; width: 100%; height: 100%; }
+
+/* ============================================================
+   FOURTEEN MIRROR TILES, FLOATING
+   ============================================================
+
+   One per card on the wheel, adrift behind it at their own depths.
+
+   ZERO GRAVITY MEANS NO SHARED DIRECTION. Each tile gets its own duration and
+   its own NEGATIVE delay, so at load they are already mid-cycle and scattered
+   through the loop rather than all setting off together — the giveaway that
+   something is animated rather than adrift is every element turning at once.
+   The durations are deliberately not multiples of each other, so the field
+   does not visibly resynchronise.
+
+   DEPTH IS REAL, not simulated with size. --z runs -320 to 120 inside a
+   perspective, so a distant tile is smaller AND parallaxes differently AND
+   sorts behind its neighbours, which a scale alone cannot do.
+
+   The mirror is two gradients: a bright diagonal sheen across a cool tint,
+   plus a hairline edge. Kept dim on purpose — this sits behind fourteen cards
+   carrying photographs, and anything brighter competes with the content it is
+   supposed to sit behind. */
+.works__field {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  perspective: 900px;
+  overflow: hidden;
+  contain: strict;
+}
+
+/* THE PARALLAX LIVES HERE, NOT ON THE TILES.
+
+   Each tile already animates `transform` for its drift, and a second transform
+   on the same property would simply lose to the running animation. Rotating
+   the field instead lets the browser compose the two, and the perspective
+   above turns one rotation into fourteen different displacements because the
+   tiles sit at fourteen different depths. */
+.works__field > * { transform-style: preserve-3d; }
+.works__field {
+  transform: rotateX(var(--fx, 0deg)) rotateY(var(--fy, 0deg));
+  transform-style: preserve-3d;
+}
+/* The intro and the wheel both sit above the field. */
+.projects__intro, .wheels { position: relative; z-index: 1; }
+
+.wtile {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: var(--h);
+  border-radius: 4px;
+  transform-style: preserve-3d;
+  background:
+    linear-gradient(125deg,
+      rgba(255, 255, 255, .16) 0%,
+      rgba(255, 255, 255, .03) 26%,
+      rgba(56, 189, 248, .07) 52%,
+      rgba(255, 255, 255, .13) 74%,
+      rgba(255, 255, 255, .02) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, .10),
+    0 18px 40px rgba(0, 0, 0, .35);
+  animation: wtile-drift var(--d, 40s) ease-in-out var(--dl, 0s) infinite;
+  will-change: transform;
+}
+
+/* Two axes of translation and a slow tumble, all small: a tile that travels far
+   reads as a thing being moved, and one that barely moves reads as a thing
+   floating. The rotation carries the sheen across the face, which is what makes
+   it look like a surface catching light rather than a painted rectangle. */
+@keyframes wtile-drift {
+  0%   { transform: translate3d(0, 0, var(--z)) rotate3d(1, .6, .2, var(--r)); }
+  25%  { transform: translate3d(14px, -22px, calc(var(--z) + 40px)) rotate3d(1, .6, .2, calc(var(--r) + 9deg)); }
+  50%  { transform: translate3d(-10px, -34px, var(--z)) rotate3d(1, .6, .2, calc(var(--r) - 7deg)); }
+  75%  { transform: translate3d(-18px, -12px, calc(var(--z) - 36px)) rotate3d(1, .6, .2, calc(var(--r) + 4deg)); }
+  100% { transform: translate3d(0, 0, var(--z)) rotate3d(1, .6, .2, var(--r)); }
+}
+
+/* Still, not gone: the field is part of the composition, it just stops moving. */
+@media (prefers-reduced-motion: reduce) {
+  .wtile { animation: none; transform: translate3d(0, 0, var(--z)) rotate3d(1, .6, .2, var(--r)); }
+}
+
+/* Fewer and smaller on a phone, where the wheel already fills the frame and
+   fourteen drifting rectangles behind it is noise rather than depth. */
+@media (max-width: 720px) {
+  .wtile:nth-child(n+8) { display: none; }
+  .wtile { opacity: .6; }
+}

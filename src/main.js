@@ -20,6 +20,7 @@ import { initMediaGuard } from './modules/protect.js';
 import { initInstagram } from './modules/insta.js';
 import { initVisits } from './modules/visits.js';
 import { initEmWave } from './modules/emwave.js';
+import { initTileField } from './modules/tilefield.js';
 
 const idleInit = window.requestIdleCallback
   ? (fn) => window.requestIdleCallback(fn)
@@ -103,6 +104,7 @@ idleInit(() => initVisits());
 // Decoration behind the Direction headings. On idle, and the module parks its
 // own loop unless the section is on screen.
 idleInit(() => initEmWave('.dirs__wave'));
+idleInit(() => initTileField('.works__field'));
 
 // The Experience map. On idle rather than near-viewport for the same reason as
 // the skills field — it replaces the timeline, and doing that as the reader
