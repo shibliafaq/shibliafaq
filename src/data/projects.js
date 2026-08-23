@@ -28,7 +28,7 @@ export const projects = {
       {
         k: 'Cool, not hot',
         v: 'negative UHI',
-        t: 'The cities are COOLER by day than the surrounding desert — the inverse of the classical model. The daytime signal is driven by built-up density (NDBI), not vegetation.',
+        t: 'The cities are COOLER by day than the surrounding desert. That is the inverse of the classical model. The daytime signal is driven by built-up density (NDBI), not vegetation.',
       },
       {
         k: 'Reach beats intensity',
@@ -36,7 +36,7 @@ export const projects = {
         t: 'The broadest measure protects most. One water feature reaches 16,167 residents in Dammam through spillover; a cool pavement three times as cold reaches 602.',
       },
     ],
-    abstract: 'Saudi Arabia’s largest cities are getting hotter, but not according to the traditional urban heat island model. Using an 8-year (2018–2026) grid of MODIS LST data (1 km native, analysed on a ~500 m / 0.005° grid), the thermal behaviour of five desert and coastal cities — Riyadh, Jeddah, Dammam, Makkah and NEOM — is characterised, and an operational digital-twin dashboard is developed to monitor, forecast and mitigate extreme heat. The work is supported by three findings. First, the cities are cooler by day than the surrounding desert, which results in a negative urban heat island intensity — an urban cool-island — and the daytime signal is driven primarily by built-up density (NDBI) rather than by vegetation, quantified by a sign-constrained regression fit on each city’s own summer data instead of by coefficients borrowed from the literature. Second, the cool-island is not static: a Prophet forecasting family, forecasting land-surface temperature directly for both day and night on a corrected equal-area geometry, reproduces the seasonal cycle (monthly RMSE 0.96–1.91 °C by day and 0.79–1.29 °C by night, r 0.94–0.99) and projects a progressive decrease of the cool-island toward zero by 2030, with a warming trend in both desert and city, to −0.01 °C in Makkah but remaining between −0.67 and −1.31 °C in the other four cities. Third, the heat-vulnerability index and the intervention simulator convert this physics into planning decisions: the simulation uses the same own-data coefficients to estimate cell-level cooling, its spatial spillover, the residents and elderly who benefit, an approximate cost, and the districts affected. The cross-sensor comparison against Landsat returned a correlation of R > 0.85 in all five cities. The broadest intervention, not the most localised, provides the most protection: a single water feature reaches tens of thousands of residents through spillover, whereas an intense but local measure such as a cool roof protects only the few hundred residents of the block it covers. The dashboard packages monitoring, forecasting, vulnerability and mitigation in one interface, and builds on recent urban-digital-twin research from a single pilot microclimate to a multi-city, decision-support scale.',
+    abstract: 'Saudi Arabia’s largest cities are getting hotter, but not according to the traditional urban heat island model. Using an 8-year (2018–2026) grid of MODIS LST data (1 km native, analysed on a ~500 m / 0.005° grid), the thermal behaviour of five desert and coastal cities (Riyadh, Jeddah, Dammam, Makkah and NEOM) is characterised, and an operational digital-twin dashboard is developed to monitor, forecast and mitigate extreme heat. The work is supported by three findings. First, the cities are cooler by day than the surrounding desert, which results in a negative urban heat island intensity (or urban cool-island), and the daytime signal is driven primarily by built-up density (NDBI) rather than by vegetation, quantified by a sign-constrained regression fit on each city’s own summer data instead of by coefficients borrowed from the literature. Second, the cool-island is not static: a Prophet forecasting family, forecasting land-surface temperature directly for both day and night on a corrected equal-area geometry, reproduces the seasonal cycle (monthly RMSE 0.96–1.91 °C by day and 0.79–1.29 °C by night, r 0.94–0.99) and projects a progressive decrease of the cool-island toward zero by 2030, with a warming trend in both desert and city, to −0.01 °C in Makkah but remaining between −0.67 and −1.31 °C in the other four cities. Third, the heat-vulnerability index and the intervention simulator convert this physics into planning decisions: the simulation uses the same own-data coefficients to estimate cell-level cooling, its spatial spillover, the residents and elderly who benefit, an approximate cost, and the districts affected. The cross-sensor comparison against Landsat returned a correlation of R > 0.85 in all five cities. The broadest intervention, not the most localised, provides the most protection: a single water feature reaches tens of thousands of residents through spillover, whereas an intense but local measure such as a cool roof protects only the few hundred residents of the block it covers. The dashboard packages monitoring, forecasting, vulnerability and mitigation in one interface, and builds on recent urban-digital-twin research from a single pilot microclimate to a multi-city, decision-support scale.',
     /* SHORT, AND DELIBERATELY NOT A SUMMARY OF THE ABSTRACT.
 
        This used to be a stack list — MODIS, Prophet, HVI, the simulator,
@@ -49,7 +49,7 @@ export const projects = {
        the one the literature review identifies — plenty of description of where
        it has been hot, almost no operational capacity to act on where it is hot
        now. */
-    desc: 'Most heat research describes where it has already been hot. This is built for the questions that come after that — how hot it is now, where that is heading, and what a given intervention would actually change — across five Saudi cities, in one interface a planner can use.',
+    desc: 'Most heat research describes where it has already been hot. This is built for the questions that come after: how hot it is now, where that is heading, and what a given intervention would actually change. Five Saudi cities, in one interface a planner can use.',
     diagram: 'thesis',
     /* TABLES 5.22 AND 5.23, which are the two results the simulator exists
        to produce. The previous version quoted only the Dammam pair (16,167
@@ -57,7 +57,7 @@ export const projects = {
        but they were one row of a five-row finding, so the pattern they were
        chosen to illustrate could not actually be seen. */
     worked: {
-      sec: 'Intervention simulator — what reaches people',
+      sec: 'Intervention simulator: what reaches people',
       lead: 'Repeating one worked example at the hottest inhabited cell in every city gives two matrices, and the lesson is in the gap between them. Intensity and benefit have almost nothing to do with each other: the six local measures each cool only the block they sit on, however hard they cool it, while the two wide-spillover measures carry across the neighbourhood.',
       /* cooling at the treated cell, before spillover (Table 5.22) */
       cooling: {
@@ -71,7 +71,7 @@ export const projects = {
           { m: 'Water feature',   v: [-2.00, -2.00, -2.00, -2.00, -2.00] },
           { m: 'Urban greening',  v: [-0.35, -1.06, -3.10,  0.00, -0.33] },
         ],
-        note: 'The reflectivity levers sit on a physics-based albedo term and behave almost identically everywhere. The vegetation levers follow each city\u2019s own regression — strongest in Dammam, and honestly zero in Makkah, whose NDVI coefficient is zero.',
+        note: 'The reflectivity levers sit on a physics-based albedo term and behave almost identically everywhere. The vegetation levers follow each city\u2019s own regression, strongest in Dammam and honestly zero in Makkah, whose NDVI coefficient is zero.',
       },
       /* neighbourhood reach and residents benefited (Table 5.23) */
       reach: {
@@ -85,7 +85,7 @@ export const projects = {
         ],
         note: 'Makkah\u2019s greening column is zero because its greening coefficient is zero, and NEOM\u2019s counts are negligible because its hottest cells are almost uninhabited. Both are kept rather than hidden: a simulator that only reports where it works is not a simulator.',
       },
-      foot: 'In Dammam one water feature cools 16,167 residents while a −9 °C cool pavement cools 602 — 27× the reach for the weaker measure. Ranking by residents reached, not by degrees delivered, is what the simulator exists to do.',
+      foot: 'In Dammam one water feature cools 16,167 residents while a −9 °C cool pavement cools 602. That is 27× the reach for the weaker measure. Ranking by residents reached, not by degrees delivered, is what the simulator exists to do.',
     },
     /* FROM THE MANUSCRIPT, WHICH OUTRANKS THE DASHBOARD SNAPSHOT.
 
@@ -116,7 +116,7 @@ export const projects = {
     twin: {
       sec: 'The dashboard, running',
       lead: 'This is the lite version with frozen data in a dashboard; it shows tabs across five cities of the study database and it runs without a backend.',
-      title: 'UHI Digital Twin — interactive dashboard',
+      title: 'UHI Digital Twin · interactive dashboard',
       src: '/uhi-twin/index.html',
       hint: 'Map · Weather · Climate · Statistics · Forecast · Interventions · System',
 

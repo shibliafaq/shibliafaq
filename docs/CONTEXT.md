@@ -5500,3 +5500,39 @@ third track so the two remaining cards split the row evenly at 484px each.
 Nothing needed adjusting for either — worth noting only because a hand-numbered
 list and a fixed three-column grid would both have needed it, and this is the
 argument for deriving presentation from data rather than writing it out.
+
+## 73. Connecting dashes removed from the panel, and air between sections (2026-08-23)
+
+The no-connecting-dashes rule has stood since the start of this work and I broke
+it repeatedly in the copy written over the last few sections — seven fields in
+the thesis card and three strings in the diagrams. Worth noting HOW: none was a
+decision. Each one arrived while writing a sentence that had two clauses, which
+is exactly the shape the rule exists to prevent, so the rule needs applying at
+the point of writing rather than as a pass afterwards.
+
+Three of them were in the abstract, which is supposed to be verbatim, and all
+three were introduced by me rather than present in the manuscript:
+
+| manuscript | what I had shipped |
+|---|---|
+| `five desert and coastal cities: Riyadh, ...` | `cities — Riyadh, ... — is` |
+| `intensity (or urban cool-island), and` | `intensity — an urban cool-island — and` |
+
+Both are now closer to the source than before the fix, which is the point: a
+verbatim quotation that has been silently re-punctuated is not verbatim, and
+nothing in the card said it had been touched.
+
+Remaining em dashes: one inside a `mailto:` subject line, which is a URL rather
+than prose.
+
+**Spacing.** The panel had grown to findings, abstract, stat band, two diagrams,
+two figures and a tag list, all on the same 2.25rem rhythm as the paragraphs
+inside them, so the column read as one continuous run. The heading owns the gap
+now rather than the block above it — one rule to change, and top margins on
+headings collapse predictably.
+
+A `:first-of-type` exception was written and removed rather than fixed. It never
+matched: `.msec` is a `<div>`, so `:first-of-type` means the first DIV among its
+siblings, not the first `.msec`. It was also unnecessary, since the first
+heading sits below the findings rather than at the top of the panel. A rule that
+does nothing is worse than no rule, because the next reader assumes it works.

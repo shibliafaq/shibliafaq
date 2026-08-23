@@ -1316,3 +1316,41 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 .dgx__ln { font-weight: 700; }
 .dgx__cap b { font-weight: 700; }
 .mchart__ks { font-weight: 600; }
+
+/* ============================================================
+   AIR BETWEEN SECTIONS
+   ============================================================
+
+   The panel had grown from a couple of paragraphs to findings, an abstract, a
+   stat band, two diagrams, two figures and a tag list, and every one of them
+   sat on the same 2.25rem rhythm as the paragraphs INSIDE them. With nothing
+   separating a section's end from the next section's heading, the whole column
+   read as one continuous run.
+
+   The heading owns the gap, not the block above it — a top margin on a heading
+   collapses predictably and there is exactly one rule to change, where spacing
+   put on each block means finding all of them again next time. */
+.modal__inner .msec {
+  margin-top: clamp(3rem, 6vh, 4.5rem);
+  margin-bottom: 1.25rem;
+}
+/* No first-of-type exception. One was written and did not match: .msec is a
+   <div>, so :first-of-type means the first DIV among its siblings, which is not
+   the first .msec. It was also unnecessary — the first section heading is not
+   at the top of the panel, it comes after the findings, the abstract and the
+   stat band, so it wants the same air as the rest. Removed rather than fixed,
+   because a rule that does nothing is worse than no rule: the next reader
+   assumes it works. */
+
+/* The blocks that end a section get a little room after them too, so a figure
+   caption is not touching the rule that follows it. */
+.modal__inner .mgrid,
+.modal__inner .mchart,
+.modal__inner .mdiagram,
+.modal__inner .mwork,
+.modal__inner .mtwin { margin-bottom: clamp(1.25rem, 3vh, 2rem); }
+
+/* Between the two diagrams and between the two figures, which are siblings
+   inside one section and were running together. */
+.modal__inner .dgx + .dgx { margin-top: clamp(1.5rem, 3.5vh, 2.5rem); }
+.modal__inner .mgrid + .mchart { margin-top: clamp(2rem, 4vh, 3rem); }

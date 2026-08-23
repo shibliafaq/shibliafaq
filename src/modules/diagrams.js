@@ -64,7 +64,7 @@ export function thesisArchitecture() {
   return `
 <figure class="dgx" role="group"
         aria-label="End-to-end digital twin architecture in four layers: ingestion, storage, an optional streaming layer, and serving.">
-  <figcaption class="dgx__cap"><b>System architecture</b> — ingestion, storage, serving. The dashed band is the optional streaming layer.</figcaption>
+  <figcaption class="dgx__cap"><b>System architecture</b>. Ingestion, storage, serving. The dashed band is the optional streaming layer.</figcaption>
 
   ${layer('Ingestion', 'Python pipeline · scheduled and on demand', [
     node('Google Earth Engine', 'MODIS LST · NDVI · NDBI, 2018–2026'),
@@ -88,7 +88,7 @@ export function thesisArchitecture() {
 
   ${flow('dash')}
 
-  ${layer('Streaming', 'Built and runs — started manually, not the default path', [
+  ${layer('Streaming', 'Built and runs. Started manually, not the default path', [
     node('Apache Kafka', 'lst-daily-v2 · weather-daily-v2 · vegetation-monthly-v2', 'dash'),
     node('Spark Structured Streaming', '30-second micro-batch, writes back to PostGIS', 'dash'),
     node('Derived topics', 'Heat alerts · refreshed forecast', 'dash'),
@@ -109,7 +109,7 @@ export function thesisPipeline() {
   return `
 <figure class="dgx" role="group"
         aria-label="Technical data pipeline from satellite retrieval to decision output, with forecasting and simulation branches.">
-  <figcaption class="dgx__cap"><b>Data pipeline</b> — from satellite retrieval to decision output.</figcaption>
+  <figcaption class="dgx__cap"><b>Data pipeline</b>. From satellite retrieval to decision output.</figcaption>
 
   ${layer('Retrieve', 'Eight years, five cities', [
     node('MODIS Terra + Aqua', 'Day and night LST, 1 km native'),
