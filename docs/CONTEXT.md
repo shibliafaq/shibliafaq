@@ -5240,3 +5240,56 @@ whatever the other one had decided. They publish intentions now (`mapIn`,
 
 Strictly ordered on both, with about 100px of cleared ground between the frame
 leaving and the next section arriving.
+
+## 67. Thesis card: stats checked against the database, layout opened up (2026-08-23)
+
+### The numbers were audited, not retyped
+
+Every metric on the thesis card was recomputed from `public/uhi-twin/db`, the
+frozen snapshot the embedded dashboard runs on — so the card and the dashboard
+underneath it cannot disagree.
+
+| claim | data | verdict |
+|---|---|---|
+| Monthly RMSE 0.96-1.91 °C | monthly lst_day 0.98-1.87 across the five cities | overstated at both ends |
+| r ≥ 0.85 MODIS vs Landsat | nothing in the snapshot to check it against | **unverifiable — removed** |
+| 1.37M at-risk residents | 1,365,862 = the TOP HVI quintile exactly | right number, ambiguous label |
+| ~5.5M in the footprint | 5,542,572 over 12,390 cells | correct |
+
+The 1.37M case is the interesting one. The figure is exact, but the database's
+own `pop_at_risk` field means the top TWO quintiles and totals 2,479,809 — so
+"at-risk residents" pointed a reader at 2.48M by the study's own definition
+while showing 1.37M. Relabelled to name the quintile. A number can be correct
+and still mislead, and that is not visible from the number.
+
+`r ≥ 0.85` was replaced with R² 0.91-0.99, which the snapshot does support
+(monthly day and night models, all five cities). Removing a claim nothing can
+check is not a downgrade — an unverifiable statistic on a research card is worth
+less than a smaller one that holds.
+
+### Five columns, and the plate gets its own row
+
+The city list was five full-width rows stacked under the copy, which is why the
+animated plate behind it had nothing left: rows plus paragraph claimed the whole
+frame. Five columns puts it on one line of the layout instead of five.
+
+In the modal the canvas also stops being a backdrop. On the page it is
+full-bleed behind the copy with a raking scrim keeping the headline legible;
+in a panel a third the width, that puts the lead paragraph straight across the
+surface and the plate reads as a texture rather than a figure. Inside `.modal`
+it becomes a stack — words, then figure in a row of its own.
+
+The rows have to be assigned explicitly. The canvas comes FIRST in the markup,
+because on the page it is painted behind everything, so left to source order the
+grid handed it row 1 and it grew to 777px above the words. Measured after: words
+end at 1064, plate starts at 1078, overlap 0.
+
+### Still blocked on the manuscript
+
+The abstract, the intervention results and the two diagram rebuilds all need
+source material that is not in this repo. `assets/img/thesis_arch.webp` and
+`thesis_pipeline.webp` are manuscript figures and ARE here, but they disagree
+with the shipped copy — they show a Streamlit dashboard where the site says
+FastAPI + deck.gl + MapLibre, and "48-Hour Forecast RMSE < 1.5 °C" where the
+measured monthly range is 0.98-1.87. They look like an earlier draft, so they
+cannot simply be traced.

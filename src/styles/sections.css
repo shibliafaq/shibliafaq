@@ -3250,3 +3250,99 @@
   .insta__more:hover { transform: none; }
   .insta__cap { opacity: 1; transform: none; }
 }
+
+/* ============================================================
+   FIVE CITIES ACROSS, NOT FIVE DOWN
+   ============================================================
+
+   The list was five full-width rows stacked under the copy, which is why the
+   globe behind it had almost no room left: the rows and the paragraph together
+   claimed the whole frame. Five columns puts the same information on one line
+   of the layout instead of five, and the height that gives back is what makes
+   the animation visible.
+
+   Each city becomes a small stacked card -- number, name, climate -- because a
+   column this narrow cannot hold the row's `name ... label` arrangement, where
+   the label was pushed right with `margin-left: auto`. That would either wrap
+   badly or clip.
+
+   Falls back to the original rows under 720px: five columns on a phone is five
+   columns of two-word fragments, which is worse than a list. */
+@media (min-width: 721px) {
+  .atlas__list {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: .75rem;
+    max-width: none;
+    margin-top: clamp(1.25rem, 3vh, 2rem);
+  }
+  .atlas__list li {
+    display: grid;
+    align-content: start;
+    gap: .3rem;
+    padding: .8rem .75rem;
+    border-bottom: 0;
+    border-top: 1px solid var(--line);
+    background: rgba(9, 9, 11, .42);
+    backdrop-filter: blur(2px);
+  }
+  /* The row layout moved the label right with margin-left:auto. In a column
+     that would push it to the far edge of a 1fr track and leave a hole. */
+  .atlas__list em {
+    margin-left: 0;
+    line-height: 1.35;
+    text-transform: none;
+    letter-spacing: .02em;
+  }
+  .atlas__list li:hover, .atlas__list li.is-active {
+    padding-left: .75rem;   /* no shift: the columns would jitter sideways */
+    border-top-color: var(--amber);
+    background: rgba(9, 9, 11, .58);
+  }
+}
+
+/* ============================================================
+   IN THE MODAL, THE PLATE GETS ITS OWN BAND
+   ============================================================
+
+   On the page the canvas is a full-bleed backdrop behind the copy, and the
+   raking scrim keeps the headline legible over it. That arrangement does not
+   survive a panel: the modal is a third the width, so the copy covers the
+   middle of the frame and the plate reads as a texture behind text rather than
+   as the figure it is. Measured in the panel, the lead paragraph sat directly
+   across the surface and the plate was clipped at the top and right.
+
+   So inside a modal the section stops being a backdrop composition and becomes
+   a stack: words, then figure. The canvas takes a row of its own with a real
+   height, `position: static` so the grid can size it, and the scrim is dropped
+   to a floor wash since there is no longer anything sitting on top of it to
+   protect. Nothing overlaps, and the whole plate is in frame.
+
+   Only in `.modal`. The page composition is deliberate and stays as it is. */
+.modal .atlas {
+  display: grid;
+  grid-template-rows: auto minmax(220px, 34vh);
+  align-items: start;
+  gap: clamp(.75rem, 2vh, 1.25rem);
+  overflow: hidden;
+}
+/* ROWS ASSIGNED EXPLICITLY, because the canvas comes FIRST in the markup — it
+   is a backdrop on the page, so it is painted before the copy. Left to source
+   order the grid gave the plate row 1 and it grew to 777px above the words. */
+.modal .atlas__body   { grid-row: 1; }
+.modal .atlas__canvas {
+  grid-row: 2;
+  position: static;
+  inset: auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  z-index: 0;
+}
+/* Only a floor wash now: with the plate in its own row there is no copy over
+   it, and the raking gradient would just dim the figure it exists to reveal. */
+.modal .atlas::after {
+  background: linear-gradient(to top, var(--ink-1) 2%, transparent 22%);
+}
+@media (max-width: 720px) {
+  .modal .atlas { grid-template-rows: auto minmax(180px, 30vh); }
+}

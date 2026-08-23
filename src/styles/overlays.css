@@ -732,3 +732,37 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
   color: var(--t-2);
   text-wrap: pretty;
 }
+
+/* ============================================================
+   THESIS CARD — READING TYPOGRAPHY
+   ============================================================
+
+   JUSTIFIED, WITH A LAST LINE THAT DOES NOT HANG. The long prose in a project
+   modal is the one place on the site with a wide enough measure for justify to
+   behave: an abstract runs 60-70 characters a line here, where the phone
+   captions that had to be argued about run barely 40. `text-align-last: left`
+   rather than centre, because these are paragraphs in a document rather than
+   captions under a picture -- a centred last line reads as a caption and would
+   fight the column it sits in.
+
+   `hyphens: auto` earns its place specifically BECAUSE of the justification:
+   without it a justified narrow column opens rivers wherever a long technical
+   word will not fit, and this copy is full of them. */
+.mabs,
+.mprose > p,
+.mmethod,
+.mtwin__lead {
+  text-align: justify;
+  text-align-last: left;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+/* Nothing is justified below this width. The measure stops being wide enough
+   for the spacing to stay even, and a ragged right edge is the lesser fault. */
+@media (max-width: 560px) {
+  .mabs,
+  .mprose > p,
+  .mmethod,
+  .mtwin__lead { text-align: left; text-align-last: left; }
+}

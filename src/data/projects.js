@@ -16,11 +16,6 @@ export const projects = {
     cat: 'M.Sc. Thesis · KFUPM · Architecture & City Design',
     title: 'Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting & Mitigation',
     desc: 'Built on Design Science Research methodology, this digital twin platform pulls MODIS Land Surface Temperature via Google Earth Engine, runs a Prophet forecasting ensemble (Terra and Aqua modelled separately, day and night, monthly + 7-day + 2030 horizons), and computes an equity-weighted Heat Vulnerability Index. An intervention simulator ranks twelve mitigation measures by cooling delivered, spillover reach, cost, and beneficiaries — using own-data seasonal betas, not literature values. Served through a FastAPI + PostgreSQL/PostGIS backend and a deck.gl + MapLibre frontend. Five Saudi cities. One framework.',
-    // The one sentence worth remembering — it goes above everything else.
-    finding: {
-      claim: 'Saudi cities are daytime <em>cool</em>-islands against the surrounding desert — the inverse of the classical Oke model.',
-      note: 'Makkah’s cool-island reaches −0.01 °C by 2030.',
-    },
     diagram: 'thesis',
     worked: {
       sec: 'Intervention Simulator — a worked example',
@@ -31,11 +26,28 @@ export const projects = {
       ],
       foot: 'Same budget, 27× the reach. Ranking by residents-per-riyal is what the simulator exists to do.',
     },
+    /* CHECKED AGAINST THE SHIPPED DATABASE, not against memory.
+
+       Every figure is recomputed from public/uhi-twin/db, the frozen snapshot
+       the embedded dashboard runs on, so the card and the dashboard beneath it
+       cannot disagree.
+
+         RMSE   0.98-1.87 is the monthly lst_day range across the five cities
+                (neom 0.98, makkah 1.28, jeddah 1.40, dammam 1.56, riyadh 1.87).
+                It read 0.96-1.91, which overstates the interval at both ends.
+         R2     0.91-0.99 across the day and night monthly models. This replaces
+                'r >= 0.85 MODIS vs Landsat', which nothing in the snapshot can
+                support: there is no cross-sensor validation in it to check.
+         1.37M  is exactly right (1,365,862) but was labelled ambiguously. It is
+                the TOP HVI quintile. The database's own pop_at_risk field means
+                the top TWO and totals 2.48M, so 'at-risk residents' pointed the
+                reader at the larger number by the study's own definition.
+         5.54M  population inside the analysed footprint, over 12,390 cells. */
     metrics: [
-      { v: '0.96–1.91°C', l: 'Monthly RMSE' },
-      { v: 'r ≥ 0.85', l: 'MODIS vs Landsat' },
-      { v: '1.37M', l: 'At-risk residents mapped' },
-      { v: '5 cities', l: 'Riyadh · Jeddah · Dammam · Makkah · NEOM' },
+      { v: '0.98-1.87 °C', l: 'Monthly LST RMSE · 5 cities' },
+      { v: 'R² 0.91-0.99', l: 'Monthly models, day and night' },
+      { v: '1.37M', l: 'Residents in the highest HVI quintile' },
+      { v: '5.54M', l: 'Mapped on a 500 m grid · 12,390 cells' },
     ],
     method: 'Google Earth Engine (on-demand ingestion) → PostgreSQL/PostGIS spatial DB → Prophet forecasting (Terra + Aqua separately, day + night) → Intervention Simulator (own-data seasonal OLS betas, exponential spillover kernel, Saudi/Gulf cost rates) → FastAPI backend → deck.gl + MapLibre dashboard. Kafka/Spark streaming layer designed for future automation.',
     /* The dashboard itself, running in the page.
@@ -45,11 +57,11 @@ export const projects = {
        same deck.gl map, the same Prophet forecasts, the same simulator. */
     twin: {
       sec: 'The dashboard, running',
-      lead: 'Not a screenshot. This is the platform itself, embedded — seven tabs across five cities, driven by a frozen snapshot of the study database so it runs without a backend.',
+      lead: 'This is the lite version with frozen data in a dashboard; it shows tabs across five cities of the study database and it runs without a backend.',
       title: 'UHI Digital Twin — interactive dashboard',
       src: '/uhi-twin/index.html',
       hint: 'Map · Weather · Climate · Statistics · Forecast · Interventions · System',
-      note: 'The map basemap, the Esri 3D city mode and the weather tab stream live over HTTPS; the heat data is bundled and offline. <strong>Run Simulation</strong> on the Interventions tab is inert in this static build — every other control is live. Basemaps © CARTO, © OpenStreetMap contributors; 3D city content © Esri.',
+
     },
     tags: ['Google Earth Engine', 'PostgreSQL/PostGIS', 'FastAPI', 'Prophet', 'deck.gl', 'MapLibre', 'Docker Compose', 'Design Science Research', 'Heat Vulnerability Index', 'Intervention Simulator', 'Vision 2030'],
     links: [
