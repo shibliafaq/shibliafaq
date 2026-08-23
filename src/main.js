@@ -426,6 +426,37 @@ idleInit(() => {
       if (h > 0.04 && aboutHead) aboutHead.classList.add('is-split-in');
     };
 
+    /* THE MAP HAS ONE OWNER, AND IT HAD TO BECAUSE IT NOW HAS TWO SOURCES.
+
+       The dive fades the plate IN as the descent lands on it; the tail below
+       fades it OUT as the frame ends. Those are two different triggers, and
+       both used to be free to assign `riyadh.style.opacity` directly — which is
+       the "one element, one owner" collision this file keeps re-learning
+       (CONTEXT 48, and again as the --heat name clash in 59). Whichever fired
+       last would win, so scrolling back up through the handover would leave the
+       map at whatever the other one had decided.
+
+       So the two publish INTENTIONS and this multiplies them. mapIn only ever
+       describes the arrival and mapOut only ever the departure. */
+    let mapIn = 0;
+    let mapOut = 0;
+    const paintMap = () => {
+      /* ARRIVAL IS THE PLATE'S; DEPARTURE IS THE WHOLE FRAME'S.
+
+         Fading only #riyadh on the way out was wrong, and looked it: the plate
+         went and revealed the WebGL canvas still sitting behind it, showing the
+         dived-in planet surface. Measured at that point the map read 0 while
+         the screen was a flat warm wash — the ground the descent had landed on,
+         with nothing on it. Which is worse than the overlap it replaced,
+         because it reads as an unfinished state rather than as a transition.
+
+         The map, the canvas, the scrim and the vignette are all children of the
+         stage, so the exit belongs there: one frame withdrawing, not a plate
+         lifting off a backdrop that stays. */
+      riyadh.style.opacity = mapIn.toFixed(3);
+      stage.style.setProperty('--frame-out', mapOut.toFixed(3));
+    };
+
     worlds.style.setProperty('--dive-copy', '0');
 
     ScrollTrigger.create({
@@ -475,7 +506,8 @@ idleInit(() => {
            oversized and settles, so the approach continues across the cut
            rather than stopping dead at it. */
         const f = Math.min(1, Math.max(0, (p - 0.52) / 0.12));
-        riyadh.style.opacity = f.toFixed(3);
+        mapIn = f;
+        paintMap();
         riyadh.style.setProperty('--plate', (1.22 - 0.16 * f).toFixed(3));
       },
     });
@@ -494,15 +526,43 @@ idleInit(() => {
        clearing until y5500 — 500px of a pinned block hanging over the next
        section's heading. The caption gets its stillness before this point,
        not after it: roughly 890px of it, from y4080 to y4968. */
+    /* THE FRAME CLEARS BEFORE THE NEXT ONE ARRIVES, RATHER THAN UNDER IT.
+
+       Measured on the old timing: #direction entered the viewport at y3875 with
+       the map still at full opacity, and the map never faded at all — it held 1
+       from y3375 to y6075 while the next section climbed over the top of it.
+       The caption did fade, but over y3789-3981, which is exactly when
+       #direction was arriving. So the two frames were dissolved into each other
+       and the whole handover read as an ordinary scroll.
+
+       Anchoring the exit a full viewport EARLIER is what separates them. By the
+       time About's bottom reaches the fold — the instant the sticky stage lets
+       go and #direction starts to climb — both the words and the map are
+       already gone, and the reader is looking at empty ground. #direction's own
+       reveals then fire as it enters, which is after, without needing to be
+       held back by anything: the sequence comes from the geometry rather than
+       from a second mechanism co-ordinating with this one.
+
+       The runway for it comes out of the 175vh tail .about--overmap already
+       carries, so nothing gets longer.
+
+       WORDS FIRST, THEN THE MAP. They overlap by design — the map begins going
+       at 0.40 while the caption is finishing at 0.45 — because a hard sequence
+       of two separate fades reads as two events, and what is wanted is one
+       frame withdrawing. Leading with the words is what makes it read that way
+       round: the argument finishes, then its illustration goes. */
     ScrollTrigger.create({
       trigger: about,
-      start: 'bottom bottom',
-      end: 'bottom top',
+      start: 'bottom bottom+=100%',
+      end: 'bottom bottom',
       scrub: true,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
-        heatOut = smoothstep(range(self.progress, 0, 0.28));
+        const p = self.progress;
+        heatOut = smoothstep(range(p, 0, 0.45));
         paintHeat();
+        mapOut = smoothstep(range(p, 0.40, 0.92));
+        paintMap();
       },
     });
 

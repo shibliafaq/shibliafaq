@@ -5183,3 +5183,60 @@ byte-identical with all 29 comments intact.
 Structure is deliberately NOT editable from the doc — which projects exist, how
 many metrics each has, image paths, embed keys, links and tag lists stay in the
 source, because their shape matters as much as their text.
+
+## 66. The heat map frame withdraws before the next one arrives (2026-08-23)
+
+Reported as the heat map just scrolling away normally instead of handing over.
+Measured, and it was worse than that: `#direction` entered the viewport at y3875
+with the map at FULL opacity, and the map never faded at all — it held 1 from
+y3375 to y6075 while the next section climbed over the top of it. The caption
+did fade, but across y3789-3981, which is precisely when `#direction` was
+arriving. Two frames dissolved into each other, which is why the whole handover
+read as an ordinary scroll.
+
+**Anchoring the exit a viewport earlier is what separates them.** The tail
+trigger was `bottom bottom` -> `bottom top`, which starts at the exact instant
+the sticky stage lets go and the next section starts climbing. It is now
+`bottom bottom+=100%` -> `bottom bottom`, so the whole departure happens while
+`#direction` is still below the fold. Its own reveals then fire as it enters,
+which is afterwards, without being held back by anything — the sequence comes
+from the geometry rather than from a second mechanism co-ordinating with this
+one. The runway comes out of the 175vh tail `.about--overmap` already carried,
+so nothing got longer.
+
+Words lead, the map follows, and they overlap on purpose: the map starts going
+at 0.40 while the caption is finishing at 0.45, because two cleanly separated
+fades read as two events where what is wanted is one frame withdrawing.
+
+### Fading the plate alone was wrong, and looked it
+
+First attempt faded `#riyadh`. Measured after: the map read 0 and the screen was
+a flat warm wash — the WebGL canvas behind it, still showing the dived-in planet
+surface with nothing on it. That is worse than the overlap it replaced, because
+an unfinished state reads as a bug where an overlap only reads as clumsy.
+
+The canvas, the scrim, the heat wash and the plate are all children of
+`.worlds__stage`, so the exit belongs there: `--frame-out` is published from the
+tail and the stylesheet fades the stage. One frame withdrawing, not a plate
+lifting off a backdrop that stays.
+
+### And the map got a single owner on the way
+
+The dive fades the plate IN, the tail fades the frame OUT, and both used to be
+free to assign `riyadh.style.opacity` directly — the same "one element, one
+owner" collision as CONTEXT 48 and as the `--heat` name clash in 59. Whichever
+fired last would win, so scrolling back up through the handover left the map at
+whatever the other one had decided. They publish intentions now (`mapIn`,
+`mapOut`) and one painter resolves them.
+
+### Measured after
+
+| | desktop 1184x686 | phone 375x812 |
+|---|---|---|
+| caption gone | y3375 | y4107 |
+| frame gone | y3725 | y4457 |
+| #direction enters | y3825 | y4557 |
+| its heading readable | y4425 | y5157 |
+
+Strictly ordered on both, with about 100px of cleared ground between the frame
+leaving and the next section arriving.

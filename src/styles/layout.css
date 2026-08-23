@@ -542,7 +542,17 @@
 
    Faded here rather than in JS because the scrim is redefined at two
    breakpoints — a JS opacity tween would have to know about all three. */
-.worlds__stage { --zoom: 0; }
+/* THE WHOLE FRAME WITHDRAWS AT THE END OF THE HEAT MAP.
+
+   --frame-out is published by main.js from About's tail, and everything in the
+   sequence — the canvas, the scrim, the heat wash and the map plate — is a
+   child of the stage, so fading it here takes them together. Fading the plate
+   alone left the dived-in planet surface showing behind it, which reads as an
+   unfinished state rather than as a departure.
+
+   Seeded to 0 alongside --zoom for the same reason: without it the fallback
+   would apply before the trigger has published anything. */
+.worlds__stage { --zoom: 0; --frame-out: 0; opacity: calc(1 - var(--frame-out, 0)); }
 .worlds__stage .hero__scrim { opacity: calc(1 - 0.82 * var(--zoom)); }
 .worlds__stage .hero__heat  { opacity: calc(1 - var(--zoom)); }
 /* Kill the keyframes the moment the pull-back starts, so the rule above wins. */
