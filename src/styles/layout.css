@@ -1175,6 +1175,14 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 .ftag--b { top: 16%; left: 56%; animation: ftag-drift-b 26s ease-in-out -3s infinite; }
 .ftag--c { top: 60%; left: 18%; animation: ftag-drift-c 19s ease-in-out -7s infinite; }
 .ftag--d { top: 70%; left: 44%; animation: ftag-drift-d 24s ease-in-out -11s infinite; }
+/* The second four. Same disc, filling the gaps the first four leave, and
+   re-using the four paths on different durations and offsets rather than
+   inventing four more keyframes: with eight tags nobody can tell that two
+   share a path when they are seconds apart and on opposite sides. */
+.ftag--e { top: 38%; left: 28%; animation: ftag-drift-b 23s ease-in-out -5s infinite; }
+.ftag--f { top: 46%; left: 60%; animation: ftag-drift-c 27s ease-in-out -14s infinite; }
+.ftag--g { top: 80%; left: 26%; animation: ftag-drift-d 20s ease-in-out -2s infinite; }
+.ftag--h { top: 30%; left: 45%; animation: ftag-drift-a 25s ease-in-out -17s infinite; }
 
 /* FOUR PATHS, NOT ONE SHARED THERE-AND-BACK.
 
@@ -1386,6 +1394,27 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    tags stacked beneath — which is also why the opacity is inside the guard
    and not outside it. A flowed block whose opacity is driven by a scrub it no
    longer matches would just be the original bug pointing the other way. */
+/* THE INTERACTION CUE IS NOT PART OF THE ARGUMENT.
+
+   "Drag and explore the globe" is an instruction, not the next sentence of
+   the paragraph above it, but it carried `.lead` and no other styling at all
+   — `.future__cue` had zero rules anywhere in the codebase — so it rendered
+   as a second identical lead butted straight against the first.
+
+   Separated by a rule and set in the same mono label face the tags use, which
+   is the voice the site already gives to things you are meant to DO rather
+   than read. Quieter colour for the same reason. */
+#future .future__cue {
+  margin-top: clamp(1.1rem, 2.6vh, 1.9rem);
+  padding-top: clamp(.9rem, 2vh, 1.4rem);
+  border-top: 1px solid rgba(255, 255, 255, .12);
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .04em;
+  line-height: 1.55;
+  color: var(--t-2);
+}
+
 @media (min-width: 901px) {
   #future .future__body {
     grid-row: 1;

@@ -78,6 +78,18 @@ node tools/sync-site-copy.mjs --write   # apply it
 ### future.tag4
 - Oceans getting dirty
 
+### future.tag5
+- Crops failing in longer droughts
+
+### future.tag6
+- Coastlines retreating inland
+
+### future.tag7
+- Heatwaves lasting weeks, not days
+
+### future.tag8
+- Rivers running dry before summer ends
+
 ## About
 
 ### about.label
