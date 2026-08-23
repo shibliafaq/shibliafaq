@@ -5802,3 +5802,46 @@ payload are a 96 × 96 raster over a 0.12° box, confirmed by opening a city fil
 Maps & Visuals removed at request. The Kepler.gl recordings stay under their own
 heading, which is where the three-city demo belongs: it is still worth showing
 and it is no longer the subject.
+
+## 82. ITS and Soundscape: findings out of desc, methods drawn (2026-08-24)
+
+Both cards had the same fault as the GIS one in section 75: `desc` carrying the
+paper's results in compressed form, and a method that was a chain of arrows in a
+sentence.
+
+**ITS `desc`** lost the congestion figures, the dual-regime framing and the
+recommended alternative. All of it is in the abstract directly below, and the
+metrics carry the two numbers a reader actually stops on. What remains says what
+the work is and which venue it is about.
+
+**ITS method** is now Define, Choose, Design. The chain hid the shape of the
+study — this paper defines a problem, scores four options against each other,
+picks one, and designs from the winner. The scoring step is the hinge, so
+Alternative C keeps its score of 3.75 on it: a multi-criteria matrix that does
+not say what the chosen option scored is asking to be taken on trust.
+
+**Soundscape `desc`** lost the screening counts, the theme count and the two
+outputs, all of which the abstract states.
+
+**Soundscape method was the one genuinely losing information as prose.** PRISMA
+exists so a reader can audit the funnel — how many were found, how many were
+discarded, at which gate — and a run-on line of numbers separated by arrows
+makes that arithmetic something you have to do yourself. Drawn as Identify,
+Screen, Include, Synthesise.
+
+The counts reconcile, which is the point of the diagram and worth checking
+rather than transcribing: 1,011 screened less 931 excluded leaves the 80 sought;
+78 assessed, two having not been retrieved, less 56 excluded leaves the 22 the
+abstract reports.
+
+### The paper link
+
+Changed from the DOI to `https://rdcu.be/fqyAT`, the Springer Nature SharedIt
+link, so a reader without a subscription reaches the full text rather than a
+landing page. The DOI stays in `pub`, where it belongs — it is the citation
+identifier and it is what someone quoting the work needs. Two different jobs,
+and the card now does both instead of using one for both.
+
+The link label also lost its connecting dash, which had survived the sweep in
+section 73 because that pass only looked at rendered prose and this string is an
+attribute of a link.

@@ -382,7 +382,7 @@ export const projects = {
       status: 'Manuscript in Preparation',
     },
     title: 'ITS-Based Congestion Management — Aramco Stadium Corridor, Al Khobar',
-    desc: 'A corridor-level ITS strategy for the 47,000-capacity Aramco Stadium in Al Khobar, host venue for the 2027 AFC Asian Cup and 2034 FIFA World Cup. The corridor already runs at 48.5% evening congestion with 44 hours lost per driver per year (TomTom 2025), and faces a dual-regime problem: chronic daily load overlaid by concentrated event surges. Four cumulative alternatives were scored on a weighted multi-criteria matrix; the recommended one integrates adaptive signal control, ATMS/ATIS, smart parking and park-and-ride, with demand pricing held back as a conditional final phase.',
+    desc: 'A corridor-level ITS strategy for the 47,000-capacity Aramco Stadium in Al Khobar, host venue for the 2027 AFC Asian Cup and 2034 FIFA World Cup.',
     /* The manuscript's own abstract, verbatim (final version, May 2026).
        Unpublished and under departmental review, so this is the submitted text.
        Note it makes no outcome claims of its own -- the paper is careful that
@@ -400,7 +400,37 @@ export const projects = {
       { v: '$4.3–12.1M', l: 'Indicative cost, recommended alternative · planning-level' },
       { v: '4-layer', l: 'Sense → Decide → Act → Influence' },
     ],
-    method: 'Corridor and dual-regime problem definition → literature and international case review (Qatar 2022, London 2012) → four cumulative alternatives → weighted multi-criteria scoring matrix on seven criteria → Alternative C selected (score 3.75) → four-layer ITS architecture → three-phase implementation plan with indicative costs from FHWA and HDR benchmarks',
+    /* THE STUDY IS A DECISION, so the figure shows how it was reached.
+
+       The chain read as a sentence and hid the shape: this paper defines a
+       problem, scores four options against each other, picks one, and then
+       designs from the winner. The scoring step is the hinge, and the score
+       is kept on it — a multi-criteria matrix that does not say what the
+       chosen option scored is asking to be taken on trust. */
+    methodFlow: [
+      {
+        phase: 'Define',
+        steps: [
+          { t: 'Corridor and dual-regime problem', s: 'Chronic daily load plus concentrated event surges' },
+          { t: 'Literature and case review', s: 'Qatar 2022 · London 2012' },
+        ],
+      },
+      {
+        phase: 'Choose',
+        steps: [
+          { t: 'Four cumulative alternatives', s: 'Each layer added onto the one before it' },
+          { t: 'Weighted multi-criteria matrix', s: 'Seven criteria' },
+          { t: 'Alternative C selected', s: 'Score 3.75' },
+        ],
+      },
+      {
+        phase: 'Design',
+        steps: [
+          { t: 'Four-layer ITS architecture', s: 'Sense → Decide → Act → Influence' },
+          { t: 'Three-phase implementation plan', s: 'Indicative costs from FHWA and HDR benchmarks' },
+        ],
+      },
+    ],
     tags: ['Adaptive Signal Control (ATSC)', 'ATMS / TMC', 'ATIS', 'Variable Message Signs', 'Smart Parking', 'Park-and-Ride', 'Congestion Pricing', 'Multi-Criteria Analysis', 'Event Mobility', 'Vision 2030'],
     links: [{ t: 'Manuscript — Under Departmental Review', dev: true }],
   },
@@ -421,7 +451,7 @@ export const projects = {
       doi: 'https://doi.org/10.1007/s44327-026-00314-z',
     },
     title: 'A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments',
-    desc: 'Published in Discover Cities, June 2026. A PRISMA 2020 systematic review of how the acoustic environment shapes outdoor thermal comfort in hot-arid cities. 1,011 records screened across Scopus, Semantic Scholar and AI-assisted snowballing; 22 studies (2005–2025) synthesised into five interlinked themes. Introduces the Integrated Thermo-Acoustic Planning (ITAP) Framework and a persona-based Interdisciplinary Implementation Toolkit for Vision 2030 public space design.',
+    desc: 'Published in Discover Cities, June 2026. A PRISMA 2020 systematic review of how the acoustic environment shapes outdoor thermal comfort in hot-arid cities.',
     /* The published abstract, verbatim from Discover Cities (2026) 3:123.
        Not a paraphrase: the paper is open access under CC BY-NC-ND, this is the
        version of record, and a portfolio that restates an abstract in its own
@@ -433,10 +463,57 @@ export const projects = {
       { v: '5', l: 'Interlinked themes identified' },
       { v: 'Published', l: 'Discover Cities · 2026 · 3:123 · Open Access' },
     ],
-    method: 'Multi-database search (Scopus, Semantic Scholar) + AI-assisted snowballing (Elicit) → 1,011 records screened → 931 excluded → 80 sought, 78 assessed → 56 excluded on inclusion criteria → 22 included → two-stage thematic content analysis, consensus across all co-authors → five themes → ITAP Framework + Interdisciplinary Implementation Toolkit',
+    /* A PRISMA FLOW, WHICH IS ALREADY A DIAGRAM IN THE PAPER.
+
+       This was the one method on the site that was genuinely losing
+       information as a sentence. PRISMA exists so a reader can audit the
+       funnel — how many were found, how many were thrown out and at which
+       gate — and a run-on line of numbers separated by arrows makes that
+       arithmetic something you have to do yourself.
+
+       The counts reconcile, which is worth stating because it is the whole
+       point of the diagram: 1,011 screened less 931 excluded leaves 80
+       sought; 78 assessed (two could not be retrieved) less 56 excluded
+       leaves the 22 the abstract reports. */
+    methodFlow: [
+      {
+        phase: 'Identify',
+        steps: [
+          { t: 'Scopus and Semantic Scholar', s: 'Multi-database search' },
+          { t: 'AI-assisted snowballing', s: 'Elicit, on the reference lists' },
+        ],
+      },
+      {
+        phase: 'Screen',
+        steps: [
+          { t: '1,011 records screened', s: '931 excluded on title and abstract' },
+          { t: '80 reports sought', s: '78 retrieved and assessed in full' },
+          { t: '56 excluded', s: 'Against the inclusion criteria' },
+        ],
+      },
+      {
+        phase: 'Include',
+        steps: [
+          { t: '22 studies included', s: 'Published 2005 to 2025' },
+        ],
+      },
+      {
+        phase: 'Synthesise',
+        steps: [
+          { t: 'Two-stage thematic content analysis', s: 'Consensus across all co-authors' },
+          { t: 'Five interlinked themes', s: 'From integrated design to urban morphology' },
+          { t: 'ITAP Framework and Toolkit', s: 'Multi-scalar model plus a persona-based toolkit' },
+        ],
+      },
+    ],
     tags: ['PRISMA 2020', 'Systematic Review', 'Thermal Comfort', 'Soundscape', 'Hot-Arid Cities', 'Green/Blue Infrastructure', 'Urban Morphology', 'Environmental Psychology', 'Vision 2030', 'Open Access'],
     links: [
-      { t: 'Read the paper — Discover Cities (Open Access)', h: 'https://doi.org/10.1007/s44327-026-00314-z', primary: true },
+      /* The SharedIt link, not the DOI. Springer Nature issues these for free
+         full-text reading, so a visitor without an institutional subscription
+         reaches the paper rather than a paywall or a landing page. The DOI
+         stays in `pub` above, where it belongs: it is the citation identifier,
+         and it is what someone quoting this work needs. */
+      { t: 'Read the paper · Discover Cities (free full text)', h: 'https://rdcu.be/fqyAT', primary: true },
     ],
   },
 

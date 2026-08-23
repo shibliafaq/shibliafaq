@@ -355,7 +355,7 @@ because their shape matters as much as their text.
 - ITS-Based Congestion Management — Aramco Stadium Corridor, Al Khobar
 
 ### its.desc
-- A corridor-level ITS strategy for the 47,000-capacity Aramco Stadium in Al Khobar, host venue for the 2027 AFC Asian Cup and 2034 FIFA World Cup. The corridor already runs at 48.5% evening congestion with 44 hours lost per driver per year (TomTom 2025), and faces a dual-regime problem: chronic daily load overlaid by concentrated event surges. Four cumulative alternatives were scored on a weighted multi-criteria matrix; the recommended one integrates adaptive signal control, ATMS/ATIS, smart parking and park-and-ride, with demand pricing held back as a conditional final phase.
+- A corridor-level ITS strategy for the 47,000-capacity Aramco Stadium in Al Khobar, host venue for the 2027 AFC Asian Cup and 2034 FIFA World Cup.
 
 ### its.abstract
 - Urban corridors next to major sports venues present a traffic challenge. Chronic daily congestion that already strains the network is overlaid by concentrated, directional event surges that conventional infrastructure alone cannot absorb. The Aramco Stadium corridor in Al Khobar, Saudi Arabia, illustrates this challenge precisely. According to TomTom's 2025 Traffic Index, the Dammam metropolitan area (including Al Khobar) has 48.5 percent congestion during the evening rush hour and an average 44 hours of time lost per driver annually. This paper develops a data-supported, integrated Intelligent Transportation Systems (ITS) strategy to reduce congestion on the corridor under both daily and event conditions. The methodology draws exclusively on peer-reviewed literature, official government and institutional sources, and verified traffic indices. Four cumulative strategy alternatives are evaluated using a weighted multi-criteria scoring matrix. The proposed strategy layers include Adaptive Traffic Signal Control (ATSC) as the operational layer, Advanced Traffic Management System (ATMS) and Advanced Traveler Information System (ATIS) as the monitoring and information layer, smart parking guidance and park-and-ride as the event-access layer, and demand-management pricing as the optional, final layer. This paper proposes a three-stage implementation plan with indicative cost and KPI improvement estimates. The corridor, if managed with the proposed strategy, can be used as a pilot of smart mobility projects in Saudi Arabia's Vision 2030.
@@ -384,8 +384,26 @@ because their shape matters as much as their text.
 ### its.metrics.3.l
 - Sense → Decide → Act → Influence
 
-### its.method
-- Corridor and dual-regime problem definition → literature and international case review (Qatar 2022, London 2012) → four cumulative alternatives → weighted multi-criteria scoring matrix on seven criteria → Alternative C selected (score 3.75) → four-layer ITS architecture → three-phase implementation plan with indicative costs from FHWA and HDR benchmarks
+### its.methodFlow.0.steps.0.t
+- Corridor and dual-regime problem
+
+### its.methodFlow.0.steps.1.t
+- Literature and case review
+
+### its.methodFlow.1.steps.0.t
+- Four cumulative alternatives
+
+### its.methodFlow.1.steps.1.t
+- Weighted multi-criteria matrix
+
+### its.methodFlow.1.steps.2.t
+- Alternative C selected
+
+### its.methodFlow.2.steps.0.t
+- Four-layer ITS architecture
+
+### its.methodFlow.2.steps.1.t
+- Three-phase implementation plan
 
 ### its.links.0.t
 - Manuscript — Under Departmental Review
@@ -409,7 +427,7 @@ because their shape matters as much as their text.
 - A Systematic Review of Soundscape and Thermal Comfort Interactions in Hot-Arid Environments
 
 ### sound.desc
-- Published in Discover Cities, June 2026. A PRISMA 2020 systematic review of how the acoustic environment shapes outdoor thermal comfort in hot-arid cities. 1,011 records screened across Scopus, Semantic Scholar and AI-assisted snowballing; 22 studies (2005–2025) synthesised into five interlinked themes. Introduces the Integrated Thermo-Acoustic Planning (ITAP) Framework and a persona-based Interdisciplinary Implementation Toolkit for Vision 2030 public space design.
+- Published in Discover Cities, June 2026. A PRISMA 2020 systematic review of how the acoustic environment shapes outdoor thermal comfort in hot-arid cities.
 
 ### sound.abstract
 - In hot-arid cities, the soundscape of public space has been an underutilized element of urban design, often treated as a secondary consideration relative to visual appearance. This neglect contributes to thermal discomfort and the underutilization of urban outdoor public space, a problem that is especially prevalent in the Gulf region, where the lack of shade renders the outdoor public space uninhabitable for a significant portion of the year. To fill this gap, this study aims to conduct a PRISMA-guided systematic review of 22 peer-reviewed studies (2005–2025) that focus on the soundscape design, outdoor thermal comfort, and urban space quality in hot-arid and thermally comparable environments. Thematic content analysis reveals five theme areas that are interlinked: (i) integrated thermal-acoustic design, (ii) the function of green and blue infrastructure in soundscapes, (iii) multisensory perception and psychological restoration, (iv) problems and concerns with human-centered soundscape planning, and (v) the impact of urban morphology on microclimate and sound propagation. The synthesis shows that, under moderate thermal stress conditions, positive soundscapes (created with natural sounds and green-blue infrastructure) can positively influence the thermoceptive comfort perception and decrease the perceived heat stress as well as encourage active use of public space. These benefits, however, are limited, becoming much less pronounced in extreme heat and are predominantly psychological and cognitive in nature, operating through individual appraisal rather than direct sensory response. Based on these findings, the paper introduces the Integrated Thermo-Acoustic Planning (ITAP) Framework as a multi-scalar, evidence-based design model and a persona-based Interdisciplinary Implementation Toolkit. These outputs, combined, offer context-specific guidelines for the design of walkable, thermally comfortable, and acoustically restorative public spaces to support the Saudi Arabia Vision 2030 Quality of Life Programme.
@@ -438,11 +456,35 @@ because their shape matters as much as their text.
 ### sound.metrics.3.l
 - Discover Cities · 2026 · 3:123 · Open Access
 
-### sound.method
-- Multi-database search (Scopus, Semantic Scholar) + AI-assisted snowballing (Elicit) → 1,011 records screened → 931 excluded → 80 sought, 78 assessed → 56 excluded on inclusion criteria → 22 included → two-stage thematic content analysis, consensus across all co-authors → five themes → ITAP Framework + Interdisciplinary Implementation Toolkit
+### sound.methodFlow.0.steps.0.t
+- Scopus and Semantic Scholar
+
+### sound.methodFlow.0.steps.1.t
+- AI-assisted snowballing
+
+### sound.methodFlow.1.steps.0.t
+- 1,011 records screened
+
+### sound.methodFlow.1.steps.1.t
+- 80 reports sought
+
+### sound.methodFlow.1.steps.2.t
+- 56 excluded
+
+### sound.methodFlow.2.steps.0.t
+- 22 studies included
+
+### sound.methodFlow.3.steps.0.t
+- Two-stage thematic content analysis
+
+### sound.methodFlow.3.steps.1.t
+- Five interlinked themes
+
+### sound.methodFlow.3.steps.2.t
+- ITAP Framework and Toolkit
 
 ### sound.links.0.t
-- Read the paper — Discover Cities (Open Access)
+- Read the paper · Discover Cities (free full text)
 
 
 ## Twin Tower Complex  `arch`
