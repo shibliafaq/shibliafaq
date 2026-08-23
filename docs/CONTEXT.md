@@ -5145,3 +5145,41 @@ And "the front card changed" is not a measure of a gesture here. Ambient drift
 changes it on its own within seconds, and tiles are spaced by arc length so they
 travel at very uneven speed — a single control window is not a baseline. Take
 several, and compare path length in pixels.
+
+## 65. Project copy gets its own document (2026-08-23)
+
+`docs/site-copy.md` covers the front page, `docs/timeline-copy.md` the
+Background timeline and `docs/speech-bubbles.md` the map. The project cards had
+no equivalent: their words lived only in `src/data/projects.js`, 28 KB of nested
+object literal where a stray apostrophe is a syntax error rather than a typo.
+`docs/project-copy.md` and `tools/sync-project-copy.mjs` close that gap, same
+shape as the other three — `--export` rebuilds the doc, no flag is a dry run,
+`--write` applies.
+
+**It edits in place rather than regenerating.** The obvious implementation —
+import the module, edit the object, print it back — would delete all 29 comments
+in that file, and they carry what the numbers mean. So the tool scans for the
+exact source span of each string literal and replaces only that span.
+
+The scan is quote-aware rather than line-based, because 284 strings in that file
+contain an escaped quote and a line regex mangles those in a way that surfaces
+much later as a stray backslash on a card.
+
+**Two scanner bugs worth recording, because both were silent.** Paths came out
+as `0.thesis.cat`: the root container was being opened twice, once as the seed
+stack entry and again by the loop, pushing an empty segment. And array indices
+never advanced, so four metric objects all produced `metrics.0` — every row in
+every array shared one key. That second one is the dangerous kind: the doc is
+parsed into a Map, so duplicate keys collapse into one and edits to the second,
+third and fourth metric would have gone nowhere while reporting success. Caught
+by checking that 132 keys were 132 UNIQUE keys, which is worth doing whenever a
+generated key is supposed to be an identity.
+
+Verified: a plain edit lands and the module still parses; a value containing an
+apostrophe, a double quote and a backslash round-trips exactly; and restoring
+the doc from a pristine source and syncing back leaves projects.js
+byte-identical with all 29 comments intact.
+
+Structure is deliberately NOT editable from the doc — which projects exist, how
+many metrics each has, image paths, embed keys, links and tag lists stay in the
+source, because their shape matters as much as their text.
