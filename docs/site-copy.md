@@ -61,7 +61,7 @@ node tools/sync-site-copy.mjs --write   # apply it
 - The Cost<br><em>of Inaction</em>
 
 ### future.lead
-- To protect communities, we have to solve climate problems from neighborhood blocks to entire metropolitan regions. This interactive model visualizes the trajectory if extreme heat and emissions continue unchecked.
+- This interactive model visualizes the trajectory if extreme heat and emissions continue unchecked.
 
 ### future.lead2
 - Drag and explore the globe to see the projected impact of unchecked climate change.

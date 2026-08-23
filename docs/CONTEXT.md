@@ -4243,3 +4243,28 @@ appears when the caption is already at 0.14.
 - `--cost` is seeded to 0 at startup for the same reason `--heat` is: the
   stylesheet falls back to 1 so nothing is trapped invisible without JS, and the
   seed stops that fallback also applying before the scrub first reports.
+
+### The paragraph came off the planet too, and the tags moved to make room
+
+Same fault as the tags, one element later. `#future .future__body` was
+bottom-right at its full 544px measure, x824 to x1368 — and the globe's disc
+reaches x1053, so **229px of the paragraph was sitting on the planet.**
+
+The right band is only 387px wide, so it cannot hold both the copy and three
+tags. All six tags moved to the LEFT band and the copy took the right one, which
+is a better composition anyway: labels one side, argument the other, planet
+between them.
+
+- Copy narrowed to `min(300px, 26vw)` and vertically centred rather than
+  bottom-anchored; at 300px wide the block is tall enough that hanging it off the
+  floor pushed its title up into the globe's edge.
+- `text-align: justify` KEPT. It was raised as looking ragged and then explicitly
+  asked for, so it stays; cutting the paragraph is what fixes the raggedness,
+  since justification opens gaps in proportion to how much text is fighting the
+  measure.
+- The lead is cut from 213 characters to 98, dropping the general thesis
+  sentence and keeping the one that describes what is on screen. **That cut is
+  mine and worth a read.**
+
+Measured after: copy clear of the disc by 44px, on screen, justify intact, 2
+lines instead of 3, and every tag clear of both the copy and the globe.

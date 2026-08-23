@@ -1224,12 +1224,15 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 /* --ti is the arrival order, and it deliberately alternates sides rather than
    running down one band and then the other, so the field fills in rather than
    wiping across. */
-.ftag--a { --ti: 0; top: 18%; left: 4%;  animation: ftag-drift-a 34s ease-in-out infinite; }
-.ftag--b { --ti: 1; top: 13%; right: 4%; animation: ftag-drift-b 41s ease-in-out -6s infinite; }
-.ftag--c { --ti: 2; top: 45%; left: 4%;  animation: ftag-drift-c 31s ease-in-out -13s infinite; }
-.ftag--d { --ti: 3; top: 33%; right: 4%; animation: ftag-drift-d 38s ease-in-out -21s infinite; }
-.ftag--e { --ti: 4; top: 72%; left: 4%;  animation: ftag-drift-b 36s ease-in-out -9s infinite; }
-.ftag--f { --ti: 5; top: 52%; right: 4%; animation: ftag-drift-c 43s ease-in-out -27s infinite; }
+/* ALL SIX ON THE LEFT NOW. The right band went to the paragraph, which had to
+   come off the planet as well and needs more room than a tag does. Labels one
+   side, argument the other, planet between them. */
+.ftag--a { --ti: 0; top: 10%; left: 4%; animation: ftag-drift-a 34s ease-in-out infinite; }
+.ftag--b { --ti: 1; top: 23%; left: 4%; animation: ftag-drift-b 41s ease-in-out -6s infinite; }
+.ftag--c { --ti: 2; top: 36%; left: 4%; animation: ftag-drift-c 31s ease-in-out -13s infinite; }
+.ftag--d { --ti: 3; top: 49%; left: 4%; animation: ftag-drift-d 38s ease-in-out -21s infinite; }
+.ftag--e { --ti: 4; top: 62%; left: 4%; animation: ftag-drift-b 36s ease-in-out -9s infinite; }
+.ftag--f { --ti: 5; top: 75%; left: 4%; animation: ftag-drift-c 43s ease-in-out -27s infinite; }
 
 /* FOUR PATHS, NOT ONE SHARED THERE-AND-BACK.
 
@@ -1524,16 +1527,29 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   #future .future__body {
     grid-row: 1;
     position: fixed;
-    /* Bottom RIGHT, against #whole's bottom left: the two captions sit on
-       opposite sides so the change of frame is legible as a change of place,
-       and the failed Earth is right-aligned in this section. */
-    right: var(--pad-x);
-    bottom: clamp(3rem, 10vh, 7rem);
+    /* IN THE RIGHT-HAND BAND, CLEAR OF THE PLANET.
+
+       It used to be bottom-right at the full 544px measure, which put it from
+       x824 to x1368 — and the globe reaches x1053, so 229px of the paragraph
+       sat on the disc. Narrowed and pushed right so the whole block lives in
+       the clear band beside the planet instead.
+
+       Vertically centred rather than bottom-anchored now: a 300px column is
+       tall enough that hanging it off the floor pushed the title up into the
+       globe's edge. The tags have all moved to the LEFT band to make room,
+       which also reads better — labels one side, argument the other, planet
+       between them. */
+    right: 3%;
     left: auto;
-    top: auto;
+    top: 50%;
+    bottom: auto;
+    width: min(300px, 26vw);
+    max-width: none;
     z-index: 3;
     opacity: var(--cost, 1);
-    translate: 0 calc((1 - var(--cost, 1)) * 1.4rem);
+    /* The -50% shares this declaration with the arrival offset: two rules both
+       writing `translate` would silently drop one. */
+    translate: 0 calc(-50% + (1 - var(--cost, 1)) * 1.4rem);
     /* No transition, for the same reason as #whole: --cost is already
        scrubbed and easing it twice only adds lag. */
   }
