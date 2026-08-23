@@ -28,11 +28,59 @@
 
 const KEY = 'visits:total';
 
+/* THE VARIABLES ARE NAMED DIFFERENTLY DEPENDING ON HOW THE STORE WAS ADDED,
+   so all the names anyone plausibly ends up with are accepted rather than one.
+   Vercel's own KV product used KV_REST_API_*; attaching Upstash Redis through
+   the Marketplace gives UPSTASH_REDIS_REST_*; `vercel integration resource
+   connect --prefix` can put anything in front; and someone pasting the values
+   in by hand will pick whatever seems obvious. Reading one pair and calling
+   everything else "not configured" turns a naming difference into a silent
+   failure with nothing on screen to explain it.
+
+   Ordered by how specific they are, so an explicit REDIS_* pair set by hand
+   wins over one an integration happened to leave behind. */
+const URL_KEYS = [
+  'KV_REST_API_URL',
+  'UPSTASH_REDIS_REST_URL',
+  'REDIS_REST_API_URL',
+  'STORAGE_REST_API_URL',
+];
+const TOKEN_KEYS = [
+  'KV_REST_API_TOKEN',
+  'UPSTASH_REDIS_REST_TOKEN',
+  'REDIS_REST_API_TOKEN',
+  'STORAGE_REST_API_TOKEN',
+];
+
+const firstSet = (names) => {
+  for (const n of names) {
+    const v = process.env[n];
+    if (v) return { name: n, value: v };
+  }
+  return null;
+};
+
 export default async function handler(req, res) {
-  const base = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
+  const url = firstSet(URL_KEYS);
+  const tok = firstSet(TOKEN_KEYS);
+  const base = url && url.value.replace(/\/+$/, '');
+  const token = tok && tok.value;
 
   res.setHeader('Cache-Control', 'no-store');
+
+  /* A presence-only report, so a store that is attached but not working can be
+     told apart from one that was never attached — without this the only symptom
+     either way is a footer with no line in it. Names and booleans only: no
+     value, no fragment of a value, nothing that is a secret. */
+  if (req.query && req.query.debug !== undefined) {
+    res.status(200).json({
+      configured: Boolean(base && token),
+      urlVarFound: url ? url.name : null,
+      tokenVarFound: tok ? tok.name : null,
+      looksFor: { url: URL_KEYS, token: TOKEN_KEYS },
+    });
+    return;
+  }
 
   if (!base || !token) {
     res.status(200).json({ configured: false });

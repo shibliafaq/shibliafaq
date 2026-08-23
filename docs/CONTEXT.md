@@ -5033,3 +5033,31 @@ unconfigured reply (stays hidden).
 **Still needs provisioning to show anything.** Attach a KV / Upstash Redis store
 to the Vercel project; it injects `KV_REST_API_URL` and `KV_REST_API_TOKEN`,
 which is all the function reads. Until then the footer simply omits the line.
+
+## 63. The counter accepts whatever the store is called (2026-08-23)
+
+Section 62 shipped `api/visits.js` reading `KV_REST_API_URL` and
+`KV_REST_API_TOKEN`, the names Vercel's own KV product used. That product no
+longer exists as a separate thing, and the replacement does not use those names:
+attaching Upstash Redis through the Marketplace gives `UPSTASH_REDIS_REST_*`,
+`vercel integration resource connect --prefix` can put anything in front, and
+anyone pasting values in by hand picks whatever seems obvious.
+
+Reading one pair and calling everything else "not configured" turns a naming
+difference into a silent failure whose only symptom is a footer with no line in
+it — indistinguishable from not having set anything up. So all four plausible
+pairs are accepted, most specific first, and the URL is stripped of a trailing
+slash because half the dashboards show it with one.
+
+`?debug` reports which variable names were FOUND, and which it looks for, as
+names and booleans — never a value or a fragment of one. That is the difference
+between "attached but misnamed" and "never attached", which is otherwise
+invisible from outside.
+
+Verified against all four naming routes, a trailing-slash URL, a half-configured
+pair (url set, token missing -> not configured), and nothing set.
+
+The lesson is the same one as the `--heat` collision in section 59, one layer
+out: a contract with the outside world should be permissive about the shapes it
+accepts and strict about what it promises, and "I could not find my input" is
+something to report, not something to fail silently on.
