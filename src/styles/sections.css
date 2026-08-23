@@ -1718,8 +1718,8 @@
 }
 
 .modal .thermal__hud { padding-inline: clamp(1rem, 3vw, 2rem); }
-.modal .thermal__title { font-size: clamp(1.4rem, 3.2vw, 2.2rem); margin: .5rem 0 .75rem; }
-.modal .thermal__caption { font-size: var(--fs-sm); max-width: 46ch; }
+.modal .thermal__title { font-size: var(--ms-h2); margin: .5rem 0 .75rem; }
+.modal .thermal__caption { font-size: var(--ms-small); max-width: 46ch; }
 .modal .thermal__legend { margin: 1.1rem 0 .25rem; gap: 1rem; }
 
 /* The legend is a control here, not a key. It has to look like one. */

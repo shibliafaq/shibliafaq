@@ -67,10 +67,11 @@ function render(data) {
   let stepNo = 0;
   const methodFlow = data.methodFlow?.length
     ? `<figure class="mflow">${data.methodFlow.map((g, gi) => `
-        ${gi ? '<div class="mflow__join" aria-hidden="true"></div>' : ''}
+        ${gi ? '<div class="mflow__join" aria-hidden="true">→</div>' : ''}
         <section class="mflow__p">
           <h4 class="mflow__ph">${esc(g.phase)}</h4>
-          <ol class="mflow__steps">${g.steps.map((st) => `
+          <ol class="mflow__steps">${g.steps.map((st, si) => `
+            ${si ? '<li class="mflow__arrow" aria-hidden="true">→</li>' : ''}
             <li class="mflow__s">
               <span class="mflow__n">${String(++stepNo).padStart(2, '0')}</span>
               <span class="mflow__t">${esc(st.t)}</span>

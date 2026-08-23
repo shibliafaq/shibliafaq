@@ -1,3 +1,28 @@
+/* THE SCALE, AVAILABLE EVERYWHERE.
+
+   It was declared only on `.modal`, and the base rules below kept their own
+   --fs-* values with `.modal .x` overrides layered on top for the handful I
+   had noticed. That is why the same complaint kept coming back for a
+   different block each time: the overrides were a list I was maintaining by
+   hand, and anything not on it shipped off-scale. The publication block was
+   the third case — it only exists on the papers, so an audit run against the
+   thesis could not see it.
+
+   The base rules use the scale directly now, so there is nothing to keep in
+   sync and no way for a new block to miss it. `.modal` still overrides --ms
+   itself, which is what makes the whole hierarchy shrink together on a
+   phone. */
+:root {
+  --ms: 1rem;
+  --ms-eyebrow: calc(var(--ms) * .72);
+  --ms-label:   calc(var(--ms) * .78);
+  --ms-small:   calc(var(--ms) * .88);
+  --ms-body:    var(--ms);
+  --ms-lead:    calc(var(--ms) * 1.12);
+  --ms-h3:      calc(var(--ms) * 1.33);
+  --ms-h2:      calc(var(--ms) * 1.78);
+  --ms-h1:      calc(var(--ms) * 2.37);
+}
 /* ============================================================
    PROJECT MODAL
    ============================================================ */
@@ -56,7 +81,7 @@
   background: rgba(9, 9, 11, .8);
   backdrop-filter: blur(10px);
   color: var(--t-2);
-  font-size: .85rem;
+  font-size: var(--ms-small);
   transition: color var(--d-fast), border-color var(--d-fast), transform var(--d-fast);
 }
 
@@ -64,7 +89,7 @@
 
 .mcat {
   font-family: var(--f-mono);
-  font-size: var(--fs-label);
+  font-size: var(--ms-eyebrow);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   color: var(--amber);
@@ -74,7 +99,7 @@
 .mtitle {
   font-family: var(--f-display);
   font-weight: 800;
-  font-size: clamp(1.5rem, 3.4vw, 2.6rem);
+  font-size: var(--ms-h1);
   letter-spacing: -.035em;
   line-height: 1.14;
   color: var(--t);
@@ -101,14 +126,14 @@
 }
 
 .mpub__authors {
-  font-size: var(--fs-sm);
+  font-size: var(--ms-small);
   line-height: 1.6;
   color: var(--t-2);
 }
 
 .mpub__venue {
   font-family: var(--f-mono);
-  font-size: var(--fs-label);
+  font-size: var(--ms-eyebrow);
   letter-spacing: .04em;
   line-height: 1.7;
   color: var(--t-3);
@@ -128,7 +153,7 @@
   padding: .3rem .8rem;
   border-radius: var(--r-pill);
   font-family: var(--f-mono);
-  font-size: var(--fs-label);
+  font-size: var(--ms-eyebrow);
   letter-spacing: .06em;
   border: 1px solid;
   white-space: nowrap;
@@ -139,7 +164,7 @@
 
 .mpub__doi {
   font-family: var(--f-mono);
-  font-size: var(--fs-label);
+  font-size: var(--ms-eyebrow);
   letter-spacing: .03em;
   color: var(--amber);
   text-decoration: none;
@@ -149,7 +174,7 @@
 
 .mpub__doi:hover { border-bottom-color: var(--amber); }
 
-.mdesc { font-size: var(--fs-body); line-height: 1.75; color: var(--t-2); max-width: 72ch; }
+.mdesc { font-size: var(--ms-body); line-height: 1.75; color: var(--t-2); max-width: 72ch; }
 
 .mmetrics {
   display: grid;
@@ -163,7 +188,7 @@
 .mmv {
   font-family: var(--f-display);
   font-weight: 800;
-  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  font-size: var(--ms-h3);
   letter-spacing: -.03em;
   color: var(--amber);
   line-height: 1;
@@ -171,7 +196,7 @@
 
 .mml {
   font-family: var(--f-mono);
-  font-size: var(--fs-label);
+  font-size: var(--ms-label);
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--t-3);
@@ -186,7 +211,7 @@
    size, so the colour steps up with it. */
 .msec {
   font-family: var(--f-mono);
-  font-size: var(--fs-label);
+  font-size: var(--ms-label);
   font-weight: 700;
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
@@ -198,7 +223,7 @@
 
 .mmethod {
   font-family: var(--f-mono);
-  font-size: var(--fs-xs);
+  font-size: var(--ms-small);
   line-height: 1.9;
   color: var(--t-2);
   padding: 1.25rem 1.4rem;
@@ -233,7 +258,7 @@
 
 .mgal figcaption {
   font-family: var(--f-mono);
-  font-size: var(--fs-label);
+  font-size: var(--ms-label);
   line-height: 1.6;
   color: var(--t-3);
   margin-top: .6rem;
@@ -250,7 +275,7 @@
   border-radius: var(--r-pill);
   border: 1px solid var(--line-2);
   font-family: var(--f-mono);
-  font-size: var(--fs-xs);
+  font-size: var(--ms-label);
   letter-spacing: .07em;
   text-transform: uppercase;
   transition: all var(--d-fast) var(--e-out);
@@ -412,7 +437,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
   font-family: var(--f-serif);
   font-style: italic;
   font-weight: 300;
-  font-size: clamp(1.15rem, 2.2vw, 1.65rem);
+  font-size: var(--ms-h3);
   line-height: 1.34;
   color: var(--t);
   text-wrap: pretty;
@@ -423,7 +448,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 .mfind figcaption {
   margin-top: .6rem;
   font-family: var(--f-mono);
-  font-size: var(--fs-label);
+  font-size: var(--ms-label);
   letter-spacing: .08em;
   color: var(--t-3);
 }
@@ -468,7 +493,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
   background: var(--ink-card);
 }
 
-.mwork__lead { font-size: var(--fs-sm); color: var(--t-2); line-height: 1.6; max-width: 62ch; }
+.mwork__lead { font-size: var(--ms-lead); color: var(--t-2); line-height: 1.6; max-width: 62ch; }
 
 .mwork__rows {
   display: grid;
@@ -488,15 +513,15 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 .mwork__v {
   font-family: var(--f-display);
   font-weight: 700;
-  font-size: clamp(1.5rem, 3.4vw, 2.2rem);
+  font-size: var(--ms-h2);
   line-height: 1;
   color: var(--amber);
 }
 
-.mwork__l { font-size: var(--fs-sm); color: var(--t-2); line-height: 1.45; }
+.mwork__l { font-size: var(--ms-label); color: var(--t-2); line-height: 1.45; }
 
 .mwork__foot {
-  font-size: var(--fs-sm);
+  font-size: var(--ms-small);
   color: var(--t-1);
   font-weight: 500;
   padding-top: .85rem;
@@ -509,7 +534,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 
 .mtwin__lead {
   color: var(--t-2);
-  font-size: .95rem;
+  font-size: var(--ms-lead);
   line-height: 1.6;
   margin: .5rem 0 1rem;
   max-width: 62ch;
@@ -598,13 +623,13 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 
 .mtwin__cta {
   color: var(--t);
-  font-size: 1rem;
+  font-size: var(--ms-body);
   letter-spacing: .02em;
 }
 
 .mtwin__hint {
   color: var(--t-3);
-  font-size: .72rem;
+  font-size: var(--ms-eyebrow);
   letter-spacing: .08em;
   text-transform: uppercase;
   transition: opacity .3s ease;
@@ -626,7 +651,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
   background: rgba(5, 5, 8, .74);
   backdrop-filter: blur(6px);
   color: var(--t-1);
-  font-size: .68rem;
+  font-size: var(--ms-label);
   letter-spacing: .07em;
   text-transform: uppercase;
   padding: .4rem .8rem;
@@ -646,7 +671,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 
 .mtwin__note {
   color: var(--t-3);
-  font-size: .78rem;
+  font-size: var(--ms-label);
   line-height: 1.65;
   margin-top: .75rem;
   max-width: 70ch;
@@ -663,7 +688,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
     aspect-ratio: 3 / 4;
     min-height: 380px;
   }
-  .mtwin__cta { font-size: .9rem; }
+  .mtwin__cta { font-size: var(--ms-small); }
   .mtwin__hint { display: none; }
 }
 
@@ -716,7 +741,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
      a phone is three slivers. Two, always, whatever the group asked for. */
   .mgal--maps { grid-template-columns: 1fr 1fr !important; gap: 1rem .75rem; }
   .mgal--maps[style*="--map-cols:1"] { max-width: none; }
-  .mgal--maps figcaption { font-size: .62rem; }
+  .mgal--maps figcaption { font-size: var(--ms-eyebrow); }
 }
 
 /* The paper's own abstract. Set apart from .mdesc, which is the pitch: a
@@ -727,7 +752,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
   margin-top: .5rem;
   padding-left: clamp(.9rem, 2vw, 1.4rem);
   border-left: 2px solid var(--amber-24, rgba(245,158,11,.24));
-  font-size: var(--fs-sm);
+  font-size: var(--ms-body);
   line-height: 1.7;
   color: var(--t-2);
   text-wrap: pretty;
@@ -807,7 +832,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
   min-width: 34rem;
   border-collapse: collapse;
   font-family: var(--f-mono);
-  font-size: var(--fs-label);
+  font-size: var(--ms-small);
 }
 .mtable th, .mtable td {
   padding: .6em .75em;
@@ -849,7 +874,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 
 .mtable figcaption {
   margin-top: .6rem;
-  font-size: var(--fs-label);
+  font-size: var(--ms-label);
   line-height: 1.55;
   color: var(--t-3);
 }
@@ -877,7 +902,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 .dgx__cap {
   margin: 0 0 1rem;
   font-family: var(--f-mono);
-  font-size: var(--fs-label);
+  font-size: var(--ms-label);
   line-height: 1.5;
   color: var(--t-3);
 }
@@ -887,12 +912,12 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 .dgx__lh { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem .75rem; }
 .dgx__ln {
   font-family: var(--f-mono);
-  font-size: var(--fs-label);
+  font-size: var(--ms-label);
   letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--amber);
 }
-.dgx__lnote { font-family: var(--f-mono); font-size: var(--fs-label); color: var(--t-4); }
+.dgx__lnote { font-family: var(--f-mono); font-size: var(--ms-label); color: var(--t-4); }
 .dgx__layer--dash .dgx__ln { color: var(--t-3); }
 
 /* auto-fit, so three boxes sit in a row on a panel and stack on a phone
@@ -916,10 +941,10 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
   border-style: dashed;
   background: transparent;
 }
-.dgx__t { font-size: var(--fs-sm); color: var(--t); line-height: 1.35; }
+.dgx__t { font-size: var(--ms-small); color: var(--t); line-height: 1.35; }
 .dgx__s {
   font-family: var(--f-mono);
-  font-size: var(--fs-label);
+  font-size: var(--ms-label);
   line-height: 1.45;
   color: var(--t-4);
 }
@@ -937,7 +962,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 .dgx__foot {
   margin: 1rem 0 0;
   font-family: var(--f-mono);
-  font-size: var(--fs-label);
+  font-size: var(--ms-label);
   line-height: 1.55;
   color: var(--t-4);
 }
@@ -981,58 +1006,8 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 @media (max-width: 720px) { .modal { --ms: .94rem; } }
 @media (max-width: 480px) { .modal { --ms: .875rem; } }
 
-.modal .mabs,
-.modal .mdesc,
-.modal .mprose > p,
-.modal .mmethod       { font-size: var(--ms-body); }
-.modal .mwork__lead,
-.modal .mtwin__lead   { font-size: var(--ms-lead); }
-.modal .msec          { font-size: var(--ms-label); }
-.modal .mwork__foot,
-.modal .mtable figcaption,
-.modal .dgx__cap,
-.modal .dgx__foot,
-.modal .dgx__s,
-.modal .dgx__lnote,
-.modal .dgx__ln       { font-size: var(--ms-label); }
-.modal .dgx__t,
-.modal .mtable table  { font-size: var(--ms-small); }
-.modal .mmv           { font-size: var(--ms-h3); }
-.modal .mml           { font-size: var(--ms-label); }
-
-/* EVERYTHING ELSE IN THE PANEL, ON THE SAME LADDER.
-
-   Measured before this: fifteen distinct sizes in one panel — 40.7, 38.4, 28.5,
-   21.3, 19.2, 17.9, 16, 14.4, 14.1, 12.6, 12.5, 11.7, 11.5, 10.9, 10.4. The
-   scale above defines eight steps and most elements had never been hooked to
-   it, so they kept their own --fs-* values and landed a fraction away from a
-   step: 14.4 beside 14.1, 12.6 beside 12.5, 11.7 beside 11.5. Differences that
-   small are not read as hierarchy, they are read as inconsistency — which is
-   exactly the complaint.
-
-   Anything inside the panel now resolves to one of the eight. Where a size sat
-   between two steps it goes to the NEARER one rather than being kept as a new
-   step, because the point of a scale is that it is short. */
-.modal .mtitle        { font-size: var(--ms-h1); line-height: 1.08; }
-.modal .atlas .sec-title,
-.modal .atlas .display { font-size: var(--ms-h2); line-height: 1.1; }
-.modal .atlas .lead    { font-size: var(--ms-lead); }
-.modal .atlas__list li { font-size: var(--ms-small); }
-.modal .atlas__list em,
-.modal .atlas__n,
-.modal .atlas__fallback { font-size: var(--ms-eyebrow); }
-.modal .mcat,
-.modal .eyebrow,
-.modal .mtwin__hint,
-.modal .mchart__c      { font-size: var(--ms-eyebrow); }
-.modal .mtwin__btn,
-.modal .tag            { font-size: var(--ms-label); }
-.modal .mwork__l       { font-size: var(--ms-label); }
-/* The action links were the last thing off the ladder, at 12.6 against the
-   12.5 step. A tenth of a pixel is not visible on its own — it matters because
-   it means the value came from somewhere else, and the next change to the scale
-   would have left it behind. */
-.modal .ml             { font-size: var(--ms-label); }
+/* The per-element override list that used to live here is gone: the base
+   rules take the scale directly, so there is nothing left to override. */
 .modal .mgal figcaption { font-size: var(--ms-label); }
 
 /* ---- the figures show the numbers, not just list them -------------------
@@ -1446,10 +1421,57 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
   line-height: 1.45;
   color: var(--t-4);
 }
-/* The connector between phases, matching the diagram figures. */
+/* ARROWS, because it is a sequence and the boxes alone do not say so.
+
+   Between steps the arrow is a real flex item in the markup rather than a
+   pseudo-element, so it WRAPS with the steps: on a narrow panel a row of three
+   becomes a column and the arrows come with it, turning downward via the
+   rotation below. A pseudo-element pinned to a box edge cannot do that — it
+   would end up pointing off the side of the last item on a wrapped line. */
+.mflow__steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: .5rem;
+}
+.mflow__s { flex: 1 1 15rem; }
+.mflow__arrow {
+  flex: 0 0 auto;
+  align-self: center;
+  font-family: var(--f-mono);
+  font-size: var(--ms-small, .88rem);
+  line-height: 1;
+  color: color-mix(in oklab, var(--amber) 60%, transparent);
+  user-select: none;
+}
+/* When the steps stack, the arrows have to turn with them. A full-width flex
+   item is one that wrapped onto its own line, which only happens in the stacked
+   state, so the rotation can key off the container width directly. */
+@media (max-width: 640px) {
+  .mflow__steps { flex-direction: column; align-items: stretch; }
+  .mflow__arrow { align-self: center; transform: rotate(90deg); }
+}
+
+/* Between phases: the same arrow, always vertical, since phases always stack. */
 .mflow__join {
   justify-self: center;
-  width: 0; height: 1rem;
-  margin: .15rem 0;
-  border-left: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  height: 1.35rem;
+  margin: .1rem 0;
+  font-family: var(--f-mono);
+  font-size: var(--ms-small, .88rem);
+  line-height: 1;
+  color: color-mix(in oklab, var(--amber) 60%, transparent);
+  transform: rotate(90deg);
 }
+
+/* .tag is a shared page component, so its own 0.65rem stays for the page. Only
+   inside a panel does it join the panel's scale, which is what keeps the tag
+   list from being the one block still at its own size. Same for the embedded
+   section headings, which arrive from sections.css with page-sized type. */
+.modal .tag { font-size: var(--ms-label); }
+.modal .is-embed .display,
+.modal .is-embed .sec-title { font-size: var(--ms-h2); line-height: 1.1; }
+.modal .is-embed .lead { font-size: var(--ms-lead); }
+.modal .is-embed .eyebrow { font-size: var(--ms-eyebrow); }

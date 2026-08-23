@@ -5622,3 +5622,43 @@ Getting the right card to the front then needed a drag rather than scroll
 notches: the spin budget from section 71 releases after 600px, so a
 wheel-notch loop stops turning long before an arbitrary card comes round. Drag
 has no budget, which is the correct asymmetry, and it took 15 drags.
+
+## 76. The type scale, fixed at the source instead of by list (2026-08-24)
+
+Reported again, on the GIS card this time. The offenders were the publication
+block: `.mpub__authors` at 14.4 against the 14.1 step, `.mpub__venue` and
+`.mpub__status` at 11.7 against 11.5.
+
+**The reason it kept coming back is worth more than the fix.** Section 68
+declared the scale on `.modal` and then added `.modal .x { font-size: var(--ms-*) }`
+overrides for each element — a list maintained by hand, layered over base rules
+that kept their own `--fs-*` values. Anything not on the list shipped off-scale,
+and the list could only ever contain what I had happened to look at. The
+publication block exists on the three papers and not on the thesis, so the audit
+in section 74 was run against a card that does not have one.
+
+That is the same failure as section 75's test: **verifying against one instance
+and generalising**. Twice in two days, both times with a passing check.
+
+So the base rules take the scale directly now, and the override list is deleted.
+The scale moved to `:root` so it resolves outside a panel too, with `.modal`
+still overriding `--ms` itself, which is what makes the hierarchy shrink together
+on a phone.
+
+A static audit — every modal-scoped `font-size` declaration that does not
+reference `--ms` — went from 39 to 0. Three more came from other stylesheets
+entirely: `.tag` from base.css, and the thermal embed's own headings from
+sections.css, which arrive inside a panel carrying page-sized type. Those are
+scoped rather than changed, because they are shared page components.
+
+Verified by opening every research project in turn and checking each rendered
+size against the eight steps: thesis, temp, gis, its, iot, sound — all clean.
+Checking one and stopping is what caused this.
+
+### Arrows
+
+The method flow now has them, and they are real elements in the markup rather
+than pseudo-elements, so they WRAP with the steps. A pseudo-element pinned to a
+box edge cannot: on a narrow panel the last item of a wrapped line would have an
+arrow pointing off the side. As flex items they reflow with the boxes and rotate
+to vertical when the steps stack.
