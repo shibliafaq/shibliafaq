@@ -5475,3 +5475,28 @@ too short to hold its own label, and a value you cannot read is not plotted.
 
 Verified at 375px: the grid scrolls inside its own box, every bar's label fits
 inside its bar, the page never scrolls sideways.
+
+## 72. Landmark labels bolded, two claims dropped (2026-08-23)
+
+The `.msec` section headings were weight 400 in a mono face at label size, which
+gave them no more emphasis than the body they were meant to divide — and they
+are the only landmarks in a panel that is now several screens long. 700, with
+the colour stepping up as well, because weight alone does not carry at that
+size. Same for the diagram layer names and the figure caption lead-ins.
+
+Two claims removed at request, and both are worth recording as CHOICES rather
+than corrections, because the record above them says the opposite:
+
+- `R > 0.85 · MODIS vs Landsat` — the manuscript supports it. Section 68
+  describes restoring it after I wrongly retired it against the dashboard
+  snapshot. It is now gone again, deliberately.
+- The `→ 0 by 2030` finding card. The claim itself stays in the abstract
+  verbatim, where the paper makes it in its own words and with its own
+  qualifications; what is gone is only its promotion to a headline card.
+
+The finding cards renumber themselves from their index, so removing the middle
+one left 01 and 02 rather than 01 and 03, and `auto-fit` collapsed the empty
+third track so the two remaining cards split the row evenly at 484px each.
+Nothing needed adjusting for either — worth noting only because a hand-numbered
+list and a fixed three-column grid would both have needed it, and this is the
+argument for deriving presentation from data rather than writing it out.

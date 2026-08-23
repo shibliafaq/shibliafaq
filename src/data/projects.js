@@ -31,11 +31,6 @@ export const projects = {
         t: 'The cities are COOLER by day than the surrounding desert — the inverse of the classical model. The daytime signal is driven by built-up density (NDBI), not vegetation.',
       },
       {
-        k: 'And closing',
-        v: '→ 0 by 2030',
-        t: 'The cool-island is not static. Both desert and city are warming, and the gap narrows to −0.01 °C in Makkah, holding between −0.67 and −1.31 °C in the other four.',
-      },
-      {
         k: 'Reach beats intensity',
         v: '27× ',
         t: 'The broadest measure protects most. One water feature reaches 16,167 residents in Dammam through spillover; a cool pavement three times as cold reaches 602.',
