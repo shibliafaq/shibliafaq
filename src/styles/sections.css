@@ -802,11 +802,14 @@
   border: 1px solid var(--line-2);
   border-radius: var(--r-pill);
   font-family: var(--f-mono);
-  font-size: var(--fs-xs);
   letter-spacing: .04em;
   color: var(--t);
   white-space: nowrap;
   pointer-events: none;
+  /* Two lines now, so the pill radius would bow around them. */
+  border-radius: var(--r-sm, 10px);
+  text-align: left;
+  line-height: 1.25;
   opacity: 0;
   transition: opacity var(--d-fast) var(--e-out);
 }
@@ -3543,4 +3546,19 @@
 @media (max-width: 720px) {
   .wtile:nth-child(n+8) { display: none; }
   .wtile { opacity: .55; }
+}
+
+/* The group, in the hue its balls are painted in — the colour becomes a key
+   rather than decoration. Smaller and quieter than the name, because it is the
+   answer to a question the reader did not ask first. */
+.skillfield__tipg {
+  display: block;
+  font-size: calc(var(--fs-xs) * .82);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.skillfield__tipn {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--t);
 }

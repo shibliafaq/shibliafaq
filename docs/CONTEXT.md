@@ -6042,3 +6042,33 @@ fourteen different displacements, without the parallax code knowing any depths.
 Firing that at someone who has scrolled past a decorative background would be
 indefensible, so it listens only where the events arrive unasked. The tiles
 still drift there; they just do not tilt.
+
+## 87. The skills tooltip says which group, in that group's colour (2026-08-24)
+
+The tip was the skill name alone. That answers "what is this ball" and leaves
+"why is it that colour" to be guessed — the field is colour-coded along a
+thermal ramp and nothing you can click tells you what the ramp means.
+
+It now carries two lines: the group name, small and uppercase, painted in the
+hue the ball is already painted in, above the skill name. The colour stops being
+decoration and becomes a key the reader can read straight off the thing they
+touched, without going to the legend and back.
+
+**The group name is read from the DOM at call time, not captured once.** Those
+headings are translated and the i18n engine rewrites them in place, so a cached
+copy would go stale the moment anyone switched language — and it would go stale
+silently, showing the previous language's group name beside the new language's
+skill name.
+
+Built with `textContent` on each line rather than a template into `innerHTML`.
+Both strings come from the markup, one of them is copy that already contains an
+ampersand, and a template would turn that into an escaping problem for nothing.
+
+Verified: hovering a ball gives "Spatial & GIS" at 10.4px in rgb(255,90,43) —
+the group's own hue — above "NDVI / NDBI Extraction" at 12.6px.
+
+Also: the skills cards are left-aligned and 10% down via a single `--sg` that
+scales heading, tags, padding and gaps together, so the card gets smaller rather
+than looser. `text-align` is set explicitly rather than inherited, because these
+sit under a centred section heading and inheriting alignment from an ancestor
+that may or may not be centred is how a list ends up centred by accident.

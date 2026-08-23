@@ -468,6 +468,38 @@ export function initSkills() {
   };
   const hit = (p) => balls.find((b) => Math.hypot(b.x - p.x, b.y - p.y) <= b.r);
 
+  /* TWO LINES, AND THE GROUP CARRIES ITS OWN COLOUR.
+
+     The tip used to be the skill name alone, which answers "what is this ball"
+     and leaves "why is it that colour" to be guessed. Naming the group in the
+     hue the ball is already painted in closes that loop: the colour stops being
+     decoration and becomes a key the reader can read directly off the thing
+     they clicked.
+
+     The group name is read from the DOM at call time rather than captured once,
+     because the headings are translated and the i18n engine rewrites them in
+     place — a cached copy would go stale the moment anyone switched language.
+
+     textContent on each line, never innerHTML on the pair: these strings come
+     from the markup and one of them is user-facing copy that may contain an
+     ampersand, and building this with a template would make that an escaping
+     problem for no gain. */
+  function setTip(b) {
+    if (!b) return;
+    const name = groups[b.g]?.querySelector('.sgroup__t')?.textContent.trim() ?? '';
+    tip.textContent = '';
+    if (name) {
+      const g = document.createElement('span');
+      g.className = 'skillfield__tipg';
+      g.style.color = GROUPS[b.g].c;
+      g.textContent = name;
+      tip.appendChild(g);
+    }
+    const n = document.createElement('span');
+    n.className = 'skillfield__tipn';
+    n.textContent = b.full;
+    tip.appendChild(n);
+  }
   function placeTip() {
     const half = tip.offsetWidth / 2 + 6;
     const above = hovered.y - hovered.r - 12;
@@ -497,7 +529,7 @@ export function initSkills() {
     if (h !== hovered) {
       hovered = h;
       canvas.style.cursor = h ? 'grab' : '';
-      if (h) { tip.textContent = h.full; tip.classList.add('is-in'); }
+      if (h) { setTip(h); tip.classList.add('is-in'); }
       else tip.classList.remove('is-in');
     }
     if (hovered) placeTip();
@@ -522,7 +554,7 @@ export function initSkills() {
        size. Tapping empty space dismisses, so the tip is never stuck on. */
     if (!down.mouse) {
       hovered = down.ball;
-      if (hovered) { tip.textContent = hovered.full; tip.classList.add('is-in'); placeTip(); }
+      if (hovered) { setTip(hovered); tip.classList.add('is-in'); placeTip(); }
       else tip.classList.remove('is-in');
     }
   });
@@ -797,6 +829,6 @@ export function initSkills() {
 
   window.addEventListener('sa:languagechange', () => {
     buildKey();
-    if (hovered) tip.textContent = hovered.full;
+    if (hovered) setTip(hovered);
   });
 }
