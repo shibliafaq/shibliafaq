@@ -303,13 +303,22 @@ export const projects = {
       note: 'Landsat 8/9 Collection 2 Level 2 (USGS) via Microsoft Planetary Computer, band ST_B10, cloud and shadow masked per pixel with QA_PIXEL. Cities carry between 6 and 24 usable acquisitions depending on cloud. Basemap © Esri, © OpenStreetMap contributors.',
     },
     cat: 'ICS 574: Big Data Analytics · KFUPM · Fall 2025',
-    title: 'Multi-City Surface Temperature — 3 Cities · GPU Hexbin Pipeline',
+    title: 'Multi-City Surface Temperature · 134 Cities at Landsat 30 m',
     desc: '25,905 NASA MODIS/061/MOD11A1 measurements across Dammam (26°N), Dublin (53°N), and Reykjavik (64°N) over 14 days, rendered as GPU-accelerated 3D hexbin layers in Kepler.gl at 60 FPS. This is a demonstration of the pipeline rather than a study of latitude. Three cities give three points, and three points always fall near a line, so the correlation it produces describes the sample and is not evidence of a gradient. The Landsat dashboard on this card measures the same relationship across 134 cities and finds a pooled R² of 0.688, with no gradient at all across the first 20° of latitude. The 3D clips below are direct recordings of the live Kepler.gl visualisation.',
+    /* READ OFF public/assets/data/lst/index.json, not off the old card.
+
+       The title and these metrics both still described the 3-city MODIS demo
+       after the Landsat build replaced it on 2026-08-20. The demo is still on
+       the card, below, and is still worth showing -- but it is no longer the
+       thing the card IS, so it no longer gets the headline.
+
+       Verified in the payload: 134 cities, Tromso 69.65N to Punta Arenas
+       53.16S, 78 northern and 56 southern. */
     metrics: [
-      { v: '25,905', l: 'MODIS measurements · 3 cities, 14 days' },
-      { v: '3', l: 'Cities · a demo sample, not a study population' },
-      { v: '60 FPS', l: 'GPU hexbin rendering · Kepler.gl, WebGL 2.0' },
-      { v: '58.2°C', l: 'Temperature range across the three cities' },
+      { v: '134', l: 'Cities · Landsat 8/9 thermal at 30 m' },
+      { v: '69.7°N – 53.2°S', l: 'Tromsø to Punta Arenas · 78 north, 56 south' },
+      { v: 'R² 0.688', l: 'Pooled latitude fit, both hemispheres separately' },
+      { v: '25,905', l: 'MODIS readings in the 3-city pipeline demo below' },
     ],
     method: 'MODIS/061/MOD11A1 (Terra) via Google Earth Engine API → Python/Colab (earthengine-api 0.1.400, pandas 2.0.3) → Cloud filter (≤10%) → Kelvin conversion → CSV export (25,905 rows) → Kepler.gl 2.5.5 WebGL 2.0 3D hexbin visualisation → Pearson r & linear regression',
     tags: ['NASA MODIS/061/MOD11A1', 'Google Earth Engine', 'Python (Colab)', 'Kepler.gl 2.5.5', 'WebGL 2.0', 'Pandas 2.0.3', 'Pearson Correlation', 'Linear Regression', 'GPU Rendering'],

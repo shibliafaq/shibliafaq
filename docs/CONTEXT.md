@@ -5734,3 +5734,34 @@ So the record says "the co-author credit" and "a four-name list" instead. The
 lesson those sections carry is about grepping for a name rather than for the one
 line someone pointed at, and about a removal that edited the modal while the
 card kept its own copy. Neither needs the name to make sense.
+
+## 80. The Multi-City card still had the old project's name (2026-08-24)
+
+Reported as the tab being wrong for what the dashboard now contains, and it was:
+the title read "3 Cities · GPU Hexbin Pipeline" while the card's centrepiece is
+the 134-city Landsat dashboard that replaced the MODIS build on 2026-08-20.
+
+The comment in `projects.js` already said to read the counts off
+`public/assets/data/lst/index.json` rather than trust the comment, so that is
+where these came from: **134 cities, Tromsø 69.65°N to Punta Arenas 53.16°S, 78
+northern and 56 southern.**
+
+The metrics had the same problem and were arguably worse, because they were
+CAREFULLY honest about the wrong thing: "3 · Cities, a demo sample not a study
+population" and "25,905 MODIS measurements" are true, well-qualified statements
+about a pipeline demo that is no longer what the card is for. A caveat on a
+headline figure does not help when the figure itself is describing the previous
+version of the work. They lead with the dashboard now, and the demo keeps one
+line at the end.
+
+**What made this outlive the rebuild** is that the replacement was thorough
+everywhere except the label. The twin section was rewritten to say 134 cities,
+`desc` was rewritten to explain that three points always fall near a line, the
+scatter caption was rewritten to say the same — and the title, which is the
+first thing anyone reads and the only part visible without opening the card,
+kept the old name. A rename is not finished until the thing is renamed where it
+is READ, not only where it is described.
+
+Fixed in the data, the card markup and the aria-label. The card carries its own
+copy of the title in `index.html`, which is exactly the split that left a
+removed credit on screen in section 78 — checked this time before reporting.

@@ -283,34 +283,34 @@ because their shape matters as much as their text.
 - ICS 574: Big Data Analytics · KFUPM · Fall 2025
 
 ### temp.title
-- Multi-City Surface Temperature — 3 Cities · GPU Hexbin Pipeline
+- Multi-City Surface Temperature · 134 Cities at Landsat 30 m
 
 ### temp.desc
 - 25,905 NASA MODIS/061/MOD11A1 measurements across Dammam (26°N), Dublin (53°N), and Reykjavik (64°N) over 14 days, rendered as GPU-accelerated 3D hexbin layers in Kepler.gl at 60 FPS. This is a demonstration of the pipeline rather than a study of latitude. Three cities give three points, and three points always fall near a line, so the correlation it produces describes the sample and is not evidence of a gradient. The Landsat dashboard on this card measures the same relationship across 134 cities and finds a pooled R² of 0.688, with no gradient at all across the first 20° of latitude. The 3D clips below are direct recordings of the live Kepler.gl visualisation.
 
 ### temp.metrics.0.v
-- 25,905
+- 134
 
 ### temp.metrics.0.l
-- MODIS measurements · 3 cities, 14 days
+- Cities · Landsat 8/9 thermal at 30 m
 
 ### temp.metrics.1.v
-- 3
+- 69.7°N – 53.2°S
 
 ### temp.metrics.1.l
-- Cities · a demo sample, not a study population
+- Tromsø to Punta Arenas · 78 north, 56 south
 
 ### temp.metrics.2.v
-- 60 FPS
+- R² 0.688
 
 ### temp.metrics.2.l
-- GPU hexbin rendering · Kepler.gl, WebGL 2.0
+- Pooled latitude fit, both hemispheres separately
 
 ### temp.metrics.3.v
-- 58.2°C
+- 25,905
 
 ### temp.metrics.3.l
-- Temperature range across the three cities
+- MODIS readings in the 3-city pipeline demo below
 
 ### temp.method
 - MODIS/061/MOD11A1 (Terra) via Google Earth Engine API → Python/Colab (earthengine-api 0.1.400, pandas 2.0.3) → Cloud filter (≤10%) → Kelvin conversion → CSV export (25,905 rows) → Kepler.gl 2.5.5 WebGL 2.0 3D hexbin visualisation → Pearson r & linear regression
