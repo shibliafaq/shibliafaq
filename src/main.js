@@ -6,6 +6,8 @@ import './styles/overlays.css';
 import './styles/book.css';
 import './styles/i18n.css';
 
+import { inject } from '@vercel/analytics';
+
 import { initScroll, ScrollTrigger } from './modules/scroll.js';
 import { initReveals } from './modules/reveals.js';
 import { initHero, heroExit } from './modules/hero.js';
@@ -72,6 +74,8 @@ if (!location.hash) {
 /* Before initScroll, so Lenis takes its starting position from the reset
    rather than from whatever the browser had already put there. */
 initScroll();
+// Initialize Vercel Web Analytics
+inject();
 // Two delegated listeners; cheap, and must be live before media appears.
 initMediaGuard();
 initNav();
