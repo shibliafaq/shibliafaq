@@ -178,6 +178,41 @@ invisible. Slide, do not fade — and prepend rows rather than rebuilding
 
 ---
 
+**When two scrubbed animations hand off, gate on STATE, not on scroll
+position.** The Whole Picture caption kept arriving before the hero copy had
+finished leaving. Retiming it did not work and could not: the hero is tweened on
+`scrub: 0.8` and eases toward the scroll, so how far it trails depends on how
+fast the reader is moving — measured under a fast flick it was still 0.58 opaque
+238px past the end of its own range. Matching the lag failed too, because the
+caption's fade window is 172px against the hero's 526px, and an equal lag in
+TIME is an unequal lag in PROGRESS. The fix was `heroExit.progress()`: "gone" is
+a state, and no fixed offset can express it because the required offset is a
+function of scroll velocity.
+
+Two corollaries, both of which bit immediately:
+- **A signal that is flat where you need detail cannot be rescued by scaling
+  it.** The caption was rebuilt in CSS from `--zoom` and `--decay` via
+  `calc(var(--zoom) * 7 - 6)`; both inputs are constant through the whole hold,
+  and that magic multiplier was the tell. Publish a purpose-built value from
+  where the timing is actually known.
+- **A trigger going quiet is not the end of the story.** Gating on the hero made
+  the caption never appear at all on a fast flick: the hero settles on its own
+  clock, so a reader who flicks in and stops gets no further scroll events. Any
+  value that depends on two clocks needs a bounded rAF settle. See CONTEXT §48.
+
+**Never put a CSS transition on a scrubbed custom property.** It is already
+smooth against the scroll; a transition re-eases on every tick and only adds the
+lag you are trying to remove. Easing belongs in the function that produces the
+number.
+
+**One element, one owner — and GSAP wins, silently.** A CSS fade was added to
+`.hero__body, .hero__stats` while GSAP was already animating them. GSAP writes
+INLINE styles, so the stylesheet lost `.hero__stats` outright and it sat at full
+opacity while the body faded. Worse, GSAP fades `.hero__body`'s CHILDREN
+individually, so a rule on the parent multiplied with them and also flattened
+`.hero__name`, which the timeline deliberately holds at 0.12. Before styling
+anything animated, check for inline styles in the computed style.
+
 **`touch-action` has to mirror whichever axis the control actually owns.**
 `.wheel` sets `touch-action: pan-x` because the wheel owns vertical input — true
 on the desktop. Below 900px `data-wheel="auto"` flips the wheel to its horizontal
