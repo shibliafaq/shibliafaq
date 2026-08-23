@@ -1466,11 +1466,55 @@ function setupWheel(root) {
      really exist. With the region narrowed to the live cards the two behaviours
      are properly separable again, which is what makes taking the event here
      legitimate rather than a trap. */
+  /* THE READER HAS TO BE ABLE TO GET PAST.
+
+     `overRing()` used to describe a narrow column, so most of the section let
+     the page scroll and leaving was never a question. Widening it to the whole
+     figure fixed "scrolling over the tiles does nothing" and created the
+     opposite fault: measured on the live site, the card union covers 76% of
+     the viewport, leaving 59px above and 111px below. A pointer anywhere over
+     the figure consumed every notch and the page never advanced. Reported as
+     "the wheel is working but other parts are not triggering any vertical
+     scroll", which is exactly right.
+
+     So the wheel takes a BUDGET rather than taking everything. It consumes
+     scroll until the ring has turned once, by which point all fourteen cards
+     have come past, and then stops calling preventDefault so the page carries
+     on normally. That is the behaviour a scroll-driven component owes the
+     reader: hold them exactly as long as it has something left to show.
+
+     Re-armed by an IntersectionObserver when the figure leaves the viewport,
+     not by a scroll position: coming back to it later should spin it again,
+     and the observer says "gone" without anyone having to compute where gone
+     is. It cannot re-arm from inside the wheel handler, because that only
+     fires while the pointer is over a figure that is by definition on screen.
+
+     MEASURED ON THE RING, NOT ON THE INPUT. The first version added up the
+     wheel impulses, and one notch is deltaY 120 * WHEEL_K = 2.28 degrees, so
+     a 360 degree budget wanted about 158 notches and released essentially
+     never — measured, 120 synthetic notches were all still consumed. The ring
+     has a flywheel: a flick keeps spinning long after the event that caused
+     it, and that rotation is what the reader actually gets. So the budget is
+     spent against `angle`, which already includes the momentum. */
+  const SPIN_BUDGET = 360;          // one full revolution = every card seen
+  let armAngle = 0;
+  let holding = true;
+
   root.addEventListener('wheel', (e) => {
     if (!overRing(e)) return;
+    if (!holding) return;           // budget spent — the page gets this notch
     e.preventDefault();
     turn((horizontal ? -1 : 1) * (e.deltaY + e.deltaX) * WHEEL_K);
+    if (Math.abs(angle - armAngle) >= SPIN_BUDGET) holding = false;
   }, { passive: false });
+
+  new IntersectionObserver((entries) => {
+    for (const en of entries) {
+      if (en.isIntersecting) continue;
+      armAngle = angle;
+      holding = true;
+    }
+  }, { threshold: 0 }).observe(root);
 
   // Keyboard: the wheel is a list, and a list has to be operable without a
   // mouse. Arrows move one card; the roving tabindex above keeps only the

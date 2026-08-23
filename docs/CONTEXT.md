@@ -4418,3 +4418,58 @@ it, so `.ftag--a` kept its desktop 10% and sat on the planet while its siblings
 moved. The measurement caught it as "clearance -320px", which is a nonsense
 number and exactly the sort that means the instrument is reading a broken state
 rather than a bad value.
+
+## 53. The projects wheel became a scroll trap (2026-08-23)
+
+Reported from the live site: "i am not able to move part the projects section,
+the wheel is working but other parts are not triggering any vertical scroll."
+Correct, and self-inflicted two commits earlier.
+
+### Cause
+
+`overRing()` decides whether a wheel notch turns the ring or scrolls the page.
+It originally described a narrow column — one card's width plus 15% — so most of
+the section fell through to the page and leaving was never a question. CONTEXT 51
+widened it to the union of every card box to fix "scrolling over the tiles does
+nothing", and that produced the opposite fault.
+
+Measured on the live site at 1440x900: the card union covers **76% of the
+viewport**, leaving 59px above it and 111px below. A pointer anywhere over the
+figure consumed every notch, and the page never advanced.
+
+Both faults are the same missing idea. The question was never "how much of the
+screen does the wheel own", it was **"for how long"**.
+
+### Fix: a budget, not a footprint
+
+The wheel keeps the whole figure, and consumes scroll only until the ring has
+turned once — by which point all fourteen cards have come past. After that it
+stops calling `preventDefault` and the page carries on. An IntersectionObserver
+re-arms it when the figure leaves the viewport, so returning to it later spins it
+again; it cannot re-arm from inside the wheel handler, which only fires while the
+pointer is over a figure that is by definition on screen.
+
+### The budget has to be measured on the RING, not on the input
+
+First version summed the wheel impulses. One notch is `deltaY 120 * WHEEL_K` =
+**2.28 degrees**, so a 360 degree budget wanted about 158 notches, and measured,
+120 synthetic notches were still all consumed — no release at all.
+
+The ring has a flywheel: a flick keeps spinning long after the event that caused
+it, and that rotation is what the reader actually gets. Spending the budget
+against `angle` instead, which already includes the momentum:
+
+| | impulse-based | ring-based |
+|---|---|---|
+| notches before release | never (>120) | **20** |
+| notches passed to the page | 0 of 120 | **140 of 160** |
+
+Verified with real scroll input from the centre of the figure: the page advances
+1000px and the wheel leaves the screen. Verified re-arming: after leaving and
+returning it consumes 20 again.
+
+**The general shape, worth keeping.** A scroll-driven component that calls
+`preventDefault` owes the reader an exit, and the honest exit is "when I have
+nothing left to show", not a region of the screen they have to find with the
+pointer. Both versions of this bug came from answering the geometry question
+instead of the duration one.
