@@ -493,7 +493,7 @@ because their shape matters as much as their text.
 - InfraVision 2026 · Student Competition · Infrastructure as a System
 
 ### umn.pub.authors
-- Hilal Alghamdi, Haidar Alnasser, Shibli Afaq, Alfarouq Tarabzouni
+- Shibli Afaq, Hilal Alghamdi, Haidar Alnasser, Alfarouq Tarabzouni
 
 ### umn.pub.venue
 - King Khalid Street, Al Khubar Ash Shamaliyah · Eastern Province, Saudi Arabia

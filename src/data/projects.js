@@ -536,7 +536,11 @@ export const projects = {
   umn: {
     cat: 'InfraVision 2026 · Student Competition · Infrastructure as a System',
     pub: {
-      authors: 'Hilal Alghamdi, Haidar Alnasser, Shibli Afaq, Alfarouq Tarabzouni',
+      /* Shibli first, at his request. The abstract PDF lists Hilal Alghamdi
+         first; this is his own site and every other card leads with his name,
+         so the ordering here is presentational rather than a claim about the
+         entry's own author order, which the PDF keeps. */
+      authors: 'Shibli Afaq, Hilal Alghamdi, Haidar Alnasser, Alfarouq Tarabzouni',
       venue: 'King Khalid Street, Al Khubar Ash Shamaliyah · Eastern Province, Saudi Arabia',
       state: 'prep',
       status: 'Competition entry · July 2026',
