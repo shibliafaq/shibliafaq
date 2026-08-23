@@ -55,11 +55,13 @@
    RESEARCH DIRECTION
    ============================================================ */
 
+/* ONE COLUMN NOW. The grid existed to sit the prose beside three status cards
+   (PhD target, geographic focus, open to); those are gone, and a two-column
+   grid with one child leaves the copy stranded in a half-width track. */
 .direction__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(2.5rem, 6vw, 6rem);
-  align-items: start;
+  grid-template-columns: minmax(0, 68ch);
+  justify-content: start;
 }
 
 .dcards { display: grid; gap: 1rem; }

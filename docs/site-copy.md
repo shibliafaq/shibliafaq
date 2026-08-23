@@ -106,33 +106,6 @@ node tools/sync-site-copy.mjs --write   # apply it
 ### direction.p2
 - Everything I've built (the satellite pipelines, the GIS vulnerability frameworks, the IoT dashboards) is oriented toward one goal: making urban climate data <strong>actionable</strong>, not just publishable. That means getting it to the right resolution, the right people, and in time for it to matter.
 
-### direction.c1l
-- PhD Target
-
-### direction.c1t
-- Urban Climate Informatics — Digital Twins for Heat Adaptation at City Scale
-
-### direction.c1s
-- Seeking funded positions with supervisors working at the intersection of remote sensing, urban climate modelling, and spatial data science
-
-### direction.c2l
-- Geographic Focus
-
-### direction.c2t
-- Arabian Peninsula &amp; Global South arid cities
-
-### direction.c2s
-- Where extreme heat stress is most acute and urban climate data is most scarce, and where good tools could save the most lives
-
-### direction.c3l
-- Open To
-
-### direction.c3t
-- Fully funded PhD · Smart city research roles · GIS analytics consultancy
-
-### direction.c3s
-- Based in Dhahran, open to relocation globally for the right opportunity
-
 ## Thermal sequence
 
 ### thermal.label

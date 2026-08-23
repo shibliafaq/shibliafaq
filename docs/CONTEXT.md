@@ -5880,3 +5880,56 @@ not. 1800px WebP for the gallery, 1200px for the card.
 
 The v3.3 `.pptx` is newer by file date than the v3.4 `.pdf`; the higher version
 number was taken as the later work. Worth confirming if the deck moves again.
+
+## 84. Four site-wide changes, and a signal that reached nothing (2026-08-24)
+
+**The section after the heat map arrives rather than scrolls in.** Once the
+frame clears, the reader is looking at empty ground, and the next thing should
+appear on it. `--dir-in` runs over the last 8% of the same trigger that takes
+the map away — one clock, three signals, because two triggers measuring the same
+boundary from different anchors is exactly how the caption and the map ended up
+dissolving into each other in section 66.
+
+Short on purpose. Over a long range this is a fade, and a fade is what it
+already did; compressed into 80px it reads as something appearing. The blur is
+what sells it — 6px clearing to 0 makes the block RESOLVE rather than merely
+brighten. The scale only goes to 0.965: a big scale reads as a zoom and fights
+the dive that just finished.
+
+Measured: frame gone at 4893, arrival 4973 to 5053, strictly ordered.
+
+**And it did nothing at all on the first attempt.** `--dir-in` was published on
+`worlds`, where `--whole`, `--cost` and `--dive-copy` all live. `#direction` is
+a SIBLING of `#worlds`, not a descendant — the earth sections are inside
+`.worlds__copy` and this one comes after it closes. So the signal moved 0 to 1
+correctly at its source, inherited nothing, and the consumer silently used its
+fallback. That is the `--heat` collision from section 59 wearing a different
+costume: **a signal can be correct, readable, and still never reach the element
+it exists for.** Moved to the root, where `--disc-*` already lives for the same
+reason.
+
+The fallback being `1` rather than `0` is deliberate and load-bearing: without
+JS, or before the trigger publishes, the section is simply visible. A default of
+0 would leave Research Direction blurred to nothing for anyone the scrub never
+reaches.
+
+**The three status cards are gone** — PhD target, geographic focus, open to. The
+grid that held them beside the prose is one column now, since a two-column grid
+with one child leaves the copy stranded in a half-width track. The copy tool
+refused to sync until its nine orphaned keys were dealt with, which is the guard
+working: `--export` removed exactly those nine and nothing else.
+
+**The hero questions are amber.** They sat at `--t`, the same colour as the
+biography under them, so the questions and the answer read as one block and the
+questions carried no more weight than the prose.
+
+**The heat-map caption is one step larger**, through a single `--cap-up` factor
+rather than four separate sizes, so title, lead, body and eyebrow keep exactly
+the relationships the shared caption block established. Verified: the
+title-to-lead ratio is 2.471 against the siblings' 2.472. The clamp is scaled at
+all three terms, because scaling only the preferred value would move where the
+type starts and stops growing and it would no longer be the same curve.
+
+It can be larger than its two siblings because it does not share their
+constraint: they sit in a 300px side band beside the planet, and this one is
+pinned across the bottom of the frame with the full measure available.

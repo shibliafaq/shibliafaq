@@ -1,6 +1,6 @@
 {
   "note": "Baseline for tools/sync-site-copy.mjs. Generated - do not edit by hand.",
-  "generated": "2026-08-23T15:57:35.287Z",
+  "generated": "2026-08-23T22:57:39.126Z",
   "keys": {
     "_nav.1": "ac576a66d4563e60",
     "_nav.2": "38835a2db14755c9",
@@ -41,15 +41,6 @@
     "direction.p1": "45d6a643c23a5483",
     "direction.pull": "afc379fc47c7e8c8",
     "direction.p2": "b7bdbe49e69903bc",
-    "direction.c1l": "7ee851e7887595aa",
-    "direction.c1t": "a111e80112d82d01",
-    "direction.c1s": "48cd8b278e8541dc",
-    "direction.c2l": "743e7e012c530484",
-    "direction.c2t": "ab295cad049d2164",
-    "direction.c2s": "239d7e60f4d7aa23",
-    "direction.c3l": "4eb526b78d5dd57e",
-    "direction.c3t": "d18b11dd824e8b94",
-    "direction.c3s": "fdf8edccd6a0a40b",
     "thermal.label": "57ebc4d2e6071d60",
     "thermal.1": "ba8ac4fce50012de",
     "thermal.2": "7c8cf6b1a9240c82",

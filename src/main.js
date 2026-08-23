@@ -458,6 +458,7 @@ idleInit(() => {
     };
 
     worlds.style.setProperty('--dive-copy', '0');
+    document.documentElement.style.setProperty('--dir-in', '0');
 
     ScrollTrigger.create({
       trigger: about,
@@ -563,6 +564,28 @@ idleInit(() => {
         paintHeat();
         mapOut = smoothstep(range(p, 0.40, 0.92));
         paintMap();
+
+        /* THE NEXT SECTION ARRIVES; IT DOES NOT SCROLL IN.
+
+           Driven from THIS trigger rather than its own, because the whole
+           point is that it happens after the frame has gone, and two
+           triggers measuring the same boundary from different anchors is
+           how the caption and the map ended up dissolving into each other
+           in the first place (CONTEXT 66). One clock, three signals.
+
+           0.92 is where the map finishes, so the arrival starts on empty
+           ground and runs to the end of the range. Short on purpose: over a
+           long range this is a fade, and a fade is what it already did.
+           Compressed into the last 8% it reads as something appearing. */
+        /* ON THE ROOT, NOT ON `worlds`. #direction is a SIBLING of #worlds,
+           not a descendant — the earth sections live inside .worlds__copy and
+           this one comes after it closes. Published on `worlds` the value was
+           measured moving 0 to 1 correctly while the consumer inherited
+           nothing and silently used its fallback, which is the --heat collision
+           from CONTEXT 59 in a different costume: a signal that exists, reads
+           correctly at its source, and never reaches the element it is for. */
+        const dir = smoothstep(range(p, 0.92, 1));
+        document.documentElement.style.setProperty('--dir-in', dir.toFixed(3));
       },
     });
 

@@ -758,10 +758,17 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   line-height: 1.5;
 }
 
+/* AMBER, because they are the questions the whole site is an answer to.
+
+   They sat at --t, the same colour as the paragraph below them, so the two
+   questions and the biography read as one block of text and the questions
+   carried no more weight than the answer. The accent is already the site's
+   emphasis colour everywhere else; using it here says these two lines are the
+   premise rather than more prose. */
 .hero__ask {
   display: block;
   font-style: italic;
-  color: var(--t);
+  color: var(--amber);
 }
 
 /* Held on one line each, but only where one line actually fits. 687px is what
@@ -1987,6 +1994,38 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    separately or it sits at body scale beside a caption-scale one. */
 #about > .wrap .prose p     { font-size: var(--fs-sm); line-height: 1.62; text-align: justify; text-align-last: left; hyphens: none; }
 
+/* ============================================================
+   THE HEAT-MAP CAPTION IS SET ONE STEP LARGER THAN ITS SIBLINGS
+   ============================================================
+
+   The three frame captions share the block above, which is right: they are the
+   same kind of thing and they should look it. This one is asked to be a little
+   bigger, and the reason it can be is that it does not share their constraint.
+   #whole and #future sit in a narrow side band beside the planet, where 300px
+   of column is the ceiling; #about is pinned across the bottom of the frame
+   with the full measure available.
+
+   ONE FACTOR, NOT FOUR SIZES. Every step in the group is multiplied by --cap-up
+   so the relationships between title, lead, body and eyebrow are exactly the
+   ones the shared block established — which is what "bigger, keeping the
+   proportion" has to mean. Retuning is one number here, and a second number
+   cannot drift away from the first because there is no second number.
+
+   The clamp is scaled at all three of its terms for the same reason: scaling
+   only the preferred value would change where the type starts and stops
+   growing, so the curve would no longer be the same curve. */
+#about > .wrap { --cap-up: 1.18; }
+
+#about .sec-title {
+  font-size: clamp(
+    calc(1.5rem * var(--cap-up)),
+    calc(3.2vw * var(--cap-up)),
+    calc(2.5rem * var(--cap-up)));
+}
+#about > .wrap .lead,
+#about > .wrap .prose p { font-size: calc(var(--fs-sm) * var(--cap-up)); }
+#about > .wrap .eyebrow { font-size: calc(var(--fs-label) * var(--cap-up)); }
+
 /* The title carries the same edge, and its measure comes off the right in
    Frame 3 so the short second line hangs under the first rather than away
    from it. */
@@ -2020,4 +2059,44 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   #future .future__body .eyebrow { justify-content: center; }
   #whole .sec-title,
   #future .sec-title { max-width: none; }
+}
+
+/* ============================================================
+   THE SECTION AFTER THE HEAT MAP ARRIVES
+   ============================================================
+
+   It used to climb into view like any other section, which is correct
+   everywhere else on this page and wrong directly after a frame that has
+   just cleared itself off the screen. The reader is looking at empty ground
+   and the next thing should appear on it, not slide up from underneath.
+
+   --dir-in is published by main.js from the same trigger that takes the map
+   away, so the two cannot drift apart. See the note there.
+
+   THE SCALE GOES DOWN TO 0.965, NOT 0.8. A big scale reads as a zoom and
+   fights the dive that just finished; a small one reads as the thing
+   settling into place. The blur is what actually sells it — 6px clearing to
+   0 over the same range makes the block resolve rather than merely fade,
+   and resolving is what makes an arrival feel like an arrival.
+
+   `will-change` is deliberately absent: this runs once, near the end of a
+   long scroll, and promoting a full-width block to its own layer for the
+   whole page to save one transition is the wrong trade. */
+#direction > .wrap {
+  opacity: var(--dir-in, 1);
+  transform: scale(calc(0.965 + 0.035 * var(--dir-in, 1)));
+  transform-origin: 50% 40%;
+  filter: blur(calc((1 - var(--dir-in, 1)) * 6px));
+}
+
+/* The fallback of 1 above is doing real work: without JS, or before the
+   trigger has published anything, the section is simply visible. A default
+   of 0 would leave the whole of Research Direction blurred to nothing for
+   anyone the scrub never reaches. */
+@media (prefers-reduced-motion: reduce) {
+  #direction > .wrap {
+    transform: none;
+    filter: none;
+    opacity: 1;
+  }
 }
