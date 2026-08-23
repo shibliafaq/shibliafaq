@@ -1151,3 +1151,156 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 .mabs__wrap[open] > summary::after { content: '−'; }   /* literal minus: the 2 escape needs a delimiter and swallowed one */
 .mabs__wrap > summary:hover { color: var(--t); border-color: var(--amber); }
 .mabs__wrap .mabs { margin-top: .9rem; }
+
+/* ============================================================
+   HEAT GRID
+   ============================================================ */
+.mgrid { margin: 1.25rem 0 0; }
+.mgrid__t { width: 100%; min-width: 30rem; border-collapse: separate; border-spacing: 3px; }
+.mgrid__t thead th {
+  padding: .3rem .2rem .5rem;
+  font-family: var(--f-mono);
+  font-size: var(--ms-label, .78rem);
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  text-align: center;
+}
+.mgrid__t tbody th {
+  padding: .3rem .75rem .3rem 0;
+  font-family: var(--f-mono);
+  font-size: var(--ms-label, .78rem);
+  font-weight: 500;
+  color: var(--t-2);
+  text-align: left;
+  white-space: nowrap;
+}
+/* --k is the cell's share of the strongest value in the grid. Colour and
+   contrast both ride it, so a strong cell is unmistakable at a glance and a
+   weak one still shows its number. */
+.mgrid__c {
+  position: relative;
+  padding: .55rem .5rem;
+  border-radius: 6px;
+  text-align: center;
+  font-family: var(--f-mono);
+  font-size: var(--ms-small, .88rem);
+  color: color-mix(in oklab, var(--t) calc(55% + 45% * var(--k, 0)), var(--t-4));
+  background:
+    linear-gradient(0deg,
+      color-mix(in oklab, var(--amber) calc(var(--k, 0) * 62%), transparent),
+      color-mix(in oklab, var(--amber) calc(var(--k, 0) * 62%), transparent)),
+    rgba(255, 255, 255, .03);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .05);
+}
+/* A measured zero is hatched, not blank: an empty cell reads as missing data. */
+.mgrid__c.is-zero {
+  background-image: repeating-linear-gradient(45deg,
+    rgba(255,255,255,.07) 0 3px, transparent 3px 7px);
+  color: var(--t-4);
+}
+.mgrid__key {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .45rem .7rem;
+  margin-top: .65rem;
+  font-family: var(--f-mono);
+  font-size: var(--ms-label, .78rem);
+  color: var(--t-4);
+}
+.mgrid__ramp {
+  width: 7rem; height: .55rem; border-radius: 3px;
+  background: linear-gradient(90deg,
+    rgba(255,255,255,.04),
+    color-mix(in oklab, var(--amber) 62%, transparent));
+}
+.mgrid__zero {
+  width: 1.1rem; height: .8rem; border-radius: 3px;
+  background-image: repeating-linear-gradient(45deg,
+    rgba(255,255,255,.12) 0 3px, transparent 3px 7px);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+}
+.mgrid figcaption {
+  margin-top: .6rem;
+  font-size: var(--ms-label, .78rem);
+  line-height: 1.55;
+  color: var(--t-3);
+}
+
+/* ============================================================
+   GROUPED BAR CHART
+   ============================================================ */
+.mchart { margin: 1.5rem 0 0; }
+.mchart__key {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .9rem;
+  margin-bottom: .85rem;
+  font-family: var(--f-mono);
+  font-size: var(--ms-label, .78rem);
+  color: var(--t-3);
+}
+.mchart__ks { display: inline-flex; align-items: center; gap: .4rem; }
+.mchart__ks::before {
+  content: ''; width: .8rem; height: .8rem; border-radius: 3px;
+}
+.mchart__ks--w::before { background: var(--amber); }
+.mchart__ks--g::before { background: color-mix(in oklab, var(--amber) 52%, transparent); }
+.mchart__ks--l::before { background: color-mix(in oklab, var(--t-4) 70%, transparent); }
+.mchart__note { margin-left: auto; color: var(--t-4); }
+
+.mchart__plot { display: grid; gap: .9rem; }
+.mchart__g { display: grid; gap: .3rem; }
+.mchart__city {
+  font-family: var(--f-mono);
+  font-size: var(--ms-label, .78rem);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--t-2);
+}
+.mchart__bars { display: grid; gap: .22rem; }
+.mchart__b {
+  position: relative;
+  display: flex; align-items: center; gap: .5rem;
+  min-width: 0;
+  height: 1.45rem;
+  padding-left: .5rem;
+  border-radius: 4px;
+  width: max(var(--w, 0%), 5.5rem);
+  background: linear-gradient(90deg,
+    color-mix(in oklab, var(--amber) 78%, transparent),
+    color-mix(in oklab, var(--amber) 38%, transparent));
+  transition: width .55s var(--e-out, ease);
+}
+.mchart__b--g { background: linear-gradient(90deg,
+    color-mix(in oklab, var(--amber) 44%, transparent),
+    color-mix(in oklab, var(--amber) 18%, transparent)); }
+.mchart__b--l { background: linear-gradient(90deg,
+    color-mix(in oklab, var(--t-4) 55%, transparent),
+    color-mix(in oklab, var(--t-4) 22%, transparent)); }
+.mchart__v {
+  font-family: var(--f-mono);
+  font-size: var(--ms-label, .78rem);
+  font-weight: 600;
+  color: var(--ink-1);
+  white-space: nowrap;
+}
+.mchart__b--l .mchart__v { color: var(--t); }
+.mchart__c {
+  font-family: var(--f-mono);
+  font-size: calc(var(--ms-label, .78rem) * .92);
+  color: color-mix(in oklab, var(--ink-1) 70%, transparent);
+  white-space: nowrap;
+}
+.mchart__b--l .mchart__c { color: var(--t-3); }
+.mchart figcaption {
+  margin-top: .8rem;
+  font-size: var(--ms-label, .78rem);
+  line-height: 1.55;
+  color: var(--t-3);
+}
+@media (prefers-reduced-motion: reduce) { .mchart__b { transition: none; } }
+
+/* screen-reader-only, for the heat grid's empty corner header */
+.vh {
+  position: absolute; width: 1px; height: 1px;
+  margin: -1px; padding: 0; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}

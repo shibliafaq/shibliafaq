@@ -100,58 +100,88 @@ function render(data) {
     return a >= 8 ? 3 : a >= 3 ? 2 : a > 0 ? 1 : 0;
   };
 
+  /* A HEAT GRID, NOT A TABLE OF NUMBERS.
+
+     Still a <table> underneath — it is tabular data, it has two headed axes,
+     and a screen reader should get the rows and columns rather than a list of
+     coloured divs. What changes is that each cell CARRIES its value as colour
+     as well as printing it, so the pattern the two tables exist to show — the
+     reflectivity levers behaving alike everywhere, the vegetation levers
+     varying wildly by city — is visible before a single number is read.
+
+     Intensity is |value| against the strongest cell in the whole grid, so the
+     comparison is across the figure rather than within a row. Makkah's zero
+     gets its own treatment: a hatch rather than an absent colour, because a
+     blank cell reads as missing data and this zero is a measured result. */
   const coolTable = data.worked?.cooling
-    ? `<figure class="mtable">
-         <div class="mtable__scroll"><table>
-           <thead><tr><th scope="col">Measure</th>${data.worked.cooling.cities
+    ? `<figure class="mgrid">
+         <div class="mtable__scroll"><table class="mgrid__t">
+           <thead><tr><th scope="col"><span class="vh">Measure</span></th>${data.worked.cooling.cities
              .map((c) => `<th scope="col">${esc(c)}</th>`).join('')}</tr></thead>
            <tbody>${(() => {
-             /* Bars are scaled to the largest value in the WHOLE table, not
-                per row or per column. Normalising per row would make Makkah's
-                zero-coefficient greening look the same length as Dammam's
-                -3.10, which is the one comparison this figure exists to make. */
              const peak = Math.max(...data.worked.cooling.rows.flatMap((r) => r.v.map(Math.abs)));
              return data.worked.cooling.rows.map((r) => `<tr>
-               <th scope="row">${esc(r.m)}</th>${r.v
-                 .map((v) => `<td data-lv="${heat(v)}" style="--w:${(Math.abs(v) / peak * 100).toFixed(1)}%">
-                   <span>${v.toFixed(2)}</span></td>`).join('')}
+               <th scope="row">${esc(r.m)}</th>${r.v.map((v) => {
+                 const k = peak ? Math.abs(v) / peak : 0;
+                 return `<td class="mgrid__c${v === 0 ? ' is-zero' : ''}" style="--k:${k.toFixed(3)}">
+                   <span>${v === 0 ? '0' : v.toFixed(2)}</span></td>`;
+               }).join('')}
              </tr>`).join('');
            })()}</tbody>
          </table></div>
+         <div class="mgrid__key" aria-hidden="true">
+           <span>0 °C</span><i class="mgrid__ramp"></i>
+           <span>−${Math.max(...data.worked.cooling.rows.flatMap((r) => r.v.map(Math.abs))).toFixed(1)} °C</span>
+           <i class="mgrid__zero"></i><span>measured zero</span>
+         </div>
          <figcaption>${esc(data.worked.cooling.cap)}${data.worked.cooling.note
            ? ` <span class="mtable__note">${data.worked.cooling.note}</span>` : ''}</figcaption>
        </figure>`
     : '';
 
   const num = (n) => n.toLocaleString('en-US');
+
+  /* A GROUPED BAR CHART, because the finding IS a shape.
+
+     "A water feature reaches 16,167 and a cool pavement reaches 602" is a
+     sentence you have to do arithmetic on. Two bars of visibly different
+     length is the same fact arriving before you have finished reading it, and
+     the whole argument of the simulator is that one of these is 27 times the
+     other. A table could not make that land; a chart cannot avoid it.
+
+     Square-root scale, as before — 16,167 against 2 is 8,000:1, and on a
+     linear axis four of the five cities would be invisible. Marked as such in
+     the key, because a chart with a non-linear axis that does not say so is
+     lying about proportion. The exact figure is printed on every bar, so the
+     bar carries the comparison and the number carries the value. */
+  const SERIES = [
+    { k: 'w', label: 'Water feature' },
+    { k: 'g', label: 'Urban greening' },
+    { k: 'l', label: 'Any local measure' },
+  ];
   const reachTable = data.worked?.reach
-    ? `<figure class="mtable">
-         <div class="mtable__scroll"><table>
-           <thead><tr>
-             <th scope="col">City</th>
-             <th scope="col">Water feature</th>
-             <th scope="col">Urban greening</th>
-             <th scope="col">Any local measure</th>
-           </tr></thead>
-           <tbody>${(() => {
-             /* Square-root scale. Dammam's 16,167 against NEOM's 2 is a ratio
-                of 8,000:1, and on a linear bar every city except the top two
-                would be an invisible sliver — the figure would show one fact
-                and hide four. The root keeps the ordering honest while leaving
-                the small values legible; the number is printed beside it, so
-                the bar is the shape of the comparison and the digits are the
-                comparison itself. */
-             const peak = Math.sqrt(Math.max(...data.worked.reach.rows
-               .flatMap((r) => [r.w[1], r.g[1], r.l[1]])));
-             return data.worked.reach.rows.map((r) => `<tr>
-               <th scope="row">${esc(r.c)}</th>
-               ${[r.w, r.g, r.l].map(([cells, people]) => `<td style="--w:${
-                 peak ? (Math.sqrt(people) / peak * 100).toFixed(1) : 0}%">
-                 <b>${num(people)}</b><span>${cells} cell${cells === 1 ? '' : 's'}</span>
-               </td>`).join('')}
-             </tr>`).join('');
-           })()}</tbody>
-         </table></div>
+    ? `<figure class="mchart">
+         <div class="mchart__key" aria-hidden="true">${SERIES
+           .map((sr) => `<span class="mchart__ks mchart__ks--${sr.k}">${sr.label}</span>`).join('')}
+           <span class="mchart__note">√ scale</span></div>
+         <div class="mchart__plot">${(() => {
+           const peak = Math.sqrt(Math.max(...data.worked.reach.rows
+             .flatMap((r) => [r.w[1], r.g[1], r.l[1]])));
+           return data.worked.reach.rows.map((r) => `
+             <div class="mchart__g">
+               <div class="mchart__city">${esc(r.c)}</div>
+               <div class="mchart__bars">${SERIES.map((sr) => {
+                 const [cells, people] = r[sr.k];
+                 const w = peak ? (Math.sqrt(people) / peak * 100) : 0;
+                 return `<div class="mchart__b mchart__b--${sr.k}"
+                      style="--w:${w.toFixed(1)}%"
+                      title="${esc(sr.label)}: ${num(people)} residents across ${cells} cell${cells === 1 ? '' : 's'}">
+                   <span class="mchart__v">${num(people)}</span>
+                   <span class="mchart__c">${cells}&nbsp;cell${cells === 1 ? '' : 's'}</span>
+                 </div>`;
+               }).join('')}</div>
+             </div>`).join('');
+         })()}</div>
          <figcaption>${esc(data.worked.reach.cap)}${data.worked.reach.note
            ? ` <span class="mtable__note">${data.worked.reach.note}</span>` : ''}</figcaption>
        </figure>`

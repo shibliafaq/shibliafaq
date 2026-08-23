@@ -5436,3 +5436,42 @@ ABSTRACT 2". It renders as a plain digit, which looks like a typo rather than
 like broken markup, so nothing about it says "escaping problem". A literal `−`
 avoids the whole class of it — worth preferring in generated CSS whenever the
 character is typeable.
+
+## 71. The result figures became figures (2026-08-23)
+
+Asked for the figures to be graphical rather than tabular. Both are now drawn,
+and both stayed honest about their scales.
+
+**Cooling: a heat grid.** Still a `<table>` underneath — it is tabular data with
+two headed axes, and a screen reader should get rows and columns rather than a
+list of coloured divs. What changed is that each cell carries its value as
+colour as well as printing it, so the pattern the figure exists to show is
+visible before a number is read: cool pavement is a solid amber band straight
+across all five cities (the reflectivity levers sit on a physics-based albedo
+term and behave alike everywhere) while the vegetation rows vary wildly.
+
+Intensity is `|value|` against the strongest cell in the WHOLE grid, so the
+comparison is across the figure rather than within a row.
+
+Makkah's zero is **hatched, not blank**. A blank cell reads as missing data, and
+this zero is a measured result — the city's NDVI coefficient really is zero. The
+key says "measured zero" for the same reason.
+
+**Reach: a grouped bar chart.** "A water feature reaches 16,167 and a cool
+pavement reaches 602" is a sentence you have to do arithmetic on; two bars of
+visibly different length is the same fact arriving before you finish reading.
+The entire argument of the simulator is that one is 27× the other, and a table
+could not make that land.
+
+The axis is a square root, and the key SAYS so. 16,167 against NEOM's 2 is
+8,000:1 — on a linear axis four of the five cities are an invisible sliver, so
+the figure would show one fact and hide four. A chart with a non-linear axis
+that does not declare it is lying about proportion, so the note is not optional
+decoration. Every bar prints its exact figure, so the bar carries the shape and
+the number carries the value.
+
+Bars have a `min-width` of 5.5rem: NEOM's 2 residents would otherwise be a bar
+too short to hold its own label, and a value you cannot read is not plotted.
+
+Verified at 375px: the grid scrolls inside its own box, every bar's label fits
+inside its bar, the page never scrolls sideways.
