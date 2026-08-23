@@ -23,6 +23,53 @@ const idleInit = window.requestIdleCallback
   ? (fn) => window.requestIdleCallback(fn)
   : (fn) => setTimeout(fn, 200);
 
+/* A RELOAD STARTS AT THE TOP, BECAUSE THE POSITION IT WOULD RESTORE IS A LIE.
+
+   The browser restores scrollY before any of this runs. Then the lazy chunks
+   land, ScrollTrigger builds its pin spacers, and the document grows by
+   thousands of pixels — so the number it restored no longer points at the
+   place it was taken from. Measured: parked at 15893, reloaded, landed at
+   9642. That is 6251px earlier and a different section entirely, and it was
+   what kept depositing readers back at the projects wheel on refresh.
+
+   Restoring it CORRECTLY is not really available. It would mean waiting for
+   every lazy module to initialise and every pin to be measured before jumping,
+   and those land on idle callbacks with no well-defined "done" — so the jump
+   would happen late and visibly, which is worse than not jumping at all. And
+   there is nothing to go back to: this page is a single scrubbed narrative, so
+   a restored position drops the reader into the middle of an animation with no
+   idea how they got there.
+
+   The hash is left alone. Nav links are #about, #projects and so on, and those
+   are a deliberate request for a place, unlike a restored scroll offset.
+
+   TWO MECHANISMS REMEMBER THE POSITION, AND BOTH HAVE TO BE TOLD.
+
+   Setting history.scrollRestoration alone did nothing — measured, it read
+   back as "auto" and the page still landed at 9642. ScrollTrigger keeps its
+   OWN scroll memory and restores it around a refresh, and resets the history
+   flag while doing so, so whichever of the two is set first simply loses.
+   `clearScrollMemory` is the sanctioned way to tell it both things at once:
+   forget the remembered offsets, and leave restoration manual.
+
+   Re-asserted after the first refresh as well. The pins are not measured yet
+   at this point in the file, so the refresh that follows the lazy chunks is
+   the one that would otherwise put the reader back. One shot, removed
+   immediately, so a later resize refresh does not yank a reading page to the
+   top. */
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+if (!location.hash) {
+  ScrollTrigger.clearScrollMemory('manual');
+  window.scrollTo(0, 0);
+  const toTopOnce = () => {
+    ScrollTrigger.removeEventListener('refresh', toTopOnce);
+    window.scrollTo(0, 0);
+  };
+  ScrollTrigger.addEventListener('refresh', toTopOnce);
+}
+
+/* Before initScroll, so Lenis takes its starting position from the reset
+   rather than from whatever the browser had already put there. */
 initScroll();
 // Two delegated listeners; cheap, and must be live before media appears.
 initMediaGuard();

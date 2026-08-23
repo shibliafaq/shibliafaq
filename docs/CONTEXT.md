@@ -4931,3 +4931,40 @@ was the one gesture the reader needs in order to leave.
 The general lesson is about symmetry. A scroll-jacking mechanism has two
 directions and a reader uses both; testing one of them is testing half the
 feature. Every measurement in sections 53, 58 and 59 fired positive deltas.
+
+## 61. A reload starts at the top, and two mechanisms had to be told (2026-08-23)
+
+Measured before: parked at scrollY 15893, reloaded, landed at 9642 — 6251px
+earlier and in a different section. The browser restores the offset before any
+of this code runs; then the lazy chunks land and ScrollTrigger builds its pin
+spacers, the document grows by thousands of pixels, and the restored number no
+longer points at the place it was taken from. That drop is what kept depositing
+readers back at the projects wheel on refresh.
+
+Restoring it CORRECTLY is not really on offer. It would mean waiting for every
+lazy module to initialise and every pin to be measured before jumping, and those
+land on idle callbacks with no well-defined "done", so the jump would happen
+late and visibly — worse than not jumping. And there is nothing to go back to:
+this page is one scrubbed narrative, so a restored offset drops the reader into
+the middle of an animation with no idea how they got there.
+
+**Setting `history.scrollRestoration = 'manual'` alone did nothing.** Measured,
+it read back as `"auto"` and the page still landed at 9642. ScrollTrigger keeps
+its OWN scroll memory and restores it around a refresh, resetting the history
+flag while it does — so whichever of the two is set first simply loses.
+`ScrollTrigger.clearScrollMemory('manual')` tells it both things at once: forget
+the remembered offsets, and leave restoration manual.
+
+It also needs re-asserting after the first refresh, because the pins are not
+measured at that point in main.js and the refresh that follows the lazy chunks
+is the one that would otherwise move the reader. One shot, and the listener
+removes itself, so a later resize refresh cannot yank a reading page to the top.
+
+The hash is left alone, and that is the case worth not breaking: nav links are
+`#about`, `#projects` and so on, and those are a deliberate request for a place,
+unlike a restored offset. Verified both paths — no hash lands at 0; `#projects`
+lands at 5477 with the section's top exactly at the viewport top.
+
+The general shape is the same one as sections 54 and 59: when a guarantee has
+more than one owner, setting one of them is not a fix, it is a coin toss over
+which one runs last.
