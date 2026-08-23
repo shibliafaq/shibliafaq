@@ -21,77 +21,68 @@ because their shape matters as much as their text.
 ### thesis.title
 - Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting & Mitigation
 
+### thesis.findings.0.v
+- negative UHI
+
+### thesis.findings.0.t
+- The cities are COOLER by day than the surrounding desert. That is the inverse of the classical model. The daytime signal is driven by built-up density (NDBI), not vegetation.
+
+### thesis.findings.1.v
+- 27× 
+
+### thesis.findings.1.t
+- The broadest measure protects most. One water feature reaches 16,167 residents in Dammam through spillover; a cool pavement three times as cold reaches 602.
+
+### thesis.abstract
+- Saudi Arabia’s largest cities are getting hotter, but not according to the traditional urban heat island model. Using an 8-year (2018–2026) grid of MODIS LST data (1 km native, analysed on a ~500 m / 0.005° grid), the thermal behaviour of five desert and coastal cities (Riyadh, Jeddah, Dammam, Makkah and NEOM) is characterised, and an operational digital-twin dashboard is developed to monitor, forecast and mitigate extreme heat. The work is supported by three findings. First, the cities are cooler by day than the surrounding desert, which results in a negative urban heat island intensity (or urban cool-island), and the daytime signal is driven primarily by built-up density (NDBI) rather than by vegetation, quantified by a sign-constrained regression fit on each city’s own summer data instead of by coefficients borrowed from the literature. Second, the cool-island is not static: a Prophet forecasting family, forecasting land-surface temperature directly for both day and night on a corrected equal-area geometry, reproduces the seasonal cycle (monthly RMSE 0.96–1.91 °C by day and 0.79–1.29 °C by night, r 0.94–0.99) and projects a progressive decrease of the cool-island toward zero by 2030, with a warming trend in both desert and city, to −0.01 °C in Makkah but remaining between −0.67 and −1.31 °C in the other four cities. Third, the heat-vulnerability index and the intervention simulator convert this physics into planning decisions: the simulation uses the same own-data coefficients to estimate cell-level cooling, its spatial spillover, the residents and elderly who benefit, an approximate cost, and the districts affected. The cross-sensor comparison against Landsat returned a correlation of R > 0.85 in all five cities. The broadest intervention, not the most localised, provides the most protection: a single water feature reaches tens of thousands of residents through spillover, whereas an intense but local measure such as a cool roof protects only the few hundred residents of the block it covers. The dashboard packages monitoring, forecasting, vulnerability and mitigation in one interface, and builds on recent urban-digital-twin research from a single pilot microclimate to a multi-city, decision-support scale.
+
 ### thesis.desc
-- Built on Design Science Research methodology, this digital twin platform pulls MODIS Land Surface Temperature via Google Earth Engine, runs a Prophet forecasting ensemble (Terra and Aqua modelled separately, day and night, monthly + 7-day + 2030 horizons), and computes an equity-weighted Heat Vulnerability Index. An intervention simulator ranks twelve mitigation measures by cooling delivered, spillover reach, cost, and beneficiaries — using own-data seasonal betas, not literature values. Served through a FastAPI + PostgreSQL/PostGIS backend and a deck.gl + MapLibre frontend. Five Saudi cities. One framework.
-
-### thesis.finding.claim
-- Saudi cities are daytime <em>cool</em>-islands against the surrounding desert — the inverse of the classical Oke model.
-
-### thesis.finding.note
-- Makkah’s cool-island reaches −0.01 °C by 2030.
+- Most heat research describes where it has already been hot. This is built for the questions that come after: how hot it is now, where that is heading, and what a given intervention would actually change. Five Saudi cities, in one interface a planner can use.
 
 ### thesis.worked.sec
-- Intervention Simulator — a worked example
+- Intervention simulator: what reaches people
 
 ### thesis.worked.lead
-- Twelve mitigation measures ranked by cooling delivered, spillover reach, cost, and beneficiaries — scored on this study’s own seasonal betas rather than literature values. In Dammam, for the same money:
+- Repeating one worked example at the hottest inhabited cell in every city gives two matrices, and the lesson is in the gap between them. Intensity and benefit have almost nothing to do with each other: the six local measures each cool only the block they sit on, however hard they cool it, while the two wide-spillover measures carry across the neighbourhood.
 
-### thesis.worked.rows.0.v
-- 16,167
+### thesis.worked.cooling.note
+- The reflectivity levers sit on a physics-based albedo term and behave almost identically everywhere. The vegetation levers follow each city\u2019s own regression, strongest in Dammam and honestly zero in Makkah, whose NDVI coefficient is zero.
 
-### thesis.worked.rows.0.l
-- residents cooled by one water feature
-
-### thesis.worked.rows.1.v
-- 602
-
-### thesis.worked.rows.1.l
-- residents cooled by one cool-pavement patch
+### thesis.worked.reach.note
+- Makkah\u2019s greening column is zero because its greening coefficient is zero, and NEOM\u2019s counts are negligible because its hottest cells are almost uninhabited. Both are kept rather than hidden: a simulator that only reports where it works is not a simulator.
 
 ### thesis.worked.foot
-- Same budget, 27× the reach. Ranking by residents-per-riyal is what the simulator exists to do.
+- In Dammam one water feature cools 16,167 residents while a −9 °C cool pavement cools 602. That is 27× the reach for the weaker measure. Ranking by residents reached, not by degrees delivered, is what the simulator exists to do.
 
 ### thesis.metrics.0.v
-- 0.96–1.91°C
+- 0.96–1.91 °C
 
 ### thesis.metrics.0.l
-- Monthly RMSE
+- Monthly LST RMSE by day · 0.79–1.29 by night
 
 ### thesis.metrics.1.v
-- r ≥ 0.85
-
-### thesis.metrics.1.l
-- MODIS vs Landsat
-
-### thesis.metrics.2.v
 - 1.37M
 
+### thesis.metrics.1.l
+- Residents in Very-High vulnerability cells
+
+### thesis.metrics.2.v
+- 2018–2026
+
 ### thesis.metrics.2.l
-- At-risk residents mapped
-
-### thesis.metrics.3.v
-- 5 cities
-
-### thesis.metrics.3.l
-- Riyadh · Jeddah · Dammam · Makkah · NEOM
-
-### thesis.method
-- Google Earth Engine (on-demand ingestion) → PostgreSQL/PostGIS spatial DB → Prophet forecasting (Terra + Aqua separately, day + night) → Intervention Simulator (own-data seasonal OLS betas, exponential spillover kernel, Saudi/Gulf cost rates) → FastAPI backend → deck.gl + MapLibre dashboard. Kafka/Spark streaming layer designed for future automation.
+- Eight years of MODIS LST on a 500 m grid
 
 ### thesis.twin.sec
 - The dashboard, running
 
 ### thesis.twin.lead
-- Not a screenshot. This is the platform itself, embedded — seven tabs across five cities, driven by a frozen snapshot of the study database so it runs without a backend.
+- This is the lite version with frozen data in a dashboard; it shows tabs across five cities of the study database and it runs without a backend.
 
 ### thesis.twin.title
-- UHI Digital Twin — interactive dashboard
+- UHI Digital Twin · interactive dashboard
 
 ### thesis.twin.hint
 - Map · Weather · Climate · Statistics · Forecast · Interventions · System
-
-### thesis.twin.note
-- The map basemap, the Esri 3D city mode and the weather tab stream live over HTTPS; the heat data is bundled and offline. <strong>Run Simulation</strong> on the Interventions tab is inert in this static build — every other control is live. Basemaps © CARTO, © OpenStreetMap contributors; 3D city content © Esri.
 
 ### thesis.links.0.t
 - Open the dashboard full screen
@@ -106,7 +97,7 @@ because their shape matters as much as their text.
 - CRP 583: Urban Informatics · KFUPM · Jan–May 2026
 
 ### gis.pub.authors
-- Shibli Afaq, Sultan Aldhafeeri · Supervisor: Dr. Baqer Al-Ramadan
+- Shibli Afaq · Supervisor: Dr. Baqer Al-Ramadan
 
 ### gis.pub.venue
 - 2026 · Target: Urban Climate / Sustainable Cities and Society
@@ -121,7 +112,7 @@ because their shape matters as much as their text.
 - The problem of urban heat island (UHIs) is an increasing health concern in hot-arid cities. This paper evaluates patterns of land surface temperature (LST) and heat vulnerability across the Dammam Metropolitan Area (DMA) using a five-step GIS and remote sensing model. LST was derived from Landsat 8/9 TIRS data for 2020, 2023, and 2025, while NDVI and NDBI were derived from Sentinel-2 MSI and population exposure was represented using WorldPop 2020 data. These datasets were processed using a 500 m fishnet grid with 12,954 cells. Pearson correlation, linear regression, two Heat Vulnerability Index (HVI) models, dual-threshold exposure mapping, Getis-Ord Gi* hotspot analysis, and sensitivity testing using three scenarios were used to analyze these data. The results show that NDBI is the strongest LST predictor in all years. In 2020, NDBI had r = 0.715 and R² = 0.511. The regression slope indicates that a 0.10-unit decrease in normalized built-up intensity is associated with an approximate 0.130-unit reduction in normalized LST. Composite HVI classified 92.6% of cells as High vulnerability. The dual-threshold exposure map identified 229 cells, equal to 57.3 km² or 1.8% of the DMA, as Very High Exposure. The HVI 99% Hot Spot covered 505 km², which is 4.18 times larger than the LST-only 99% Hot Spot of 120.8 km². This confirms that multi-factor vulnerability analysis reveals planning priorities that temperature-only mapping does not show.
 
 ### gis.desc
-- Five-step GIS and remote sensing workflow across 12,954 grid cells (500m × 500m, 3,238 km²). Key finding: NDBI is 255× more predictive of LST than NDVI in arid cities — a direct reversal of temperate-city findings. The Composite HVI hotspot is 4.18× larger than LST-only analysis, proving that temperature-only mapping dangerously under-estimates true vulnerability.
+- A five-step GIS and remote-sensing assessment of heat and who is exposed to it, across 12,954 grid cells covering the 3,238 km² Dammam Metropolitan Area at 500 m resolution.
 
 ### gis.metrics.0.v
 - 12,954
@@ -147,8 +138,32 @@ because their shape matters as much as their text.
 ### gis.metrics.3.l
 - HVI hotspot vs LST-only
 
-### gis.method
-- GEE data acquisition (Landsat 8/9, Sentinel-2, WorldPop) → SetNull() water masking → 500m fishnet → Zonal Statistics → Min-max normalisation → Pearson r & regression → Simplified HVI + Composite HVI → Getis-Ord Gi* (fixed 1,000m band) → 3-scenario sensitivity analysis
+### gis.methodFlow.0.steps.0.t
+- GEE data acquisition
+
+### gis.methodFlow.0.steps.1.t
+- SetNull() water masking
+
+### gis.methodFlow.1.steps.0.t
+- 500 m fishnet
+
+### gis.methodFlow.1.steps.1.t
+- Zonal statistics
+
+### gis.methodFlow.1.steps.2.t
+- Min-max normalisation
+
+### gis.methodFlow.2.steps.0.t
+- Pearson r and regression
+
+### gis.methodFlow.2.steps.1.t
+- Simplified and Composite HVI
+
+### gis.methodFlow.3.steps.0.t
+- Getis-Ord Gi*
+
+### gis.methodFlow.3.steps.1.t
+- 3-scenario sensitivity analysis
 
 ### gis.twin.sec
 - The assessment, in three dimensions
@@ -187,7 +202,7 @@ because their shape matters as much as their text.
 - Simulated sensor data, seed 42, the same generator the deployed Streamlit demo uses, replayed deterministically. Alert bands are drawn from the distribution rather than the generic 30 °C default, which would flag <strong>87.3%</strong> of readings in a city whose nodes sit at 32 to 43.5 °C by design.
 
 ### iot.cat
-- ICS 574: Big Data Analytics · KFUPM · Fall 2025 · Co-author: Sultan Aldhafeeri
+- ICS 574: Big Data Analytics · KFUPM · Fall 2025
 
 ### iot.title
 - Real-Time Smart City IoT Monitoring Pipeline
@@ -219,8 +234,26 @@ because their shape matters as much as their text.
 ### iot.metrics.3.l
 - Dammam / Al-Khobar urban area
 
-### iot.method
-- MQTT IoT sensors (10 locations) → Mosquitto broker (port 1883) → Kafka bridge → Apache Kafka (port 9092) → PySpark Structured Streaming (port 4040) → PostgreSQL 15 (port 5432) → Streamlit dashboard (port 8501) with pydeck geographic map
+### iot.methodFlow.0.steps.0.t
+- IoT sensors
+
+### iot.methodFlow.0.steps.1.t
+- Mosquitto MQTT broker
+
+### iot.methodFlow.1.steps.0.t
+- Kafka bridge
+
+### iot.methodFlow.1.steps.1.t
+- Apache Kafka
+
+### iot.methodFlow.1.steps.2.t
+- PySpark Structured Streaming
+
+### iot.methodFlow.2.steps.0.t
+- PostgreSQL 15
+
+### iot.methodFlow.3.steps.0.t
+- Streamlit dashboard
 
 ### iot.links.0.t
 - Live Dashboard
@@ -247,7 +280,7 @@ because their shape matters as much as their text.
 - Landsat 8/9 Collection 2 Level 2 (USGS) via Microsoft Planetary Computer, band ST_B10, cloud and shadow masked per pixel with QA_PIXEL. Cities carry between 6 and 24 usable acquisitions depending on cloud. Basemap © Esri, © OpenStreetMap contributors.
 
 ### temp.cat
-- ICS 574: Big Data Analytics · KFUPM · Fall 2025 · Co-author: Sultan Aldhafeeri
+- ICS 574: Big Data Analytics · KFUPM · Fall 2025
 
 ### temp.title
 - Multi-City Surface Temperature — 3 Cities · GPU Hexbin Pipeline

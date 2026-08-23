@@ -5689,3 +5689,35 @@ colour and reflow.
 
 The card no longer has a "Maps & Visuals" section at all, which is correct: it
 never had visuals, it had one diagram in the wrong place.
+
+## 78. A credit removed in one place and left in five (2026-08-24)
+
+Asked to remove a co-author's name from the IoT card. Grepping first found it in
+more places than the one asked about — and, more to the point, in a place the
+EARLIER removal should already have caught:
+
+| where | what it was |
+|---|---|
+| `projects.js` gis `pub.authors` | removed in section 75 |
+| `index.html` gis card | **still there** |
+| `projects.js` iot + temp `cat` | still there |
+| `index.html` iot + temp cards | still there |
+| `iot-twin.html` credit line | still there |
+
+Section 75 removed the byline from the GIS MODAL and reported it done. The card
+on the wheel carries its own copy of the same line in `index.html`, and it kept
+saying "Co-author: Sultan Aldhafeeri" the whole time. The report was true about
+what it changed and wrong about what a reader would see.
+
+**A name in a codebase is not one string.** The same credit appears wherever the
+project is described — the data, the card, and in this case inside the embedded
+dashboard — and a removal that fixes only the copy someone happened to point at
+leaves the others to be found later, one report at a time. Grep for the name,
+not for the line that was mentioned.
+
+### One left deliberately
+
+`its.pub.authors` reads "Shibli Afaq, H. Alnasser, H. Alghamdi, S. Aldhafeeri".
+That is a four-person group project, not a co-author credit, and striking one
+name from a team list while keeping the other two makes a specific claim about
+who did the work. Flagged rather than removed.
