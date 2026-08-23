@@ -90,7 +90,8 @@ export function initAtlas() {
   scene.add(mesh);
 
   // Sit the plate right of centre and a little low, so the column of copy on
-  // the left keeps clear ground. On narrow screens it recentres (see resize).
+  // the left keeps clear ground. resize() overrides this on narrow screens and
+  // inside a modal, where there is no side column to clear.
   const group = new THREE.Group();
   group.position.set(2.9, -0.7, -0.5);
   scene.add(group);
@@ -158,11 +159,24 @@ export function initAtlas() {
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
 
-    // Below the two-column breakpoint there is no side room, so the plate
-    // recentres and drops behind the copy instead of sitting beside it.
+    /* THE OFFSET EXISTS TO CLEAR A COLUMN OF COPY, so it only applies where
+       there IS one beside it.
+
+       On the page the plate sits right of centre because the headline and the
+       city list occupy the left band. In a modal that is no longer true: the
+       panel is a third the width and the copy was moved ABOVE the canvas into
+       its own grid row, so there is nothing to the left to keep clear and the
+       same offset just parks the figure against the right edge with dead space
+       beside it.
+
+       Detected from the DOM rather than from width, because the two are not the
+       same question — a wide desktop modal is over 900px and still has no side
+       column. */
+    const inPanel = !!section.closest('.modal');
     const narrow = w < 900;
-    group.position.x = narrow ? 0 : 3.8;
-    group.position.y = narrow ? -1.6 : -1.1;
+    const centred = narrow || inPanel;
+    group.position.x = centred ? 0 : 3.8;
+    group.position.y = centred ? (inPanel ? -1.1 : -1.6) : -1.1;
     camera.position.set(0, narrow ? 13 : 12, narrow ? 17 : 15.5);
     camera.lookAt(0, 0.3, 0);
   }

@@ -5536,3 +5536,47 @@ matched: `.msec` is a `<div>`, so `:first-of-type` means the first DIV among its
 siblings, not the first `.msec`. It was also unnecessary, since the first
 heading sits below the findings rather than at the top of the panel. A rule that
 does nothing is worse than no rule, because the next reader assumes it works.
+
+## 74. One type scale, actually applied (2026-08-24)
+
+Reported as the text jumping between big and small with no consistent
+hierarchy. Measured, and that is exactly what it was: **fifteen distinct sizes
+in one panel** — 40.7, 38.4, 28.5, 21.3, 19.2, 17.9, 16, 14.4, 14.1, 12.6, 12.5,
+11.7, 11.5, 10.9, 10.4.
+
+Section 68 introduced a `--ms` scale of eight steps and hooked about a third of
+the panel to it. Everything else kept its own `--fs-*` value and landed a
+fraction off a step: 14.4 beside 14.1, 12.6 beside 12.5, 11.7 beside 11.5.
+
+**Those near-misses are the actual fault, not the range.** A difference of a
+third of a pixel is not read as hierarchy — it has no meaning to convey — so it
+reads as sloppiness instead. A panel with eight sizes that are clearly distinct
+looks deliberate; the same panel with fifteen sizes, seven of which are almost
+another one, looks like nobody chose. Where a size sat between two steps it went
+to the nearer one rather than becoming a ninth step, since a scale's usefulness
+is that it is short.
+
+Measured after: **exactly eight sizes, all of them steps on the ladder.**
+
+The last one to go was `.ml`, the action links, at 12.6 against 12.5. Worth
+chasing a tenth of a pixel not because anyone can see it but because it means
+the number came from somewhere else, and the next change to the scale would have
+left it behind.
+
+### The plate was offset for a layout it is no longer in
+
+On the page the atlas plate sits right of centre because the headline and city
+list occupy the left band. Section 67 moved the copy ABOVE the canvas inside a
+modal, into its own grid row — so there was nothing left to clear, and the same
+offset simply parked the figure against the right edge with dead space beside
+it.
+
+The condition is `section.closest('.modal')`, not a width. Those are different
+questions: a wide desktop modal is well over the 900px narrow breakpoint and
+still has no side column, so a width test would have kept the offset exactly
+where it was wrong.
+
+### Removed
+
+The thesis Method paragraph, at request. `method` remains on the other three
+research projects, which still render it.

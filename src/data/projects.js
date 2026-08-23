@@ -107,7 +107,6 @@ export const projects = {
       { v: '1.37M', l: 'Residents in Very-High vulnerability cells' },
       { v: '2018–2026', l: 'Eight years of MODIS LST on a 500 m grid' },
     ],
-    method: 'Google Earth Engine (on-demand ingestion) → PostgreSQL/PostGIS spatial DB → Prophet forecasting (Terra + Aqua separately, day + night) → Intervention Simulator (own-data seasonal OLS betas, exponential spillover kernel, Saudi/Gulf cost rates) → FastAPI backend → deck.gl + MapLibre dashboard. Kafka/Spark streaming layer designed for future automation.',
     /* The dashboard itself, running in the page.
        It is the static ("lite") build: the FastAPI backend is replaced by a
        frozen JSON snapshot, so there is no server to keep alive and nothing to

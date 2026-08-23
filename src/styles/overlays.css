@@ -1000,6 +1000,41 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 .modal .mmv           { font-size: var(--ms-h3); }
 .modal .mml           { font-size: var(--ms-label); }
 
+/* EVERYTHING ELSE IN THE PANEL, ON THE SAME LADDER.
+
+   Measured before this: fifteen distinct sizes in one panel — 40.7, 38.4, 28.5,
+   21.3, 19.2, 17.9, 16, 14.4, 14.1, 12.6, 12.5, 11.7, 11.5, 10.9, 10.4. The
+   scale above defines eight steps and most elements had never been hooked to
+   it, so they kept their own --fs-* values and landed a fraction away from a
+   step: 14.4 beside 14.1, 12.6 beside 12.5, 11.7 beside 11.5. Differences that
+   small are not read as hierarchy, they are read as inconsistency — which is
+   exactly the complaint.
+
+   Anything inside the panel now resolves to one of the eight. Where a size sat
+   between two steps it goes to the NEARER one rather than being kept as a new
+   step, because the point of a scale is that it is short. */
+.modal .mtitle        { font-size: var(--ms-h1); line-height: 1.08; }
+.modal .atlas .sec-title,
+.modal .atlas .display { font-size: var(--ms-h2); line-height: 1.1; }
+.modal .atlas .lead    { font-size: var(--ms-lead); }
+.modal .atlas__list li { font-size: var(--ms-small); }
+.modal .atlas__list em,
+.modal .atlas__n,
+.modal .atlas__fallback { font-size: var(--ms-eyebrow); }
+.modal .mcat,
+.modal .eyebrow,
+.modal .mtwin__hint,
+.modal .mchart__c      { font-size: var(--ms-eyebrow); }
+.modal .mtwin__btn,
+.modal .tag            { font-size: var(--ms-label); }
+.modal .mwork__l       { font-size: var(--ms-label); }
+/* The action links were the last thing off the ladder, at 12.6 against the
+   12.5 step. A tenth of a pixel is not visible on its own — it matters because
+   it means the value came from somewhere else, and the next change to the scale
+   would have left it behind. */
+.modal .ml             { font-size: var(--ms-label); }
+.modal .mgal figcaption { font-size: var(--ms-label); }
+
 /* ---- the figures show the numbers, not just list them -------------------
 
    A bar behind each cell, width set inline from the data. It sits BEHIND the
