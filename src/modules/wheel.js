@@ -41,12 +41,33 @@ import { reducedMotion } from './scroll.js';
    that distance came out at -43px: the neighbour sat on top of the front card,
    which is what made the ring look like a stack of glued cards rather than a
    wheel with spokes. 0.60 on a 230px card gives +46px of real daylight. */
+/* Extra circumference beyond what the cards strictly need, so neighbours are
+   separated rather than touching. The phone gets more of it: the ring turns
+   about the Y axis there and the cards are wider than they are tall, so the
+   same fraction leaves them visibly closer than the desktop ring does. */
 const GAP = 0.52;
-/* Impulse per pixel of scroll, NOT degrees per pixel — the motion model is
-   velocity-based now. Derived so that one ~120px wheel notch carries about one
-   card: step * (1 - FRICTION) / 120, which for a 7-card ring at friction 0.955
-   is 51.43 * 0.045 / 120 ≈ 0.019. */
-const WHEEL_K = 0.019;
+const GAP_PHONE = 0.9;
+/* How fast the velocity bleeds away each frame. Higher coasts longer and
+   decays more gently; the impulse below is derived from it, so the two always
+   move together.
+
+   0.955 -> 0.97 along with the WHEEL_K fix below: the ring reads as something
+   with mass being let go of, rather than something flicked. */
+const FRICTION = 0.97;
+
+/* NO LONGER A LITERAL, AND THAT WAS A REAL BUG.
+
+   The impulse has to satisfy `step * (1 - FRICTION) / 120` so that one ~120px
+   wheel notch carries about one card. It was written out as 0.019, which is
+   that formula solved for a SEVEN-card ring: 51.43 * 0.045 / 120.
+
+   The ring has fourteen cards now. `step` halved to 25.71 and the literal did
+   not, so every notch carried TWO cards instead of one and the cards went past
+   at twice the intended rate -- reported as "too fast to notice in some
+   places", which is exactly what a doubled rate looks like from the outside.
+
+   Derived from `step` at the call site now, so adding or removing a card
+   re-solves it instead of silently changing what a scroll notch means. */
 
 /* ============================================================ LISSAJOUS PATH
 
@@ -555,6 +576,9 @@ function setupWheel(root) {
     : [];
 
   const step = 360 / n;
+  /* One notch, one card. See the note at the top of the file for why this is
+     solved here rather than written out as a number. */
+  const WHEEL_K = step * (1 - FRICTION) / 120;
   let radius = 0;
   /* The card's UNTRANSFORMED box and the stage's perspective, both cached by
      measure(). The Lissajous branch solves its scale from these, so they have
@@ -832,7 +856,8 @@ function setupWheel(root) {
     const stage = root.querySelector('.wheel__stage');
     const pv = stage && parseFloat(getComputedStyle(stage).perspective);
     if (pv) persp = pv;
-    radius = ((h / 2) / Math.tan((step / 2) * Math.PI / 180)) * (1 + GAP);
+    const gap = horizontal ? GAP_PHONE : GAP;
+    radius = ((h / 2) / Math.tan((step / 2) * Math.PI / 180)) * (1 + gap);
     ring.style.setProperty('--r', `${radius.toFixed(1)}px`);
     /* Also on the wheel root, because the label is a SIBLING of the ring now
        and has to read the same radius to sit on the axis. The unitless twin is
@@ -1272,8 +1297,10 @@ function setupWheel(root) {
          impulse = step * (1 - FRICTION) / 120  ->  WHEEL_K
 
      Changing FRICTION without re-deriving WHEEL_K changes how FAR a notch
-     travels, not just how long it coasts. */
-  const FRICTION = 0.955;
+     travels, not just how long it coasts — which is precisely the bug the note
+     at the top of the file describes, arrived at from the other direction: the
+     card COUNT changed and the impulse did not. Both live at the top now, tied
+     together, so neither can drift from the other again. */
   let vel = 0;
   let settling = false;
 
@@ -1346,7 +1373,9 @@ function setupWheel(root) {
     if (settling && !drift) {
       const d = target - angle;
       if (Math.abs(d) < 0.02) { angle = target; paint(); raf = 0; lastT = 0; return; }
-      angle += d * 0.12;
+      /* 0.12 -> 0.09. The settle is the last thing the eye follows, so a snap
+         here undoes a coast that was otherwise unhurried. */
+      angle += d * 0.09;
     } else {
       angle += vel;
       vel *= FRICTION;
@@ -1490,14 +1519,36 @@ function setupWheel(root) {
      fires while the pointer is over a figure that is by definition on screen.
 
      MEASURED ON THE RING, NOT ON THE INPUT. The first version added up the
-     wheel impulses, and one notch is deltaY 120 * WHEEL_K = 2.28 degrees, so
+     wheel impulses, and one notch was then 120 * WHEEL_K = 2.28 degrees, so
      a 360 degree budget wanted about 158 notches and released essentially
      never — measured, 120 synthetic notches were all still consumed. The ring
      has a flywheel: a flick keeps spinning long after the event that caused
      it, and that rotation is what the reader actually gets. So the budget is
      spent against `angle`, which already includes the momentum. */
   const SPIN_BUDGET = 360;          // one full revolution = every card seen
+
+  /* AND A HARD CEILING IN SCROLL DISTANCE, WHICH IS THE PART THAT MATTERS.
+
+     SPIN_BUDGET alone is a promise about the RING, not about the reader. How
+     much scrolling it costs to satisfy depends on WHEEL_K and FRICTION, so any
+     change to how the ring moves silently changes how hard the section is to
+     leave. That is not hypothetical: halving WHEEL_K to slow the deck down
+     doubled the toll, measured, from about 13 notches to 27 — the section
+     swallowed 27 notches before the page moved at all, and it was reported
+     again as not being able to get past the projects section.
+
+     So the angle decides when the ring has finished SAYING something, and this
+     decides when the reader has PAID enough regardless. Whichever comes first.
+     Same shape as the offstage gate in CONTEXT 54: the expressive mechanism
+     gets to be expressive, and a second, dumber mechanism guarantees the floor.
+
+     Counted in scroll PIXELS rather than in events, because a trackpad emits
+     many small deltas where a mouse emits few large ones — counting events
+     would release almost instantly on a trackpad and hardly ever on a mouse.
+     1000px is a little under one and a half screens spent on the section. */
+  const PX_BUDGET = 1000;
   let armAngle = 0;
+  let spentPx = 0;
   let holding = true;
 
   root.addEventListener('wheel', (e) => {
@@ -1505,13 +1556,15 @@ function setupWheel(root) {
     if (!holding) return;           // budget spent — the page gets this notch
     e.preventDefault();
     turn((horizontal ? -1 : 1) * (e.deltaY + e.deltaX) * WHEEL_K);
-    if (Math.abs(angle - armAngle) >= SPIN_BUDGET) holding = false;
+    spentPx += Math.abs(e.deltaY) + Math.abs(e.deltaX);
+    if (Math.abs(angle - armAngle) >= SPIN_BUDGET || spentPx >= PX_BUDGET) holding = false;
   }, { passive: false });
 
   new IntersectionObserver((entries) => {
     for (const en of entries) {
       if (en.isIntersecting) continue;
       armAngle = angle;
+      spentPx = 0;
       holding = true;
     }
   }, { threshold: 0 }).observe(root);

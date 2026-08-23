@@ -781,8 +781,14 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   hyphens: none;
 }
 
+/* The centred-justify treatment is wanted at every width, phones included.
+   This used to drop to ranged-left under 640px on the usual argument that a
+   narrow measure has too few words per line to justify well; asked for the
+   centred version back, so the only thing that stays is the centred LAST
+   line, which is what makes a justified block read as deliberate rather than
+   as a stray short line. */
 @media (max-width: 640px) {
-  .hero__desc--just { text-align: start; text-align-last: start; }
+  .hero__desc--just { text-align: justify; text-align-last: center; }
 }
 
 .hero__desc strong { color: var(--t); font-weight: 600; }
@@ -1017,8 +1023,12 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   }
 
   .hero__stats {
-    grid-template-columns: 1fr 1fr;
-    gap: 1.1rem .75rem;
+    /* Three columns, not two. Five stats across two columns is three rows,
+       and the odd one on the last row reads as an afterthought — the same
+       fault the desktop grid was widened to five to avoid. Three gives two
+       rows and a deliberate 3 + 2. */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.1rem .6rem;
     padding-top: 1.25rem;
   }
 
@@ -1310,7 +1320,7 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    12px down each side and 369px below it. There are no side bands on a phone.
 
    So the behaviour carries over and the placement does not:
-     - the copy is pinned and driven by the same --whole / --cost / --heat
+     - the copy is pinned and driven by the same --whole / --cost / --dive-copy
        signals, at the BOTTOM instead of in a side band
      - the tags float and arrive staggered off --cost, over the lower part of
        the frame instead of beside it
@@ -1335,17 +1345,28 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
     top: auto;
     bottom: clamp(1.5rem, 5vh, 3rem);
     z-index: 3;
-    text-align: left;
+    /* Centred, not ranged left. On a desktop these sit in a side band beside
+       the planet and range toward their own edge; a phone has one column and
+       the block sits under the planet, so it centres like the hero copy does
+       and takes the same centred-last-line justification. */
+    text-align: justify;
+    text-align-last: center;
+    margin-inline: auto;
+    max-width: 34rem;
   }
+  #whole .sec-title,
+  #future .sec-title,
+  #about .sec-title { text-align: center; margin-inline: auto; }
+  #whole .future__body .eyebrow,
+  #future .future__body .eyebrow,
+  #about > .wrap .eyebrow { justify-content: center; }
   #whole .future__body  { opacity: var(--whole, 0); }
   #future .future__body { opacity: var(--cost, 0); }
-  #about > .wrap        { opacity: var(--heat, 0); }
+  #about > .wrap        { opacity: var(--dive-copy, 0); }
   /* The desktop right-ranges the Cost frame against the left-ranged Whole
      frame. At this width there is only one column, so both range left and the
      last-line rule has to follow or a justified block ends ragged-right. */
-  #future .future__body .lead,
-  #future .sec-title { text-align: left; margin-left: 0; }
-  #future .future__body .lead { text-align-last: left; }
+  #future .sec-title { margin-left: auto; }
 
   /* FLOATING, like the desktop, in the band under the planet. */
   .ftags {
@@ -1357,11 +1378,34 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
     z-index: 2;
     display: block;
   }
-  .ftag {
+  /* ID-PREFIXED, and that is the whole bug rather than a nicety.
+
+     Written as a bare `.ftag` this is (0,1,0) and loses to
+     `[data-reveal].is-in { opacity: 1 }` at (0,2,0), so on a phone the reveal
+     system owned the opacity and --cost never got a say. The tags appeared
+     with the rest of the page, then vanished only when the offstage guard
+     caught them, and once revealed they never faded again — reported as
+     "there in the beginning for some time and then it disappear" and "once
+     they are on the screen they are not dissappearing". The desktop rule used
+     `#future .ftag` and was never affected. */
+  #future .ftag {
     position: absolute;
-    max-width: calc(100vw - 2 * var(--pad-x));
+    max-width: 42vw;
     opacity: calc((var(--cost, 0) - var(--ti, 0) * 0.1) * 5);
     transition: none;
+    white-space: nowrap;
+  }
+  /* ONE OR TWO WORDS. The full phrases are 138-253px wide, which on a 375px
+     screen can only stack in a column under the planet — the opposite of
+     floating around it. `data-short` carries a two-word version and the long
+     one is swapped out here, so the pills drop to about 80px and there is room
+     to ring the globe with them. The full text stays in the markup for the
+     desktop and for anything reading the document. */
+  #future .ftag { font-size: 0; }
+  #future .ftag::after {
+    content: attr(data-short);
+    font-size: .68rem;
+    letter-spacing: .03em;
   }
   /* Four, alternating sides, inside a MEASURED band.
 
@@ -1375,10 +1419,24 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
      with any drift at all the top one touched the planet (measured 1px of
      clearance) and the bottom one clipped the caption by 997px. Three fit with
      real gaps. The three shown are the first three of the original four. */
-  .ftag--a { top: 51.5%; left: var(--pad-x); }
-  .ftag--b { top: 58.5%; right: var(--pad-x); left: auto; }
-  .ftag--c { top: 65%;   left: var(--pad-x); }
-  .ftag--d, .ftag--e, .ftag--f { display: none; }
+  /* AROUND THE PLANET, once the pills are small enough to fit there.
+
+     Measured on 375x812 the globe is radius 176 centred (187, 267), so these
+     sit on a ring just inside and around that rim. With the long phrases this
+     was impossible — a 253px pill beside a 352px globe on a 375px screen has
+     nowhere to go, which is why the previous attempt stacked them in a column
+     underneath and read as a list rather than as anything floating. */
+  /* Spread down both edges rather than ringed at one radius. The globe is not
+     a fixed size here — it is 136 radius mid-sequence and 176 at rest — so a
+     single ring cannot stay outside it. Measured at 136, the pair at 30% sat
+     116 and 125 from the centre, i.e. on the planet's face, because 30% is its
+     widest point. These sit above and below that. */
+  .ftag--a { top: 11%; left: 4%; }
+  .ftag--b { top: 11%; right: 4%; left: auto; }
+  .ftag--c { top: 45%; left: 3%; }
+  .ftag--d { top: 45%; right: 3%; left: auto; }
+  .ftag--e { top: 55%; left: 14%; }
+  .ftag--f { top: 55%; right: 14%; left: auto; }
 
   /* A SMALLER DRIFT, because the band is smaller.
 
@@ -1618,12 +1676,29 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    with that instead of fighting it, the same arrangement the Cost of
    Inaction frame uses.
 
-   No transition: --heat is scrubbed against the dive already, and easing a
-   scrubbed value only adds lag. */
+   No transition: --dive-copy is scrubbed against the dive already, and easing a
+   scrubbed value only adds lag.
+
+   NAMED --dive-copy, NOT --heat, AND THAT RENAME FIXED A REAL BUG. `--heat` is
+   already a design TOKEN in tokens.css -- a gradient, used as a background here
+   and in sections.css. The dive signal borrowed the same name, so the two
+   collided wherever the signal had not been written yet: `var(--heat, 0)` never
+   reached its own fallback, because the name always resolved, to a gradient.
+   `opacity: linear-gradient(...)` is invalid, the declaration is dropped, and
+   the caption sits at opacity 1 over whatever is on screen.
+
+   That is not a theoretical window. main.js returns early when there is no
+   WebGL -- `if (!earth) return`, the supported CSS-starfield path -- and then
+   NOTHING writes the signal, so those visitors would have had the Urban Heat
+   Islands copy nailed over the whole page permanently. --whole and --cost have
+   no token of the same name, which is exactly why only this one misbehaved.
+
+   The signal was renamed rather than the token: fewer call sites, and the token
+   is a shared design value that other files legitimately use. */
 /* Desktop-only for the same reason as #whole above: on a phone this group is
    in normal flow and must not be gated by the dive. */
 @media (min-width: 901px) {
-  #about > .wrap { opacity: var(--heat, 0); }
+  #about > .wrap { opacity: var(--dive-copy, 0); }
 }
 
 /* PINNED, like the two captions before it.
@@ -1651,7 +1726,7 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
     width: min(300px, 26vw);
     /* .wrap carries max-width: var(--max) = 1560px from base.css. */
     max-width: none;
-    translate: 0 calc(-50% + (1 - var(--heat, 0)) * 1.2rem);
+    translate: 0 calc(-50% + (1 - var(--dive-copy, 0)) * 1.2rem);
     z-index: 3;
   }
   /* The grid inside it was sized for a full-width section. */
@@ -1693,13 +1768,29 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 
    Guarded at 901px like its twin. It was previously fixed at EVERY width,
    which is a 300px block nailed over most of a phone screen. */
+/* CLEARANCE COMES FROM THE MEASURED DISC, NOT FROM A FRACTION OF THE VIEWPORT.
+
+   `min(300px, 26vw)` at `left: 3%` was tuned at 1440x900 and is correct there.
+   It does not scale: the disc shrinks with the viewport and a 300px column does
+   not, so the band closes from both sides at once and the copy ends up on the
+   planet. earth.js now publishes --disc-cx / --disc-r from the projected
+   silhouette; see the note there for why tracking them cannot reintroduce
+   drift. GAP is the clearance the 1440 tuning produced, kept as the target at
+   every width rather than as an accident of one screen size. */
+:root { --disc-gap: 44px; }
+
 @media (min-width: 901px) {
   #whole .future__body {
-    left: 3%;
+    /* Right edge stops --disc-gap short of the disc; left edge holds the page
+       margin. The column is whatever survives in between, down to a floor -- a
+       measure narrower than about 15rem stops being a paragraph and starts
+       being a column of two-word lines. */
+    left: 3vw;
     right: auto;
     top: 50%;
     bottom: auto;
-    width: min(300px, 26vw);
+    width: clamp(15rem, calc(var(--disc-cx, 50vw) - var(--disc-r, 26vw)
+                             - var(--disc-gap) - 3vw), 300px);
     max-width: none;
     /* -50% shares this declaration with the arrival offset; two rules both
        writing `translate` would silently drop one. */
@@ -1707,10 +1798,27 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   }
 }
 
-@media (max-width: 900px) {
-  /* Back into flow with everything else on a phone. */
-  #whole .future__body { position: relative; left: auto; bottom: auto; }
-}
+/* THE PHONE UNPIN IS GONE, AND IT WAS THE ONE THING STILL SCROLLING.
+
+   There used to be a `@media (max-width: 900px)` block right here putting
+   #whole .future__body back to `position: relative; left: auto; bottom: auto`
+   -- "back into flow with everything else on a phone". It sat LATER in the
+   file than the phone block at :1334 that pins all three captions, and at the
+   same (1,1,0) specificity, so it quietly won and the Looking at the Whole
+   Picture copy travelled up the screen with the page while its twin held
+   still. Reported as "the text block of looking at the whole picture is still
+   scrooling upwards".
+
+   #future never had a rule like this, which is the whole reason Cost of
+   Inaction behaved and this one did not. The two are meant to be mirror
+   images and now actually are.
+
+   Note what the fault was NOT: --whole was being published correctly the
+   entire time, and the opacity at :1363 was reading it correctly. A caption
+   that fades in and out on cue while ALSO drifting up the frame looks like a
+   timing bug and is a positioning one. See the note at :1564 for why fixed
+   rather than sticky -- that argument applies at every width, and carving a
+   phone exception out of it was the mistake. */
 
 @media (min-width: 901px) {
   #future .future__body {
@@ -1728,11 +1836,14 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
        globe's edge. The tags have all moved to the LEFT band to make room,
        which also reads better — labels one side, argument the other, planet
        between them. */
-    right: 3%;
+    /* Mirror of #whole: left edge stops --disc-gap clear of the disc, right
+       edge holds the page margin. See the note above it. */
+    right: 3vw;
     left: auto;
     top: 50%;
     bottom: auto;
-    width: min(300px, 26vw);
+    width: clamp(15rem, calc(100vw - (var(--disc-cx, 50vw) + var(--disc-r, 26vw))
+                             - var(--disc-gap) - 3vw), 300px);
     max-width: none;
     z-index: 3;
     opacity: var(--cost, 0);
@@ -1858,9 +1969,15 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 #future .future__body .eyebrow,
 #about > .wrap .eyebrow { justify-content: flex-start; }
 
-/* Justify needs words per line to distribute. Under 720px this measure has too
-   few, so it goes back to ranged left and the copy re-centres — at that width
-   there are no corners to sit in anyway. */
+/* Under 720px the copy re-centres, because at that width there are no corners
+   to sit in.
+
+   It used to drop to ranged-left here too, on the argument that a narrow
+   measure has too few words per line to justify well. Asked for the justified
+   version back on phones, so it stays justified with a CENTRED last line, the
+   same treatment the hero copy takes. This rule is the one that decides it:
+   it is the last of the three that touch these leads, so the phone block
+   further up cannot win however it is written. */
 @media (max-width: 720px) {
   #whole .future__body,
   #future .future__body {
@@ -1870,7 +1987,8 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
     max-width: 90vw;
   }
   #whole .future__body .lead,
-  #future .future__body .lead { text-align: left; }
+  #future .future__body .lead,
+  #about > .wrap .lead { text-align: justify; text-align-last: center; }
   #whole .future__body .eyebrow,
   #future .future__body .eyebrow { justify-content: center; }
   #whole .sec-title,

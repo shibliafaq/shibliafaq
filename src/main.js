@@ -169,8 +169,31 @@ idleInit(() => {
 
        This hold is that window. Measured, the scrub had 54.7% of its range
        (1884px) sitting idle AFTER the decay finished, so the beat is paid for
-       out of scroll that was doing nothing at all. */
-    const HOLD = 0.14;             // the planet stays whole for this much scrub
+       out of scroll that was doing nothing at all.
+
+       0.14 WAS TOO LITTLE, AND THE SAME MEASUREMENT SAYS WHY. At 0.14 the beats
+       came out, on a 1255x694 screen with a 2443px scrub:
+
+           living Earth   333px      (zoom done -> turn starts)
+           the turn       733px      (decay 0 -> 1)
+           failed Earth   987px      (turn done -> end of the scrub) + the dive
+
+       — reported as "the green earth has less time and bad earth has more
+       scroll time", which is exactly what a 1:3 split feels like. The whole
+       planet is the subject of a third of this sequence and got a ninth of it.
+
+       The idle stretch after the turn IS the failed Earth's dwell, so the two
+       are the same budget seen from either end and one number moves both. With
+       pCopyGone measured at 0.156 and DECAY_SPAN at 0.30, balancing them is:
+
+           HOLD + 0.02 = 1 - pCopyGone - HOLD - DECAY_SPAN   =>   HOLD ~ 0.26
+
+       which lands the living Earth at ~684px against ~694px for the failed one,
+       with the turn between them unchanged at 733px. NOTHING ELSE MOVES: both
+       clamps below stay slack at this value (pDecayStart 0.416 against a 0.62
+       ceiling, pDecayEnd 0.716 against 0.92), so the turn is not compressed and
+       the tuned section heights are left alone. */
+    const HOLD = 0.26;             // the planet stays whole for this much scrub
     const DECAY_SPAN = 0.30;       // how much of the scrub the surface turn takes
     const WHOLE_IN = 0.05;         // the caption arrives, after the hero clears
     const WHOLE_OUT = 0.05;        // and leaves again, as the turn begins
@@ -233,8 +256,8 @@ idleInit(() => {
       return c;
     };
 
-    /* Seeded for the same reason --heat is: the stylesheet falls back to 1 so
-       nothing is trapped invisible without JS, and writing 0 here stops that
+    /* Seeded for the same reason --dive-copy is: the stylesheet falls back to 1
+       so nothing is trapped invisible without JS, and writing 0 here stops that
        fallback also applying in the frames before the scrub first reports. */
     worlds.style.setProperty('--cost', '0');
 
@@ -345,7 +368,7 @@ idleInit(() => {
        Writing 0 here narrows the fallback to the case it is actually for. */
     const paintHeat = () => {
       const h = heatIn * (1 - heatOut);
-      worlds.style.setProperty('--heat', h.toFixed(3));
+      worlds.style.setProperty('--dive-copy', h.toFixed(3));
       if (aboutWrap) aboutWrap.inert = h < 0.02;
       /* Fired once and only forward: the rise is a one-way transition, and
          re-adding the class on the way back up would replay it every time the
@@ -353,7 +376,7 @@ idleInit(() => {
       if (h > 0.04 && aboutHead) aboutHead.classList.add('is-split-in');
     };
 
-    worlds.style.setProperty('--heat', '0');
+    worlds.style.setProperty('--dive-copy', '0');
 
     ScrollTrigger.create({
       trigger: about,

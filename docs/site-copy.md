@@ -38,7 +38,7 @@ node tools/sync-site-copy.mjs --write   # apply it
 - I was always driven by simple questions:
 
 ### hero.ask
-- <em class="hero__ask">How do the spaces we design shape how we feel and live?</em><em class="hero__ask">Why do some places feel better and more welcoming while others feel exhausting and harsh?</em>
+- <em class="hero__ask">How do the spaces we design shape how we feel and live?</em><em class="hero__ask">Why do some places feel welcoming while others feel exhausting and harsh?</em>
 
 ### hero.desc2
 - I began my career as an architect in India, designing with human comfort at the centre. Over four years of practice, I realized our most urgent climate challenges, like extreme heat and changing weather, cannot be solved one building at a time. <strong>The problem is city-wide.</strong> To tackle these challenges at scale, I pursued an <strong>M.Sc. in Smart &amp; Sustainable Cities at KFUPM</strong> (<strong>4.0&nbsp;/&nbsp;4.0 GPA</strong>).
@@ -61,7 +61,7 @@ node tools/sync-site-copy.mjs --write   # apply it
 - The Cost<br><em>of Inaction</em>
 
 ### future.lead
-- This interactive model visualizes the trajectory if extreme heat and emissions continue unchecked.
+- This view shows what happens if extreme heat and emissions continue unchecked: expanding deserts, lost polar ice, and unlivable cities.
 
 ### future.lead2
 - Drag and explore the globe to see the projected impact of unchecked climate change.

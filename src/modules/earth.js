@@ -831,10 +831,44 @@ export function initEarth(opts = {}) {
      viewport, so making it swallow touches there would leave the first screen
      of the site unscrollable on a phone — the globe is a backdrop at that
      point, not a control. */
+  /* THE SILHOUETTE IS PUBLISHED, SO THE STYLESHEET CAN STOP GUESSING AT IT.
+
+     The two frame captions have to sit in the clear band beside the planet,
+     and the only honest way to know where that band starts is the number
+     computed right here. The stylesheet used to approximate it with
+     `width: min(300px, 26vw)` and `right: 3%`, which was tuned at 1440x900 and
+     holds there -- 44px of clearance -- but does not scale, because the disc
+     shrinks with min(vw, vh) while a 300px column does not shrink at all. At
+     1094x694 the caption overlapped the disc by 27px and the text sat on the
+     planet. Measured either side of the copy edit that exposed it: the overlap
+     is 27px with the old text and 27px with the new one, so it is the geometry,
+     not the words.
+
+     SAFE TO TRACK, and that is worth stating because a caption that follows a
+     moving target is exactly the drift bug that was just removed from the phone
+     layout. It does not move: while either caption is visible the planet has
+     settled, measured as a single distinct radius across every frame of both
+     windows. Off that window these values do change, and nothing is reading
+     them then.
+
+     Written on the ROOT, not on `worlds`: unlike --whole and --cost these are
+     geometry rather than signal, and anything on the page may want them. */
+  let discCx = -1, discCy = -1, discR = -1;
+  function publishDisc(disc) {
+    // Only on change: this runs every frame and each write costs a recalc.
+    if (disc.cx === discCx && disc.cy === discCy && disc.rPx === discR) return;
+    discCx = disc.cx; discCy = disc.cy; discR = disc.rPx;
+    const st = document.documentElement.style;
+    st.setProperty('--disc-cx', `${disc.cx.toFixed(1)}px`);
+    st.setProperty('--disc-cy', `${disc.cy.toFixed(1)}px`);
+    st.setProperty('--disc-r',  `${disc.rPx.toFixed(1)}px`);
+  }
+
   function syncGrab() {
     if (!grabEl) return;
     const disc = projectedDisc();
     if (!disc) return;
+    publishDisc(disc);
     const discrete = disc.rPx * 2 < disc.h * 0.78;
     if (!discrete) { grabEl.style.pointerEvents = 'none'; return; }
     const r = disc.rPx;

@@ -4527,3 +4527,369 @@ section rather than riding the whole page.
 **The general rule this earns:** anything `position: fixed` driven by a scroll
 signal needs a second, geometric gate that does not depend on that signal being
 correct. The signal is for the transition; the gate is for the guarantee.
+
+## 55. The phone gets its own composition, not a squeezed copy of the desktop (2026-08-23)
+
+Seven things were wrong on a phone and right on a desktop. They are worth
+recording together because six of the seven have the same cause: a rule written
+for the desktop composition, left unguarded, and placed late enough in the file
+to win at every width.
+
+**The tags appeared at load and then never left.** Reported as "it is there in
+the beginning for some time and then it dissappear" and, separately, "Once they
+are on the screen they are not dissappearing also even if there section is
+gone". Both halves are one bug. The phone rule was written as a bare `.ftag`,
+specificity (0,1,0), and it lost to `[data-reveal].is-in { opacity: 1 }` at
+(0,2,0). So the reveal system owned the opacity and `--cost` never got a say:
+the tags came up with the rest of the page and went away only when the offstage
+guard from section 54 caught them. The desktop rule had always been
+`#future .ftag`, (1,1,0), which is why none of this showed there. Prefixing the
+phone rule with the id fixed both symptoms at once.
+
+This is the third bug in this file whose cause is specificity rather than
+logic. The pattern to watch for: a phone override that names only a class, when
+the desktop rule it is trying to override names an id.
+
+**The tags could not float, because they were too big to.** The full phrases
+measure 138-253px. A 253px pill next to a 352px globe on a 375px screen has
+nowhere to go, so the previous attempt stacked them in a column underneath and
+read as a list. `data-short` now carries a one-or-two-word version, swapped in
+with `font-size: 0` on the element and `content: attr(data-short)` on `::after`.
+The pills drop to about 80px and there is room to place them around the planet.
+The full text stays in the markup for the desktop and for anything reading the
+document.
+
+**Where they went took two attempts.** The first ring put a pair at `top: 30%`,
+which measured 116 and 125px from the globe centre against a radius of 136 —
+on the planet's face, because 30% is its widest point. The globe is not one
+size here either: 136 mid-sequence, 176 at rest. So a single ring cannot stay
+outside it at both, and the six now spread down both edges above and below the
+equator instead. Measured on 375x812: distances 185/199/163/177/227/217 against
+radius 136, none over the globe, none over the copy, none off screen, no pair
+overlapping.
+
+**The captions were ranged left in a single-column layout.** On a desktop
+`#whole` and `#future` sit in a side band beside the planet and range toward
+their own edge, which is right there and wrong on a phone, where the block sits
+under the planet with nothing to range against. They are now bottom-centre with
+`text-align: justify; text-align-last: center`, the same treatment the hero copy
+takes.
+
+That last-line rule is the whole reason justification is usable at this measure.
+The standing argument against justifying a narrow column is that too few words
+per line makes rivers, and it is a good argument, but what actually reads as
+broken is the final short line sitting hard against the left edge under a
+justified block. Centring it makes the block read as deliberate. Both the hero
+copy and the captions had previously been dropped to ranged-left under 640 and
+720px on that argument; both are back to justified with a centred last line, at
+explicit request.
+
+Note which of the three rules that touch these leads decides the outcome: the
+720px one, because it is last in the file. The phone block further up cannot
+win however it is written.
+
+**Five stats across two columns is three rows** with a lone one at the end,
+reading as an afterthought — the same fault the desktop grid was widened to five
+to avoid. Three columns gives two rows and a deliberate 3 + 2.
+
+**The tiles were too close together.** `GAP` is the extra circumference beyond
+what the cards strictly need. The phone ring turns about Y and solves its radius
+from card WIDTH, which is 300px against a 210px height, so the same fraction
+leaves neighbours visibly tighter than the vertical ring does. `GAP_PHONE = 0.9`
+against the desktop 0.52 takes the radius from 999 to 1249.
+
+A measurement note on that last one. `getBoundingClientRect().width` on a card
+is perspective-scaled — 174px for a card whose `offsetWidth` is 300 — and
+working back from the scaled figure produced a radius that matched the OLD gap
+almost exactly, by coincidence, and nearly sent a correct change back for a
+second fix. Solve against `offsetWidth`, which is what the code uses.
+
+## 56. One leftover rule kept the Whole Picture caption scrolling (2026-08-23)
+
+Section 55 claimed both captions were pinned on a phone. One of them was not,
+and the claim was made without ever measuring that specific block — the sweep
+that produced §55's table checked the Cost of Inaction caption and the tags, and
+inferred the other from the fact that they share a selector list.
+
+They do share it, at :1334. But 430 lines further down sat this:
+
+```css
+@media (max-width: 900px) {
+  /* Back into flow with everything else on a phone. */
+  #whole .future__body { position: relative; left: auto; bottom: auto; }
+}
+```
+
+Same `(1,1,0)` specificity as the pinning rule, later in the file, so it won.
+`#future` never had a counterpart, which is the entire reason one caption
+behaved and its mirror image did not. Deleted.
+
+**The lesson is about which fault a symptom points to.** A block that fades in
+and out on cue while also drifting up the frame looks like a timing bug. It was
+not: `--whole` was published correctly the whole time and the opacity rule was
+reading it correctly. Nothing about the signal was wrong. The block was simply
+`position: relative` and therefore in flow, so it travelled with the page while
+its opacity did exactly as it was told. Check `position` before checking the
+signal when the complaint is that something MOVES.
+
+**Three instrument failures on the way to that, all mine, all worth keeping.**
+
+`scrollTo` will not do. Driving the sweep with `scrollTo` showed `--cost`
+rising normally and `--whole` flat at 0 for the entire document, which reads as
+"the Whole Picture signal is broken" and is an artefact: `--whole` is gated on
+`heroExit.progress()` reaching 0.9, and jumping the scroll position leaves that
+pinned trigger stale. `--cost` has no such gate, which is exactly why it
+survived the bad instrument and made the artefact look like a real asymmetry.
+This is the standing rule in the brief and it earned itself again here.
+
+Synthetic `WheelEvent`s will not do either. Dispatching them on `window` and
+`document` moved the page — 20135px of it — and still left `--whole` at 0. Lenis
+does not take them the way it takes real input. Only `computer{action:"scroll"}`
+reproduced the real sequence.
+
+And read the custom property off an element that inherits it. `--whole` is set
+on `#worlds`, not on `:root`; `getComputedStyle(document.documentElement)`
+returns empty, which coerces to 0 and looks exactly like a signal that never
+fires.
+
+**A peak worth not chasing.** The first good measurement had `--whole` topping
+out at 0.668, which would mean a caption that never reaches full strength. It
+was scrub lag from scrolling faster than a reader ever would. At reading pace it
+reaches a clean 1. Before treating a scrubbed value as a defect, re-measure at
+the speed a person actually scrolls.
+
+Measured after the fix, with real scroll input: `position: fixed` throughout,
+`top` constant at 503 across all 1322 visible frames, spread 0. The Whole
+Picture caption lives from scroll 802 to 1005 and Cost of Inaction from 1153 to
+1755, with zero frames where both are visible.
+
+## 57. Clearance from the measured disc, and the living Earth gets its share (2026-08-23)
+
+Two faults, unrelated in cause, both found by measuring the same sequence.
+
+### The caption sat on the planet at anything narrower than 1440
+
+`#future .future__body` was `width: min(300px, 26vw)` at `right: 3%`, tuned at
+1440x900 where it leaves 44px between the copy and the disc. It does not scale.
+The disc shrinks with the viewport and a 300px column does not, so the clear
+band closes from both sides at once: at 1094x694 the caption overlapped the disc
+by 27px and the text was unreadable against the planet. `#whole` had the same
+fault mirrored.
+
+Worth stating that this was found while checking something else, and that the
+check mattered. The lead copy had just been replaced with a sentence 34% longer,
+so a caption overlapping the globe looked exactly like the copy change having
+overflowed. Measured both texts in-page at identical viewport and scroll: 27px
+of overlap with the old sentence, 27px with the new, `left: 776` in both. The
+new text adds 24px of HEIGHT and moves nothing sideways, and the closest point
+of the box to the disc centre is horizontal, so height cannot matter. The copy
+was innocent.
+
+The fix follows the rule this file already states for the tags and then did not
+follow for the captions: MEASURE THE SILHOUETTE, DO NOT ASSUME IT. earth.js
+already computes the projected disc every frame for the drag hit-test, so it now
+publishes `--disc-cx`, `--disc-cy`, `--disc-r`, and each caption sizes itself
+from the real clearance:
+
+```css
+width: clamp(15rem, calc(100vw - (var(--disc-cx) + var(--disc-r))
+                         - var(--disc-gap) - 3vw), 300px);
+```
+
+44px is kept as `--disc-gap` — the clearance the 1440 tuning produced, promoted
+from an accident of one screen size to the target at every size. Measured after:
+44px exactly, on both captions, constant across every frame of both windows.
+
+Tracking a moving target is normally how the drift bug in section 56 happens, so
+note why it cannot here: while either caption is visible the planet has settled,
+measured as a single distinct radius across every frame of both windows. Off
+that window the values do change and nothing is reading them.
+
+### The living Earth had a ninth of the sequence and the failed one had a third
+
+Reported as "the green earth has less time and bad earth has more scroll time".
+Measured on 1255x694 with a 2443px scrub:
+
+| beat | before | after |
+|---|---|---|
+| living Earth | 333px | 692px |
+| the turn | 733px | 714px |
+| failed Earth | 987px | 726px |
+
+The two are the SAME BUDGET seen from either end, which is what makes this a
+one-number fix. The hold before the turn and the idle stretch after it are both
+carved out of one scrub, so lengthening the first shortens the second. With
+`pCopyGone` measured at 0.156 and `DECAY_SPAN` at 0.30, balancing them is:
+
+    HOLD + 0.02 = 1 - pCopyGone - HOLD - DECAY_SPAN    =>    HOLD ~ 0.26
+
+`HOLD` 0.14 -> 0.26. Predicted 684px, measured 692px.
+
+I first talked myself into believing `pDecayStart` was pinned at its 0.62 clamp,
+which would have meant `HOLD` was inert and the turn had to be compressed to buy
+the time. That came from misreading `pCopyGone` as ~0.5. It is 0.156:
+`innerHeight * 0.55 / px` is 694 * 0.55 / 2443. Both clamps are slack at the new
+value (`pDecayStart` 0.416 against 0.62, `pDecayEnd` 0.716 against 0.92), so the
+turn keeps its full span and the tuned section heights were never touched.
+
+Phones get the same, from the same constant: 921 / 903 / 794.
+
+**One asymmetry left, deliberately.** The captions are still 708px against
+1410px, because the Cost copy holds through the dive's lead-in while the Whole
+Picture copy ends with its own beat. The EARTH states are balanced, which is
+what was asked for. Trimming the caption means `COST_OUT`.
+
+### Instrument note
+
+A `requestAnimationFrame` recorder calling `getComputedStyle` on several
+elements every frame will starve the WebGL render loop: after a long session of
+this the canvas painted black while every signal read correct and no error was
+logged. It looked exactly like a scroll-up regression. Reload before believing a
+render fault found through a running probe, and confirm with the probe off.
+
+## 58. A constant left behind by the 7-to-14 card merge (2026-08-23)
+
+### The second hero question ran to three lines on a phone
+
+Measured at 375px: question one is 55 characters and sets in two lines,
+question two was 89 and set in three. Two lines was wanted for both.
+
+The useful part is that the ceiling was measured rather than guessed. Testing
+candidate strings in place, two lines holds up to about 73 characters and breaks
+somewhere before 89 — so the whole of "better and more" is exactly what had to
+go, and nothing else did:
+
+> Why do some places feel ~~better and more~~ welcoming while others feel
+> exhausting and harsh?
+
+73 characters, two lines, and it holds at 335 / 320 / 300 / 280px, which is the
+same range over which question one holds. The first instinct was a much harder
+cut to about 56 characters, which would have lost "harsh" and the second "feel"
+for no reason. Measure the ceiling before deciding how much to cut.
+
+### The wheel ran at twice its intended rate, and had since the merge
+
+Reported as "too fast to notice in some places". The cause is a constant that
+was correct when it was written and was never re-derived.
+
+The motion is a flywheel: scroll applies an impulse to a velocity, friction
+bleeds it away, and the two constants are tied together so that one ~120px wheel
+notch carries about one card:
+
+    impulse = step * (1 - FRICTION) / 120
+
+That was written out as the literal `0.019`, which is the formula solved for a
+SEVEN-card ring: `51.43 * 0.045 / 120`. The ring has fourteen cards now. `step`
+halved to 25.71 and the literal did not, so every notch carried 50.67 degrees —
+two cards — and the deck went past at twice the rate anything in the file
+claimed it would. The file even warns about this failure mode, from the other
+direction: "Changing FRICTION without re-deriving WHEEL_K changes how FAR a
+notch travels." The card COUNT changing does the same thing, and nothing said so.
+
+It is derived from `step` at the call site now, so adding or removing a card
+re-solves it. `FRICTION` moved to module scope to sit beside it, since a
+constant and the thing derived from it drifting apart is the whole bug.
+
+Also slowed, deliberately rather than by derivation: `FRICTION` 0.955 -> 0.97,
+so the ring coasts longer and decays more gently, and the settle 0.12 -> 0.09,
+because the settle is the last thing the eye follows and a snap there undoes an
+otherwise unhurried coast. One notch now travels one card over about 2.0s.
+
+**Why the obvious verification does not work here.** Counting how many cards the
+front position advances is NOT a measure of angular travel on this ring: the
+cards are spaced evenly along the CURVE, not evenly in the parameter, so a fixed
+angle crosses a variable number of them. Repeated single-notch trials gave 1, 2,
+1, 3 for deltas of 120, 120, 240, 360 — noise, not linearity, and the ambient
+drift moved the ring between trials on top of that. What does work: hover first
+(`drifts()` is false while hovering), then fire N notches on an N-card ring,
+which is exactly one revolution if the derivation holds. Measured: net one card
+off a full turn. And confirm the constant is actually live in the module Vite is
+serving, not just on disk.
+
+**One reading of the report I did not act on.** "Too fast in SOME PLACES" may
+describe the rate VARYING around the curve rather than being uniformly high — a
+Lissajous does not travel at constant speed, so evenly-spaced cards sweep past
+faster through some regions than others. Evening that out means modulating the
+angular velocity inversely to the curve speed, which is a different and much
+larger change. The global slowdown addresses the fast regions too, so it is the
+safer of the two readings to act on first.
+
+## 59. Two bugs behind one screenshot: an unpayable toll and a name collision (2026-08-23)
+
+Asked for a screenshot of the browser, and it showed the Urban Heat Islands
+caption painted across the projects wheel. Alongside it came a report: after
+reloading near the end of the page, you cannot scroll past the projects section.
+Different causes, found together.
+
+### The wheel's toll was denominated in the wrong currency
+
+`SPIN_BUDGET = 360` holds the reader until the ring has turned once, which is a
+promise about the RING. How much SCROLLING that costs depends on `WHEEL_K` and
+`FRICTION`, so any change to how the ring moves silently changes how hard the
+section is to leave. Section 58 halved `WHEEL_K` to slow the deck down, and
+measured here, the toll went from about 13 notches to **27** — 27 notches
+swallowed before the page moved at all. Slowing the deck down made it a trap.
+That is the second time this section has been reported as inescapable.
+
+The fix has the same shape as the offstage gate in section 54: let the
+expressive mechanism be expressive, and add a second, dumber mechanism that
+guarantees the floor. The angle decides when the ring has finished SAYING
+something; a hard ceiling in scroll distance decides when the reader has PAID
+enough. Whichever comes first.
+
+Counted in scroll PIXELS, not in events, because a trackpad emits many small
+deltas where a mouse emits few large ones — an event count would release almost
+instantly on a trackpad and hardly ever on a mouse. Measured at `PX_BUDGET`
+1000: 9 mouse notches x 120px = 1080px, and 56 trackpad-sized events x 18px =
+1008px. Same distance, and the device no longer matters.
+
+### `--heat` was a design token and a scroll signal at the same time
+
+`opacity: var(--heat, 0)` on the About caption can never reach its own fallback,
+because the name always resolves — `--heat` is also a gradient in tokens.css,
+used as a background in layout.css and sections.css. So when the signal has not
+been written, the declaration becomes `opacity: linear-gradient(...)`, which is
+invalid, is dropped, and leaves the caption at opacity 1 over whatever is on
+screen.
+
+The window where nothing has written it is not theoretical. main.js returns
+early when there is no WebGL — `if (!earth) return`, the supported CSS-starfield
+path — and then nothing ever writes it, so those visitors get the Urban Heat
+Islands copy nailed over the entire page, permanently. `--whole` and `--cost`
+have no token of the same name, which is exactly why only this one misbehaved.
+
+Renamed the SIGNAL to `--dive-copy`, not the token: fewer call sites, and the
+token is a shared design value other files legitimately use. Verified by
+clearing the signal to simulate the no-WebGL path — opacity resolves to 0 now
+where it resolved to 1 before.
+
+This is CONTEXT 48's "one element, one owner" one level up: one NAME, two
+owners, two types. A custom property is a global. Signals and tokens should not
+be able to meet in the same namespace by accident.
+
+### Still open: reload does not land where it left
+
+Measured: parked at scrollY 15893, reloaded, landed at 9642 — 6251px earlier.
+The lazy chunks load after the browser has already restored the position, and
+ScrollTrigger's pin spacers then re-measure, so the restored number no longer
+points at the same place. That drop is what was depositing the reader back at
+the projects section in the first place. The toll fix means they can now leave
+it, but the jump itself is untouched, and fixing it means deciding whether a
+reload should keep your place at all on a scrubbed page.
+
+### Instrument notes
+
+A synthetic `WheelEvent` never scrolls the page, so "the page did not move" is
+not evidence of a trap — every dispatch reads as held. Check
+`event.defaultPrevented` instead, which is what the handler actually decides.
+
+And probes are not free: 40 dispatched notches spun the ring ~1028 degrees and
+spent the budget, so every measurement after that showed a wheel that released
+immediately. The signature of an already-released wheel is specific —
+`defaultPrevented` false AND the ring not turning — and is worth recognising,
+because it looks identical to "the handler is not attached".
+
+Finally, a WebGL page cannot absorb unlimited reloads. After roughly ten, a tab
+stopped initialising the earth at all: no signals written, no offstage
+observers, `--disc-r` empty. It looked exactly like a deep-reload regression and
+was context exhaustion. A fresh tab was correct on the first load.
