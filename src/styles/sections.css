@@ -513,21 +513,36 @@
   margin-top: clamp(2rem, 5vh, 3.5rem);
 }
 
+/* LEFT ALIGNED AND ONE STEP DOWN.
+
+   `--sg` scales the whole card together — heading, tags, padding and gaps — so
+   the 10% is a single number and the relationships inside the card are the ones
+   that were designed. Scaling only the type would leave the padding at its old
+   value and the card would read as looser rather than smaller.
+
+   text-align is set explicitly rather than inherited: these cards sit under a
+   centred section heading, and inheriting from an ancestor that may or may not
+   be centred is how a list ends up centred by accident. */
 .sgroup {
-  padding: 1.75rem;
+  --sg: .9;
+  text-align: left;
+  padding: calc(1.75rem * var(--sg));
   background: var(--ink-card);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
 }
+.sgroup .tag { font-size: calc(var(--fs-label) * var(--sg)); }
+.sgroup .tags { gap: calc(.45rem * var(--sg)); }
 
 .sgroup__t {
   font-family: var(--f-mono);
-  font-size: var(--fs-label);
+  font-size: calc(var(--fs-label) * var(--sg, 1));
+  text-align: left;
   font-weight: 500;
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   color: var(--amber);
-  margin-bottom: 1.15rem;
+  margin-bottom: calc(1.15rem * var(--sg, 1));
   padding-bottom: .85rem;
   border-bottom: 1px solid var(--line);
 }
@@ -3499,6 +3514,9 @@
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, .10),
     0 18px 40px rgba(0, 0, 0, .35);
+  /* 5% down from full. Low enough that fourteen of them behind fourteen cards
+     carrying photographs read as depth rather than as clutter. */
+  opacity: .95;
   animation: wtile-drift var(--d, 40s) ease-in-out var(--dl, 0s) infinite;
   will-change: transform;
 }
@@ -3524,5 +3542,5 @@
    fourteen drifting rectangles behind it is noise rather than depth. */
 @media (max-width: 720px) {
   .wtile:nth-child(n+8) { display: none; }
-  .wtile { opacity: .6; }
+  .wtile { opacity: .55; }
 }
