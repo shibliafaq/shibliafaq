@@ -4893,3 +4893,41 @@ Finally, a WebGL page cannot absorb unlimited reloads. After roughly ten, a tab
 stopped initialising the earth at all: no signals written, no offstage
 observers, `--disc-r` empty. It looked exactly like a deep-reload regression and
 was context exhaustion. A fresh tab was correct on the first load.
+
+## 60. The half of the wheel's toll that had never been measured (2026-08-23)
+
+Section 59 fixed the downward toll and shipped. Reported straight back: still
+cannot get past the projects section, going ABOVE it.
+
+Measured: climbing back up out of the section cost 9 notches, 1080px — the full
+budget again. The handler had never looked at which direction the reader was
+going, and the observer re-arms on every exit, so every pass in either direction
+was charged in full. Both previous fixes tested downward only, which is why two
+rounds of work on exactly this trap missed it.
+
+Going back up is navigation, not reading. The hold exists so the deck gets seen
+on the way DOWN through the page; someone scrolling up has already passed it and
+is going somewhere else, so the wheel now returns before it does anything at all
+on an upward delta and the page gets the notch:
+
+```js
+if ((e.deltaY + e.deltaX) <= 0) return;
+```
+
+Direction from the raw delta rather than from the ring's own axis, because the
+question is which way the PAGE would move, and that is the same question on a
+horizontal ring as on a vertical one.
+
+`PX_BUDGET` also cut 1000 -> 600. Three separate reports about this one section
+being hard to get past is the section telling you the toll is too high whatever
+the intent was, so the hold is now deliberately light: five mouse notches, half
+a screen. Measured after: **up 0 notches, down 5 notches / 600px**, and the ring
+still turns while held, so the beat still reads.
+
+Spinning the deck BACKWARDS is unaffected — drag and the arrow keys both still
+do it in either direction. Only the upward wheel gesture was reassigned, and it
+was the one gesture the reader needs in order to leave.
+
+The general lesson is about symmetry. A scroll-jacking mechanism has two
+directions and a reader uses both; testing one of them is testing half the
+feature. Every measurement in sections 53, 58 and 59 fired positive deltas.

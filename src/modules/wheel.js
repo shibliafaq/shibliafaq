@@ -1545,14 +1545,34 @@ function setupWheel(root) {
      Counted in scroll PIXELS rather than in events, because a trackpad emits
      many small deltas where a mouse emits few large ones — counting events
      would release almost instantly on a trackpad and hardly ever on a mouse.
-     1000px is a little under one and a half screens spent on the section. */
-  const PX_BUDGET = 1000;
+
+     600px, down from 1000. This section has now been reported three times as
+     hard to get past, so the hold is deliberately light: about five mouse
+     notches, half a screen, enough to register that the deck turns and not
+     enough to argue with. The angle budget above still releases a flick
+     sooner than that. */
+  const PX_BUDGET = 600;
   let armAngle = 0;
   let spentPx = 0;
   let holding = true;
 
   root.addEventListener('wheel', (e) => {
     if (!overRing(e)) return;
+    /* GOING BACK UP IS NAVIGATION, AND IS NEVER HELD.
+
+       The hold exists so the deck gets seen on the way DOWN through the page.
+       A reader scrolling up has already passed it and is going somewhere else,
+       so charging them the toll again is pure obstruction — and it was charged
+       again, in full: measured, 9 notches to climb back out, because the
+       observer re-arms on every exit and the handler never looked at which way
+       the reader was going. Reported as not being able to scroll past ABOVE the
+       section, which is the half of it that had gone unmeasured: both earlier
+       fixes only ever tested downward.
+
+       Direction comes from the raw delta rather than from the ring's own axis,
+       because the question is which way the PAGE would move, and that is the
+       same question on a horizontal ring as on a vertical one. */
+    if ((e.deltaY + e.deltaX) <= 0) return;
     if (!holding) return;           // budget spent — the page gets this notch
     e.preventDefault();
     turn((horizontal ? -1 : 1) * (e.deltaY + e.deltaX) * WHEEL_K);
