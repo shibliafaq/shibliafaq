@@ -1150,14 +1150,47 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 /* Spread across the whole frame rather than stacked down one side, and kept
    above and below the copy's band rather than beside it — on one line each they
    are far too wide to share a row with a 34rem column. */
-.ftag--a { top: 6%;  left: 3%;  animation: ftag-drift 11s ease-in-out infinite; }
-.ftag--b { top: 20%; right: 4%; animation: ftag-drift 14s ease-in-out -3s infinite; }
-.ftag--c { top: 78%; left: 6%;  animation: ftag-drift 12.5s ease-in-out -7s infinite; }
-.ftag--d { top: 92%; right: 7%; animation: ftag-drift 15s ease-in-out -11s infinite; }
+.ftag--a { top: 6%;  left: 3%;  animation: ftag-drift-a 21s ease-in-out infinite; }
+.ftag--b { top: 20%; right: 4%; animation: ftag-drift-b 26s ease-in-out -3s infinite; }
+.ftag--c { top: 78%; left: 6%;  animation: ftag-drift-c 19s ease-in-out -7s infinite; }
+.ftag--d { top: 92%; right: 7%; animation: ftag-drift-d 24s ease-in-out -11s infinite; }
 
-@keyframes ftag-drift {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50%      { transform: translate3d(6px, -12px, 0); }
+/* FOUR PATHS, NOT ONE SHARED THERE-AND-BACK.
+
+   The old keyframe moved every tag 6x12px and returned it the way it came.
+   Measured live that was ~5x10px of travel against a globe filling a 957px
+   viewport, about 1px per second: the authoring intent was "suspended, not
+   animated" and it overshot into invisible.
+
+   Triangle loops (0/33/66) rather than a two-stop, so a tag never retraces
+   its own path and the motion reads as drifting rather than as oscillating.
+   Total excursion is 30-45px over 19-26s, which is still slow enough to be
+   ambient. The staggered negative delays are kept, so the four never line up.
+
+   The rotation has to live in the keyframe. `.is-in` from the reveal system
+   sets `transform: none`, and a running animation outranks a normal
+   declaration in the cascade — but any NEW transform added to .ftag as a
+   normal declaration would lose to the animation. So per-tag offsets belong
+   here or in top/left, never in a separate transform rule. */
+@keyframes ftag-drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  33%      { transform: translate3d(20px, -24px, 0) rotate(0.9deg); }
+  66%      { transform: translate3d(-12px, -34px, 0) rotate(-0.5deg); }
+}
+@keyframes ftag-drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  33%      { transform: translate3d(-26px, -14px, 0) rotate(-0.8deg); }
+  66%      { transform: translate3d(-8px, 22px, 0) rotate(0.6deg); }
+}
+@keyframes ftag-drift-c {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  33%      { transform: translate3d(16px, 20px, 0) rotate(0.7deg); }
+  66%      { transform: translate3d(28px, -10px, 0) rotate(-0.9deg); }
+}
+@keyframes ftag-drift-d {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  33%      { transform: translate3d(-18px, 26px, 0) rotate(0.5deg); }
+  66%      { transform: translate3d(14px, 12px, 0) rotate(-0.7deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1191,10 +1224,14 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    the words move to a corner and get smaller — the globe reads first, the copy
    second, which is the reverse of what centring was saying.
 
-   The grid row is NOT touched. `.future` places the body in row 2 deliberately
-   so it rises into frame exactly as the surface finishes turning (see the note
-   on that grid above), and that timing is worth more than the alignment. Only
-   the horizontal placement and the scale change. */
+   The grid row is NOT touched for #whole. It USED to be left alone for both,
+   on the belief that row 2 made the body "rise into frame exactly as the
+   surface finishes turning" — measured, that was never true. #future's body
+   entered the viewport at y 2453 against a dive beginning at y 3240, so it
+   arrived 787px early and then had no way to leave. Both frames now take
+   grid-row 1 and a fixed position, and the timing comes from a signal rather
+   than from where a grid track happens to fall. Only the horizontal placement
+   and the scale change here. */
 #whole .future__body,
 #future .future__body {
   max-width: min(90vw, 34rem);
@@ -1298,6 +1335,76 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
      adds lag, and lag between a signal and the thing it drives is precisely
      what put this caption on screen while the hero was still leaving. The
      easing lives in the smoothstep that produces the number. */
+}
+
+/* ---- THE COST OF INACTION FRAME ----------------------------------------
+
+   The mirror of #whole above, on the other side of the frame and driven by
+   the other signal. Same reasoning throughout, so only the differences are
+   noted here.
+
+   WHY THIS NEEDED DOING AT ALL. #future .future__body had no scroll-driven
+   visibility of any kind: `position: relative; opacity: 1`, nothing in JS
+   touching it. It simply scrolled past the dying planet, arriving 787px
+   before the dive and leaving whenever the section did.
+
+   PLACEMENT MATTERS HERE. `.future__body` is declared twice, at :861 and
+   again bare at :1073, and the second one restates `position: relative`. An
+   id prefix outranks it either way, but this also sits after both, so there
+   is no way for the plain rule to win by order. */
+/* DESKTOP ONLY, AND THE COPY HAS TO BE GUARDED TOO, NOT JUST THE TAGS.
+
+   Guarding only `.ftags` was tried and it broke the phone layout in a way
+   the tags-only guard could not catch. Below 900px the tags return to normal
+   flow and stack under the copy; if the copy is fixed it has LEFT that flow,
+   so it floats over them instead of above them. Measured at 800px: two tags
+   overlapping the caption by about 7000px each.
+
+   So the whole treatment shares one breakpoint. Under 900px this frame keeps
+   its original behaviour entirely — copy in flow at row 2, full opacity,
+   tags stacked beneath — which is also why the opacity is inside the guard
+   and not outside it. A flowed block whose opacity is driven by a scrub it no
+   longer matches would just be the original bug pointing the other way. */
+@media (min-width: 901px) {
+  #future .future__body {
+    grid-row: 1;
+    position: fixed;
+    /* Bottom RIGHT, against #whole's bottom left: the two captions sit on
+       opposite sides so the change of frame is legible as a change of place,
+       and the failed Earth is right-aligned in this section. */
+    right: var(--pad-x);
+    bottom: clamp(3rem, 10vh, 7rem);
+    left: auto;
+    top: auto;
+    z-index: 3;
+    opacity: var(--cost, 0);
+    translate: 0 calc((1 - var(--cost, 0)) * 1.4rem);
+    /* No transition, for the same reason as #whole: --cost is already
+       scrubbed and easing it twice only adds lag. */
+  }
+}
+
+/* THE TAGS FLOAT AROUND THE GLOBE, NOT INSIDE A GRID CELL.
+
+   `.ftags` was a stretched row-2 cell pulled open with `margin: -26vh 0`, so
+   the .ftag--a..d percentage anchors resolved against that cell and the whole
+   field scrolled away with the section. Fixed with `inset: 0` resolves them
+   against the VIEWPORT instead, which is where the globe actually is.
+
+   GUARDED, and this is the trap. The `@media (max-width: 900px)` block above
+   sets `.ftags { position: static }` to stack the tags under the copy, and
+   this rule is LATER in the file, so unguarded it would win and re-break the
+   phone layout. The min-width guard keeps fixed positioning out of that
+   breakpoint entirely. */
+@media (min-width: 901px) {
+  #future .ftags {
+    position: fixed;
+    inset: 0;
+    width: auto;
+    margin: 0;
+    z-index: 2;
+    opacity: var(--cost, 0);
+  }
 }
 
 #whole .future__body  { text-align: left; }

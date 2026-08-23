@@ -2283,11 +2283,14 @@ runs `lab/walk.html`. Fold the two together only when the other session's work i
 reconciled.
 
 
-## 14. IN PROGRESS — the Cost of Inaction frame (2026-08-23)
+## 14. DONE — the Cost of Inaction frame (2026-08-23)
 
-**Status: measured and designed, NOT implemented. No source edits made.** The
-working tree was clean at the point this was written; the last landed commit is
-`51d6b43`, which did the equivalent job for the *Whole Picture* frame.
+**Status: IMPLEMENTED and verified. See CONTEXT §49 for what changed against
+this plan and for three measurement mistakes made on the way.** The plan below
+is kept as written, because the reasoning still holds and one thing it did not
+anticipate is worth seeing in contrast: it guarded `.ftags` against the 900px
+breakpoint but not the COPY, and the copy going fixed while the tags stay in
+flow is what actually broke the phone layout. Both now share one guard.
 
 ### What was asked
 

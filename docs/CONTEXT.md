@@ -3962,3 +3962,94 @@ carries **no transition** on `--whole`: it is already scrubbed, and a transition
 on top of a scrubbed value re-eases on every tick and only adds the lag that
 caused this in the first place. The easing lives in the smoothstep that produces
 the number.
+
+---
+
+## 49. The Cost of Inaction frame, and three unfair comparisons (2026-08-23)
+
+The plan was written and measured in HANDOFF §14 and is not repeated here. This
+records what changed against it, and the measurement mistakes made on the way,
+which were the expensive part.
+
+### What shipped
+
+**`--cost`, published from `main.js` on two clocks.** The worlds scrub owns the
+arrival, the dive owns the exit, and `paintCost()` is callable from both
+`onUpdate`s. Unlike `paintCaption()` there is no `heroExit`-style state gate,
+because both triggers are `scrub: true` and there is no lag to reconcile.
+
+The exit is driven by `divePos`, NOT by worlds progress reaching 1, even though
+today those land on the same pixel. Phase two previously published nothing a
+stylesheet could read: `--plate` is written on `#riyadh`, which is not an
+ancestor of `#future`.
+
+**Both containers go `position: fixed`**, the copy bottom-right against
+`#whole`'s bottom-left, and `.ftags` at `inset: 0` so the `.ftag--a..d`
+percentage anchors resolve against the viewport instead of a grid cell that
+scrolls away.
+
+**Four distinct drift paths** replace the one shared keyframe. Measured
+excursion went from ~5x10px to **41-47px per tag**, each on its own triangle
+loop over 19-26s so no tag retraces its own path.
+
+Measured after, at 1440x900:
+
+| | |
+|---|---|
+| cost copy visible from / to | y1260 → y3300 |
+| decay when it arrives | **0.24** (surface just turning) |
+| fade begins after the dive starts | 30px |
+| fully gone | y3430, 14% into the dive |
+| frames both captions visible | **0** |
+| `inert` once faded | yes |
+| tag travel | 41, 45, 41, 47px |
+
+### The mobile regression, which the plan did not anticipate
+
+HANDOFF §14 correctly flagged that `.ftags` must not take fixed positioning into
+the `@media (max-width: 900px)` block, and guarding it was easy. **It did not
+flag the same risk for the copy, and that turned out to matter more.** Below
+900px the tags return to normal flow and stack under the caption; a fixed
+caption has LEFT that flow, so it floats over them instead. Measured at 800px:
+two tags overlapping the copy by ~7000px each.
+
+So the whole treatment now shares one `@media (min-width: 901px)` guard, opacity
+included. Under 900px the frame keeps its original behaviour entirely. A flowed
+block whose opacity is driven by a scrub it no longer matches would just be the
+original bug pointing the other way.
+
+### Three unfair comparisons, all read as regressions
+
+This is the part worth keeping. Nothing below was a real fault, and each cost a
+round to disprove.
+
+**1. "The rule is not applying."** Both containers read `opacity: 1` where they
+should have been 0. The page had restored to scrollY 2914 on reload, and at that
+position `cost: 1.000` is correct. Check where the page IS before concluding what
+it should be showing.
+
+**2. "I broke `#whole`."** A `scrollTo` sweep reported `--whole` peaking at 0,
+which is the exact signature of the §48 bug. It was the instrument: `paintCaption`
+gates on `heroExit.progress()`, and jumping the scroll with one rAF between
+samples never lets the hero timeline settle, so the gate never opens. Under real
+wheel events the caption reaches 0.762.
+
+**3. "I broke `#whole`, again."** A second comparison put HEAD at 0.762 and the
+change at 0.003 — but the two runs had scrolled to different depths at different
+speeds through a window §48 explicitly documents as speed-sensitive. Re-run at
+the same position with the same input, both read **0.762, identical**.
+
+The common thread: a scrubbed, lag-gated, speed-sensitive sequence cannot be
+sampled by teleporting the scroll, and two runs are only comparable if the input
+matches. `scrollTo` is fine for reading a value that depends only on position
+(`--cost` is; `--whole` is not).
+
+### Pre-existing, found while checking, NOT fixed
+
+At `<=900px` the tags overlap the copy by ~30000px even at HEAD. The
+`@media (max-width: 900px)` block sets `margin-top: 1.25rem` on `.ftags` but
+never clears the base `margin: -26vh 0`, so the bottom margin stays at -234px and
+pulls the stack up into the caption. Verified by stashing the change and
+measuring HEAD directly: 28893/30419 against 33532/28786 with the change, i.e.
+the same bug either way. Left alone deliberately: it is a separate fault and this
+change neither caused nor worsened it.

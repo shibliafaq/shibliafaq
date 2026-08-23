@@ -78,6 +78,12 @@ idleInit(() => {
     const worlds = document.getElementById('worlds');
     const stage = document.getElementById('worldsStage');
     const wholeCopy = document.querySelector('#whole .future__body');
+    /* The Cost of Inaction frame's two halves. Both are CONTAINERS: neither
+       carries data-reveal, only their children do, so driving opacity here
+       multiplies with the reveal system instead of fighting it. Putting the
+       signal on the .ftag elements themselves would be the "one element, one
+       owner" collision from CONTEXT 48 all over again. */
+    const costCopy = document.querySelector('#future .future__body');
     if (!worlds || !stage) return;
 
     /* THE TRANSITION, AND THE RESTS BETWEEN IT.
@@ -133,10 +139,26 @@ idleInit(() => {
     const DECAY_SPAN = 0.30;       // how much of the scrub the surface turn takes
     const WHOLE_IN = 0.05;         // the caption arrives, after the hero clears
     const WHOLE_OUT = 0.05;        // and leaves again, as the turn begins
+    /* The cost copy takes over exactly where the whole-picture caption leaves,
+       so the two never share a frame. At that point decay is only ~0.07: the
+       surface has JUST begun to turn, which is what "once the earth starts
+       changing" means. */
+    const COST_IN = 0.07;          // how much scrub the cost copy takes to arrive
+    const COST_OUT = 0.14;         // and how much of the DIVE it takes to leave
 
     let pCopyGone = 0.4;           // recomputed on every refresh, below
     let pDecayStart = 0.54;
     let pDecayEnd = 0.84;
+
+    /* Two clocks, one signal. The cost copy's arrival is owned by the worlds
+       scrub and its exit by the dive, and those are separate ScrollTriggers, so
+       the last value each reported is kept here and either can repaint.
+
+       The exit is deliberately NOT "worlds progress reached 1", even though
+       today that lands on the same pixel as the dive starting. That equality is
+       an accident of section heights and breaks the day #about moves. */
+    let worldsPos = 0;
+    let divePos = 0;
 
     /* Painting the caption is its own function because two different clocks
        need to call it: the scroll, and the hero timeline settling after the
@@ -159,6 +181,23 @@ idleInit(() => {
       return cleared;
     };
 
+    /* The cost copy appears as the surface begins to turn and leaves as the
+       dive begins. Both triggers are scrub: true, so unlike paintCaption there
+       is no lag to reconcile and no heroExit-style state gate is needed here. */
+    const paintCost = () => {
+      const from = pDecayStart + WHOLE_OUT;
+      const c = smoothstep(range(worldsPos, from, from + COST_IN))
+              * (1 - smoothstep(range(divePos, 0, COST_OUT)));
+      /* On `worlds` for the same reason as --whole and --decay: custom
+         properties inherit down and never sideways, and #future is not inside
+         the stage. */
+      worlds.style.setProperty('--cost', c.toFixed(3));
+      // Faded is not gone: without this a keyboard reader tabs into four tags
+      // and three paragraphs that are no longer on screen.
+      if (costCopy) costCopy.inert = c < 0.02;
+      return c;
+    };
+
     ScrollTrigger.create({
       trigger: document.querySelector('.worlds__two') || worlds,
       start: 'top top',
@@ -177,6 +216,7 @@ idleInit(() => {
       },
       onUpdate: (self) => {
         const p = self.progress;
+        worldsPos = p;
         // Camera finishes as the copy clears, so the two never compete for
         // attention and the surface turn gets the frame to itself.
         const z = easeInOut(range(p, 0, Math.max(0.05, pCopyGone - 0.02)));
@@ -220,6 +260,7 @@ idleInit(() => {
            over a visibly turning one, which is the exact state this whole
            sequence exists to avoid. */
         const settling = paintCaption(p) < 1;
+        paintCost();
         /* THIS TRIGGER GOING QUIET IS NOT THE END OF THE STORY.
 
            The hero eases toward the scroll on a 0.8s follow of its own. A
@@ -269,6 +310,11 @@ idleInit(() => {
            the plate was still settling as About's first line arrived, so the
            reader was reading and being moved at the same time. */
         const p = self.progress;
+        /* The dive owns the cost copy's exit. Phase two published nothing a
+           stylesheet could read before this; --plate is written on #riyadh,
+           which is not an ancestor of #future. */
+        divePos = p;
+        paintCost();
         earth.setDive(range(self.progress, 0, 0.62));
         /* The plate arrives LATE — the descent has to carry deep into the
            continent first, or the reader jumps from a whole peninsula to city
