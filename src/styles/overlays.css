@@ -1021,7 +1021,16 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 
    `pointer-events: none` and `z-index: 0` — decoration must never intercept a
    click, and the panel's own children stack above it. */
-.modal__panel { position: relative; isolation: isolate; }
+/* NOT `position: relative`. The panel is `position: absolute` with an inset,
+   and that is what constrains it to the viewport so .modal__inner has a fixed
+   height to scroll inside. Setting it to relative here took that away: the
+   panel grew to its content (5089px against a 686px viewport), .modal__inner
+   never had anything to scroll, and the whole modal became unscrollable with
+   1016px of it clipped off the bottom.
+
+   It already establishes a stacking context through its opacity transition, so
+   the ambient layer below needs nothing added for z-index to work. */
+.modal__panel { isolation: isolate; }
 .modal__panel::before {
   content: '';
   position: absolute;

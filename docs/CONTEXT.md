@@ -5371,3 +5371,34 @@ the two phone widths.
 Deleting `twin.note` printed the literal string "undefined" into the panel: the
 template interpolated it unguarded. Worth noting because it is invisible in the
 data — the field was simply gone, correctly — and only shows up on screen.
+
+## 69. The ambient gradient broke modal scrolling (2026-08-23)
+
+Reported immediately after 68 shipped: the project panel could not be scrolled.
+
+`.modal__panel` is `position: absolute` with an inset, and that is the whole
+mechanism — it is what constrains the panel to the viewport so that
+`.modal__inner`, the actual scroller, has a bounded height to scroll inside. The
+ambient-gradient rule was written as:
+
+```css
+.modal__panel { position: relative; isolation: isolate; }
+```
+
+`isolation` was the point; `position: relative` was typed alongside it out of
+habit, because a decorative `::before` usually needs a positioned parent. Here
+the parent was already positioned, and overriding it took away the constraint:
+the panel grew to its content — 5089px against a 686px viewport — so
+`.modal__inner` had nothing left to scroll and 1016px of the card was clipped
+off the bottom with no way to reach it.
+
+Measured after removing the one declaration: panel back to `absolute` at 645px,
+inner 5046px of content in a 619px box, scrolls to the last pixel. On a phone,
+6695px in a 737px box, also to the last pixel, with no sideways overflow.
+
+**The lesson is about reflexes.** `position: relative` on the parent of an
+absolutely-positioned pseudo-element is correct so often that it gets typed
+without checking whether the parent is already positioned — and when it is, the
+override is silent, because nothing about a gradient suggests it could disable
+scrolling three elements down. Add `isolation` alone; add `position` only after
+checking there is not one already.
