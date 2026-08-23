@@ -333,7 +333,7 @@ export const projects = {
     /* "Team of 4" was all the tile said about authorship; the retired section
        actually named them, and named the instructor and the target journals. */
     pub: {
-      authors: 'Shibli Afaq, H. Alnasser, H. Alghamdi, S. Aldhafeeri · Instructor: Dr. Muhammad Abdullah',
+      authors: 'Shibli Afaq, H. Alnasser, H. Alghamdi · Instructor: Dr. Muhammad Abdullah',
       venue: '2026 · Target: Journal of Intelligent Transportation Systems / Transportation Research Part C',
       state: 'prep',
       status: 'Manuscript in Preparation',

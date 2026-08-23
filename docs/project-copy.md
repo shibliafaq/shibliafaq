@@ -322,7 +322,7 @@ because their shape matters as much as their text.
 - CE 584: Intelligent Transportation Systems · KFUPM · Jan–Apr 2026
 
 ### its.pub.authors
-- Shibli Afaq, H. Alnasser, H. Alghamdi, S. Aldhafeeri · Instructor: Dr. Muhammad Abdullah
+- Shibli Afaq, H. Alnasser, H. Alghamdi · Instructor: Dr. Muhammad Abdullah
 
 ### its.pub.venue
 - 2026 · Target: Journal of Intelligent Transportation Systems / Transportation Research Part C

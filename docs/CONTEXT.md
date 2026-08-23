@@ -5706,7 +5706,7 @@ EARLIER removal should already have caught:
 
 Section 75 removed the byline from the GIS MODAL and reported it done. The card
 on the wheel carries its own copy of the same line in `index.html`, and it kept
-saying "Co-author: Sultan Aldhafeeri" the whole time. The report was true about
+still carrying the co-author credit the whole time. The report was true about
 what it changed and wrong about what a reader would see.
 
 **A name in a codebase is not one string.** The same credit appears wherever the
@@ -5717,7 +5717,20 @@ not for the line that was mentioned.
 
 ### One left deliberately
 
-`its.pub.authors` reads "Shibli Afaq, H. Alnasser, H. Alghamdi, S. Aldhafeeri".
+`its.pub.authors` was a four-name list.
 That is a four-person group project, not a co-author credit, and striking one
 name from a team list while keeping the other two makes a specific claim about
 who did the work. Flagged rather than removed.
+
+## 79. The name came out of the record too (2026-08-24)
+
+The four-name group list on `its` was the last one on the site, removed at
+request. Worth a line about `docs/CONTEXT.md` itself: sections 78 and this one
+described the removal by quoting the name, and this file is committed to a
+public repository. A credit taken off every page while the engineering notes
+beside it still spell it out has not really been taken off.
+
+So the record says "the co-author credit" and "a four-name list" instead. The
+lesson those sections carry is about grepping for a name rather than for the one
+line someone pointed at, and about a removal that edited the modal while the
+card kept its own copy. Neither needs the name to make sense.
