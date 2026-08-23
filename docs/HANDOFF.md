@@ -2281,3 +2281,217 @@ snapshots are never pruned. This exists because the map was lost twice.
 **§9 is not deleted and is not wrong** — it describes the first map, which still
 runs `lab/walk.html`. Fold the two together only when the other session's work is
 reconciled.
+
+
+## 14. IN PROGRESS — the Cost of Inaction frame (2026-08-23)
+
+**Status: measured and designed, NOT implemented. No source edits made.** The
+working tree was clean at the point this was written; the last landed commit is
+`51d6b43`, which did the equivalent job for the *Whole Picture* frame.
+
+### What was asked
+
+> The same has to be done for "The cost of Inaction ... untouched climate change".
+> The whole text block should appear once the earth start changing in to bad
+> earth and disappear once we start zooming in to the earth.
+> And the tags are not floating, they are static, they should be floating around
+> bad earth.
+
+So: two jobs. (1) Give `#future` the same scroll-driven reveal `#whole` just
+got. (2) Make the four `.ftag` labels actually float.
+
+### Read §48 of CONTEXT.md first
+
+`#future` is the same problem `#whole` had, and the solution and its two failed
+predecessors are documented there. The load-bearing lesson: **gate on STATE, not
+on a scroll position**, and **one element, one owner** — GSAP writes inline
+styles, so a stylesheet rule on anything GSAP tweens silently loses.
+
+### Measured, on the live page (vh 957, so recompute if the viewport differs)
+
+| fact | value |
+|---|---|
+| `.worlds__two` scrub range | 0 → 3445px (`4402 - vh`) |
+| `pCopyGone` | 0.153 → y 527 |
+| `pDecayStart` (`+ HOLD 0.14`) | 0.293 → y 1009 |
+| `pDecayEnd` (`+ DECAY_SPAN 0.30`) | 0.593 → y 2042 |
+| `#whole` caption visible | y 585 → 1216 |
+| dive (phase two) begins | `#about.top - vh` = **y 3445** — exactly where the worlds scrub ends |
+| section tops | worlds 0, whole 957, future 2297, about 4402 |
+
+**The bug, measured:** `#future .future__body` is `position: relative;
+opacity: 1` and has **no scroll-driven visibility whatsoever** — confirmed by a
+40-sample sweep, `futureAlwaysOpaque: true`. It simply scrolls past. Worse, it
+does not enter the viewport until **y 3418**, which is 23px before the dive
+starts at 3445. So today the copy arrives *exactly as the zoom-in begins* —
+precisely inverted from what was asked. Same inherited-geometry cause as `#whole`
+(the section is 220svh with the body at 68% of it).
+
+**The tags are already animated,** contrary to first appearance:
+`ftag-drift 11s/14s/12.5s/15s ease-in-out` with staggered negative delays. The
+keyframe is the problem, not its absence:
+
+```css
+@keyframes ftag-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(6px, -12px, 0); }
+}
+```
+
+Measured live amplitude: **~5px x ~10px**. The authoring comment says
+"suspended, not animated" and that intent overshot — at ~1px/s against a globe
+filling a 957px viewport it is invisible. They also scroll away with the grid,
+so any drift is swamped by scroll motion.
+
+### The design that follows from the above
+
+**1. Publish a `--cost` signal from `src/main.js`,** the same shape as `--whole`.
+Do NOT rebuild it in CSS out of `--decay` and `--zoom` — that is failed attempt
+#1 in CONTEXT §48, and it fails for the same reason: both inputs are flat where
+the caption needs resolution.
+
+- **In:** starts at `pDecayStart + WHOLE_OUT` (p 0.343, y 1181), which is the
+  moment `#whole`'s caption has finished leaving, so the two never share a
+  frame. At that point `decay` is only ~0.07 — the surface has *just* begun to
+  turn, which is what "once the earth starts changing" means. Fade over
+  `COST_IN = 0.07` (to y ~1423).
+- **Out:** driven by the DIVE, not by the worlds scrub. Phase two is the
+  `ScrollTrigger` on `#about` / `#riyadh`. It currently publishes **nothing** a
+  stylesheet can read — that needs adding. Keep a `let divePos = 0` updated in
+  phase two's `onUpdate`, and fade the copy out over the first ~0.14 of the dive.
+- Both triggers are `scrub: true`, so there is **no lag mismatch** here and the
+  `heroExit`-style cross-module gate is NOT needed. But `paintCost()` must be
+  callable from BOTH `onUpdate`s (worlds gives the in, dive gives the out) —
+  mirror the existing `paintCaption()` two-clock shape in main.js.
+- Set `inert` from the same signal, as `#whole` does.
+
+**Do not use the worlds progress reaching 1 as the exit signal** even though it
+coincides with the dive start today. That equality is an accident of section
+heights and will break the day `#about` moves.
+
+**2. `#future .future__body` goes `position: fixed`,** bottom-RIGHT, mirroring
+`#whole`'s bottom-left:
+`right: var(--pad-x); bottom: clamp(3rem, 10vh, 7rem);` with `grid-row: 1`.
+It already has `text-align: right` and `justify-self: end`. Note the stale
+comment at layout.css:1195 claiming it "rises into frame exactly as the surface
+finishes turning" — the measurement above disproves it; fix the comment too.
+
+**3. `.ftags` must go `position: fixed; inset: 0`** so the `.ftag--a..d`
+percentage anchors resolve against the VIEWPORT and the tags float around the
+globe instead of scrolling with a grid cell. Drive its opacity from `--cost` as
+well. Watch `layout.css:1075` — it currently relies on `grid-row: 2 / grid-column: 1`
+and `margin: -26vh 0` to span the frame; fixed positioning replaces all of that.
+
+**4. Replace the single shared keyframe with four distinct paths.** Triangle
+loops (`0%,100%` / `33%` / `66%`) rather than a two-stop there-and-back, total
+excursion ~30-45px, a little rotation (±1deg), durations 19-26s, keeping the
+existing staggered negative delays so they never pulse together.
+
+### Traps that apply to this specific change
+
+- **`.future__body` is SHARED by `#whole` and `#future`.** Any rule written
+  without an id prefix hits both. `#whole` is currently `position: fixed`
+  bottom-left driven by `--whole`; do not disturb it.
+- `.ftag` has an explicit `@media (prefers-reduced-motion: reduce)` block
+  (`animation: none !important`) — keep it, and add the new keyframes to it.
+- There is a `@media (max-width: 900px)` block that makes `.ftags` and `.ftag`
+  `position: static` and stacks them under the copy. Fixed positioning must NOT
+  leak into that breakpoint.
+- `.ftag` must keep `white-space: nowrap` and must NOT get `text-wrap: balance`
+  — the shorthand silently resets the wrap mode. This has already cost time once.
+- **Line endings:** `layout.css`, `docs/*.md` are CRLF; `src/main.js` is LF.
+  Convert per-file and read `git diff --numstat` after every scripted edit — a
+  count far larger than the edit is a line-ending problem, not a real diff.
+- Check the build's EXIT CODE, never its output.
+
+### Also still open (unchanged from before)
+
+- **15 commits are unpushed.** `origin/main` is behind; pushing deploys live to
+  Vercel immediately, so it needs an explicit go-ahead.
+- Stale translations: `hero.hey`, `hero.desc`, `about.label`, `about.title`,
+  `about.p1`, `about.p2` still hold old copy in 6 locales, and the newer
+  `data-copy` paragraphs have no translations at all.
+- The stats panel says 3 research projects while the wheel holds 7 research
+  tiles.
+- `README.md` calls the Discover Cities paper "Under review" and misspells the
+  journal as *Discovering* Cities. **Do not touch README.md** — that repo is
+  also the GitHub profile repo.
+
+### Exact rule inventory, from a four-agent read of the codebase
+
+Every `#future` / `.future*` / `.ftag*` rule lives in **one file**,
+`src/styles/layout.css`. `sections.css`, `base.css`, `overlays.css`,
+`tokens.css` and `i18n.css` have zero hits, so there is no second place to look.
+
+| what | where |
+|---|---|
+| `.future` box | layout.css:824 — `min-height: 220svh; grid-template-rows: 0.68fr auto 0.32fr; grid-template-columns: minmax(0, 1fr)` |
+| small-screen height | layout.css:1037, inside `@media (max-width: 560px)` — `.future { min-height: 235svh }` |
+| `.future__body` base | layout.css:861 — `position: relative; grid-row: 2; grid-column: 1; max-width: 62ch; text-align: center` |
+| **bare restatement** | layout.css:1073 — `.future__body { position: relative; }` again |
+| shared measure | layout.css:1198 — `#whole .future__body, #future .future__body { max-width: min(90vw, 34rem); margin-inline: 0 }` |
+| right alignment | layout.css:1304 and :1307 |
+| mobile recentre | layout.css:1343, `@media (max-width: 720px)` — recentres BOTH frames |
+
+**Trap: `.future__body` is declared twice**, at 861 and again bare at 1073. Any
+new `position: fixed` must sit *after* line 1073 or be id-prefixed, or the later
+`position: relative` silently wins. (`#whole`'s rule is at ~1255, which is why
+it works.)
+
+**Trap: the tags carry `data-reveal`.** Every `.ftag` and the copy's children
+are `data-reveal`, and `src/modules/reveals.js` drives those with an
+IntersectionObserver that adds classes. **Check whether it sets `opacity` on
+`[data-reveal]` before wiring `--cost` to the same elements** — if it does, that
+is the "one element, one owner" collision from CONTEXT §48 all over again, and
+it will look exactly like the `.hero__stats` inline-opacity bug. Resolve it by
+driving `--cost` on the CONTAINER (`#future .future__body`, `.ftags`) and
+leaving the reveal classes to the children, or by dropping `data-reveal` from
+these specific nodes.
+
+**`.worlds__two` has no CSS rule anywhere** — it is a plain block wrapper that
+exists only as the ScrollTrigger's measuring box. Its height (4402px) is
+therefore the sum of `#hero`, `#whole` and `#future`, so changing any of those
+section heights re-times the entire earth sequence.
+
+The `#future` copy is `.future__body.wrap`, and `.wrap` (base.css:146) sets
+`max-width: var(--max)` = 1560px with `margin-inline: auto` — already overridden
+to `margin-inline: 0` at layout.css:1198, but worth knowing it is there.
+
+### RESOLVED before the session ended: how `data-reveal` interacts
+
+Checked, so the next session does not have to:
+
+```css
+layout.css:246  [data-reveal]        { opacity: 0; transform: ...; }
+layout.css:255  [data-reveal].is-in  { opacity: 1; transform: none; }
+```
+
+`src/modules/reveals.js:117` adds `.is-in` from a ScrollTrigger/IntersectionObserver.
+
+**The containers are clean.** Neither `div.future__body.wrap` nor `ul.ftags`
+carries `data-reveal` — only their children do. So driving `--cost` on the two
+CONTAINERS composes correctly with the reveal system: parent opacity multiplies
+with child opacity, and once the children are `.is-in` at 1 the container's
+signal governs. Do it that way. Do **not** put `--cost` on the `.ftag` elements
+themselves.
+
+**But there is a real trap in going `position: fixed`.** The `[data-reveal]`
+children currently earn `.is-in` by scrolling into view. Once their container is
+fixed its geometry stops moving with the scroll, so those children can either
+fire immediately at load or never fire at all — and a child that never fires is
+stranded at `opacity: 0` forever, inside a container that is fading in
+correctly. The result looks like "the signal is broken" when the signal is fine.
+This is the same class of bug as CONTEXT §47 (headings vanishing) and §48
+(GSAP animating detached nodes).
+
+So after wiring this up, **verify the children actually carry `.is-in`**, e.g.
+`[...document.querySelectorAll('#future [data-reveal]')].map(e => e.className)`,
+before trusting any opacity reading. If they are stranded, the fix is to add
+`.is-in` unconditionally to these particular nodes (as reveals.js:95 already
+does in the reduced-motion path) rather than to fight the observer.
+
+Note also that `.is-in` sets `transform: none`, which does NOT break
+`ftag-drift`: a running CSS animation outranks a normal declaration in the
+cascade. Any NEW transform added to `.ftag` as a normal declaration would be
+overridden by the animation, so per-tag offsets must live in the keyframes or in
+`top`/`left`, not in `transform`.
