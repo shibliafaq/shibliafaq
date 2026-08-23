@@ -97,14 +97,11 @@ node tools/sync-site-copy.mjs --write   # apply it
 ### direction.title
 - Turning Data<br><em>into Action</em>
 
-### direction.p1
-- From satellite pipelines to public space planning, my work connects <strong>spatial data science</strong> with practical urban resilience.
+### direction.label2
+- Design Direction
 
-### direction.pull
-- “I don't want to spend my career describing a problem. I want to build the tools that let cities actually fix it.”
-
-### direction.p2
-- Everything I've built (the satellite pipelines, the GIS vulnerability frameworks, the IoT dashboards) is oriented toward one goal: making urban climate data <strong>actionable</strong>, not just publishable. That means getting it to the right resolution, the right people, and in time for it to matter.
+### direction.title2
+- Making better<br><em>spaces for people</em>
 
 ## Thermal sequence
 

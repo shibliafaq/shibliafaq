@@ -928,8 +928,10 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 }
 
 .future__body .sec-title { margin: .55rem 0 1rem; }
+/* Colour only, matching the change in base.css: the weight is already carrying
+   the emphasis and the italic was a second signal for the same thing. */
 .future__body .sec-title em {
-  font-style: italic;
+  font-style: normal;
   color: var(--accent);
 }
 .future__body .lead { margin-inline: auto; }

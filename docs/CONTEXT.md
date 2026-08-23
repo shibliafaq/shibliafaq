@@ -5933,3 +5933,51 @@ type starts and stops growing and it would no longer be the same curve.
 It can be larger than its two siblings because it does not share their
 constraint: they sit in a 300px side band beside the planet, and this one is
 pinned across the bottom of the frame with the full measure available.
+
+## 85. Two directions, mirrored, over a wave (2026-08-24)
+
+### Bold, not bold-and-italic
+
+The second half of every display heading — "the Whole Picture", "of Inaction",
+"becomes personal" — was a light serif italic set against a heavy sans. Two
+contrasts doing one job: the weight already says this half is the emphasis, and
+the italic on top made the pair read as two typefaces arguing rather than one
+sentence with a stressed half. Same family and weight now, distinguished by
+colour alone.
+
+`.dirs em` opts back in, and the exception is the interesting part: that section
+has no weight contrast to fall back on, because both halves of each title are
+the same size and the second half is the whole point. The italic is doing real
+work there and nowhere else, which is the test for whether a style should exist.
+
+### The section is two headings facing each other
+
+Research ranges RIGHT, Design ranges LEFT. That puts the two ragged edges on the
+outside and two clean edges either side of the gap, so the pair reads as one
+statement with a seam down the middle rather than as two unrelated blocks.
+
+Getting there took two corrections, both the same mistake in different clothes.
+First a `max-width: 14ch` on titles that already carry a `<br>` at the line they
+should break on — the measure broke them again somewhere else, so one title came
+out two lines and the other three. Then, with the measure gone, they still
+wrapped: the section heading clamp resolved to **83px**, which is sized for one
+full-width heading, and at that size "Making better" alone is wider than half
+the wrap. Two headings sharing a line need roughly half the type.
+
+Both times the symptom was "the columns will not shrink to their content", and
+both times the cause was that the content genuinely was that wide.
+
+### The wave
+
+`emwave.js`, not a reuse of the one in wheel.js. That one is welded to the
+Lissajous — it samples the solved curve, takes its phase from the ring's
+rotation, and sits at a depth measured from the deepest card. What carries over
+is the palette and the physics: E and B orthogonal, same frequency, same phase.
+
+The colours are READ from `--tag-msc` and `--tag-arch` rather than written out,
+so the two waves cannot drift apart when the palette moves. Those are the same
+tokens the wheel tags its two collections with, which is why the two sections
+look related.
+
+Parked unless on screen, and under reduced motion it draws one static frame and
+stops — the figure is still there, it simply does not travel.

@@ -61,12 +61,22 @@ ul, ol { list-style: none; }
 
 /* Serif italic as a counterpoint inside display type — the one
    piece of v1's voice worth keeping verbatim. */
+/* BOLD, NOT BOLD-AND-ITALIC.
+
+   These are the second halves of the display headings — "the Whole Picture",
+   "of Inaction", "becomes personal". They were a light serif italic against a
+   heavy sans, which is two contrasts doing one job: the weight already says
+   this half is the emphasis, and the italic on top made the pair read as two
+   different typefaces arguing rather than one sentence with a stressed half.
+
+   Same family and weight as the line it belongs to now, distinguished by
+   colour alone. `.dirs em` opts back into italic — see sections.css. */
 .display em,
 em.serif {
-  font-family: var(--f-serif);
-  font-weight: 300;
-  font-style: italic;
-  letter-spacing: -.01em;
+  font-family: inherit;
+  font-weight: inherit;
+  font-style: normal;
+  letter-spacing: inherit;
   color: var(--amber);
 }
 

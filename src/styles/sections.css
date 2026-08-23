@@ -55,14 +55,7 @@
    RESEARCH DIRECTION
    ============================================================ */
 
-/* ONE COLUMN NOW. The grid existed to sit the prose beside three status cards
-   (PhD target, geographic focus, open to); those are gone, and a two-column
-   grid with one child leaves the copy stranded in a half-width track. */
-.direction__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 68ch);
-  justify-content: start;
-}
+
 
 .dcards { display: grid; gap: 1rem; }
 
@@ -3348,3 +3341,85 @@
 @media (max-width: 720px) {
   .modal .atlas { grid-template-rows: auto minmax(180px, 30vh); }
 }
+
+/* ============================================================
+   TWO DIRECTIONS, SIDE BY SIDE
+   ============================================================
+
+   The section used to be one heading over three paragraphs beside three status
+   cards. It is now two headings and nothing else: research on the left, design
+   on the right, the pair centred on the page.
+
+   `max-content` columns and `justify-content: center` rather than two 1fr
+   tracks. With 1fr each column takes half the page whatever it contains, so
+   two short headings end up marooned at the far edges with a canyon between
+   them; sized to their content and then centred as a PAIR, they read as two
+   halves of one statement, which is what they are.
+
+   The text inside each column stays left-aligned. Centred type under a centred
+   pair would give four different optical edges and nothing for the eye to line
+   up on. */
+.dirs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  justify-content: center;
+  gap: clamp(2rem, 7vw, 6rem);
+  align-items: start;
+}
+/* MIRRORED, so the two lean into each other rather than both leaning right.
+   The left column ranges RIGHT and the right column ranges LEFT, which puts
+   the two ragged edges on the outside and two clean edges facing the gap — the
+   pair reads as one statement with a seam down the middle instead of two
+   unrelated blocks. */
+.dirs__col--r { text-align: right; }
+.dirs__col--l { text-align: left; }
+
+/* ITALIC HERE, AND ONLY HERE. The site-wide change in base.css took the italic
+   off `.display em` because weight plus italic was two signals for one job.
+   This section has no weight contrast to fall back on — both halves of each
+   title are the same size and the second half is the whole point — so the
+   italic comes back as the only thing distinguishing them. */
+.dirs .sec-title em { font-style: italic; }
+/* NO max-width HERE. Both titles already carry a <br> at the line they are
+   meant to break on, and a character measure on top of that broke them again:
+   "Turning Data" became two lines and "Making better spaces for people" three,
+   so the two halves came out different heights and the pair stretched to fill
+   the wrap instead of sitting as a group. With the measure gone the markup
+   decides, both are two lines, and max-content columns can do their job. */
+/* SIZED FOR TWO, not for one. The section heading clamp is built for a single
+   full-width title and resolved to 83px here — at that size "Making better"
+   alone is wider than half the wrap, so both titles kept wrapping past their
+   own <br> however the measure was set, and the columns could never shrink to
+   their content. Two headings sharing a line need roughly half the type.
+
+   No max-width: each title already carries a <br> at the line it should break
+   on, and a character measure on top of that just breaks it somewhere else. */
+.dirs .sec-title {
+  margin-top: .55rem;
+  max-width: none;
+  font-size: clamp(1.6rem, 4.2vw, 3.1rem);
+  line-height: 1.06;
+}
+
+/* One under the other below the two-column breakpoint, still centred as a
+   group. Two headings side by side on a phone would be four or five words per
+   line each. */
+@media (max-width: 760px) {
+  .dirs {
+    grid-template-columns: minmax(0, max-content);
+    gap: clamp(2rem, 8vh, 3.25rem);
+  }
+}
+
+/* The wave sits behind everything in the section and is decoration: it never
+   takes a pointer, and it is not in the accessibility tree. `contain: strict`
+   keeps a full-width canvas from contributing to layout or overflow. */
+#direction { position: relative; isolation: isolate; overflow: hidden; }
+.dirs__wave {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  contain: strict;
+}
+.dirs__wave canvas { display: block; width: 100%; height: 100%; }
