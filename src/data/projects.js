@@ -99,9 +99,9 @@ export const projects = {
        thesis is the result. Where they differ the manuscript wins, and it
        states monthly RMSE 0.96-1.91 C by day and 0.79-1.29 C by night with
        r 0.94-0.99, and R > 0.85 against Landsat in all five cities. The
-       snapshot showed 0.98-1.87 and carried no cross-sensor comparison at
-       all, which is why checking a claim against the nearest available data
-       rather than against its source can retire a true statement.
+       from the card by choice, not by doubt). The snapshot showed 0.98-1.87
+       and carried no cross-sensor comparison at all, which is why checking a
+       claim against the nearest data rather than its source can retire a true
 
        1.37M is the population of the Very-High HVI class summed across the
        five cities. Named as the class rather than as "at-risk", because the
@@ -109,7 +109,6 @@ export const projects = {
        which totals 2.48M -- so the looser word pointed at the wrong figure. */
     metrics: [
       { v: '0.96–1.91 °C', l: 'Monthly LST RMSE by day · 0.79–1.29 by night' },
-      { v: 'R > 0.85', l: 'MODIS vs Landsat, all five cities' },
       { v: '1.37M', l: 'Residents in Very-High vulnerability cells' },
       { v: '2018–2026', l: 'Eight years of MODIS LST on a 500 m grid' },
     ],
