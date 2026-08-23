@@ -71,7 +71,16 @@ export function initReveals() {
         headIO.unobserve(e.target);
       }
     }, { rootMargin: '0px 0px -22% 0px' });
-    splitHeads.forEach((el) => headIO.observe(el));
+    /* [data-split-hold] opts a heading OUT of the viewport observer while
+       keeping the word split itself. Some headings are captions for something
+       that arrives on its own clock, and firing their rise on mere visibility
+       plays it before the thing it describes exists. #about is the case: it
+       sits over the Riyadh heat map, so main.js fires it from the dive.
+
+       One element, one owner. Left observed, the rise would race the dive and
+       whichever won would decide, which is the bug this attribute prevents. */
+    splitHeads.filter((el) => !el.hasAttribute('data-split-hold'))
+             .forEach((el) => headIO.observe(el));
 
     /* The generic [data-reveal] blocks below still use ScrollTrigger, so a real
        height change still has to invalidate their offsets. Guarded on an actual

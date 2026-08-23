@@ -84,6 +84,10 @@ idleInit(() => {
        signal on the .ftag elements themselves would be the "one element, one
        owner" collision from CONTEXT 48 all over again. */
     const costCopy = document.querySelector('#future .future__body');
+    /* The heat map's own caption. Held back until the map it describes is
+       actually on screen; see the dive below. */
+    const aboutWrap = document.querySelector('#about > .wrap');
+    const aboutHead = document.querySelector('#about [data-split-hold]');
     if (!worlds || !stage) return;
 
     /* THE TRANSITION, AND THE RESTS BETWEEN IT.
@@ -295,6 +299,16 @@ idleInit(() => {
     const riyadh = document.getElementById('riyadh');
     if (!about || !riyadh) return;
 
+    /* Start the caption hidden the moment we know JS is running.
+
+       The stylesheet reads the fallback form on purpose: with no JS at all it
+       resolves to 1 and the words are never trapped invisible. But a fallback
+       also applies BEFORE the dive has published anything, which measured as
+       the caption fully visible from y3200 against a map that does not arrive
+       until y4040 — 840px early, which is the bug this was meant to fix.
+       Writing 0 here narrows the fallback to the case it is actually for. */
+    worlds.style.setProperty('--heat', '0');
+
     ScrollTrigger.create({
       trigger: about,
       start: 'top bottom',
@@ -315,6 +329,27 @@ idleInit(() => {
            which is not an ancestor of #future. */
         divePos = p;
         paintCost();
+        /* THE HEAT MAP OWNS ITS OWN CAPTION.
+
+           "Where the heat becomes personal" is the caption for the Riyadh
+           plate, and it used to arrive on the generic reveal machinery: a
+           ScrollTrigger at `top 82%` for the fade and an IntersectionObserver
+           for the word rise. Two different clocks, neither of them the one
+           that brings the map in, and measured they had already disagreed —
+           the block was fully faded in (`is-in` on all four children) while
+           the rise had never fired at all, so the words were simply sitting
+           there having never moved.
+
+           Both now hang off the dive, a beat after the plate itself lands at
+           0.52-0.64, so the words arrive onto a map that is already there
+           rather than onto empty ground. */
+        const heat = smoothstep(range(p, 0.60, 0.74));
+        worlds.style.setProperty('--heat', heat.toFixed(3));
+        if (aboutWrap) aboutWrap.inert = heat < 0.02;
+        /* Fired once, and only forward: the rise is a one-way transition, and
+           re-adding the class on the way back up would re-run it every time
+           the reader scrolled past. */
+        if (heat > 0.04 && aboutHead) aboutHead.classList.add('is-split-in');
         earth.setDive(range(self.progress, 0, 0.62));
         /* The plate arrives LATE — the descent has to carry deep into the
            continent first, or the reader jumps from a whole peninsula to city

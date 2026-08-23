@@ -1394,6 +1394,20 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    tags stacked beneath — which is also why the opacity is inside the guard
    and not outside it. A flowed block whose opacity is driven by a scrub it no
    longer matches would just be the original bug pointing the other way. */
+/* THE HEAT-MAP CAPTION ARRIVES WITH THE MAP, NOT WITH THE SCROLL.
+
+   Driven on the WRAP rather than on the four children, which each carry
+   [data-reveal] and own their own opacity. Gating the container multiplies
+   with that instead of fighting it, the same arrangement the Cost of
+   Inaction frame uses.
+
+   No transition: --heat is scrubbed against the dive already, and easing a
+   scrubbed value only adds lag. */
+#about > .wrap {
+  opacity: var(--heat, 1);
+  translate: 0 calc((1 - var(--heat, 1)) * 1.2rem);
+}
+
 /* THE INTERACTION CUE IS NOT PART OF THE ARGUMENT.
 
    "Drag and explore the globe" is an instruction, not the next sentence of

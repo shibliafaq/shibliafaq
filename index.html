@@ -216,7 +216,10 @@
 <section id="about" class="section about--overmap">
   <div class="wrap">
     <p class="eyebrow" data-reveal data-i18n="about.label">Urban Heat Islands</p>
-    <h2 class="display sec-title" data-reveal data-split data-i18n="about.title">Where the heat<br><em>becomes personal</em></h2>
+    <!-- data-split-hold: the words are still split by reveals.js, but their
+         rise is NOT fired by its viewport observer. This heading belongs to
+         the heat map underneath it, so main.js plays it from the dive. -->
+    <h2 class="display sec-title" data-reveal data-split data-split-hold data-i18n="about.title">Where the heat<br><em>becomes personal</em></h2>
 
     <div class="about__grid">
       <div class="prose about__text">

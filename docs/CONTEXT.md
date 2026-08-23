@@ -4082,3 +4082,71 @@ knowing its containing block, so any change to `position` has to be followed by
 re-reading every offset that depended on the old one. The excursion measurement
 that "verified" the tags after the previous commit measured MOTION and never
 asked WHERE, which is why it passed while all four were off the planet.
+
+## 50. The heat-map caption arrives with the map (2026-08-23)
+
+Reported as: the "Where the heat becomes personal" group has no fast text
+animation, and should appear only once the heat map is there.
+
+### Both halves were true, and they had the same cause
+
+The heading carries `data-reveal` AND `data-split`, and those run on two
+different clocks, neither of which is the one that brings the map in:
+
+- `[data-reveal]` -> ScrollTrigger at `top 82%`, adds `.is-in`, which is what
+  makes the block opaque.
+- `[data-split]` -> a separate IntersectionObserver at `rootMargin -22%`, adds
+  `.is-split-in`, which is what actually plays the per-word rise.
+
+Measured mid-page: all four children had `.is-in` while the heading did **not**
+have `.is-split-in`. So the words were fully visible having never moved. That is
+the "no fast text animation": the animation was not missing, it had been made
+irrelevant by the fade arriving first and from a different trigger.
+
+ScrollTrigger caches its start as a scroll offset at build time, which is exactly
+the staleness the comment at the top of reveals.js already describes for these
+headings; the IntersectionObserver was added to fix it for the split and the
+generic reveals were left on the old mechanism.
+
+### The fix: one owner, and it is the dive
+
+`#about` sits over the Riyadh plate, so the plate's own clock should own its
+caption. The dive already ramps `riyadh.style.opacity` over progress 0.52-0.64.
+It now also publishes `--heat = smoothstep(range(p, 0.60, 0.74))` on `.worlds`,
+a beat later, and:
+
+- `#about > .wrap` takes its opacity from `--heat`. Driven on the WRAP, not on
+  the four children, because each child owns its own opacity through
+  `[data-reveal]`; gating the container multiplies with that instead of fighting
+  it. Same arrangement as the Cost of Inaction frame in §49.
+- `main.js` adds `.is-split-in` when `--heat` first passes 0.04, so the word rise
+  plays at that moment rather than on mere visibility.
+- A new `[data-split-hold]` attribute opts a heading out of reveals.js's viewport
+  observer while keeping the word split itself. Left observed, the rise would
+  race the dive and whichever fired first would win.
+
+### The fallback that undid it, first time round
+
+`opacity: var(--heat, 1)` reads 1 with no JS, so the words can never be trapped
+invisible. But a fallback also applies BEFORE the dive has published anything,
+and measured that put the caption fully visible from **y3200 against a map that
+does not arrive until y4040** — 840px early, i.e. the exact bug being fixed,
+wearing a different hat. `main.js` now writes `--heat: 0` once when the dive is
+created, which narrows the fallback to the case it is actually for.
+
+### Measured, from a clean scroll of 0
+
+| | |
+|---|---|
+| map first visible | y4000 |
+| caption first visible | **y4080**, 80px later |
+| word rise fires | **y4080** |
+| map opacity when the caption starts | **0.85** |
+
+Both halves of the caption now arrive together, onto a map that is already there.
+
+**Worth carrying forward:** a `once: true` class that is only ever added, never
+removed, will look like it fired at the wrong scroll position if the browser
+restores scroll on reload. Two readings here said the rise fired at y3000 before
+that was understood. Measure from a known scroll position, not from whatever the
+reload left behind.
