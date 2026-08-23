@@ -5662,3 +5662,30 @@ than pseudo-elements, so they WRAP with the steps. A pseudo-element pinned to a
 box edge cannot: on a narrow panel the last item of a wrapped line would have an
 arrow pointing off the side. As flex items they reflow with the boxes and rotate
 to vertical when the steps stack.
+
+## 77. The IoT architecture image was the method (2026-08-24)
+
+`assets/img/iot_arch.webp` sat under "Maps & Visuals" and drew exactly what the
+`method` string said: seven boxes, six arrows, sensors through to the dashboard.
+Two problems in one.
+
+**It was filed as a result.** "Maps & Visuals" is where a project's outputs go —
+the thing the work produced. A system architecture is not an output, it is how
+the work was done, and a reader looking for what this project FOUND had to scroll
+past a diagram of its plumbing to discover there wasn't one there.
+
+**And it was a picture of text.** White background, colours belonging to no part
+of this site, fixed width, and a port number that could only be corrected by
+reopening an image editor — every fault the note at the top of diagrams.js
+records about the two WebP diagrams that were replaced in section 68. Keeping it
+and only moving the heading would have preserved all of that.
+
+So it is drawn instead, as a `methodFlow` of four phases: Collect, Stream,
+Store, Serve. The ports are kept — 1883, 9092, 4040, 5432, 8501 — because they
+are what separates a diagram of a system someone built from a diagram of a
+system someone sketched. The raster and the duplicate `method` string are both
+gone; the information is entirely preserved and now takes the panel's own type,
+colour and reflow.
+
+The card no longer has a "Maps & Visuals" section at all, which is correct: it
+never had visuals, it had one diagram in the wrong place.

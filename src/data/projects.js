@@ -235,11 +235,47 @@ export const projects = {
       { v: '&lt;10 min', l: 'End-to-end latency' },
       { v: '10 zones', l: 'Dammam / Al-Khobar urban area' },
     ],
-    method: 'MQTT IoT sensors (10 locations) → Mosquitto broker (port 1883) → Kafka bridge → Apache Kafka (port 9092) → PySpark Structured Streaming (port 4040) → PostgreSQL 15 (port 5432) → Streamlit dashboard (port 8501) with pydeck geographic map',
-    tags: ['Apache Kafka', 'PySpark Streaming', 'MQTT (Mosquitto)', 'PostgreSQL 15', 'Docker Compose', 'Streamlit', 'pydeck', 'Python', 'LinearRegression ML', 'IQR Anomaly Detection', 'GitHub'],
-    images: [
-      { src: `${IMG}/iot_arch.webp`, cap: 'System Architecture — IoT Sensors → MQTT → Kafka → Spark → PostgreSQL → Streamlit Dashboard' },
+    /* THE ARCHITECTURE IMAGE WAS THIS, AS A PICTURE.
+
+       assets/img/iot_arch.webp drew exactly the chain below: seven boxes and
+       six arrows, on a white background, in colours that belong to no part of
+       this site. It sat under 'Maps & Visuals', which is where a result goes,
+       and it is not a result — it is the method. Drawn here instead it takes
+       the panel's own type and colour, reflows on a phone, and a port number
+       can be corrected without opening an image editor.
+
+       The ports are kept. They are the detail that separates a diagram of a
+       system someone built from a diagram of a system someone sketched. */
+    methodFlow: [
+      {
+        phase: 'Collect',
+        steps: [
+          { t: 'IoT sensors', s: '10 locations across the Dammam / Al-Khobar area' },
+          { t: 'Mosquitto MQTT broker', s: 'Port 1883' },
+        ],
+      },
+      {
+        phase: 'Stream',
+        steps: [
+          { t: 'Kafka bridge', s: 'MQTT topics onto the log' },
+          { t: 'Apache Kafka', s: 'Port 9092' },
+          { t: 'PySpark Structured Streaming', s: 'Port 4040' },
+        ],
+      },
+      {
+        phase: 'Store',
+        steps: [
+          { t: 'PostgreSQL 15', s: 'Port 5432' },
+        ],
+      },
+      {
+        phase: 'Serve',
+        steps: [
+          { t: 'Streamlit dashboard', s: 'Port 8501 · pydeck geographic map' },
+        ],
+      },
     ],
+    tags: ['Apache Kafka', 'PySpark Streaming', 'MQTT (Mosquitto)', 'PostgreSQL 15', 'Docker Compose', 'Streamlit', 'pydeck', 'Python', 'LinearRegression ML', 'IQR Anomaly Detection', 'GitHub'],
     links: [
       { t: 'Live Dashboard', h: 'https://shibliafaq-iot-dashboard.streamlit.app', primary: true },
       { t: 'GitHub', h: 'https://github.com/shibliafaq/real-time-big-data-iot-monitoring-pipeline' },
