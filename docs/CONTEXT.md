@@ -5765,3 +5765,40 @@ is READ, not only where it is described.
 Fixed in the data, the card markup and the aria-label. The card carries its own
 copy of the title in `index.html`, which is exactly the split that left a
 removed credit on screen in section 78 — checked this time before reporting.
+
+## 81. Checking the Multi-City tile found an error the rebuild left behind (2026-08-24)
+
+Asked to check whether the tile's text is correct. Reading every claim against
+`public/assets/data/lst` rather than against the card found one that is not.
+
+**"Cities carry between 6 and 24 usable acquisitions" — the floor is 2.** Read
+across all 134 per-city files: Perth has 24, Dar es Salaam has 2. Corrected, and
+the note now names both ends, because "2 to 24" without the reason invites the
+reader to assume the low end is a bug rather than cloud.
+
+The number matters more than it looks. A city resting on two frames has a mean
+computed from two acquisitions, and the card offers those means on a common
+scale — so the floor is the reader's cue about how much weight any single city
+carries.
+
+Everything else checked out: 134 cities, Tromsø 69.65°N to Punta Arenas 53.16°S,
+78 north and 56 south, Landsat 8/9 Collection 2 Level 2 band ST_B10 at 30 m,
+1 Nov 2024 to 30 Nov 2025.
+
+**One claim I could not verify: R² 0.688.** It appears in `desc` and now in the
+metrics, and it is not in the payload or in lst-twin.html — the dashboard
+computes its fit at runtime. It is not disputed, only unchecked, and it is
+flagged here rather than left to look verified because everything around it now
+has a source.
+
+### Method and gallery
+
+The method still described the retired MODIS demo — Colab, a 10% cloud filter, a
+25,905-row CSV, Kepler.gl — all true of the three-city pipeline and none of it
+true of the dashboard the card leads with. Replaced with the Landsat pipeline as
+a `methodFlow`: Acquire, Mask, Grid, Fit. `grid: 96` and `window: 0.12` in the
+payload are a 96 × 96 raster over a 0.12° box, confirmed by opening a city file.
+
+Maps & Visuals removed at request. The Kepler.gl recordings stay under their own
+heading, which is where the three-city demo belongs: it is still worth showing
+and it is no longer the subject.

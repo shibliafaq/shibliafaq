@@ -300,7 +300,7 @@ export const projects = {
       title: 'Global surface temperature — Landsat 30 m',
       src: '/lst-twin.html',
       hint: '134 cities · 30 m · a year of acquisitions · two hemispheres',
-      note: 'Landsat 8/9 Collection 2 Level 2 (USGS) via Microsoft Planetary Computer, band ST_B10, cloud and shadow masked per pixel with QA_PIXEL. Cities carry between 6 and 24 usable acquisitions depending on cloud. Basemap © Esri, © OpenStreetMap contributors.',
+      note: 'Landsat 8/9 Collection 2 Level 2 (USGS) via Microsoft Planetary Computer, band ST_B10, cloud and shadow masked per pixel with QA_PIXEL. Cities carry between 2 and 24 usable acquisitions depending on cloud, so a heavily clouded site like Dar es Salaam rests on far fewer frames than Perth. Basemap © Esri, © OpenStreetMap contributors.',
     },
     cat: 'ICS 574: Big Data Analytics · KFUPM · Fall 2025',
     title: 'Multi-City Surface Temperature · 134 Cities at Landsat 30 m',
@@ -320,12 +320,46 @@ export const projects = {
       { v: 'R² 0.688', l: 'Pooled latitude fit, both hemispheres separately' },
       { v: '25,905', l: 'MODIS readings in the 3-city pipeline demo below' },
     ],
-    method: 'MODIS/061/MOD11A1 (Terra) via Google Earth Engine API → Python/Colab (earthengine-api 0.1.400, pandas 2.0.3) → Cloud filter (≤10%) → Kelvin conversion → CSV export (25,905 rows) → Kepler.gl 2.5.5 WebGL 2.0 3D hexbin visualisation → Pearson r & linear regression',
-    tags: ['NASA MODIS/061/MOD11A1', 'Google Earth Engine', 'Python (Colab)', 'Kepler.gl 2.5.5', 'WebGL 2.0', 'Pandas 2.0.3', 'Pearson Correlation', 'Linear Regression', 'GPU Rendering'],
-    images: [
-      { src: `${IMG}/mc_scatter.webp`, cap: 'Latitude–temperature regression on three city means, r = −0.995 with n = 3. Three points always fall near a line, so this describes the sample rather than a gradient; the 134-city fit is in the Landsat dashboard.' },
-      { src: `${IMG}/mc_trends.webp`, cap: 'Temperature Trends Across 14 Days · Dammam (blue) · Dublin (orange) · Reykjavik (green)' },
+    /* THE LANDSAT PIPELINE, WHICH IS THE ONE THIS CARD IS NOW ABOUT.
+
+       The method here still described the retired MODIS demo: Colab, a 10%
+       cloud filter, a 25,905-row CSV, Kepler.gl. All true of the three-city
+       pipeline, none of it true of the 134-city dashboard the card leads with.
+
+       Every value below is read from public/assets/data/lst — index.json for
+       the source, period, grid and valid range, and the per-city files for the
+       acquisition counts. Nothing is carried over from the old text. */
+    methodFlow: [
+      {
+        phase: 'Acquire',
+        steps: [
+          { t: 'Landsat 8/9 Collection 2 Level 2', s: 'Band ST_B10 surface temperature, 30 m' },
+          { t: 'Microsoft Planetary Computer', s: 'STAC search, 1 Nov 2024 to 30 Nov 2025' },
+          { t: '134 cities', s: 'Tromsø 69.7°N to Punta Arenas 53.2°S · 78 north, 56 south' },
+        ],
+      },
+      {
+        phase: 'Mask',
+        steps: [
+          { t: 'QA_PIXEL cloud and shadow', s: 'Masked per pixel, not per scene' },
+          { t: 'Valid range −70 to 80 °C', s: 'Anything outside is treated as no-data' },
+        ],
+      },
+      {
+        phase: 'Grid',
+        steps: [
+          { t: '96 × 96 samples per city', s: 'A 0.12° window centred on each city' },
+          { t: '2 to 24 acquisitions each', s: 'However many survive cloud · Perth 24, Dar es Salaam 2' },
+        ],
+      },
+      {
+        phase: 'Fit',
+        steps: [
+          { t: 'Latitude against temperature', s: 'Each hemisphere fitted separately, not pooled across the equator' },
+        ],
+      },
     ],
+    tags: ['NASA MODIS/061/MOD11A1', 'Google Earth Engine', 'Python (Colab)', 'Kepler.gl 2.5.5', 'WebGL 2.0', 'Pandas 2.0.3', 'Pearson Correlation', 'Linear Regression', 'GPU Rendering'],
     videos: [
       { src: `${VID}/thermal-dammam.mp4`, poster: `${IMG}/thermal-dammam-poster.webp`, cap: 'Dammam, Saudi Arabia · 26°N · Hot Desert · Mean 31.5°C · Kepler.gl 3D Live Recording' },
       { src: `${VID}/thermal-dublin.mp4`, poster: `${IMG}/thermal-dublin-poster.webp`, cap: 'Dublin, Ireland · 53°N · Temperate Maritime · Mean 9.6°C · Kepler.gl 3D Live Recording' },

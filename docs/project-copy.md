@@ -277,7 +277,7 @@ because their shape matters as much as their text.
 - 134 cities · 30 m · a year of acquisitions · two hemispheres
 
 ### temp.twin.note
-- Landsat 8/9 Collection 2 Level 2 (USGS) via Microsoft Planetary Computer, band ST_B10, cloud and shadow masked per pixel with QA_PIXEL. Cities carry between 6 and 24 usable acquisitions depending on cloud. Basemap © Esri, © OpenStreetMap contributors.
+- Landsat 8/9 Collection 2 Level 2 (USGS) via Microsoft Planetary Computer, band ST_B10, cloud and shadow masked per pixel with QA_PIXEL. Cities carry between 2 and 24 usable acquisitions depending on cloud, so a heavily clouded site like Dar es Salaam rests on far fewer frames than Perth. Basemap © Esri, © OpenStreetMap contributors.
 
 ### temp.cat
 - ICS 574: Big Data Analytics · KFUPM · Fall 2025
@@ -312,8 +312,29 @@ because their shape matters as much as their text.
 ### temp.metrics.3.l
 - MODIS readings in the 3-city pipeline demo below
 
-### temp.method
-- MODIS/061/MOD11A1 (Terra) via Google Earth Engine API → Python/Colab (earthengine-api 0.1.400, pandas 2.0.3) → Cloud filter (≤10%) → Kelvin conversion → CSV export (25,905 rows) → Kepler.gl 2.5.5 WebGL 2.0 3D hexbin visualisation → Pearson r & linear regression
+### temp.methodFlow.0.steps.0.t
+- Landsat 8/9 Collection 2 Level 2
+
+### temp.methodFlow.0.steps.1.t
+- Microsoft Planetary Computer
+
+### temp.methodFlow.0.steps.2.t
+- 134 cities
+
+### temp.methodFlow.1.steps.0.t
+- QA_PIXEL cloud and shadow
+
+### temp.methodFlow.1.steps.1.t
+- Valid range −70 to 80 °C
+
+### temp.methodFlow.2.steps.0.t
+- 96 × 96 samples per city
+
+### temp.methodFlow.2.steps.1.t
+- 2 to 24 acquisitions each
+
+### temp.methodFlow.3.steps.0.t
+- Latitude against temperature
 
 
 ## ITS-Based Congestion Management  `its`
