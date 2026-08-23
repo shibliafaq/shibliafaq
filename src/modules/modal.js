@@ -24,9 +24,29 @@ function render(data) {
      separate rather than folded into `desc` so it can be quoted exactly and,
      where the paper is published, matched word for word against the record of
      version. */
-  const abstract = data.abstract
-    ? `<div class="msec">Abstract</div><p class="mabs">${data.abstract}</p>`
+  /* THE THREE FINDINGS, THEN THE ABSTRACT UNDERNEATH.
+
+     An abstract is the right thing to carry and the wrong thing to lead with:
+     2,250 characters of unbroken prose is where a card loses the reader it
+     just earned. The paper names its own three findings, so they come out as
+     cards and the abstract goes behind a disclosure — nothing is removed, the
+     order is just reversed to put the conclusions before the compression. */
+  const findings = data.findings?.length
+    ? `<ol class="mfind3">${data.findings.map((f, i) => `
+        <li class="mfind3__c">
+          <span class="mfind3__n">0${i + 1}</span>
+          <span class="mfind3__v">${esc(f.v)}</span>
+          <span class="mfind3__k">${esc(f.k)}</span>
+          <p class="mfind3__t">${f.t}</p>
+        </li>`).join('')}</ol>`
     : '';
+
+  const abstract = data.abstract
+    ? `${findings}<details class="mabs__wrap">
+         <summary><span>Read the full abstract</span></summary>
+         <p class="mabs">${data.abstract}</p>
+       </details>`
+    : findings;
 
   const metrics = data.metrics?.length
     ? `<div class="mmetrics">${data.metrics
@@ -60,15 +80,96 @@ function render(data) {
      beneficiaries" is a feature; "one water feature cools 16,167 residents and
      one cool-pavement patch cools 602, for the same money" is a finding the
      reader can argue with. */
+  /* TWO MATRICES, OR THE OLD PAIR OF BIG NUMBERS.
+
+     `worked` used to be a lead, two headline figures and a footnote, which is
+     the right shape for a single worked example. The thesis card now carries
+     the real result — the same example repeated in every city, which is two
+     tables — so this renders either: `cooling`/`reach` if they are present,
+     and the original `rows` if they are not. The other projects still use the
+     simple shape and are untouched.
+
+     Both tables are wrapped in their own scroller. A five-city matrix cannot
+     be made narrow enough for a phone without either shrinking the type past
+     reading or dropping columns, and dropping columns from a table whose
+     entire point is the comparison across cities would be the worst of the
+     three. It scrolls sideways inside its own box, so the page never does. */
+  const heat = (v) => {
+    // 0 is a real measured result here, not a gap, so it is never dimmed away.
+    const a = Math.abs(v);
+    return a >= 8 ? 3 : a >= 3 ? 2 : a > 0 ? 1 : 0;
+  };
+
+  const coolTable = data.worked?.cooling
+    ? `<figure class="mtable">
+         <div class="mtable__scroll"><table>
+           <thead><tr><th scope="col">Measure</th>${data.worked.cooling.cities
+             .map((c) => `<th scope="col">${esc(c)}</th>`).join('')}</tr></thead>
+           <tbody>${(() => {
+             /* Bars are scaled to the largest value in the WHOLE table, not
+                per row or per column. Normalising per row would make Makkah's
+                zero-coefficient greening look the same length as Dammam's
+                -3.10, which is the one comparison this figure exists to make. */
+             const peak = Math.max(...data.worked.cooling.rows.flatMap((r) => r.v.map(Math.abs)));
+             return data.worked.cooling.rows.map((r) => `<tr>
+               <th scope="row">${esc(r.m)}</th>${r.v
+                 .map((v) => `<td data-lv="${heat(v)}" style="--w:${(Math.abs(v) / peak * 100).toFixed(1)}%">
+                   <span>${v.toFixed(2)}</span></td>`).join('')}
+             </tr>`).join('');
+           })()}</tbody>
+         </table></div>
+         <figcaption>${esc(data.worked.cooling.cap)}${data.worked.cooling.note
+           ? ` <span class="mtable__note">${data.worked.cooling.note}</span>` : ''}</figcaption>
+       </figure>`
+    : '';
+
+  const num = (n) => n.toLocaleString('en-US');
+  const reachTable = data.worked?.reach
+    ? `<figure class="mtable">
+         <div class="mtable__scroll"><table>
+           <thead><tr>
+             <th scope="col">City</th>
+             <th scope="col">Water feature</th>
+             <th scope="col">Urban greening</th>
+             <th scope="col">Any local measure</th>
+           </tr></thead>
+           <tbody>${(() => {
+             /* Square-root scale. Dammam's 16,167 against NEOM's 2 is a ratio
+                of 8,000:1, and on a linear bar every city except the top two
+                would be an invisible sliver — the figure would show one fact
+                and hide four. The root keeps the ordering honest while leaving
+                the small values legible; the number is printed beside it, so
+                the bar is the shape of the comparison and the digits are the
+                comparison itself. */
+             const peak = Math.sqrt(Math.max(...data.worked.reach.rows
+               .flatMap((r) => [r.w[1], r.g[1], r.l[1]])));
+             return data.worked.reach.rows.map((r) => `<tr>
+               <th scope="row">${esc(r.c)}</th>
+               ${[r.w, r.g, r.l].map(([cells, people]) => `<td style="--w:${
+                 peak ? (Math.sqrt(people) / peak * 100).toFixed(1) : 0}%">
+                 <b>${num(people)}</b><span>${cells} cell${cells === 1 ? '' : 's'}</span>
+               </td>`).join('')}
+             </tr>`).join('');
+           })()}</tbody>
+         </table></div>
+         <figcaption>${esc(data.worked.reach.cap)}${data.worked.reach.note
+           ? ` <span class="mtable__note">${data.worked.reach.note}</span>` : ''}</figcaption>
+       </figure>`
+    : '';
+
+  const workedRows = data.worked?.rows
+    ? `<div class="mwork__rows">${data.worked.rows
+        .map((r) => `<div class="mwork__row">
+           <span class="mwork__v">${r.v}</span>
+           <span class="mwork__l">${esc(r.l)}</span>
+         </div>`).join('')}</div>`
+    : '';
+
   const worked = data.worked
     ? `<div class="msec">${esc(data.worked.sec)}</div>
        <div class="mwork">
          <p class="mwork__lead">${data.worked.lead}</p>
-         <div class="mwork__rows">${data.worked.rows
-           .map((r) => `<div class="mwork__row">
-              <span class="mwork__v">${r.v}</span>
-              <span class="mwork__l">${esc(r.l)}</span>
-            </div>`).join('')}</div>
+         ${workedRows}${coolTable}${reachTable}
          ${data.worked.foot ? `<p class="mwork__foot">${esc(data.worked.foot)}</p>` : ''}
        </div>`
     : '';
@@ -186,7 +287,7 @@ function render(data) {
            <button class="mtwin__btn" type="button" data-twin-release hidden>Release cursor</button>
          </div>
        </div>
-       <p class="mtwin__note">${data.twin.note}</p>`
+       ${data.twin.note ? `<p class="mtwin__note">${data.twin.note}</p>` : ''}`
     : '';
 
   return `

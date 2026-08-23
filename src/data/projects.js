@@ -15,39 +15,91 @@ export const projects = {
     embed: 'atlas',
     cat: 'M.Sc. Thesis · KFUPM · Architecture & City Design',
     title: 'Smart Digital Twin Framework for Urban Heat Island Monitoring, Forecasting & Mitigation',
+    /* THE ACTUAL ABSTRACT, from CORRECTED_manuscript.md. `desc` is the short
+       card summary and stays; this is what the modal leads with. The other
+       paper on this site already uses an `abstract` field, so the modal
+       already knows how to render one. */
+    /* THE ABSTRACT NAMES ITS OWN STRUCTURE — "three findings. First... Second...
+       Third..." — so these are not a summary written over the top of it, they
+       are its own three claims lifted out and given a shape. The abstract
+       stays verbatim underneath; this is what a reader sees first, because a
+       2,250-character paragraph is where a card loses people. */
+    findings: [
+      {
+        k: 'Cool, not hot',
+        v: 'negative UHI',
+        t: 'The cities are COOLER by day than the surrounding desert — the inverse of the classical model. The daytime signal is driven by built-up density (NDBI), not vegetation.',
+      },
+      {
+        k: 'And closing',
+        v: '→ 0 by 2030',
+        t: 'The cool-island is not static. Both desert and city are warming, and the gap narrows to −0.01 °C in Makkah, holding between −0.67 and −1.31 °C in the other four.',
+      },
+      {
+        k: 'Reach beats intensity',
+        v: '27× ',
+        t: 'The broadest measure protects most. One water feature reaches 16,167 residents in Dammam through spillover; a cool pavement three times as cold reaches 602.',
+      },
+    ],
+    abstract: 'Saudi Arabia’s largest cities are getting hotter, but not according to the traditional urban heat island model. Using an 8-year (2018–2026) grid of MODIS LST data (1 km native, analysed on a ~500 m / 0.005° grid), the thermal behaviour of five desert and coastal cities — Riyadh, Jeddah, Dammam, Makkah and NEOM — is characterised, and an operational digital-twin dashboard is developed to monitor, forecast and mitigate extreme heat. The work is supported by three findings. First, the cities are cooler by day than the surrounding desert, which results in a negative urban heat island intensity — an urban cool-island — and the daytime signal is driven primarily by built-up density (NDBI) rather than by vegetation, quantified by a sign-constrained regression fit on each city’s own summer data instead of by coefficients borrowed from the literature. Second, the cool-island is not static: a Prophet forecasting family, forecasting land-surface temperature directly for both day and night on a corrected equal-area geometry, reproduces the seasonal cycle (monthly RMSE 0.96–1.91 °C by day and 0.79–1.29 °C by night, r 0.94–0.99) and projects a progressive decrease of the cool-island toward zero by 2030, with a warming trend in both desert and city, to −0.01 °C in Makkah but remaining between −0.67 and −1.31 °C in the other four cities. Third, the heat-vulnerability index and the intervention simulator convert this physics into planning decisions: the simulation uses the same own-data coefficients to estimate cell-level cooling, its spatial spillover, the residents and elderly who benefit, an approximate cost, and the districts affected. The cross-sensor comparison against Landsat returned a correlation of R > 0.85 in all five cities. The broadest intervention, not the most localised, provides the most protection: a single water feature reaches tens of thousands of residents through spillover, whereas an intense but local measure such as a cool roof protects only the few hundred residents of the block it covers. The dashboard packages monitoring, forecasting, vulnerability and mitigation in one interface, and builds on recent urban-digital-twin research from a single pilot microclimate to a multi-city, decision-support scale.',
     desc: 'Built on Design Science Research methodology, this digital twin platform pulls MODIS Land Surface Temperature via Google Earth Engine, runs a Prophet forecasting ensemble (Terra and Aqua modelled separately, day and night, monthly + 7-day + 2030 horizons), and computes an equity-weighted Heat Vulnerability Index. An intervention simulator ranks twelve mitigation measures by cooling delivered, spillover reach, cost, and beneficiaries — using own-data seasonal betas, not literature values. Served through a FastAPI + PostgreSQL/PostGIS backend and a deck.gl + MapLibre frontend. Five Saudi cities. One framework.',
     diagram: 'thesis',
+    /* TABLES 5.22 AND 5.23, which are the two results the simulator exists
+       to produce. The previous version quoted only the Dammam pair (16,167
+       against 602) and called it a worked example; those numbers were right
+       but they were one row of a five-row finding, so the pattern they were
+       chosen to illustrate could not actually be seen. */
     worked: {
-      sec: 'Intervention Simulator — a worked example',
-      lead: 'Twelve mitigation measures ranked by cooling delivered, spillover reach, cost, and beneficiaries — scored on this study’s own seasonal betas rather than literature values. In Dammam, for the same money:',
-      rows: [
-        { v: '16,167', l: 'residents cooled by one water feature' },
-        { v: '602', l: 'residents cooled by one cool-pavement patch' },
-      ],
-      foot: 'Same budget, 27× the reach. Ranking by residents-per-riyal is what the simulator exists to do.',
+      sec: 'Intervention simulator — what reaches people',
+      lead: 'Repeating one worked example at the hottest inhabited cell in every city gives two matrices, and the lesson is in the gap between them. Intensity and benefit have almost nothing to do with each other: the six local measures each cool only the block they sit on, however hard they cool it, while the two wide-spillover measures carry across the neighbourhood.',
+      /* cooling at the treated cell, before spillover (Table 5.22) */
+      cooling: {
+        cap: 'Direct per-cell surface cooling (°C), summer betas, standard intensity',
+        cities: ['Riyadh', 'Jeddah', 'Dammam', 'Makkah', 'NEOM'],
+        rows: [
+          { m: 'Cool pavement',   v: [-9.12, -8.88, -9.11, -8.66, -9.90] },
+          { m: 'Cool roof',       v: [-3.04, -2.96, -3.04, -2.89, -3.30] },
+          { m: 'Green roof',      v: [-1.78, -2.38, -3.07, -1.44, -1.98] },
+          { m: 'De-paving',       v: [-2.18, -1.43, -2.43, -4.05, -0.29] },
+          { m: 'Water feature',   v: [-2.00, -2.00, -2.00, -2.00, -2.00] },
+          { m: 'Urban greening',  v: [-0.35, -1.06, -3.10,  0.00, -0.33] },
+        ],
+        note: 'The reflectivity levers sit on a physics-based albedo term and behave almost identically everywhere. The vegetation levers follow each city\u2019s own regression — strongest in Dammam, and honestly zero in Makkah, whose NDVI coefficient is zero.',
+      },
+      /* neighbourhood reach and residents benefited (Table 5.23) */
+      reach: {
+        cap: 'Cells reached and residents benefited, same cell, same intensity',
+        rows: [
+          { c: 'Riyadh', w: [21, 14613], g: [9, 6286], l: [1, 696] },
+          { c: 'Jeddah', w: [12, 9109],  g: [6, 4541], l: [1, 734] },
+          { c: 'Dammam', w: [27, 16167], g: [9, 5473], l: [1, 602] },
+          { c: 'Makkah', w: [11, 810],   g: [0, 0],    l: [1, 65] },
+          { c: 'NEOM',   w: [27, 56],    g: [9, 18],   l: [1, 2] },
+        ],
+        note: 'Makkah\u2019s greening column is zero because its greening coefficient is zero, and NEOM\u2019s counts are negligible because its hottest cells are almost uninhabited. Both are kept rather than hidden: a simulator that only reports where it works is not a simulator.',
+      },
+      foot: 'In Dammam one water feature cools 16,167 residents while a −9 °C cool pavement cools 602 — 27× the reach for the weaker measure. Ranking by residents reached, not by degrees delivered, is what the simulator exists to do.',
     },
-    /* CHECKED AGAINST THE SHIPPED DATABASE, not against memory.
+    /* FROM THE MANUSCRIPT, WHICH OUTRANKS THE DASHBOARD SNAPSHOT.
 
-       Every figure is recomputed from public/uhi-twin/db, the frozen snapshot
-       the embedded dashboard runs on, so the card and the dashboard beneath it
-       cannot disagree.
+       These were briefly "corrected" against public/uhi-twin/db and that was
+       wrong. The snapshot is a frozen export the embedded demo runs on; the
+       thesis is the result. Where they differ the manuscript wins, and it
+       states monthly RMSE 0.96-1.91 C by day and 0.79-1.29 C by night with
+       r 0.94-0.99, and R > 0.85 against Landsat in all five cities. The
+       snapshot showed 0.98-1.87 and carried no cross-sensor comparison at
+       all, which is why checking a claim against the nearest available data
+       rather than against its source can retire a true statement.
 
-         RMSE   0.98-1.87 is the monthly lst_day range across the five cities
-                (neom 0.98, makkah 1.28, jeddah 1.40, dammam 1.56, riyadh 1.87).
-                It read 0.96-1.91, which overstates the interval at both ends.
-         R2     0.91-0.99 across the day and night monthly models. This replaces
-                'r >= 0.85 MODIS vs Landsat', which nothing in the snapshot can
-                support: there is no cross-sensor validation in it to check.
-         1.37M  is exactly right (1,365,862) but was labelled ambiguously. It is
-                the TOP HVI quintile. The database's own pop_at_risk field means
-                the top TWO and totals 2.48M, so 'at-risk residents' pointed the
-                reader at the larger number by the study's own definition.
-         5.54M  population inside the analysed footprint, over 12,390 cells. */
+       1.37M is the population of the Very-High HVI class summed across the
+       five cities. Named as the class rather than as "at-risk", because the
+       database also has a pop_at_risk field meaning the top TWO classes,
+       which totals 2.48M -- so the looser word pointed at the wrong figure. */
     metrics: [
-      { v: '0.98-1.87 °C', l: 'Monthly LST RMSE · 5 cities' },
-      { v: 'R² 0.91-0.99', l: 'Monthly models, day and night' },
-      { v: '1.37M', l: 'Residents in the highest HVI quintile' },
-      { v: '5.54M', l: 'Mapped on a 500 m grid · 12,390 cells' },
+      { v: '0.96–1.91 °C', l: 'Monthly LST RMSE by day · 0.79–1.29 by night' },
+      { v: 'R > 0.85', l: 'MODIS vs Landsat, all five cities' },
+      { v: '1.37M', l: 'Residents in Very-High vulnerability cells' },
+      { v: '2018–2026', l: 'Eight years of MODIS LST on a 500 m grid' },
     ],
     method: 'Google Earth Engine (on-demand ingestion) → PostgreSQL/PostGIS spatial DB → Prophet forecasting (Terra + Aqua separately, day + night) → Intervention Simulator (own-data seasonal OLS betas, exponential spillover kernel, Saudi/Gulf cost rates) → FastAPI backend → deck.gl + MapLibre dashboard. Kafka/Spark streaming layer designed for future automation.',
     /* The dashboard itself, running in the page.

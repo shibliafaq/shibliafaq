@@ -423,18 +423,12 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 }
 
 /* ---- the architecture diagram ---- */
-.mdiagram {
-  /* A pipeline is wide by nature. Scroll it rather than shrink the labels to
-     nothing — `overflow-x` on the container, never on the page. */
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  background: var(--ink-1);
-  padding: .5rem;
-}
-
-.mdiagram .dg { display: block; width: 100%; min-width: 720px; height: auto; }
+/* NO LONGER A SCROLLER, because the drawing inside it is no longer a drawing.
+   The SVG version was solved at fixed coordinates and had a 720px floor, so a
+   panel narrower than that had to scroll sideways. The HTML figures reflow, so
+   forcing a minimum width would reintroduce a horizontal scrollbar around
+   content that had already fitted itself to the space. */
+.mdiagram { display: grid; gap: 1rem; }
 
 .dg-lane rect { fill: none; stroke: var(--line); stroke-width: 1; }
 .dg-lane--plan rect { stroke-dasharray: 5 5; }
@@ -766,3 +760,365 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
   .mmethod,
   .mtwin__lead { text-align: left; text-align-last: left; }
 }
+
+/* ============================================================
+   RESULT TABLES
+   ============================================================
+
+   A five-city matrix cannot be narrowed to a phone without shrinking the type
+   past reading or dropping columns, and dropping columns from a table whose
+   whole point is the comparison across cities is the worst of the three. So it
+   scrolls inside its own box and the page never does. */
+.mtable { margin: 1.25rem 0 0; }
+.mtable__scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm, 10px);
+  background: rgba(9, 9, 11, .35);
+}
+.mtable table {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+}
+.mtable th, .mtable td {
+  padding: .6em .75em;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--line);
+}
+.mtable thead th {
+  position: sticky; top: 0;
+  background: var(--ink-1);
+  color: var(--t-3);
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+/* The row label anchors the row while the numbers scroll past it. */
+.mtable tbody th {
+  position: sticky; left: 0;
+  text-align: left;
+  background: var(--ink-1);
+  color: var(--t);
+  font-weight: 500;
+}
+.mtable thead th:first-child { left: 0; z-index: 1; }
+.mtable tbody tr:last-child th,
+.mtable tbody tr:last-child td { border-bottom: 0; }
+
+/* Magnitude, carried by weight rather than by colour: these are all cooling
+   figures, so a red-to-blue scale would invent a direction the data does not
+   have. 0 is a measured result — Makkah's greening coefficient really is zero —
+   so it is never dimmed to look like missing data. */
+.mtable td { color: var(--t-2); }
+.mtable td[data-lv="0"] { color: var(--t-4); }
+.mtable td[data-lv="2"] { color: var(--t); }
+.mtable td[data-lv="3"] { color: var(--amber); font-weight: 600; }
+
+.mtable td b { display: block; color: var(--t); font-weight: 600; }
+.mtable td span { display: block; font-size: .85em; color: var(--t-4); }
+
+.mtable figcaption {
+  margin-top: .6rem;
+  font-size: var(--fs-label);
+  line-height: 1.55;
+  color: var(--t-3);
+}
+.mtable__note { color: var(--t-4); }
+
+/* ============================================================
+   DIAGRAMS, BUILT FROM BOXES RATHER THAN DRAWN
+   ============================================================
+
+   Every band is a grid of auto-fitting columns, so the figure reflows instead
+   of being solved at fixed coordinates: a longer label makes its box taller
+   rather than overflowing it, and a phone gets a legible stack of the same
+   content rather than a wide drawing scaled past reading.
+
+   The solid/dashed distinction is the load-bearing part. Solid is the
+   operational path; dashed is the streaming layer, which is built and does run
+   but is started manually. Drawing them alike would claim a live cluster. */
+.dgx {
+  margin: 0 0 1.5rem;
+  padding: clamp(.85rem, 2.5vw, 1.35rem);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm, 12px);
+  background: rgba(9, 9, 11, .35);
+}
+.dgx__cap {
+  margin: 0 0 1rem;
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  line-height: 1.5;
+  color: var(--t-3);
+}
+.dgx__cap b { color: var(--t); font-weight: 600; }
+
+.dgx__layer { display: grid; gap: .5rem; }
+.dgx__lh { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem .75rem; }
+.dgx__ln {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.dgx__lnote { font-family: var(--f-mono); font-size: var(--fs-label); color: var(--t-4); }
+.dgx__layer--dash .dgx__ln { color: var(--t-3); }
+
+/* auto-fit, so three boxes sit in a row on a panel and stack on a phone
+   without a breakpoint deciding it */
+.dgx__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: .5rem;
+  margin: 0; padding: 0; list-style: none;
+}
+.dgx__node {
+  display: grid;
+  align-content: start;
+  gap: .25rem;
+  padding: .7rem .8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm, 10px);
+  background: rgba(20, 20, 24, .7);
+}
+.dgx__node--dash {
+  border-style: dashed;
+  background: transparent;
+}
+.dgx__t { font-size: var(--fs-sm); color: var(--t); line-height: 1.35; }
+.dgx__s {
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  line-height: 1.45;
+  color: var(--t-4);
+}
+
+/* the connector between bands */
+.dgx__flow {
+  justify-self: center;
+  width: 0;
+  height: 1.1rem;
+  margin: .35rem 0;
+  border-left: 1px solid var(--line);
+}
+.dgx__flow--dash { border-left-style: dashed; }
+
+.dgx__foot {
+  margin: 1rem 0 0;
+  font-family: var(--f-mono);
+  font-size: var(--fs-label);
+  line-height: 1.55;
+  color: var(--t-4);
+}
+
+/* The old SVG rules are dead with the drawing they styled. */
+
+/* ============================================================
+   ONE TYPE SCALE FOR THE PANEL, NOT A DOZEN CLAMPS
+   ============================================================
+
+   The modal had accumulated per-element sizes, so "make the text smaller on a
+   phone" meant finding and re-tuning every one of them, and the RELATIONSHIPS
+   between them drifted every time one moved: a heading two steps above its
+   body on a desktop ended up one step above it on a phone.
+
+   So the panel declares a single root, --ms, and every size is a ratio of it.
+   Change the root and the whole hierarchy moves together, keeping its
+   proportions — which is what makes it adaptable rather than merely responsive.
+   The ratios are a fourth-based scale (1.333) rounded to something that sets
+   cleanly, with the two body steps close together because they are read as one
+   texture rather than as levels.
+
+   --ms itself is the only thing a breakpoint touches. */
+.modal {
+  --ms: 1rem;
+  --ms-eyebrow: calc(var(--ms) * .72);
+  --ms-label:   calc(var(--ms) * .78);
+  --ms-small:   calc(var(--ms) * .88);
+  --ms-body:    var(--ms);
+  --ms-lead:    calc(var(--ms) * 1.12);
+  --ms-h3:      calc(var(--ms) * 1.33);
+  --ms-h2:      calc(var(--ms) * 1.78);
+  --ms-h1:      calc(var(--ms) * 2.37);
+}
+
+/* Proportional, not a redesign: one number moves and the hierarchy holds its
+   shape. 16 -> 15 -> 14px across the two phone widths, which is a little over
+   12% at the bottom — enough to buy back the line breaks that were making the
+   long technical labels wrap badly, without dropping body text below reading
+   size. */
+@media (max-width: 720px) { .modal { --ms: .94rem; } }
+@media (max-width: 480px) { .modal { --ms: .875rem; } }
+
+.modal .mabs,
+.modal .mprose > p,
+.modal .mmethod       { font-size: var(--ms-body); }
+.modal .mwork__lead,
+.modal .mtwin__lead   { font-size: var(--ms-lead); }
+.modal .msec          { font-size: var(--ms-label); }
+.modal .mwork__foot,
+.modal .mtable figcaption,
+.modal .dgx__cap,
+.modal .dgx__foot,
+.modal .dgx__s,
+.modal .dgx__lnote,
+.modal .dgx__ln       { font-size: var(--ms-label); }
+.modal .dgx__t,
+.modal .mtable table  { font-size: var(--ms-small); }
+.modal .mmv           { font-size: var(--ms-h3); }
+.modal .mml           { font-size: var(--ms-label); }
+
+/* ---- the figures show the numbers, not just list them -------------------
+
+   A bar behind each cell, width set inline from the data. It sits BEHIND the
+   digits rather than replacing them: the bar carries the shape of the
+   comparison at a glance and the number stays exact, so nothing is traded away
+   for the picture. Low alpha, because six columns of solid bars would read as
+   a heat map and invent a precision the eye would over-trust. */
+.mtable td { position: relative; isolation: isolate; }
+.mtable td::before {
+  content: '';
+  position: absolute;
+  inset: .3em auto .3em 0;
+  z-index: -1;
+  width: var(--w, 0);
+  border-radius: 3px;
+  background: linear-gradient(90deg,
+    color-mix(in oklab, var(--amber) 26%, transparent),
+    color-mix(in oklab, var(--amber) 6%, transparent));
+  transition: width .5s var(--e-out, ease);
+}
+/* Right-aligned numbers want the bar growing from the right, or it reads as
+   pointing away from the value it measures. */
+.mtable td::before { inset-inline: auto 0; }
+.mtable td[data-lv="3"]::before {
+  background: linear-gradient(90deg,
+    color-mix(in oklab, var(--amber) 42%, transparent),
+    color-mix(in oklab, var(--amber) 12%, transparent));
+}
+.mtable td[data-lv="0"]::before { background: none; }
+.mtable td > span { position: relative; }
+
+@media (prefers-reduced-motion: reduce) { .mtable td::before { transition: none; } }
+
+/* ============================================================
+   AMBIENT FIELD + INFOGRAPHIC BLOCKS
+   ============================================================
+
+   The panel was a column of flat dark cards, which reads as a document rather
+   than as a piece of work. Two soft blurred washes sit behind the content and
+   give it depth: warm from the top-left, cool from the lower-right, both at low
+   alpha and heavily blurred so nothing behind text ever competes with it.
+
+   `pointer-events: none` and `z-index: 0` — decoration must never intercept a
+   click, and the panel's own children stack above it. */
+.modal__panel { position: relative; isolation: isolate; }
+.modal__panel::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 30% at 12% 6%, color-mix(in oklab, var(--amber) 22%, transparent), transparent 70%),
+    radial-gradient(34% 28% at 88% 78%, color-mix(in oklab, var(--ember, #d97706) 16%, transparent), transparent 72%),
+    radial-gradient(30% 24% at 70% 22%, color-mix(in oklab, #38bdf8 10%, transparent), transparent 70%);
+  filter: blur(64px) saturate(120%);
+  opacity: .5;
+}
+.modal__panel > * { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .modal__panel::before { transition: opacity .6s var(--e-out, ease); }
+}
+
+/* ---- the three findings ---------------------------------------------- */
+.mfind3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: .75rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+.mfind3__c {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: .3rem;
+  padding: 1rem 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm, 12px);
+  overflow: hidden;
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.05), transparent 46%),
+    rgba(20, 20, 24, .72);
+}
+/* A hairline of colour along the top edge, so the three read as a set. */
+.mfind3__c::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--amber), transparent 78%);
+}
+.mfind3__n {
+  font-family: var(--f-mono);
+  font-size: var(--ms-label, .78rem);
+  letter-spacing: .12em;
+  color: var(--t-4);
+}
+.mfind3__v {
+  font-family: var(--f-display, inherit);
+  font-size: var(--ms-h2, 1.78rem);
+  line-height: 1.05;
+  color: var(--amber);
+}
+.mfind3__k {
+  font-family: var(--f-mono);
+  font-size: var(--ms-label, .78rem);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--t-2);
+}
+.mfind3__t {
+  margin: .35rem 0 0;
+  font-size: var(--ms-small, .88rem);
+  line-height: 1.55;
+  color: var(--t-3);
+}
+
+/* ---- the abstract, folded away -------------------------------------- */
+.mabs__wrap { margin: 0 0 1.5rem; }
+.mabs__wrap > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .5rem .85rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--f-mono);
+  font-size: var(--ms-label, .78rem);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--t-3);
+  cursor: pointer;
+  list-style: none;
+  transition: color var(--d-fast) var(--e-out), border-color var(--d-fast) var(--e-out);
+}
+.mabs__wrap > summary::-webkit-details-marker { display: none; }
+.mabs__wrap > summary::after {
+  content: '+';
+  font-size: 1.1em;
+  line-height: 1;
+}
+.mabs__wrap[open] > summary::after { content: '2'; }
+.mabs__wrap > summary:hover { color: var(--t); border-color: var(--amber); }
+.mabs__wrap .mabs { margin-top: .9rem; }

@@ -1,96 +1,142 @@
 /**
- * Architecture diagrams, drawn as inline SVG rather than shipped as images.
+ * Architecture diagrams, built from HTML and CSS rather than shipped as images.
  *
  * WHY NOT A PNG
  * -------------
- * The two WebP diagrams these replace went stale and stayed stale: they drew
- * Kafka, Spark and Streamlit as live blocks long after the stack changed, said
- * "48-Hour Forecast RMSE < 1.5°C" when the horizons are 7-day and monthly,
- * "5 Prophet Models" when there are twenty, and "2023-2025 (730 days)" against
- * an eight-year series. Every one of those is a one-word edit here and a
- * redraw-and-re-export in an image editor — which is exactly why it never
- * happened.
+ * The two WebP diagrams these replace went stale and stayed stale. They drew a
+ * Streamlit dashboard long after the stack became FastAPI + deck.gl, said
+ * "48-Hour Forecast RMSE < 1.5 °C" when the horizons are 7-day and monthly,
+ * "5 Prophet Models (1 per city)" when there are twenty, and "2023-2025 (730
+ * days)" against an eight-year series. Every one of those is a one-word edit
+ * here and a redraw-and-re-export in an image editor — which is exactly why it
+ * never happened.
  *
- * Inline SVG also scales to any width without blurring, inherits the page's
- * colours through CSS custom properties so it follows the theme, and puts its
- * labels in the DOM where a screen reader and a translator can reach them.
- *
- * DELIVERED vs ROADMAP
+ * WHY HTML AND NOT SVG
  * --------------------
- * The single most important thing this diagram does is separate what runs from
- * what is designed. Solid boxes are built and running; dashed boxes are the
- * streaming layer that exists as a design and not as a deployment. The previous
- * version drew both identically, which is how the site ended up claiming a live
- * Kafka cluster.
+ * The previous version of this file drew the same thing in hand-placed SVG,
+ * with every box at an absolute x/y. That is fine until a label changes length
+ * or the panel changes width: nothing reflows, so text either overflows its
+ * rect or the whole figure has to be re-solved by hand. Boxes in a grid wrap,
+ * balance and re-flow on their own, the type is real type that scales with the
+ * page and can be selected and translated, and a phone gets a legible stack of
+ * the same content rather than a wide drawing scaled into illegibility.
+ *
+ * THE SOURCE
+ * ----------
+ * Both follow CORRECTED_manuscript.md — Figure 4.1 (end-to-end architecture,
+ * four layers) and Figure 4.2 (technical data pipeline). The manuscript's own
+ * convention is carried over exactly: solid is the operational batch/on-demand
+ * path, dashed is the optional streaming layer, "started manually and not part
+ * of the default deployment".
+ *
+ * That distinction is the one thing here that must not blur. It is NOT a
+ * roadmap — the streaming layer is built and it runs; it simply is not what
+ * runs by default. Labelling it as unbuilt would understate the work, and
+ * drawing it identically to the rest would claim a live Kafka cluster. Dashed,
+ * with the reason written on it, is the honest middle.
  */
 
-const BOX = (x, y, w, h, title, sub, kind = 'solid') => `
-  <g class="dg-node dg-node--${kind}" transform="translate(${x},${y})">
-    <rect width="${w}" height="${h}" rx="10"/>
-    <text class="dg-t" x="14" y="26">${title}</text>
-    ${sub ? `<text class="dg-s" x="14" y="46">${sub}</text>` : ''}
-  </g>`;
+const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 
-/** Arrow between two points. `dash` marks a roadmap connection. */
-const ARROW = (x1, y1, x2, y2, dash = false) =>
-  `<path class="dg-link${dash ? ' dg-link--dash' : ''}" d="M${x1},${y1} L${x2},${y2}" marker-end="url(#dg-head)"/>`;
+/** One box. `kind` is 'solid' for the operational path, 'dash' for optional. */
+const node = (title, sub, kind = 'solid') => `
+  <li class="dgx__node dgx__node--${kind}">
+    <span class="dgx__t">${esc(title)}</span>
+    ${sub ? `<span class="dgx__s">${esc(sub)}</span>` : ''}
+  </li>`;
 
-const LANE = (x, y, w, h, label, kind) => `
-  <g class="dg-lane dg-lane--${kind}">
-    <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="14"/>
-    <text class="dg-lane-t" x="${x + 16}" y="${y + 22}">${label}</text>
-  </g>`;
+/** A labelled band of the diagram. */
+const layer = (label, note, nodes, kind = 'solid') => `
+  <section class="dgx__layer dgx__layer--${kind}">
+    <header class="dgx__lh">
+      <span class="dgx__ln">${esc(label)}</span>
+      ${note ? `<span class="dgx__lnote">${esc(note)}</span>` : ''}
+    </header>
+    <ul class="dgx__row">${nodes.join('')}</ul>
+  </section>`;
 
-/**
- * The thesis pipeline. Every figure here is the corrected one — see
- * docs/CONTEXT.md §20 for what each replaced.
- */
-export function thesisDiagram() {
+/** The connector between two layers. */
+const flow = (kind = 'solid') => `<div class="dgx__flow dgx__flow--${kind}" aria-hidden="true"></div>`;
+
+/* ---------------------------------------------------------------- Figure 4.1 */
+
+export function thesisArchitecture() {
   return `
-<svg class="dg" viewBox="0 0 1020 470" role="img"
-     aria-label="Digital twin pipeline. Delivered: Google Earth Engine ingestion, PostGIS store, twenty Prophet models, Heat Vulnerability Index, intervention simulator, FastAPI backend and a deck.gl dashboard. Roadmap: Kafka and Spark streaming, VIIRS multi-sensor, scheduled ingestion.">
-  <defs>
-    <marker id="dg-head" viewBox="0 0 10 10" refX="9" refY="5"
-            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" class="dg-arrow"/>
-    </marker>
-  </defs>
+<figure class="dgx" role="group"
+        aria-label="End-to-end digital twin architecture in four layers: ingestion, storage, an optional streaming layer, and serving.">
+  <figcaption class="dgx__cap"><b>System architecture</b> — ingestion, storage, serving. The dashed band is the optional streaming layer.</figcaption>
 
-  ${LANE(8, 8, 1004, 292, 'DELIVERED — RUNNING', 'live')}
+  ${layer('Ingestion', 'Python pipeline · scheduled and on demand', [
+    node('Google Earth Engine', 'MODIS LST · NDVI · NDBI, 2018–2026'),
+    node('Open-Meteo API', 'Meteorological series'),
+    node('WorldPop', 'Population, 100 m'),
+  ])}
 
-  ${BOX(28, 46, 200, 66, 'Google Earth Engine', 'MODIS Terra + Aqua LST', 'solid')}
-  ${BOX(268, 46, 200, 66, 'PostgreSQL / PostGIS', '500 m grid · 2018–2025', 'solid')}
-  ${BOX(508, 46, 232, 66, 'Prophet ensemble', '20 models · 5 cities × 2 sensors × day/night', 'solid')}
-  ${BOX(780, 46, 212, 66, 'Landsat cross-validation', 'r ≥ 0.85', 'solid')}
+  ${flow()}
 
-  ${ARROW(232, 79, 262, 79)}
-  ${ARROW(472, 79, 502, 79)}
-  ${ARROW(744, 79, 774, 79)}
+  ${layer('Processing', 'Regridding and index computation', [
+    node('Equal-area regrid', '~500 m / 0.005° grid · urban–rural radius'),
+    node('Sign-constrained regression', 'β NDVI · β NDBI · β albedo, per city'),
+    node('Heat Vulnerability Index', 'LST, NDVI, NDBI and population, equally weighted'),
+  ])}
 
-  ${BOX(28, 160, 200, 66, 'Heat Vulnerability Index', 'equity-weighted · 1.37M at risk', 'solid')}
-  ${BOX(268, 160, 232, 66, 'Intervention Simulator', '12 measures · own-data seasonal betas', 'solid')}
-  ${BOX(540, 160, 180, 66, 'FastAPI', 'REST + tiles', 'solid')}
-  ${BOX(760, 160, 232, 66, 'deck.gl + MapLibre', 'browser dashboard', 'solid')}
+  ${flow()}
 
-  ${ARROW(232, 193, 262, 193)}
-  ${ARROW(504, 193, 534, 193)}
-  ${ARROW(724, 193, 754, 193)}
+  ${layer('Storage', 'The single source both paths write to', [
+    node('PostgreSQL + PostGIS', 'Historical archive 2018–2026 · model training set'),
+  ])}
 
-  <!-- forecast feeds the vulnerability layer on the row below -->
-  <path class="dg-link" d="M624,116 L624,140 L128,140 L128,156" marker-end="url(#dg-head)"/>
+  ${flow('dash')}
 
-  <text class="dg-note" x="28" y="266">Monthly RMSE 0.96–1.91 °C day · 0.79–1.29 °C night &#160;·&#160; 7-day 2.4–3.3 °C &#160;·&#160; regressors β<tspan baseline-shift="sub" font-size="9">NDVI</tspan> β<tspan baseline-shift="sub" font-size="9">NDBI</tspan> β<tspan baseline-shift="sub" font-size="9">Albedo</tspan></text>
+  ${layer('Streaming', 'Built and runs — started manually, not the default path', [
+    node('Apache Kafka', 'lst-daily-v2 · weather-daily-v2 · vegetation-monthly-v2', 'dash'),
+    node('Spark Structured Streaming', '30-second micro-batch, writes back to PostGIS', 'dash'),
+    node('Derived topics', 'Heat alerts · refreshed forecast', 'dash'),
+  ], 'dash')}
 
-  ${LANE(8, 316, 1004, 146, 'ROADMAP — DESIGNED, NOT DEPLOYED', 'plan')}
+  ${flow()}
 
-  ${BOX(28, 356, 200, 66, 'Apache Kafka', '3-broker ingest bus', 'dash')}
-  ${BOX(268, 356, 200, 66, 'PySpark Streaming', 'event-time watermarking', 'dash')}
-  ${BOX(508, 356, 200, 66, 'Scheduled ingestion', 'replaces on-demand pulls', 'dash')}
-  ${BOX(748, 356, 244, 66, 'VIIRS multi-sensor', 'extracted, not yet in pipeline', 'dash')}
-
-  ${ARROW(232, 389, 262, 389, true)}
-  ${ARROW(472, 389, 502, 389, true)}
-</svg>`;
+  ${layer('Serving', 'What the reader is looking at', [
+    node('FastAPI', 'Reads PostGIS · REST and tiles'),
+    node('deck.gl + MapLibre', 'Browser dashboard, seven tabs'),
+  ])}
+</figure>`;
 }
 
-export const DIAGRAMS = { thesis: thesisDiagram };
+/* ---------------------------------------------------------------- Figure 4.2 */
+
+export function thesisPipeline() {
+  return `
+<figure class="dgx" role="group"
+        aria-label="Technical data pipeline from satellite retrieval to decision output, with forecasting and simulation branches.">
+  <figcaption class="dgx__cap"><b>Data pipeline</b> — from satellite retrieval to decision output.</figcaption>
+
+  ${layer('Retrieve', 'Eight years, five cities', [
+    node('MODIS Terra + Aqua', 'Day and night LST, 1 km native'),
+    node('Landsat', 'Cross-sensor check · R > 0.85 in all five cities'),
+  ])}
+
+  ${flow()}
+
+  ${layer('Model', 'Two branches off one store', [
+    node('Prophet family', 'LST direct, day and night · monthly and 7-day'),
+    node('Own-data betas', 'Fitted on each city’s summer, not borrowed'),
+  ])}
+
+  ${flow()}
+
+  ${layer('Decide', 'What a planner actually reads', [
+    node('Forecast', 'Monthly RMSE 0.96–1.91 °C day · 0.79–1.29 °C night'),
+    node('Vulnerability', '1.37M residents in Very-High cells'),
+    node('Intervention simulator', '12 measures · cooling, spillover, cost, residents reached'),
+  ])}
+
+  <p class="dgx__foot">Solid is the operational batch and on-demand path. The streaming layer in the architecture above feeds the same store on a near-real-time channel when it is started.</p>
+</figure>`;
+}
+
+/* Both figures under one key, so the modal needs no change: a project asks for
+   `diagram: 'thesis'` and gets the architecture and the pipeline in order. */
+export const DIAGRAMS = {
+  thesis: () => thesisArchitecture() + thesisPipeline(),
+};

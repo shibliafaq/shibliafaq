@@ -5293,3 +5293,81 @@ with the shipped copy — they show a Streamlit dashboard where the site says
 FastAPI + deck.gl + MapLibre, and "48-Hour Forecast RMSE < 1.5 °C" where the
 measured monthly range is 0.98-1.87. They look like an earlier draft, so they
 cannot simply be traced.
+
+## 68. The thesis card, rebuilt from the manuscript (2026-08-23)
+
+Source: `E:\KFUPM\uhi_digital_twin_v2\CORRECTED_manuscript.md`.
+
+### A correction to section 67, which was wrong
+
+Section 67 "verified" the card's statistics against `public/uhi-twin/db` and
+changed two of them. The manuscript says otherwise, and the manuscript wins:
+
+| | §67 changed it to | manuscript |
+|---|---|---|
+| Monthly RMSE | 0.98-1.87 °C | **0.96-1.91 °C by day**, 0.79-1.29 by night, r 0.94-0.99 |
+| MODIS vs Landsat | removed as unverifiable | **R > 0.85 in all five cities** |
+
+Both original figures were right and I retired one of them. The snapshot is a
+frozen export the embedded demo runs on; the thesis is the result, and the two
+are not the same dataset. **Checking a claim against the nearest available data
+rather than against its source can retire a true statement** — which is a worse
+outcome than leaving it unchecked, because it looks like diligence.
+
+What did survive: 1.37M is exact, and the label "at-risk residents" was
+genuinely ambiguous, since the database's own `pop_at_risk` field means the top
+TWO HVI classes and totals 2.48M. It now names the Very-High class.
+
+### Findings first, abstract second
+
+The abstract is 2,250 characters, which is where a card loses the reader it just
+earned. It also names its own structure — "three findings. First... Second...
+Third..." — so those come out as three cards and the abstract goes behind a
+disclosure. Nothing is removed; the order is reversed to put the conclusions
+before the compression.
+
+### The worked example became the actual result
+
+The card quoted the Dammam pair (16,167 against 602) as a worked example. Those
+numbers were right, but they are one row of a five-row finding, so the pattern
+they were chosen to illustrate could not be seen. Tables 5.22 and 5.23 are both
+there now — per-cell cooling by measure and city, and cells/residents reached.
+
+Each cell carries a bar behind its number. Two scaling decisions matter:
+
+- **Cooling bars scale to the whole table**, not per row. Per-row normalisation
+  would make Makkah's zero-coefficient greening as long as Dammam's -3.10, which
+  is the one comparison the figure exists to make.
+- **Reach bars use a square root.** Dammam's 16,167 against NEOM's 2 is 8,000:1,
+  and on a linear bar every city but the top two is an invisible sliver — the
+  figure would show one fact and hide four. The exact number is printed beside
+  the bar, so the bar carries the shape and the digits carry the value.
+
+### Diagrams: HTML, and the roadmap lane is gone
+
+Rebuilt from Figures 4.1 and 4.2 as HTML boxes in auto-fitting grids rather than
+SVG at hand-placed coordinates. The old version could not reflow — a longer
+label overflowed its rect and the figure had to be re-solved by hand — and had a
+720px floor, so a panel narrower than that scrolled sideways.
+
+The `ROADMAP — DESIGNED, NOT DEPLOYED` lane is removed, and the distinction it
+was drawing is restored to what the manuscript actually says: the streaming
+layer is **built and it runs**, it is simply "started manually and not part of
+the default deployment". Calling it a roadmap understated finished work;
+drawing it solid would have claimed a live Kafka cluster. Dashed, with the
+reason written on it, is the honest middle.
+
+### One type scale, not a dozen clamps
+
+The panel had accumulated per-element sizes, so "smaller on a phone" meant
+re-tuning each one and the RELATIONSHIPS drifted every time: a heading two steps
+above its body on a desktop ended up one step above it on a phone. There is now
+a single `--ms` root on `.modal` with every size a ratio of it, so one number
+moves the whole hierarchy and it keeps its proportions. 16 -> 15 -> 14px across
+the two phone widths.
+
+### A bug the removals exposed
+
+Deleting `twin.note` printed the literal string "undefined" into the panel: the
+template interpolated it unguarded. Worth noting because it is invisible in the
+data — the field was simply gone, correctly — and only shows up on screen.
