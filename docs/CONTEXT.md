@@ -5402,3 +5402,37 @@ without checking whether the parent is already positioned — and when it is, th
 override is silent, because nothing about a gradient suggests it could disable
 scrolling three elements down. Add `isolation` alone; add `position` only after
 checking there is not one already.
+
+## 70. Justification, done properly this time (2026-08-23)
+
+Reported as the text still not being justified. Two faults, both mine.
+
+**The list only covered a third of the paragraphs.** Four classes were named —
+`.mabs`, `.mdesc`, `.mprose > p`, `.mmethod`, `.mtwin__lead` — and eight more
+were not: the finding cards, the simulator lead and footnote, both diagram
+captions, the table captions and the atlas lead. Every block added after the
+rule was written would have missed it too, which is the failure mode of
+enumerating class names for something that is really a ROLE. It now selects
+paragraphs inside the panel and lists the exceptions — labels, single phrases,
+table cells — once, in one place.
+
+**And my own opt-out was switching it off exactly where it was reported.** There
+was a `max-width: 560px` block turning justification back to left on phones,
+which is why a 375px viewport showed ragged text. The argument for it is real —
+a narrow measure distributes badly — but it was not mine to apply against an
+instruction, and the identical opt-out had already been removed from the hero
+copy earlier in this session for the same reason. Twice is a pattern: a
+typographic preference kept reasserting itself as a breakpoint. `hyphens: auto`
+is what actually makes justification hold at this measure; it does the work the
+opt-out was avoiding.
+
+Measured after: 375px, 12 paragraphs, all justified. 1184px, 14 paragraphs, all
+justified, with the result tables keeping their own right/left alignment.
+
+**A CSS escape that a heredoc ate.** `content: '\2212'` for the open-state minus
+went through a shell heredoc into Python, which read `\221` as an octal escape,
+so the stylesheet shipped `content: '2'` and the control read "READ THE FULL
+ABSTRACT 2". It renders as a plain digit, which looks like a typo rather than
+like broken markup, so nothing about it says "escaping problem". A literal `−`
+avoids the whole class of it — worth preferring in generated CSS whenever the
+character is typeable.

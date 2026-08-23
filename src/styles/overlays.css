@@ -728,39 +728,56 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 }
 
 /* ============================================================
-   THESIS CARD — READING TYPOGRAPHY
+   JUSTIFIED PROSE IN THE PANEL
    ============================================================
 
-   JUSTIFIED, WITH A LAST LINE THAT DOES NOT HANG. The long prose in a project
-   modal is the one place on the site with a wide enough measure for justify to
-   behave: an abstract runs 60-70 characters a line here, where the phone
-   captions that had to be argued about run barely 40. `text-align-last: left`
-   rather than centre, because these are paragraphs in a document rather than
-   captions under a picture -- a centred last line reads as a caption and would
-   fight the column it sits in.
+   BY ROLE, NOT BY CLASS NAME. The first version listed four classes and missed
+   eight more — the finding cards, the simulator lead and footnote, both diagram
+   captions, the table captions and the atlas lead were all still ragged, and
+   every block added later would have been too. Anything in the panel that is a
+   PARAGRAPH is justified; the exceptions are listed once, below.
 
-   `hyphens: auto` earns its place specifically BECAUSE of the justification:
-   without it a justified narrow column opens rivers wherever a long technical
-   word will not fit, and this copy is full of them. */
-.mabs,
-.mdesc,
-.mprose > p,
-.mmethod,
-.mtwin__lead {
+   AND IT STAYS ON AT EVERY WIDTH. There was a `max-width: 560px` opt-out here
+   turning justification off on phones, on the usual argument that a narrow
+   measure cannot distribute evenly. That is a real typographic concern and it
+   was not mine to apply: justified was asked for, and the same opt-out had
+   already been removed from the hero copy for the same reason. `hyphens: auto`
+   is what makes it hold at this measure — it does the work the opt-out was
+   avoiding, by breaking long technical words instead of opening rivers.
+
+   `text-align-last: left` throughout: these are paragraphs in a document, and a
+   centred last line would read as a caption. */
+.modal__inner p,
+.modal__inner blockquote,
+.modal__inner figcaption,
+.modal__inner .mfind3__t,
+.modal__inner .lead {
   text-align: justify;
   text-align-last: left;
   hyphens: auto;
   -webkit-hyphens: auto;
 }
 
-/* Nothing is justified below this width. The measure stops being wide enough
-   for the spacing to stay even, and a ragged right edge is the lesser fault. */
-@media (max-width: 560px) {
-  .mabs,
-  .mdesc,
-  .mprose > p,
-  .mmethod,
-  .mtwin__lead { text-align: left; text-align-last: left; }
+/* The exceptions, in one place: labels, numbers and single phrases rather than
+   prose. Justifying a two-word line stretches it across the column, which is
+   the one thing that always looks broken. */
+.modal__inner .mml,
+.modal__inner .dgx__s,
+.modal__inner .dgx__t,
+.modal__inner .dgx__lnote,
+.modal__inner .mtwin__hint,
+.modal__inner .mtwin__cta,
+.modal__inner .atlas__list em,
+.modal__inner .mwork__l,
+.modal__inner td,
+.modal__inner th {
+  text-align: revert;
+  text-align-last: revert;
+  hyphens: manual;
+}
+/* The result tables set their own alignment and must keep it. */
+.mtable th, .mtable td { text-align: right; }
+.mtable tbody th, .mtable thead th:first-child { text-align: left; }
 }
 
 /* ============================================================
@@ -1131,6 +1148,6 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
   font-size: 1.1em;
   line-height: 1;
 }
-.mabs__wrap[open] > summary::after { content: '2'; }
+.mabs__wrap[open] > summary::after { content: '−'; }   /* literal minus: the 2 escape needs a delimiter and swallowed one */
 .mabs__wrap > summary:hover { color: var(--t); border-color: var(--amber); }
 .mabs__wrap .mabs { margin-top: .9rem; }
