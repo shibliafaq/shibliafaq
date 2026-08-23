@@ -86,6 +86,28 @@ idleInit(() => {
     const costCopy = document.querySelector('#future .future__body');
     /* The heat map's own caption. Held back until the map it describes is
        actually on screen; see the dive below. */
+    /* NOTHING PINNED MAY PAINT OVER A SECTION IT DOES NOT BELONG TO.
+
+       The three captions and the tag field are `position: fixed`, so the ONLY
+       thing keeping them off the rest of the page is their signal reaching 0.
+       That is a single point of failure: any stale scrub, any trigger that
+       never fires its last update, any refresh that re-times a range, and a
+       caption sits over whatever happens to be on screen. Reported exactly
+       that way — the Urban Heat Islands copy over the projects wheel, and on a
+       phone the floating tags "pinned to the screen always".
+
+       So the signal decides how it LOOKS and this decides whether it may be
+       seen at all: a section that is not intersecting the viewport hides its
+       own pinned children outright. It cannot drift, because it is not derived
+       from a scroll position — the observer reports the geometry itself. */
+    for (const sel of ['#whole', '#future', '#about']) {
+      const sec = document.querySelector(sel);
+      if (!sec) continue;
+      new IntersectionObserver(([en]) => {
+        sec.classList.toggle('is-offstage', !en.isIntersecting);
+      }, { threshold: 0 }).observe(sec);
+    }
+
     const aboutWrap = document.querySelector('#about > .wrap');
     const aboutHead = document.querySelector('#about [data-split-hold]');
     /* Two clocks again. The dive brings the caption in; a second trigger on

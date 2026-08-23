@@ -4473,3 +4473,57 @@ returning it consumes 20 again.
 nothing left to show", not a region of the screen they have to find with the
 pointer. Both versions of this bug came from answering the geometry question
 instead of the duration one.
+
+## 54. Pinned blocks leaking into other sections (2026-08-23)
+
+Two reports from the live site: the Urban Heat Islands copy painting over the
+projects wheel, and on a phone the floating tags "pinned to the screen always".
+Then the general form of it: *each section text do not overlap in the other
+section.*
+
+### The structural fault
+
+Sections 49-52 made three captions and the tag field `position: fixed`. A fixed
+element does not leave when its section does — the ONLY thing keeping it off the
+rest of the page is its signal reaching 0. That is a single point of failure with
+several ways to fail: a scrub whose last `onUpdate` never fires, a `refresh()`
+that re-times a range after a late layout change, a reader landing mid-page, or
+simply reading a value before `idleInit` has seeded it.
+
+Worth being honest about the diagnosis: it did not reproduce locally. Swept with
+`scrollTo` and again with real wheel input at both 1440x900 and the reporter's
+1274x890, `--heat` went 0 -> >0 -> 0 correctly every time and no frame showed a
+caption outside its own section. Three separate sweeps produced phantom failures
+instead, all from sampling before the page had settled after a reload.
+
+**So the fix does not chase the trigger, it removes the dependency.** The signal
+decides how a block LOOKS; a per-section IntersectionObserver decides whether it
+may be seen at all. `main.js` toggles `.is-offstage` on `#whole`, `#future` and
+`#about` from their own geometry, and the stylesheet hides their pinned children
+outright while it is set.
+
+`visibility`, not `opacity`, for two reasons: opacity is already owned by the
+scroll signals and a second owner is the collision this codebase keeps paying for
+(CONTEXT 48), and `visibility: hidden` also removes the block from hit-testing
+and from the accessibility tree, which is right for something not on stage.
+
+It cannot drift, because it is not derived from a scroll position at all — the
+observer reports the geometry itself.
+
+### Verified
+
+Swept the whole document at both sizes, checking every pinned block against
+whether its own section intersects the viewport:
+
+| viewport | samples | frames where a pinned block showed outside its section |
+|---|---|---|
+| 1274x890 | 108 | **0** |
+| 375x812 | 102 | **0** |
+
+On the phone the tags are visible y1400-3800 against a `#future` that occupies
+y2037-3945 and enters the viewport at y1225, so they are confined to their own
+section rather than riding the whole page.
+
+**The general rule this earns:** anything `position: fixed` driven by a scroll
+signal needs a second, geometric gate that does not depend on that signal being
+correct. The signal is for the transition; the gate is for the guarantee.

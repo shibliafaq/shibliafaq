@@ -1597,6 +1597,20 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    tags stacked beneath — which is also why the opacity is inside the guard
    and not outside it. A flowed block whose opacity is driven by a scrub it no
    longer matches would just be the original bug pointing the other way. */
+/* A PINNED BLOCK IS HIDDEN OUTRIGHT WHILE ITS OWN SECTION IS OFF SCREEN.
+
+   `visibility`, not `opacity`: opacity is what the scroll signals already
+   drive, and layering a second opacity on top would mean two owners for one
+   property again. visibility also takes the element out of hit-testing and
+   out of the accessibility tree, which is what is wanted for something that
+   is not on stage at all.
+
+   main.js sets .is-offstage from an IntersectionObserver on each section. See
+   the note there for why the signal alone was not enough. */
+.is-offstage .future__body,
+.is-offstage .ftags,
+#about.is-offstage > .wrap { visibility: hidden; }
+
 /* THE HEAT-MAP CAPTION ARRIVES WITH THE MAP, NOT WITH THE SCROLL.
 
    Driven on the WRAP rather than on the four children, which each carry
