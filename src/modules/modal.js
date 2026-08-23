@@ -54,8 +54,35 @@ function render(data) {
         .join('')}</div>`
     : '';
 
-  const method = data.method
-    ? `<div class="msec">Method</div><p class="mmethod">${esc(data.method)}</p>`
+  /* A METHOD IS A SEQUENCE, so it is drawn as one where the data says so.
+
+     `method` is a single string and renders as a paragraph, which is right
+     for a short description. An arrow-separated chain of nine stages is not a
+     paragraph — it is a diagram someone typed into one — and it hides exactly
+     what a reader wants: where a stage ends, which stages belong together,
+     and which of them are checks rather than more processing.
+
+     `methodFlow` carries the phases and their steps, and gets numbered from
+     its own index so inserting a stage cannot leave the numbering stale. */
+  let stepNo = 0;
+  const methodFlow = data.methodFlow?.length
+    ? `<figure class="mflow">${data.methodFlow.map((g, gi) => `
+        ${gi ? '<div class="mflow__join" aria-hidden="true"></div>' : ''}
+        <section class="mflow__p">
+          <h4 class="mflow__ph">${esc(g.phase)}</h4>
+          <ol class="mflow__steps">${g.steps.map((st) => `
+            <li class="mflow__s">
+              <span class="mflow__n">${String(++stepNo).padStart(2, '0')}</span>
+              <span class="mflow__t">${esc(st.t)}</span>
+              ${st.s ? `<span class="mflow__d">${esc(st.s)}</span>` : ''}
+            </li>`).join('')}</ol>
+        </section>`).join('')}
+       </figure>`
+    : '';
+
+  const method = data.method || data.methodFlow
+    ? `<div class="msec">Method</div>${data.method
+        ? `<p class="mmethod">${esc(data.method)}</p>` : ''}${methodFlow}`
     : '';
 
   /* The headline finding. A case study that only describes its machinery never

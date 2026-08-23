@@ -133,7 +133,7 @@ export const projects = {
        "Research Output" section. The status pill now carries "unpublished",
        which `cat` used to say, so `cat` no longer repeats it. */
     pub: {
-      authors: 'Shibli Afaq, Sultan Aldhafeeri · Supervisor: Dr. Baqer Al-Ramadan',
+      authors: 'Shibli Afaq · Supervisor: Dr. Baqer Al-Ramadan',
       venue: '2026 · Target: Urban Climate / Sustainable Cities and Society',
       state: 'prep',
       status: 'Manuscript in Preparation',
@@ -143,14 +143,49 @@ export const projects = {
        Unpublished, so this is the submitted text rather than a version of
        record; the entry says so above rather than implying peer review. */
     abstract: 'The problem of urban heat island (UHIs) is an increasing health concern in hot-arid cities. This paper evaluates patterns of land surface temperature (LST) and heat vulnerability across the Dammam Metropolitan Area (DMA) using a five-step GIS and remote sensing model. LST was derived from Landsat 8/9 TIRS data for 2020, 2023, and 2025, while NDVI and NDBI were derived from Sentinel-2 MSI and population exposure was represented using WorldPop 2020 data. These datasets were processed using a 500 m fishnet grid with 12,954 cells. Pearson correlation, linear regression, two Heat Vulnerability Index (HVI) models, dual-threshold exposure mapping, Getis-Ord Gi* hotspot analysis, and sensitivity testing using three scenarios were used to analyze these data. The results show that NDBI is the strongest LST predictor in all years. In 2020, NDBI had r = 0.715 and R² = 0.511. The regression slope indicates that a 0.10-unit decrease in normalized built-up intensity is associated with an approximate 0.130-unit reduction in normalized LST. Composite HVI classified 92.6% of cells as High vulnerability. The dual-threshold exposure map identified 229 cells, equal to 57.3 km² or 1.8% of the DMA, as Very High Exposure. The HVI 99% Hot Spot covered 505 km², which is 4.18 times larger than the LST-only 99% Hot Spot of 120.8 km². This confirms that multi-factor vulnerability analysis reveals planning priorities that temperature-only mapping does not show.',
-    desc: 'Five-step GIS and remote sensing workflow across 12,954 grid cells (500m × 500m, 3,238 km²). Key finding: NDBI is 255× more predictive of LST than NDVI in arid cities — a direct reversal of temperate-city findings. The Composite HVI hotspot is 4.18× larger than LST-only analysis, proving that temperature-only mapping dangerously under-estimates true vulnerability.',
+    desc: 'A five-step GIS and remote-sensing assessment of heat and who is exposed to it, across 12,954 grid cells covering the 3,238 km² Dammam Metropolitan Area at 500 m resolution.',
     metrics: [
       { v: '12,954', l: 'Grid cells analysed' },
       { v: 'R²=0.511', l: 'NDBI explains 51% of LST variance' },
       { v: '57.3 km²', l: 'Very High Exposure zone' },
       { v: '4.18×', l: 'HVI hotspot vs LST-only' },
     ],
-    method: 'GEE data acquisition (Landsat 8/9, Sentinel-2, WorldPop) → SetNull() water masking → 500m fishnet → Zonal Statistics → Min-max normalisation → Pearson r & regression → Simplified HVI + Composite HVI → Getis-Ord Gi* (fixed 1,000m band) → 3-scenario sensitivity analysis',
+    /* THE NINE STEPS, AS STEPS. This was one line of arrow-separated text —
+       readable as a sentence, useless as a method: nothing showed where one
+       stage ended, which stages belonged together, or that the last two are
+       checks on the result rather than more processing. The phases are the
+       paper's own five-step structure; the numbering is the order they run. */
+    methodFlow: [
+      {
+        phase: 'Acquire',
+        steps: [
+          { t: 'GEE data acquisition', s: 'Landsat 8/9 TIRS · Sentinel-2 MSI · WorldPop' },
+          { t: 'SetNull() water masking', s: 'Gulf and inland water removed before statistics' },
+        ],
+      },
+      {
+        phase: 'Structure',
+        steps: [
+          { t: '500 m fishnet', s: '12,954 cells over 3,238 km²' },
+          { t: 'Zonal statistics', s: 'LST, NDVI, NDBI and population per cell' },
+          { t: 'Min-max normalisation', s: 'Every input onto a common 0–1 range' },
+        ],
+      },
+      {
+        phase: 'Analyse',
+        steps: [
+          { t: 'Pearson r and regression', s: 'Which index actually predicts LST' },
+          { t: 'Simplified and Composite HVI', s: 'Two vulnerability models, built separately' },
+        ],
+      },
+      {
+        phase: 'Locate and test',
+        steps: [
+          { t: 'Getis-Ord Gi*', s: 'Fixed 1,000 m band · statistically significant clusters' },
+          { t: '3-scenario sensitivity analysis', s: 'Does a cell change class when the weighting does' },
+        ],
+      },
+    ],
     tags: ['ArcGIS Pro 3.6', 'Landsat 8/9 TIRS', 'Sentinel-2 MSI', 'WorldPop 2020', 'NDVI/NDBI', 'Composite HVI', 'Getis-Ord Gi*', 'Pearson Correlation', 'SetNull() Water Masking', 'Sensitivity Analysis'],
     /* The same assessment as a 3D twin, in the UHI dashboard's visual language.
 

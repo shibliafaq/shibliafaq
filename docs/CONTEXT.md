@@ -5580,3 +5580,45 @@ where it was wrong.
 
 The thesis Method paragraph, at request. `method` remains on the other three
 research projects, which still render it.
+
+## 75. The GIS card, and a test that measured the wrong project (2026-08-24)
+
+Three edits to `gis`: the co-author removed from the byline, the "Key finding"
+sentences cut from `desc`, and the method chain turned into a figure.
+
+**`desc` after the cut says what the work IS.** It had been carrying the
+findings — "NDBI is 255× more predictive", "4.18× larger", "proving that
+temperature-only mapping dangerously under-estimates" — which the abstract
+already states, with the qualifications a claim like that needs. A card summary
+repeating a paper's conclusions in stronger language than the paper uses is the
+wrong place for them twice over.
+
+**`method` became `methodFlow`.** It was one line of arrow-separated text: nine
+stages readable as a sentence and useless as a method, because nothing showed
+where a stage ended, which stages belonged together, or that the last two are
+CHECKS on the result rather than more processing. It is now four phases —
+Acquire, Structure, Analyse, Locate and test — with numbered steps.
+
+Numbering comes from the render index, so inserting a stage renumbers the rest;
+the phases are the paper's own five-step structure. `method` as a plain string
+still renders for the three projects that use it.
+
+### The test was measuring a different project
+
+Worth recording in full, because everything about it looked like a pass.
+Clicking `[data-modal="gis"]` and then asserting `sultanGone`, `keyFindingGone`
+and `arrowChainGone` returned true for all three — and the modal on screen was
+the THESIS. The wheel only opens its FRONT card (CONTEXT 47), so the click had
+opened whatever was at the front, and every assertion was a check for the
+ABSENCE of something, which is trivially true in a document that never contained
+it.
+
+**Absence assertions cannot tell you they are pointed at the wrong thing.** A
+test that only asks "is X gone" passes hardest when nothing is there at all. The
+one assertion that would have caught it immediately — is the right project even
+open — was the one not being made, and the fix was to check the title first.
+
+Getting the right card to the front then needed a drag rather than scroll
+notches: the spin budget from section 71 releases after 600px, so a
+wheel-notch loop stops turning long before an arbitrary card comes round. Drag
+has no budget, which is the correct asymmetry, and it took 15 drags.

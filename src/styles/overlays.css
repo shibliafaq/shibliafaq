@@ -1389,3 +1389,67 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
    inside one section and were running together. */
 .modal__inner .dgx + .dgx { margin-top: clamp(1.5rem, 3.5vh, 2.5rem); }
 .modal__inner .mgrid + .mchart { margin-top: clamp(2rem, 4vh, 3rem); }
+
+/* ============================================================
+   METHOD FLOW
+   ============================================================
+
+   A numbered sequence grouped into phases. The steps auto-fit, so a phase of
+   two sits as two columns on a panel and stacks on a phone without a
+   breakpoint; the phase label stays above its own group so the grouping
+   survives the stack, which is the thing an arrow-chain sentence cannot do.
+
+   The number is the load-bearing graphic here: it is what makes nine boxes read
+   as an order rather than as a list. It is generated from the index, so
+   inserting a stage renumbers everything after it. */
+.mflow { margin: 0; display: grid; gap: .5rem; }
+.mflow__p { display: grid; gap: .5rem; }
+.mflow__ph {
+  margin: 0;
+  font-family: var(--f-mono);
+  font-size: var(--ms-label, .78rem);
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.mflow__steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: .5rem;
+  margin: 0; padding: 0; list-style: none;
+}
+.mflow__s {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: .25rem;
+  padding: .8rem .9rem .85rem 2.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm, 10px);
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.04), transparent 50%),
+    rgba(20, 20, 24, .66);
+}
+.mflow__n {
+  position: absolute;
+  top: .8rem; left: .9rem;
+  font-family: var(--f-mono);
+  font-size: var(--ms-label, .78rem);
+  font-weight: 700;
+  color: color-mix(in oklab, var(--amber) 70%, transparent);
+}
+.mflow__t { font-size: var(--ms-small, .88rem); line-height: 1.35; color: var(--t); }
+.mflow__d {
+  font-family: var(--f-mono);
+  font-size: var(--ms-label, .78rem);
+  line-height: 1.45;
+  color: var(--t-4);
+}
+/* The connector between phases, matching the diagram figures. */
+.mflow__join {
+  justify-self: center;
+  width: 0; height: 1rem;
+  margin: .15rem 0;
+  border-left: 1px solid var(--line);
+}
