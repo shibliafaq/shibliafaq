@@ -4268,3 +4268,39 @@ between them.
 
 Measured after: copy clear of the disc by 44px, on screen, justify intact, 2
 lines instead of 3, and every tag clear of both the copy and the globe.
+
+### And the same for Looking at the Whole Picture (2026-08-23)
+
+Identical fault to the Cost of Inaction block, and worse. Fixed bottom-left at
+the full 544px measure it ran **x72 to x616 against a disc starting at x387**, so
+184px of it sat on the planet, versus 229px for its twin.
+
+This frame has no tags, so the left band was free and the copy took it outright.
+The two now mirror each other exactly: Whole Picture left, Cost of Inaction
+right, both `min(300px, 26vw)`, both vertically centred, both **44px clear of the
+disc**.
+
+The lead is trimmed 421 -> 295 characters by dropping two whole sentences, the
+setup and a compressed restatement of the sentence after it. Nothing was
+reworded; every remaining word is the author's. `text-align: justify` kept.
+
+Note this block is **not** managed by `tools/sync-site-copy.mjs` — there are no
+`whole.*` keys in `docs/site-copy.md`, so `index.html` is the only source. The
+first attempt edited site-copy.md and failed to match, which is how that was
+found.
+
+### A consistency bug the mobile check caught
+
+All three frames now pin on desktop and return to flow below 901px. Checking that
+at 800px showed `#future` at opacity 1 but **`#whole` and `#about` at opacity 0**.
+
+Their opacity gates were in base rules rather than inside the desktop guard, so
+at phone widths the blocks were in normal flow while still being driven by a
+scrub that no longer matched where they sat. `#future` had this right because the
+guard was written around the whole rule; its two siblings were written earlier and
+did not. All three are now consistent: pinned and gated above 901px, flowed and
+fully visible below it.
+
+Verified after, desktop: all three fixed, windows in sequence — whole, then
+future 1200-3300, then about 4200-5100 — and **zero frames with two captions
+visible at once**.

@@ -1425,6 +1425,15 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    Opacity alone leaves the block in the accessibility tree, so `inert` is set
    from the same signal in main.js — otherwise a keyboard reader tabs into three
    invisible paragraphs sitting over the failed Earth. */
+/* THE OPACITY GATE IS DESKTOP-ONLY, like the pin it belongs to.
+
+   Left in the base rule it also applied at phone widths, where the block is
+   back in normal flow — so it sat at whatever the scrub said rather than at
+   whatever the reader was looking at, and measured opacity 0 at 800px. A
+   flowed block gated by a signal that no longer matches its position is the
+   original bug pointing the other way. #future already had this right; its
+   two siblings did not. */
+@media (min-width: 901px) {
 #whole .future__body {
   opacity: var(--whole, 0);
   /* Rises as it arrives and settles as it goes, so it reads as something
@@ -1436,6 +1445,7 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
      adds lag, and lag between a signal and the thing it drives is precisely
      what put this caption on screen while the hero was still leaving. The
      easing lives in the smoothstep that produces the number. */
+}
 }
 
 /* ---- THE COST OF INACTION FRAME ----------------------------------------
@@ -1475,8 +1485,10 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 
    No transition: --heat is scrubbed against the dive already, and easing a
    scrubbed value only adds lag. */
-#about > .wrap {
-  opacity: var(--heat, 1);
+/* Desktop-only for the same reason as #whole above: on a phone this group is
+   in normal flow and must not be gated by the dive. */
+@media (min-width: 901px) {
+  #about > .wrap { opacity: var(--heat, 1); }
 }
 
 /* PINNED, like the two captions before it.
@@ -1521,6 +1533,39 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   letter-spacing: .04em;
   line-height: 1.55;
   color: var(--t-2);
+}
+
+/* THE WHOLE PICTURE CAPTION GETS THE SAME TREATMENT, MIRRORED.
+
+   Identical fault, and worse: fixed bottom-left at the full 544px measure it
+   ran x72 to x616, and the globe's disc starts at x387, so 184px of it sat on
+   the planet — against 229px for the Cost of Inaction block. Same disc, same
+   measurement, same fix on the other side.
+
+   This frame has no tags, so the left band is free and the copy can have it
+   outright. The two now mirror each other: this one left, Cost of Inaction
+   right, both 300px, both vertically centred, both about 44px clear of the
+   disc.
+
+   Guarded at 901px like its twin. It was previously fixed at EVERY width,
+   which is a 300px block nailed over most of a phone screen. */
+@media (min-width: 901px) {
+  #whole .future__body {
+    left: 3%;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    width: min(300px, 26vw);
+    max-width: none;
+    /* -50% shares this declaration with the arrival offset; two rules both
+       writing `translate` would silently drop one. */
+    translate: 0 calc(-50% + (1 - var(--whole, 0)) * 1.4rem);
+  }
+}
+
+@media (max-width: 900px) {
+  /* Back into flow with everything else on a phone. */
+  #whole .future__body { position: relative; left: auto; bottom: auto; }
 }
 
 @media (min-width: 901px) {
