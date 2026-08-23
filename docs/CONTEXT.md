@@ -5061,3 +5061,87 @@ The lesson is the same one as the `--heat` collision in section 59, one layer
 out: a contract with the outside world should be permissive about the shapes it
 accepts and strict about what it promises, and "I could not find my input" is
 something to report, not something to fail silently on.
+
+## 64. The scroll rule rewritten: spatial, no toll (2026-08-23)
+
+Sections 53, 58, 59 and 60 are all the same bug being treated four times. Each
+one kept the premise — the wheel claims a large region and the reader is let go
+after paying something — and argued about the price. The section was still
+reported as hard to get past. The premise was the bug.
+
+**The rule now, entire:** scrolling over the area where the front tiles move
+turns the tiles; anywhere else scrolls the page. No budget, no direction test,
+no re-arming, nothing that runs out. Outside the zone every event is left
+untouched, in both directions, indefinitely, on the first encounter and the
+tenth. Getting out is a matter of where the pointer is, which is visible, rather
+than how much has been spent, which is not.
+
+### Defining "where the front tiles move"
+
+Taken literally — the tiles' current boxes — it is a trap, and this was measured
+earlier: the ring drifts on its own, so a region built from where tiles ARE
+slides out from under a stationary cursor, and a reader scrolling in a gap gets
+a tile drifting under the pointer and the page stops mid-gesture. 31% of the
+stage was over a tile at any instant and which side of the line you were on
+changed by itself.
+
+The fix is the union over a full revolution rather than a snapshot. That is
+still exactly where the front tiles move — it is the corridor they sweep — but
+it is a property of the geometry, not of the clock, so it cannot change under a
+cursor that is not moving. The previous attempt solved the same problem with a
+fixed rectangle in the middle of the stage: stable, but it claimed a lot of
+ground no tile ever visits, and it was not the rule anyone asked for.
+
+Built as a 72x48 occupancy mask, not a bounding box, because the swept corridor
+is a curve and its bounding box would hand the wheel the empty corners the curve
+arcs around. Rebuilt only when the solved fit changes, since that key already
+covers every input — viewport, card box, perspective, type size.
+
+`onTile`, the touch test, now delegates to the same function. It used to
+hit-test live tile boxes while the wheel used a different region entirely, so a
+phone and a desktop were answering two similar but non-identical questions.
+
+### Measured
+
+Projection maths checked against reality first: 131 live front-tile centres
+sampled over 20 frames, all 131 inside the computed corridor.
+
+| | desktop 1184x686 | phone 375x812 |
+|---|---|---|
+| share of the stage | 53.7% | 68.6% |
+| share of the viewport | 42.6% | 35.6% |
+
+Desktop, by point: stage centre takes the scroll down AND up and still on the
+30th consecutive notch — there is no toll left to run out — while all four stage
+edges leave every event to the page.
+
+Touch, on the phone, against a no-swipe control: drift alone moves card 0 by
+0-3px in the window, a swipe at the left edge by 7-8px (that is the settle
+snapping to the nearest card, not a drag), and a swipe at the stage centre by
+81-119px. An order of magnitude apart.
+
+Raising the threshold barely tightens it — 0.55 gives 42.6% of the viewport and
+0.90 still gives 37.5% — because perspective makes front tiles large, so even
+the frontmost one alone sweeps a wide corridor. ~40% is simply the honest size
+of "where the front tiles move", so the threshold stays tied to the plate
+definition and means one thing throughout the file.
+
+**The trade being made, stated plainly:** inside that region the page will not
+scroll at all, by design, forever. That is strictly worse than a toll for
+someone who does not realise they can move the pointer, and strictly better for
+everyone else, because the region is where the tiles visibly are and the escape
+is the margins rather than a hidden quota. On a phone the risk is sharper — the
+stage sits mid-screen and a thumb naturally swipes there — so the number to
+watch is that 35.6%, with the page above and below the stage always free.
+
+### Instrument notes
+
+A synthetic `PointerEvent` cannot test this directly: `setPointerCapture` throws
+on a pointerId that was never real, which aborts the handler before it turns
+anything, so every simulated touch reads as "not claimed" whatever the zone
+says. Stub the capture methods, then measure whether the ring MOVED.
+
+And "the front card changed" is not a measure of a gesture here. Ambient drift
+changes it on its own within seconds, and tiles are spaced by arc length so they
+travel at very uneven speed — a single control window is not a baseline. Take
+several, and compare path length in pixels.

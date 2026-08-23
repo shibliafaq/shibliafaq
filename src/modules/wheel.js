@@ -47,6 +47,13 @@ import { reducedMotion } from './scroll.js';
    same fraction leaves them visibly closer than the desktop ring does. */
 const GAP = 0.52;
 const GAP_PHONE = 0.9;
+
+/* The depth below which a card stops being a card and becomes a plate. Shared
+   with the hit region, deliberately: the wheel claims the ground its FRONT
+   tiles sweep, so "front" has to mean one thing or the region and the visuals
+   drift apart. See the note at the plate test in paint() for where 0.55 comes
+   from. */
+const FRONT_T = 0.55;
 /* How fast the velocity bleeds away each frame. Higher coasts longer and
    decays more gently; the impulse below is derived from it, so the two always
    move together.
@@ -1011,6 +1018,10 @@ function setupWheel(root) {
       if (!fit || fitKey !== key) {
         fit = lissFit(W, H, cardW0 || W * 0.4, cardH0 || H * 0.48, persp, titleFs0);
         fitKey = key;
+        /* The hit region is solved from the fit, so it is rebuilt exactly when
+           the fit is and never on a frame where nothing about the geometry
+           moved. `key` already covers every input either of them has. */
+        buildFrontZone();
       }
       const { upright, Rz, sBase } = fit;
 
@@ -1125,7 +1136,7 @@ function setupWheel(root) {
            0.55 is where the rendered title passes ~6pt at the shipped type
            size. */
         const img = c.querySelector('.pcard__media img');
-        const plate = t <= 0.55;
+        const plate = t <= FRONT_T;
         c.classList.toggle('is-plate', plate);
 
         /* A PLATE HOLDS A STILL FRAME. Measured: scrolling through this section
@@ -1419,62 +1430,111 @@ function setupWheel(root) {
      travel on and left tight across it. So on a horizontal ring the whole width
      of the band responds, while the strip above and below the cards still
      belongs to the page. */
-  function overRing(e) {
-    /* Reduced motion replaces the figure with a static grid (see the
-       prefers-reduced-motion block in sections.css), and a grid is not a
-       control. Without this the wheel still claimed the union of the card
-       boxes -- which in a grid is all of them -- and preventDefault()
-       on that band stopped the page scrolling past a section the reader
-       cannot turn anyway. */
-    if (reducedMotion) return false;
-    /* THE PATH IS NOT A COLUMN, SO IT CANNOT BE ONE CARD WIDE.
+  /* WHERE THE FRONT TILES TRAVEL, NOT WHERE THEY HAPPEN TO BE.
 
-       The rule below asks "is the pointer over the front card's column", which
-       is right for a cylinder: every card sits at the same place, so one card's
-       box IS the ring's footprint. On the Lissajous layout the cards are spread
-       across the whole stage and the frontmost one is wherever the curve has
-       carried it, so that box described a narrow moving strip -- and scrolling
-       anywhere else over the figure, above the cards especially, fell through
-       to the page. Worse, `cards.find(aria-hidden === 'false')` returns the
-       first LIVE card in DOM order rather than the front one, so the strip did
-       not even track the card it was named after.
+     The rule asked for is "scrolling over the area where the tiles move at
+     the front turns them, everywhere else scrolls the page". The trap in
+     implementing that literally is that the ring drifts on its own, so a
+     region built from where the tiles ARE slides out from under a cursor that
+     has not moved: a reader scrolling in a gap gets a tile drifting under the
+     pointer and the page stops dead mid-gesture. Measured previously, 31% of
+     the stage was over a tile at any instant and 69% was not, and which one
+     you were in changed by itself.
 
-       The figure's real footprint is the union of the cards, which is what this
-       measures. Outside it the page still scrolls, so the principle the ring
-       established -- the margins belong to the page -- survives. */
-    if (path === 'lissajous') {
-      /* A FIXED ZONE, BECAUSE THE TILES MOVE AND THE READER DOES NOT.
+     The fix is to take the union over a full revolution instead of a snapshot.
+     That is still exactly "where the front tiles move" — it is the corridor
+     they sweep — but it is a property of the geometry rather than of the
+     clock, so it cannot change under a stationary cursor. A previous attempt
+     solved the same problem with a fixed rectangle in the middle of the stage,
+     which was stable but claimed a great deal of ground no tile ever visits.
 
-         Three tile-derived definitions were tried and all three failed, and the
-         reason is the same for every one: the wheel now turns on its own, so any
-         region derived from where the tiles ARE is a region that slides out from
-         under a stationary cursor. Measured mid-drift, 31% of the stage was over
-         a tile and 69% was not — so a reader scrolling in a gap would have a tile
-         drift under the pointer and the page would stop dead in the middle of the
-         gesture. That is the intermittent trap, and it is unfixable by choosing a
-         better set of tiles.
+     Built as a coarse occupancy mask rather than a bounding box, because the
+     swept corridor is a curve: its bounding box would hand the wheel the empty
+     corners the curve arcs around. Each cell records whether any front tile
+     ever covers it.
 
-         So the zone is geometric and still: the middle of the stage, which is
-         where the front of the figure travels and the only part anyone would
-         point at to turn it. Edges and corners are the page. It never changes
-         under a cursor that is not moving, which is what makes the two
-         behaviours learnable instead of a lottery.
+     FRONT means the same thing here as everywhere else in this file — deeper
+     than FRONT_T is a plate, and a plate is structure rather than a card, so
+     the far half of the figure belongs to the page.
 
-         Written as fractions of the stage rather than pixels so it holds at
-         every viewport, and read from the stage rather than the section because
-         the section also contains the heading and the legend, which belong to
-         the page. */
-      const stage = root.querySelector('.wheel__stage') || root;
-      const b = stage.getBoundingClientRect();
-      if (!b.width || !b.height) return false;
-      const ZONE_W = 0.46;   // middle 46% of the stage's width
-      const ZONE_H = 0.66;   // middle 66% of its height
-      const halfW = (b.width * ZONE_W) / 2;
-      const halfH = (b.height * ZONE_H) / 2;
-      const cx = b.left + b.width / 2;
-      const cy = b.top + b.height / 2;
-      return Math.abs(e.clientX - cx) <= halfW && Math.abs(e.clientY - cy) <= halfH;
+     Recomputed only in measure(), because it depends solely on the solved fit,
+     the card box and the perspective, and every one of those already forces a
+     re-measure when it changes. */
+  const ZONE_COLS = 72;
+  const ZONE_ROWS = 48;
+  const ZONE_SAMPLES = 720;   // ~half a degree of the parameter per sample
+  let zoneMask = null;
+
+  function buildFrontZone() {
+    zoneMask = null;
+    if (path !== 'lissajous' || !fit || !cardW0 || !cardH0) return;
+    const stage = root.querySelector('.wheel__stage') || root;
+    const b = stage.getBoundingClientRect();
+    if (!b.width || !b.height) return;
+    const mask = new Uint8Array(ZONE_COLS * ZONE_ROWS);
+    for (let i = 0; i < ZONE_SAMPLES; i++) {
+      const p = lissAt(thetaAtFraction(i / ZONE_SAMPLES));
+      const t = (p.z + 1) / 2;
+      if (t <= FRONT_T) continue;
+      /* The same projection paint() uses: translate3d puts the card at depth,
+         so both its offset and its size come back multiplied by m. */
+      const m = persp / (persp - p.z * fit.Rz);
+      const sx = (fit.upright ? p.y : p.x) * fit.ampX + fit.shiftX / m;
+      const sy = (fit.upright ? p.x : p.y) * fit.ampY + fit.shiftY / m;
+      const sc = fit.sBase * (LISS.back + (1 - LISS.back) * Math.pow(t, LISS.falloff));
+      const hw = (cardW0 * sc * m) / 2;
+      const hh = (cardH0 * sc * m) / 2;
+      const cx = b.width / 2 + sx * m;
+      const cy = b.height / 2 + sy * m;
+      const c0 = Math.max(0, Math.floor(((cx - hw) / b.width) * ZONE_COLS));
+      const c1 = Math.min(ZONE_COLS - 1, Math.floor(((cx + hw) / b.width) * ZONE_COLS));
+      const r0 = Math.max(0, Math.floor(((cy - hh) / b.height) * ZONE_ROWS));
+      const r1 = Math.min(ZONE_ROWS - 1, Math.floor(((cy + hh) / b.height) * ZONE_ROWS));
+      for (let r = r0; r <= r1; r++) {
+        for (let c = c0; c <= c1; c++) mask[r * ZONE_COLS + c] = 1;
+      }
     }
+    zoneMask = mask;
+  }
+
+
+  /* Exposed for measurement: what share of the stage, and of the viewport, the
+     wheel is claiming. A hit region nobody can see is one nobody can check,
+     and every previous version of this was wrong about how much it took. */
+  root.__frontZoneCoverage = () => {
+    if (!zoneMask) return null;
+    let on = 0;
+    for (let i = 0; i < zoneMask.length; i++) on += zoneMask[i];
+    const stage = root.querySelector('.wheel__stage') || root;
+    const b = stage.getBoundingClientRect();
+    const share = on / zoneMask.length;
+    return {
+      shareOfStage: +share.toFixed(3),
+      shareOfViewport: +((share * b.width * b.height) /
+        (window.innerWidth * window.innerHeight)).toFixed(3),
+    };
+  };
+
+  function inFrontZone(x, y) {
+    /* Reduced motion replaces the figure with a static grid, and a grid is not
+       a control — the whole section belongs to the page there. */
+    if (reducedMotion || !zoneMask) return false;
+    const stage = root.querySelector('.wheel__stage') || root;
+    const b = stage.getBoundingClientRect();
+    if (!b.width || !b.height) return false;
+    const fx = (x - b.left) / b.width;
+    const fy = (y - b.top) / b.height;
+    if (fx < 0 || fx >= 1 || fy < 0 || fy >= 1) return false;
+    const c = Math.min(ZONE_COLS - 1, Math.floor(fx * ZONE_COLS));
+    const r = Math.min(ZONE_ROWS - 1, Math.floor(fy * ZONE_ROWS));
+    return zoneMask[r * ZONE_COLS + c] === 1;
+  }
+
+  function overRing(e) {
+    if (reducedMotion) return false;
+    if (path === 'lissajous') return inFrontZone(e.clientX, e.clientY);
+    /* The cylinder keeps its own test: every card sits in the same place
+       there, so the front card's box IS the ring's footprint. */
     const front = cards.find((c) => c.getAttribute('aria-hidden') === 'false') || cards[0];
     const b = front.getBoundingClientRect();
     if (!b.width) return false;
@@ -1525,69 +1585,28 @@ function setupWheel(root) {
      has a flywheel: a flick keeps spinning long after the event that caused
      it, and that rotation is what the reader actually gets. So the budget is
      spent against `angle`, which already includes the momentum. */
-  const SPIN_BUDGET = 360;          // one full revolution = every card seen
+  /* OVER THE FRONT TILES THE SCROLL TURNS THEM; ANYWHERE ELSE IT IS THE PAGE'S.
 
-  /* AND A HARD CEILING IN SCROLL DISTANCE, WHICH IS THE PART THAT MATTERS.
+     That is the whole rule now, and it is spatial. There is no toll, no
+     budget, no direction test and nothing to re-arm — all of which existed to
+     make a too-large claim survivable, and none of which a reader can see or
+     predict. Three separate reports of not being able to get past this section
+     came out of that machinery; the answer was never a cheaper toll, it was to
+     stop claiming ground the wheel has no business holding.
 
-     SPIN_BUDGET alone is a promise about the RING, not about the reader. How
-     much scrolling it costs to satisfy depends on WHEEL_K and FRICTION, so any
-     change to how the ring moves silently changes how hard the section is to
-     leave. That is not hypothetical: halving WHEEL_K to slow the deck down
-     doubled the toll, measured, from about 13 notches to 27 — the section
-     swallowed 27 notches before the page moved at all, and it was reported
-     again as not being able to get past the projects section.
+     The zone is `inFrontZone`, the corridor the front tiles actually sweep.
+     Outside it every event is left untouched, so the page scrolls exactly as
+     it does anywhere else — in both directions, indefinitely, on the first
+     encounter and the tenth. Getting out is a matter of where the pointer is,
+     which is visible, rather than how much has been spent, which is not.
 
-     So the angle decides when the ring has finished SAYING something, and this
-     decides when the reader has PAID enough regardless. Whichever comes first.
-     Same shape as the offstage gate in CONTEXT 54: the expressive mechanism
-     gets to be expressive, and a second, dumber mechanism guarantees the floor.
-
-     Counted in scroll PIXELS rather than in events, because a trackpad emits
-     many small deltas where a mouse emits few large ones — counting events
-     would release almost instantly on a trackpad and hardly ever on a mouse.
-
-     600px, down from 1000. This section has now been reported three times as
-     hard to get past, so the hold is deliberately light: about five mouse
-     notches, half a screen, enough to register that the deck turns and not
-     enough to argue with. The angle budget above still releases a flick
-     sooner than that. */
-  const PX_BUDGET = 600;
-  let armAngle = 0;
-  let spentPx = 0;
-  let holding = true;
-
+     The same test drives the touch path below, so a phone and a desktop are
+     answering one question rather than two similar ones. */
   root.addEventListener('wheel', (e) => {
     if (!overRing(e)) return;
-    /* GOING BACK UP IS NAVIGATION, AND IS NEVER HELD.
-
-       The hold exists so the deck gets seen on the way DOWN through the page.
-       A reader scrolling up has already passed it and is going somewhere else,
-       so charging them the toll again is pure obstruction — and it was charged
-       again, in full: measured, 9 notches to climb back out, because the
-       observer re-arms on every exit and the handler never looked at which way
-       the reader was going. Reported as not being able to scroll past ABOVE the
-       section, which is the half of it that had gone unmeasured: both earlier
-       fixes only ever tested downward.
-
-       Direction comes from the raw delta rather than from the ring's own axis,
-       because the question is which way the PAGE would move, and that is the
-       same question on a horizontal ring as on a vertical one. */
-    if ((e.deltaY + e.deltaX) <= 0) return;
-    if (!holding) return;           // budget spent — the page gets this notch
     e.preventDefault();
     turn((horizontal ? -1 : 1) * (e.deltaY + e.deltaX) * WHEEL_K);
-    spentPx += Math.abs(e.deltaY) + Math.abs(e.deltaX);
-    if (Math.abs(angle - armAngle) >= SPIN_BUDGET || spentPx >= PX_BUDGET) holding = false;
   }, { passive: false });
-
-  new IntersectionObserver((entries) => {
-    for (const en of entries) {
-      if (en.isIntersecting) continue;
-      armAngle = angle;
-      spentPx = 0;
-      holding = true;
-    }
-  }, { threshold: 0 }).observe(root);
 
   // Keyboard: the wheel is a list, and a list has to be operable without a
   // mouse. Arrows move one card; the roving tabindex above keeps only the
@@ -1610,7 +1629,19 @@ function setupWheel(root) {
      because a cursor sits still while the tiles drift past it; a finger arrives
      once and leaves, so it can be judged against what is under it at that
      instant. Each input is gated by the thing that is stable for that input. */
+  /* ONE RULE FOR BOTH INPUTS.
+
+     This used to hit-test the live tile boxes while the wheel handler used a
+     different region entirely, so a phone and a desktop were answering two
+     similar but non-identical questions and disagreed near the edges. Both go
+     through the swept corridor now.
+
+     A touch could defensibly use the instantaneous boxes, since it is decided
+     once at pointerdown rather than continuously — but then the same gesture
+     over the same pixel would mean different things on the two devices, which
+     is exactly the inconsistency being removed. */
   function onTile(x, y) {
+    if (path === 'lissajous') return inFrontZone(x, y);
     for (const c of cards) {
       if (c.classList.contains('is-plate')) continue;
       const b = c.getBoundingClientRect();
