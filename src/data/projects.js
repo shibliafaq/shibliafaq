@@ -42,7 +42,19 @@ export const projects = {
       },
     ],
     abstract: 'Saudi Arabia’s largest cities are getting hotter, but not according to the traditional urban heat island model. Using an 8-year (2018–2026) grid of MODIS LST data (1 km native, analysed on a ~500 m / 0.005° grid), the thermal behaviour of five desert and coastal cities — Riyadh, Jeddah, Dammam, Makkah and NEOM — is characterised, and an operational digital-twin dashboard is developed to monitor, forecast and mitigate extreme heat. The work is supported by three findings. First, the cities are cooler by day than the surrounding desert, which results in a negative urban heat island intensity — an urban cool-island — and the daytime signal is driven primarily by built-up density (NDBI) rather than by vegetation, quantified by a sign-constrained regression fit on each city’s own summer data instead of by coefficients borrowed from the literature. Second, the cool-island is not static: a Prophet forecasting family, forecasting land-surface temperature directly for both day and night on a corrected equal-area geometry, reproduces the seasonal cycle (monthly RMSE 0.96–1.91 °C by day and 0.79–1.29 °C by night, r 0.94–0.99) and projects a progressive decrease of the cool-island toward zero by 2030, with a warming trend in both desert and city, to −0.01 °C in Makkah but remaining between −0.67 and −1.31 °C in the other four cities. Third, the heat-vulnerability index and the intervention simulator convert this physics into planning decisions: the simulation uses the same own-data coefficients to estimate cell-level cooling, its spatial spillover, the residents and elderly who benefit, an approximate cost, and the districts affected. The cross-sensor comparison against Landsat returned a correlation of R > 0.85 in all five cities. The broadest intervention, not the most localised, provides the most protection: a single water feature reaches tens of thousands of residents through spillover, whereas an intense but local measure such as a cool roof protects only the few hundred residents of the block it covers. The dashboard packages monitoring, forecasting, vulnerability and mitigation in one interface, and builds on recent urban-digital-twin research from a single pilot microclimate to a multi-city, decision-support scale.',
-    desc: 'Built on Design Science Research methodology, this digital twin platform pulls MODIS Land Surface Temperature via Google Earth Engine, runs a Prophet forecasting ensemble (Terra and Aqua modelled separately, day and night, monthly + 7-day + 2030 horizons), and computes an equity-weighted Heat Vulnerability Index. An intervention simulator ranks twelve mitigation measures by cooling delivered, spillover reach, cost, and beneficiaries — using own-data seasonal betas, not literature values. Served through a FastAPI + PostgreSQL/PostGIS backend and a deck.gl + MapLibre frontend. Five Saudi cities. One framework.',
+    /* SHORT, AND DELIBERATELY NOT A SUMMARY OF THE ABSTRACT.
+
+       This used to be a stack list — MODIS, Prophet, HVI, the simulator,
+       FastAPI, deck.gl — every item of which the abstract below now states
+       properly, in the paper's own words. Two paragraphs saying the same thing
+       in the same place makes the reader skim both.
+
+       So `desc` does the one job the abstract cannot: it says why the work
+       exists before the reader has agreed to read anything. The gap it names is
+       the one the literature review identifies — plenty of description of where
+       it has been hot, almost no operational capacity to act on where it is hot
+       now. */
+    desc: 'Most heat research describes where it has already been hot. This is built for the questions that come after that — how hot it is now, where that is heading, and what a given intervention would actually change — across five Saudi cities, in one interface a planner can use.',
     diagram: 'thesis',
     /* TABLES 5.22 AND 5.23, which are the two results the simulator exists
        to produce. The previous version quoted only the Dammam pair (16,167

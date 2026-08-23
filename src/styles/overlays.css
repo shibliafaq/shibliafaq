@@ -743,6 +743,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
    without it a justified narrow column opens rivers wherever a long technical
    word will not fit, and this copy is full of them. */
 .mabs,
+.mdesc,
 .mprose > p,
 .mmethod,
 .mtwin__lead {
@@ -756,6 +757,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
    for the spacing to stay even, and a ragged right edge is the lesser fault. */
 @media (max-width: 560px) {
   .mabs,
+  .mdesc,
   .mprose > p,
   .mmethod,
   .mtwin__lead { text-align: left; text-align-last: left; }
@@ -957,6 +959,7 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
 @media (max-width: 480px) { .modal { --ms: .875rem; } }
 
 .modal .mabs,
+.modal .mdesc,
 .modal .mprose > p,
 .modal .mmethod       { font-size: var(--ms-body); }
 .modal .mwork__lead,
