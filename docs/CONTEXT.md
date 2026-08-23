@@ -4968,3 +4968,68 @@ lands at 5477 with the section's top exactly at the viewport top.
 The general shape is the same one as sections 54 and 59: when a guarantee has
 more than one owner, setting one of them is not a fix, it is a coin toss over
 which one runs last.
+
+## 62. Three tags instead of six, and a visitor counter (2026-08-23)
+
+### The tag field stopped repeating the paragraph next to it
+
+The Cost of Inaction lead now ends "...expanding deserts, lost polar ice, and
+unlivable cities", which was word for word what three of the six floating tags
+said. At this size a floating label that restates the paragraph beside it is not
+reinforcement, it is the same sentence twice.
+
+Asked which half should give way; the answer was to keep the lead as written and
+drop the three duplicates. So the field is Oceans getting dirty / Crops failing
+in longer droughts / Heatwaves lasting weeks, not days — the three the lead does
+NOT cover — renumbered to `--a/b/c` so `--ti`, the arrival stagger, stays
+contiguous from 0.
+
+The phone placements were not re-derived: the three kept are exactly three of
+the six already measured clear at 185 / 177 / 227px from a 136px disc, and they
+happen to be the best spread of the six (upper left, middle right, lower left).
+Re-measured after: 3 tags, 546 / 435 / 450px from a 254px disc on desktop, none
+on the globe, none off screen, none touching the caption, no pair overlapping.
+
+Note the copy pipeline needed a re-baseline. `--write` reported "nothing to do"
+because index.html and site-copy.md were edited to agree by hand, but the lock
+still listed tag4/5/6, so the recorded baseline described a page that no longer
+existed. `--export` is the sanctioned fix when the HTML is the correct side;
+verified it left site-copy.md byte-identical and only rewrote the lock.
+
+### A visitor counter in the footer
+
+Static pages cannot keep a number, so `api/visits.js` is a Vercel function —
+that directory is picked up with no build configuration. GET reads, POST
+increments and returns the new value in one round trip.
+
+**It counts visitors, not page views**, and that decision is made in the browser
+from a date in localStorage. A page-view counter on a site like this mostly
+counts the author reloading it; this session alone would have added dozens.
+Keeping the "have I counted this person" state client-side is also what keeps
+the server side free of anything identifying: one integer under one key, no IP,
+no user agent, nothing to link a count to a person. A visitor who clears storage
+or uses a second browser counts twice, which is the honest cost of not tracking
+anyone.
+
+**Unconfigured is a normal answer, not an error.** Until a store is attached
+there are no env vars, and the function replies `{configured: false}` with a
+200. The footer element ships EMPTY and `hidden`, and is only filled and
+revealed once a real number arrives — so a missing store, a blocked request, or
+a dev server with no functions all leave the footer looking exactly as it did
+before, rather than showing a zero that is not true. Empty markup also keeps it
+out of the site-copy tooling, which only collects elements carrying words.
+
+`[hidden]` is declared explicitly, because the footer makes its children flex
+items and `display: flex` would otherwise beat the UA stylesheet's
+`display: none`.
+
+Tested without deploying: the handler was exercised directly for all six paths —
+no env, GET, POST, a key never written (null -> 0), an Upstash 500, and a thrown
+request — confirming the URLs `/get/visits:total` and `/incr/visits:total` and
+`Cache-Control: no-store` throughout. The browser half was checked against a
+stubbed endpoint for first visit (POST), same day (GET), next day (POST), and an
+unconfigured reply (stays hidden).
+
+**Still needs provisioning to show anything.** Attach a KV / Upstash Redis store
+to the Vercel project; it injects `KV_REST_API_URL` and `KV_REST_API_TOKEN`,
+which is all the function reads. Until then the footer simply omits the line.

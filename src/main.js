@@ -18,6 +18,7 @@ import { initRiyadhReveal } from './modules/riyadh.js';
 import { initBook } from './modules/book.js';
 import { initMediaGuard } from './modules/protect.js';
 import { initInstagram } from './modules/insta.js';
+import { initVisits } from './modules/visits.js';
 
 const idleInit = window.requestIdleCallback
   ? (fn) => window.requestIdleCallback(fn)
@@ -95,6 +96,8 @@ idleInit(() => initInstagram());
 // Language switching. Loaded on idle: English is already in the HTML, so
 // nothing on first paint depends on the dictionary.
 idleInit(() => import('./i18n/index.js').then((m) => m.initI18n()));
+// A number in the footer is never urgent, and this is a network round trip.
+idleInit(() => initVisits());
 
 // The Experience map. On idle rather than near-viewport for the same reason as
 // the skills field — it replaces the timeline, and doing that as the reader

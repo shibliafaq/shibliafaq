@@ -201,12 +201,9 @@
        because each one is already stated in the sentence above; a screen reader
        should not hear the list twice. -->
   <ul class="ftags" aria-hidden="true">
-    <li data-copy="future.tag1" data-short="Deserts spreading" class="ftag ftag--a" data-reveal>Deserts taking over once-green regions</li>
-    <li data-copy="future.tag2" data-short="Ice gone" class="ftag ftag--b" data-reveal>Ice disappearing from the poles</li>
-    <li data-copy="future.tag3" data-short="Unlivable cities" class="ftag ftag--c" data-reveal>Cities becoming unlivable for human beings</li>
-    <li data-copy="future.tag4" data-short="Dirty oceans" class="ftag ftag--d" data-reveal>Oceans getting dirty</li>
-    <li data-copy="future.tag5" data-short="Crops failing" class="ftag ftag--e" data-reveal>Crops failing in longer droughts</li>
-    <li data-copy="future.tag6" data-short="Longer heatwaves" class="ftag ftag--f" data-reveal>Heatwaves lasting weeks, not days</li>
+    <li data-copy="future.tag1" data-short="Dirty oceans" class="ftag ftag--a" data-reveal>Oceans getting dirty</li>
+    <li data-copy="future.tag2" data-short="Crops failing" class="ftag ftag--b" data-reveal>Crops failing in longer droughts</li>
+    <li data-copy="future.tag3" data-short="Longer heatwaves" class="ftag ftag--c" data-reveal>Heatwaves lasting weeks, not days</li>
   </ul>
 </section>
   </div><!-- /.worlds__two -->
@@ -718,6 +715,12 @@
   <button type="button" id="archOpen" class="footer__arch" data-i18n="footer.arch">🏛 Architecture Portfolio</button>
   <a href="/assets/doc/Shibli_Afaq_Resume.pdf" download class="footer__resume" data-i18n="footer.resume">⇩ Download Resume</a>
   <span data-copy="_nav.23">Built with Vite · GSAP · three.js</span>
+  <!-- Empty on purpose: visits.js fills it and unhides it only once a real
+       count has arrived, so a missing store shows nothing rather than a zero.
+       Empty also keeps it out of the site-copy tooling, which only collects
+       elements that actually carry words. The label rides on data-label
+       because the text is assembled at runtime around the number. -->
+  <span class="footer__visits" data-visits data-label="visitors" hidden></span>
   <!-- Every pack whose art actually ships in the Experience map. Anokolisa's
        and the Adventurer's terms both say credit is appreciated; the other two
        ask for nothing, and are credited anyway. -->

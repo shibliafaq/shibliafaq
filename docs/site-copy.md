@@ -67,21 +67,12 @@ node tools/sync-site-copy.mjs --write   # apply it
 - Drag and explore the globe to see the projected impact of unchecked climate change.
 
 ### future.tag1
-- Deserts taking over once-green regions
-
-### future.tag2
-- Ice disappearing from the poles
-
-### future.tag3
-- Cities becoming unlivable for human beings
-
-### future.tag4
 - Oceans getting dirty
 
-### future.tag5
+### future.tag2
 - Crops failing in longer droughts
 
-### future.tag6
+### future.tag3
 - Heatwaves lasting weeks, not days
 
 ## About

@@ -936,6 +936,13 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   text-align: center;
 }
 
+/* Quiet, like the credits: it is a fact about the page, not a claim being
+   made. `[hidden]` needs saying explicitly because the footer sets its
+   children to flex items, and display:flex would otherwise beat the UA
+   stylesheet's display:none. */
+.footer__visits { color: var(--t-4); }
+.footer__visits[hidden] { display: none; }
+
 .footer__arch { color: var(--t-2); transition: color var(--d-fast); }
 .footer__arch:hover { color: var(--t); }
 .footer__resume { color: var(--amber); }
@@ -1237,12 +1244,20 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 /* ALL SIX ON THE LEFT NOW. The right band went to the paragraph, which had to
    come off the planet as well and needs more room than a tag does. Labels one
    side, argument the other, planet between them. */
-.ftag--a { --ti: 0; top: 10%; left: 4%; animation: ftag-drift-a 34s ease-in-out infinite; }
-.ftag--b { --ti: 1; top: 23%; left: 4%; animation: ftag-drift-b 41s ease-in-out -6s infinite; }
-.ftag--c { --ti: 2; top: 36%; left: 4%; animation: ftag-drift-c 31s ease-in-out -13s infinite; }
-.ftag--d { --ti: 3; top: 49%; left: 4%; animation: ftag-drift-d 38s ease-in-out -21s infinite; }
-.ftag--e { --ti: 4; top: 62%; left: 4%; animation: ftag-drift-b 36s ease-in-out -9s infinite; }
-.ftag--f { --ti: 5; top: 75%; left: 4%; animation: ftag-drift-c 43s ease-in-out -27s infinite; }
+/* THREE, NOT SIX, AND THE LEAD IS WHY.
+
+   The Cost of Inaction lead now ends "...expanding deserts, lost polar ice,
+   and unlivable cities", which is exactly what three of the six tags said. A
+   floating label that repeats the paragraph beside it is not reinforcement at
+   this size, it is the same sentence twice. The three that survive are the
+   ones the lead does NOT cover, so the tag field earns its place again.
+
+   Spread over the same vertical run the six used to occupy rather than
+   bunched at the top, so the band still reads as a field rather than a list.
+   --ti is the arrival stagger and has to stay contiguous from 0. */
+.ftag--a { --ti: 0; top: 18%; left: 4%; animation: ftag-drift-a 34s ease-in-out infinite; }
+.ftag--b { --ti: 1; top: 44%; left: 4%; animation: ftag-drift-b 41s ease-in-out -6s infinite; }
+.ftag--c { --ti: 2; top: 70%; left: 4%; animation: ftag-drift-c 31s ease-in-out -13s infinite; }
 
 /* FOUR PATHS, NOT ONE SHARED THERE-AND-BACK.
 
@@ -1431,12 +1446,14 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
      single ring cannot stay outside it. Measured at 136, the pair at 30% sat
      116 and 125 from the centre, i.e. on the planet's face, because 30% is its
      widest point. These sit above and below that. */
+  /* Three of the six placements, kept verbatim rather than re-derived: these
+     exact three were measured at 185 / 177 / 227px from a 136px-radius disc,
+     so they are known clear of the planet, of each other and of the caption.
+     They also happen to be the best spread of the six — upper left, middle
+     right, lower left. */
   .ftag--a { top: 11%; left: 4%; }
-  .ftag--b { top: 11%; right: 4%; left: auto; }
-  .ftag--c { top: 45%; left: 3%; }
-  .ftag--d { top: 45%; right: 3%; left: auto; }
-  .ftag--e { top: 55%; left: 14%; }
-  .ftag--f { top: 55%; right: 14%; left: auto; }
+  .ftag--b { top: 45%; right: 3%; left: auto; }
+  .ftag--c { top: 55%; left: 14%; }
 
   /* A SMALLER DRIFT, because the band is smaller.
 
