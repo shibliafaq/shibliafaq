@@ -88,6 +88,15 @@ idleInit(() => {
        actually on screen; see the dive below. */
     const aboutWrap = document.querySelector('#about > .wrap');
     const aboutHead = document.querySelector('#about [data-split-hold]');
+    /* Two clocks again. The dive brings the caption in; a second trigger on
+       About's own tail takes it out. It needs one because the caption is now
+       PINNED, and a pinned block with no exit simply rides on into the next
+       section. It also needs to leave roughly when its backdrop does: the
+       stage is sticky only until y4337 here, after which the heat map slides
+       away for the remaining 900px of the section, and a caption still nailed
+       to the viewport over a departing map reads as broken. */
+    let heatIn = 0;
+    let heatOut = 0;
     if (!worlds || !stage) return;
 
     /* THE TRANSITION, AND THE RESTS BETWEEN IT.
@@ -202,6 +211,11 @@ idleInit(() => {
       return c;
     };
 
+    /* Seeded for the same reason --heat is: the stylesheet falls back to 1 so
+       nothing is trapped invisible without JS, and writing 0 here stops that
+       fallback also applying in the frames before the scrub first reports. */
+    worlds.style.setProperty('--cost', '0');
+
     ScrollTrigger.create({
       trigger: document.querySelector('.worlds__two') || worlds,
       start: 'top top',
@@ -307,6 +321,16 @@ idleInit(() => {
        the caption fully visible from y3200 against a map that does not arrive
        until y4040 — 840px early, which is the bug this was meant to fix.
        Writing 0 here narrows the fallback to the case it is actually for. */
+    const paintHeat = () => {
+      const h = heatIn * (1 - heatOut);
+      worlds.style.setProperty('--heat', h.toFixed(3));
+      if (aboutWrap) aboutWrap.inert = h < 0.02;
+      /* Fired once and only forward: the rise is a one-way transition, and
+         re-adding the class on the way back up would replay it every time the
+         reader scrolled through. */
+      if (h > 0.04 && aboutHead) aboutHead.classList.add('is-split-in');
+    };
+
     worlds.style.setProperty('--heat', '0');
 
     ScrollTrigger.create({
@@ -343,13 +367,8 @@ idleInit(() => {
            Both now hang off the dive, a beat after the plate itself lands at
            0.52-0.64, so the words arrive onto a map that is already there
            rather than onto empty ground. */
-        const heat = smoothstep(range(p, 0.60, 0.74));
-        worlds.style.setProperty('--heat', heat.toFixed(3));
-        if (aboutWrap) aboutWrap.inert = heat < 0.02;
-        /* Fired once, and only forward: the rise is a one-way transition, and
-           re-adding the class on the way back up would re-run it every time
-           the reader scrolled past. */
-        if (heat > 0.04 && aboutHead) aboutHead.classList.add('is-split-in');
+        heatIn = smoothstep(range(p, 0.60, 0.74));
+        paintHeat();
         earth.setDive(range(self.progress, 0, 0.62));
         /* The plate arrives LATE — the descent has to carry deep into the
            continent first, or the reader jumps from a whole peninsula to city
@@ -363,6 +382,32 @@ idleInit(() => {
         const f = Math.min(1, Math.max(0, (p - 0.52) / 0.12));
         riyadh.style.opacity = f.toFixed(3);
         riyadh.style.setProperty('--plate', (1.22 - 0.16 * f).toFixed(3));
+      },
+    });
+
+    /* THE CAPTION LEAVES WITH THE MAP.
+
+       Anchored to About's own bottom edge rather than to the next section, so
+       it does not silently re-time if anything is inserted after it. Progress
+       0 is the moment About's bottom reaches the foot of the viewport, and
+       that single instant is three things at once: the sticky stage lets go,
+       the map starts sliding, and the NEXT section starts climbing into view.
+
+       So the fade begins there rather than a quarter later. It was 0.25-0.6
+       first, which measured as the caption sitting at full opacity from y5000
+       to y5200 over a #direction that had already entered at y4968, and not
+       clearing until y5500 — 500px of a pinned block hanging over the next
+       section's heading. The caption gets its stillness before this point,
+       not after it: roughly 890px of it, from y4080 to y4968. */
+    ScrollTrigger.create({
+      trigger: about,
+      start: 'bottom bottom',
+      end: 'bottom top',
+      scrub: true,
+      invalidateOnRefresh: true,
+      onUpdate: (self) => {
+        heatOut = smoothstep(range(self.progress, 0, 0.28));
+        paintHeat();
       },
     });
 

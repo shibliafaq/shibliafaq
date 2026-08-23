@@ -4150,3 +4150,96 @@ removed, will look like it fired at the wrong scroll position if the browser
 restores scroll on reload. Two readings here said the rise fired at y3000 before
 that was understood. Measure from a known scroll position, not from whatever the
 reload left behind.
+
+## 51. Pinning the heat caption, and three wrong ideas about where the globe is (2026-08-23)
+
+A run of small requests on the two earth frames. The interesting part is not the
+changes, it is that three of them were placed against a globe that was not the
+size anyone assumed.
+
+### MEASURE THE SILHOUETTE
+
+The `.ftag` labels were positioned twice against `min(vw, vh) / 2` — radius 450
+on a 1440x900 screen, a disc filling the viewport height. That is wrong. The
+globe is drawn by `earth.js`, and `#worldsGrab` is already sized from its
+PROJECTED silhouette: measured **radius 333, centred (720, 483)**, leaving 387px
+of clear space down each side, 150px above, 84px below.
+
+So the sequence of complaints all had one cause:
+
+| placement | distance from centre | verdict |
+|---|---|---|
+| original corners | 560-691px | "not floating across bad Earth" |
+| first fix | 197-384px | "too much over the earth" |
+| second fix, 6 on a ring | 200-384px | "should not come over the earth" |
+| now, side bands | clear of the disc by 34-221px | on the planet: none |
+
+Every one of those was measured and reported as passing, because the metric was
+distance from a centre with the wrong radius attached to it. `#worldsGrab` was
+sitting in the DOM the whole time with the right answer in it.
+
+### An anchor is not a position
+
+The tags are animated, so the anchor is only where they start. At `2%` off each
+edge the outermost tag measured **x1445 against a 1440 viewport** — off screen —
+and a single-frame check of the anchor could never have shown it. Verified now
+across two full drift cycles with the durations temporarily compressed: every tag
+stays clear of the disc, on screen, and off the caption at every point.
+
+The horizontal travel came down to about 20px for the same reason. The side bands
+are ~390px wide with the planet on one side and the screen edge on the other, so
+X is the axis with nowhere to go; Y carries the float at ~50px instead.
+
+### The caption is pinned, and pinning changed the section's height
+
+`#about > .wrap` is now `position: fixed`, vertically centred, driven by `--heat`
+on two clocks exactly as `--cost` is: the dive brings it in, a trigger on About's
+own bottom edge takes it out.
+
+**Pinning it emptied the section.** With the copy out of flow, `#about` became
+padding and nothing else. The first attempt at holding the map longer raised
+`padding-bottom` from 52vh to 120vh and gained only 136px overall, because the
+pin had removed 476px of content at the same time. 175vh is what actually buys
+the hold.
+
+### Where the map's hold actually comes from
+
+Not obvious and worth stating: the map sits in `.worlds__stage`, which is
+`sticky; top: 0` inside `.worlds`, so it stops being stuck at `.worlds` bottom
+minus one viewport. `#about` is the last thing inside `.worlds`, so **#about's
+height IS the map's remaining hold.**
+
+| | before | after |
+|---|---|---|
+| map held still | 337px | **840px** |
+| caption visible | — | 4080 → 5160, 1080px |
+| stage releases | y4337 | y4968 |
+
+### The exit had to move to the release, not sit after it
+
+The caption's fade was set to run over 0.25-0.6 of its exit trigger, which put it
+at full opacity from y5000 to y5200 while `#direction` had already entered at
+y4968. Moved to 0-0.28: the moment About's bottom reaches the foot of the screen
+is three things at once — the stage lets go, the map starts sliding, and the next
+section starts climbing in — so the caption leaves there.
+
+**A note on the metric.** "Next section is on screen" flagged 4 bad frames even
+after the fix, and they were not real: a section counts as on screen when a 1px
+sliver crosses the bottom edge. Measured against the next section's HEADING,
+which is the thing that actually competes, the overlap is 0 and the heading first
+appears when the caption is already at 0.14.
+
+### Also in this run
+
+- The interaction cue is separated: `.future__cue` had no rules anywhere, so
+  "Drag and explore the globe" rendered as a second identical `.lead` against the
+  first. Now under a hairline rule in the mono label face.
+- Six tags, not eight. The two dropped were mine, and were the two that
+  overlapped their neighbours in meaning.
+- The tags arrive one at a time: each subtracts `--ti * 0.08` from `--cost`
+  before scaling, so they fill in rather than switching on together. This takes
+  opacity ownership away from `[data-reveal]` on those elements deliberately, by
+  specificity — which is the "one element, one owner" rule applied, not broken.
+- `--cost` is seeded to 0 at startup for the same reason `--heat` is: the
+  stylesheet falls back to 1 so nothing is trapped invisible without JS, and the
+  seed stops that fallback also applying before the scrub first reports.

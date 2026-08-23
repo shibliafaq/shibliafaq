@@ -490,7 +490,29 @@
 /* Extra room below the copy so the thermal plate is still there, alone and
    still, after the last line is read — the same rest the failed Earth gets.
    Without it Direction arrives the instant the paragraph ends. */
-.about--overmap { position: relative; z-index: 1; background: transparent; padding-bottom: 52vh; }
+/* THE PADDING HERE IS HOW LONG THE HEAT MAP STAYS.
+
+   Not obvious, and worth stating. The map lives in `.worlds__stage`, which is
+   `position: sticky; top: 0` inside `.worlds`, so it stops being stuck the
+   moment `.worlds` runs out — at its bottom minus one viewport. #about is the
+   last thing inside `.worlds`, so #about's height IS the map's remaining hold.
+
+   Measured at 52vh: `.worlds` ended at 5237, the stage released at 4337, and
+   the map became visible around 4000 — about 337px of stillness before it
+   began sliding away, which read as it leaving the instant you scrolled.
+
+   AND THIS SECTION IS NOW ALL PADDING. Pinning the caption took it out of
+   flow, so the 476px of copy that used to contribute height contributes none:
+   the box is padding-top plus padding-bottom and nothing else. The first
+   attempt at this raised 52vh to 120vh and gained only 136px overall, because
+   the pin had removed almost as much as the padding added. 175vh is the value
+   that actually buys the hold: roughly 1730px of section, releasing the stage
+   near y4970 against a map that appears around y4000, so about 950px of
+   stillness.
+
+   The caption is anchored to this section's own bottom edge, so it re-times
+   itself off this number rather than needing to be kept in step by hand. */
+.about--overmap { position: relative; z-index: 1; background: transparent; padding-bottom: 175vh; }
 .about--overmap .about__grid { grid-template-columns: minmax(0, 62ch); }
 .about--overmap .prose p,
 .about--overmap .pull { text-shadow: 0 2px 20px rgba(9, 9, 11, .9), 0 1px 5px rgba(9, 9, 11, .8); }
@@ -1171,18 +1193,43 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    `left` throughout rather than a mix of left and right: these position the
    tag's LEFT edge, and the tags differ in width by nearly 2x, so mixing the
    two made the spacing depend on how long each phrase happened to be. */
-.ftag--a { top: 24%; left: 22%; animation: ftag-drift-a 21s ease-in-out infinite; }
-.ftag--b { top: 16%; left: 56%; animation: ftag-drift-b 26s ease-in-out -3s infinite; }
-.ftag--c { top: 60%; left: 18%; animation: ftag-drift-c 19s ease-in-out -7s infinite; }
-.ftag--d { top: 70%; left: 44%; animation: ftag-drift-d 24s ease-in-out -11s infinite; }
-/* The second four. Same disc, filling the gaps the first four leave, and
-   re-using the four paths on different durations and offsets rather than
-   inventing four more keyframes: with eight tags nobody can tell that two
-   share a path when they are seconds apart and on opposite sides. */
-.ftag--e { top: 38%; left: 28%; animation: ftag-drift-b 23s ease-in-out -5s infinite; }
-.ftag--f { top: 46%; left: 60%; animation: ftag-drift-c 27s ease-in-out -14s infinite; }
-.ftag--g { top: 80%; left: 26%; animation: ftag-drift-d 20s ease-in-out -2s infinite; }
-.ftag--h { top: 30%; left: 45%; animation: ftag-drift-a 25s ease-in-out -17s infinite; }
+/* IN THE SPACE AROUND THE PLANET, NOT ON IT.
+
+   MEASURE THE SILHOUETTE, DO NOT ASSUME IT. Two placements were wrong before
+   this one because the globe was taken to be min(vw, vh) / 2, i.e. radius 450
+   filling the viewport height. It is not: `#worldsGrab` is sized by earth.js
+   from the projected silhouette, and it measures radius 333 centred at
+   (720, 483) on a 1440x900 screen. That leaves 387px of clear space down each
+   side, 150px above and 84px below.
+
+   So tags at 197-384px from the centre were sitting ON the planet, which is
+   what "too much over the earth" and then "should not come over the earth"
+   were both describing. They now live in the side bands, three left and three
+   right, none closer than about 70px to the disc even at the far end of their
+   drift.
+
+   ANCHORED PER BAND: `left` on the left, `right` on the right. The tags differ
+   in width by nearly 2x, so anchoring the right-hand ones by `left` would let
+   the longest of them run off the screen edge while the shortest sat well
+   inside it. Each band anchors to the edge it belongs to.
+
+   The lower right is left empty on purpose: the caption is fixed there, and
+   it is TALLER than it looks: measured x 824-1368, y 553-810, not 645. The
+   right-hand band therefore stops at 52%, not 62% — a tag at 62% put its
+   bottom edge inside the caption by 5000px.
+
+   4% off each edge rather than 2%, because the drift is applied on top of the
+   anchor: at 2% the outermost tag measured x1445 against a 1440 viewport,
+   i.e. off screen, and the anchor alone was never going to reveal that. */
+/* --ti is the arrival order, and it deliberately alternates sides rather than
+   running down one band and then the other, so the field fills in rather than
+   wiping across. */
+.ftag--a { --ti: 0; top: 18%; left: 4%;  animation: ftag-drift-a 34s ease-in-out infinite; }
+.ftag--b { --ti: 1; top: 13%; right: 4%; animation: ftag-drift-b 41s ease-in-out -6s infinite; }
+.ftag--c { --ti: 2; top: 45%; left: 4%;  animation: ftag-drift-c 31s ease-in-out -13s infinite; }
+.ftag--d { --ti: 3; top: 33%; right: 4%; animation: ftag-drift-d 38s ease-in-out -21s infinite; }
+.ftag--e { --ti: 4; top: 72%; left: 4%;  animation: ftag-drift-b 36s ease-in-out -9s infinite; }
+.ftag--f { --ti: 5; top: 52%; right: 4%; animation: ftag-drift-c 43s ease-in-out -27s infinite; }
 
 /* FOUR PATHS, NOT ONE SHARED THERE-AND-BACK.
 
@@ -1201,25 +1248,47 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    declaration in the cascade — but any NEW transform added to .ftag as a
    normal declaration would lose to the animation. So per-tag offsets belong
    here or in top/left, never in a separate transform rule. */
+/* FOUR STOPS, NOT THREE, AND ROUGHLY TWICE THE TRAVEL.
+
+   The triangle loops read as too tight: ~45px of excursion over a 900px
+   viewport is motion you have to look for. These wander through four points
+   and back, 70-95px end to end, which is enough to register as drifting
+   without ever being fast — the durations go UP at the same time, so the
+   speed barely changes and only the size of the path does.
+
+   A little Z as well. Under the stage perspective a few pixels of depth reads
+   as the tag breathing toward and away from the reader, which is what sells
+   suspension better than more X and Y would.
+
+   THE X TRAVEL IS DELIBERATELY THE SMALL ONE. The tags live in side bands
+   about 390px wide with the planet on one side and the screen edge on the
+   other, so horizontal drift is the axis with nowhere to go: at the first
+   attempt it pushed a tag off screen entirely. Y carries the float instead,
+   at roughly 50px, and X is held near 20 so the widest tag keeps a real gap
+   from the disc at every point in its cycle. */
 @keyframes ftag-drift-a {
   0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
-  33%      { transform: translate3d(20px, -24px, 0) rotate(0.9deg); }
-  66%      { transform: translate3d(-12px, -34px, 0) rotate(-0.5deg); }
+  25%      { transform: translate3d(18px, -28px, 12px) rotate(1.1deg); }
+  50%      { transform: translate3d(8px, -52px, -6px) rotate(-0.6deg); }
+  75%      { transform: translate3d(-14px, -22px, 8px) rotate(0.8deg); }
 }
 @keyframes ftag-drift-b {
   0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
-  33%      { transform: translate3d(-26px, -14px, 0) rotate(-0.8deg); }
-  66%      { transform: translate3d(-8px, 22px, 0) rotate(0.6deg); }
+  25%      { transform: translate3d(-20px, -18px, 10px) rotate(-1deg); }
+  50%      { transform: translate3d(-9px, 34px, -8px) rotate(0.7deg); }
+  75%      { transform: translate3d(12px, 14px, 6px) rotate(-0.9deg); }
 }
 @keyframes ftag-drift-c {
   0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
-  33%      { transform: translate3d(16px, 20px, 0) rotate(0.7deg); }
-  66%      { transform: translate3d(28px, -10px, 0) rotate(-0.9deg); }
+  25%      { transform: translate3d(14px, 32px, -10px) rotate(0.9deg); }
+  50%      { transform: translate3d(24px, -16px, 8px) rotate(-1.1deg); }
+  75%      { transform: translate3d(6px, -36px, 12px) rotate(0.5deg); }
 }
 @keyframes ftag-drift-d {
   0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
-  33%      { transform: translate3d(-18px, 26px, 0) rotate(0.5deg); }
-  66%      { transform: translate3d(14px, 12px, 0) rotate(-0.7deg); }
+  25%      { transform: translate3d(-16px, 36px, 8px) rotate(0.6deg); }
+  50%      { transform: translate3d(10px, 20px, -12px) rotate(-0.8deg); }
+  75%      { transform: translate3d(16px, -24px, 10px) rotate(1deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1405,7 +1474,29 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    scrubbed value only adds lag. */
 #about > .wrap {
   opacity: var(--heat, 1);
-  translate: 0 calc((1 - var(--heat, 1)) * 1.2rem);
+}
+
+/* PINNED, like the two captions before it.
+
+   Fixed rather than sticky for the same reason as #whole: sticky still
+   travels, and what is wanted is a block that arrives, holds perfectly still
+   over the map, and goes. Vertically centred because this is a full text
+   group rather than a one-line caption, so it wants the frame rather than a
+   corner; the -50% lives in the same `translate` as the arrival offset,
+   because two rules both writing `translate` would silently drop one.
+
+   Guarded at 901px along with everything else in this frame. Below that the
+   group returns to normal flow, which is the only sane behaviour on a phone
+   where a fixed 476px block would cover most of the screen. */
+@media (min-width: 901px) {
+  #about > .wrap {
+    position: fixed;
+    left: var(--pad-x);
+    right: var(--pad-x);
+    top: 50%;
+    translate: 0 calc(-50% + (1 - var(--heat, 1)) * 1.2rem);
+    z-index: 3;
+  }
 }
 
 /* THE INTERACTION CUE IS NOT PART OF THE ARGUMENT.
@@ -1441,8 +1532,8 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
     left: auto;
     top: auto;
     z-index: 3;
-    opacity: var(--cost, 0);
-    translate: 0 calc((1 - var(--cost, 0)) * 1.4rem);
+    opacity: var(--cost, 1);
+    translate: 0 calc((1 - var(--cost, 1)) * 1.4rem);
     /* No transition, for the same reason as #whole: --cost is already
        scrubbed and easing it twice only adds lag. */
   }
@@ -1467,7 +1558,34 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
     width: auto;
     margin: 0;
     z-index: 2;
-    opacity: var(--cost, 0);
+    /* No opacity here any more. It used to gate the whole field at once, so
+       all of them arrived on the same frame, which reads as a layer being
+       switched on rather than as things drifting into view. The tags carry
+       their own now, staggered — see below. */
+  }
+}
+
+/* THE TAGS ARRIVE ONE AFTER ANOTHER, NOT TOGETHER.
+
+   Each tag subtracts its own index from the shared signal before scaling it,
+   so tag n does not begin until --cost passes n * 0.08 and then takes 0.2 of
+   the signal to arrive. Opacity clamps to 0-1 on its own, so no clamp() is
+   needed and the arithmetic can run past both ends harmlessly.
+
+   THIS OVERRIDES THE REVEAL SYSTEM ON THESE ELEMENTS, deliberately. .ftag
+   carries [data-reveal], which owns opacity through .is-in; `#future .ftag`
+   is (1,1,0) and beats both of its rules, so --cost is now the single owner
+   here. That is the "one element, one owner" rule from CONTEXT 48 being
+   applied rather than broken: what is forbidden is two systems writing the
+   same property and neither knowing, not one system taking it over outright.
+
+   The fallback is 1, not 0, so that with no JS at all every tag resolves to
+   full opacity instead of vanishing. main.js writes 0 once at startup, which
+   is what keeps the fallback from also applying before the scrub has run —
+   the same trap that put the heat caption on screen 840px early. */
+@media (min-width: 901px) {
+  #future .ftag {
+    opacity: calc((var(--cost, 1) - var(--ti, 0) * 0.08) * 5);
   }
 }
 
