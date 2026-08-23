@@ -1150,10 +1150,31 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 /* Spread across the whole frame rather than stacked down one side, and kept
    above and below the copy's band rather than beside it — on one line each they
    are far too wide to share a row with a 34rem column. */
-.ftag--a { top: 6%;  left: 3%;  animation: ftag-drift-a 21s ease-in-out infinite; }
-.ftag--b { top: 20%; right: 4%; animation: ftag-drift-b 26s ease-in-out -3s infinite; }
-.ftag--c { top: 78%; left: 6%;  animation: ftag-drift-c 19s ease-in-out -7s infinite; }
-.ftag--d { top: 92%; right: 7%; animation: ftag-drift-d 24s ease-in-out -11s infinite; }
+/* ANCHORED ON THE GLOBE'S FACE, NOT IN THE VIEWPORT'S CORNERS.
+
+   These percentages used to be 6%/3%, 20%/right 4%, 78%/6%, 92%/right 7%, and
+   they were correct while `.ftags` was a grid cell stretched open with
+   `margin: -26vh 0`: that box was taller than the viewport, so a tag at 92%
+   still landed on the planet. Making the field `position: fixed; inset: 0`
+   changed what the percentages resolve against, and corner values then put
+   every tag in the black corners instead.
+
+   Measured before this fix, on a 1440x900 viewport with the globe centred at
+   (720, 450) and a radius of about 450: all four tags sat 560-691px from the
+   centre, i.e. every one of them outside the disc.
+
+   The values below put each tag 180-365px from that centre, so they read as
+   suspended over the surface. They also keep clear of the caption, which is
+   fixed to the bottom right and occupies roughly x 824-1368, y 645-810 at this
+   size — hence `d` sitting left of centre rather than under `b`.
+
+   `left` throughout rather than a mix of left and right: these position the
+   tag's LEFT edge, and the tags differ in width by nearly 2x, so mixing the
+   two made the spacing depend on how long each phrase happened to be. */
+.ftag--a { top: 24%; left: 22%; animation: ftag-drift-a 21s ease-in-out infinite; }
+.ftag--b { top: 16%; left: 56%; animation: ftag-drift-b 26s ease-in-out -3s infinite; }
+.ftag--c { top: 60%; left: 18%; animation: ftag-drift-c 19s ease-in-out -7s infinite; }
+.ftag--d { top: 70%; left: 44%; animation: ftag-drift-d 24s ease-in-out -11s infinite; }
 
 /* FOUR PATHS, NOT ONE SHARED THERE-AND-BACK.
 

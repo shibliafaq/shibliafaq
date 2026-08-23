@@ -4053,3 +4053,32 @@ pulls the stack up into the caption. Verified by stashing the change and
 measuring HEAD directly: 28893/30419 against 33532/28786 with the change, i.e.
 the same bug either way. Left alone deliberately: it is a separate fault and this
 change neither caused nor worsened it.
+
+### Follow-up: the tags were floating in the corners, not over the planet
+
+Reported straight after the change above: "the tags are not floating in space
+across bad Earth". Correct, and the measurement was unambiguous — on a 1440x900
+viewport with the globe centred at (720, 450) and a radius of about 450, all
+four tags sat **560 to 691px from that centre**, every one of them outside the
+disc, in the black corners.
+
+**The cause was the fix itself, half-applied.** The anchors read 6%/left 3%,
+20%/right 4%, 78%/left 6%, 92%/right 7%, and those were correct while `.ftags`
+was a grid cell stretched open with `margin: -26vh 0`: that box was taller than
+the viewport, so even 92% landed on the planet. Moving the field to
+`position: fixed; inset: 0` changed what the percentages resolve against, and
+corner values then mean actual corners. Changing the container without re-placing
+what it contains is the whole of the bug.
+
+New anchors put each tag 200-384px from the globe's centre, all four on the face,
+none overlapping the caption (fixed bottom right, roughly x 824-1368, y 645-810
+at this size, which is why `d` sits left of centre) and none overlapping each
+other. All four now use `left` rather than a mix of `left` and `right`: those
+position the tag's LEFT edge, and the tags differ in width by nearly 2x, so
+mixing them made spacing depend on phrase length.
+
+**The lesson is small and general:** a percentage offset is meaningless without
+knowing its containing block, so any change to `position` has to be followed by
+re-reading every offset that depended on the old one. The excursion measurement
+that "verified" the tags after the previous commit measured MOTION and never
+asked WHERE, which is why it passed while all four were off the planet.
