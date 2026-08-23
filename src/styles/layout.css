@@ -1300,14 +1300,135 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 
 /* Under 900px the copy fills the frame and there are no free corners left, so
    the tags come inline underneath it rather than overlapping the words. */
+/* ============================================================
+   THE PHONE GETS THE SAME MODEL, NOT THE SAME ARRANGEMENT
+   ============================================================
+
+   Measured, and the constraint is not negotiable. On 1440x900 the globe is
+   radius 333 with 387px of clear space down EACH side, which is what the two
+   captions and the tag field live in. On 375x812 the globe is radius 176 with
+   12px down each side and 369px below it. There are no side bands on a phone.
+
+   So the behaviour carries over and the placement does not:
+     - the copy is pinned and driven by the same --whole / --cost / --heat
+       signals, at the BOTTOM instead of in a side band
+     - the tags float and arrive staggered off --cost, over the lower part of
+       the frame instead of beside it
+     - four tags rather than six, because 369px minus a 200px caption leaves
+       about 170px, and six pills at 35px cannot float in that without
+       colliding. The two hidden are the two added later, so the original four
+       all survive.
+
+   Everything below 901px is in here; the desktop rules are all guarded the
+   other way. */
 @media (max-width: 900px) {
+  /* PINNED, like the desktop. Bottom of the frame, full width less the page
+     padding, because a phone has no corner to tuck a caption into. */
+  #whole .future__body,
+  #future .future__body,
+  #about > .wrap {
+    position: fixed;
+    left: var(--pad-x);
+    right: var(--pad-x);
+    width: auto;
+    max-width: none;
+    top: auto;
+    bottom: clamp(1.5rem, 5vh, 3rem);
+    z-index: 3;
+    text-align: left;
+  }
+  #whole .future__body  { opacity: var(--whole, 0); }
+  #future .future__body { opacity: var(--cost, 0); }
+  #about > .wrap        { opacity: var(--heat, 0); }
+  /* The desktop right-ranges the Cost frame against the left-ranged Whole
+     frame. At this width there is only one column, so both range left and the
+     last-line rule has to follow or a justified block ends ragged-right. */
+  #future .future__body .lead,
+  #future .sec-title { text-align: left; margin-left: 0; }
+  #future .future__body .lead { text-align-last: left; }
+
+  /* FLOATING, like the desktop, in the band under the planet. */
+  .ftags {
+    position: fixed;
+    inset: 0;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    z-index: 2;
+    display: block;
+  }
+  .ftag {
+    position: absolute;
+    max-width: calc(100vw - 2 * var(--pad-x));
+    opacity: calc((var(--cost, 0) - var(--ti, 0) * 0.1) * 5);
+    transition: none;
+  }
+  /* Four, alternating sides, inside a MEASURED band.
+
+     On a 375x812 screen the globe ends at y393 and the pinned caption starts
+     at y575, so the usable strip is 182px. Four pills at 35px is 140px of
+     that, which fits, but only if they are placed against those two edges
+     rather than by eye: the first attempt put tag A at 47% (y381) which was
+     still on the planet, and tag D at 68% (y552) which clipped the caption.
+
+     THREE, not four. Four pills at 35px need 140px and the band is 182px, so
+     with any drift at all the top one touched the planet (measured 1px of
+     clearance) and the bottom one clipped the caption by 997px. Three fit with
+     real gaps. The three shown are the first three of the original four. */
+  .ftag--a { top: 51.5%; left: var(--pad-x); }
+  .ftag--b { top: 58.5%; right: var(--pad-x); left: auto; }
+  .ftag--c { top: 65%;   left: var(--pad-x); }
+  .ftag--d, .ftag--e, .ftag--f { display: none; }
+
+  /* A SMALLER DRIFT, because the band is smaller.
+
+     The desktop paths travel about 50px vertically, which is fine across a
+     900px frame beside a planet and far too much inside a 182px strip: at
+     that amplitude a tag reaches the globe at one end of its cycle and the
+     caption at the other. One shared gentle path, varied by duration and
+     offset so they still do not move together. */
+  .ftag { animation-name: ftag-drift-sm !important; }
+  .ftag--a { animation-duration: 23s; animation-delay: 0s; }
+  .ftag--b { animation-duration: 29s; animation-delay: -7s; }
+  .ftag--c { animation-duration: 26s; animation-delay: -14s; }
+
+}
+
+@keyframes ftag-drift-sm {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  33%      { transform: translate3d(6px, -7px, 0) rotate(0.5deg); }
+  66%      { transform: translate3d(-5px, 6px, 0) rotate(-0.4deg); }
+}
+
+/* The old phone fallback, kept for anything that still reaches it. */
+@media (max-width: 0px) {
   .ftags {
     position: static;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: .5rem;
-    margin-top: 1.25rem;
+    /* THE WHOLE MARGIN, not just the top.
+
+       The base rule is `margin: -26vh 0`, opened up so the field can span the
+       planet on a desktop. Setting only `margin-top` here left the BOTTOM at
+       -26vh, which on a 812px phone is -211px.
+
+       AND ITS OWN ROW. `.ftags` and `.future__body` are deliberately placed in
+       the same grid cell so they can overlap on a desktop, where the tags are
+       absolutely positioned and the copy sits in a corner. Once the tags are
+       static they fill that shared cell instead, and the copy is underneath
+       them: measured on a 375px screen, 59075px of the paragraph and 11045px
+       of the heading were covered. Row 3 gives them somewhere of their own. */
+    margin: 1.25rem 0 0;
+    grid-row: 3;
+    /* The base rule stretches this to its grid cell for the desktop overlay.
+       In a static row-3 cell that cell is 0.32fr of a 220svh section, and the
+       flex defaults then stretched every pill to fill it: measured 74px tall
+       against 31px of actual content. Hug the content instead. */
+    align-self: start;
+    align-items: center;
+    align-content: flex-start;
     padding: 0 var(--pad-x);
   }
   .ftag {
@@ -1488,7 +1609,7 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 /* Desktop-only for the same reason as #whole above: on a phone this group is
    in normal flow and must not be gated by the dive. */
 @media (min-width: 901px) {
-  #about > .wrap { opacity: var(--heat, 1); }
+  #about > .wrap { opacity: var(--heat, 0); }
 }
 
 /* PINNED, like the two captions before it.
@@ -1516,7 +1637,7 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
     width: min(300px, 26vw);
     /* .wrap carries max-width: var(--max) = 1560px from base.css. */
     max-width: none;
-    translate: 0 calc(-50% + (1 - var(--heat, 1)) * 1.2rem);
+    translate: 0 calc(-50% + (1 - var(--heat, 0)) * 1.2rem);
     z-index: 3;
   }
   /* The grid inside it was sized for a full-width section. */
@@ -1600,10 +1721,10 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
     width: min(300px, 26vw);
     max-width: none;
     z-index: 3;
-    opacity: var(--cost, 1);
+    opacity: var(--cost, 0);
     /* The -50% shares this declaration with the arrival offset: two rules both
        writing `translate` would silently drop one. */
-    translate: 0 calc(-50% + (1 - var(--cost, 1)) * 1.4rem);
+    translate: 0 calc(-50% + (1 - var(--cost, 0)) * 1.4rem);
     /* No transition, for the same reason as #whole: --cost is already
        scrubbed and easing it twice only adds lag. */
   }
@@ -1655,7 +1776,14 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    the same trap that put the heat caption on screen 840px early. */
 @media (min-width: 901px) {
   #future .ftag {
-    opacity: calc((var(--cost, 1) - var(--ti, 0) * 0.08) * 5);
+    opacity: calc((var(--cost, 0) - var(--ti, 0) * 0.08) * 5);
+    /* NO transition, and it has to be said out loud because .ftag carries
+       [data-reveal], which sets one. Taking opacity over without also taking
+       the transition left the reveal system easing a value that is already
+       scrubbed: measured, --cost hit 0 at y3500 while the tags were still
+       visibly fading at y4000, 500px later. Same rule as --whole and --cost on
+       the captions — the easing belongs in the smoothstep, not on top of it. */
+    transition: none;
   }
 }
 
@@ -1691,10 +1819,18 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 }
 
 /* The last line of a justified block is not stretched, so it needs telling
-   which way to fall — otherwise it ranges left inside a right-ranged frame. */
-#whole .future__body .lead  { text-align-last: left; }
-#future .future__body .lead { text-align-last: right; }
-#about > .wrap .lead        { text-align-last: left; }
+   which way to fall — otherwise it ranges left inside a right-ranged frame.
+
+   GUARDED, because the right-ranged frame only exists on a desktop. Below
+   901px there is one column and everything ranges left; unguarded, this rule
+   sits later in the file than the phone block and silently won, leaving the
+   Cost of Inaction paragraph with a right-ranged last line in a left-ranged
+   layout. Same trap as the .ftags position leak. */
+@media (min-width: 901px) {
+  #whole .future__body .lead  { text-align-last: left; }
+  #future .future__body .lead { text-align-last: right; }
+  #about > .wrap .lead        { text-align-last: left; }
+}
 /* The second paragraph in this group is not a .lead, so it needs telling
    separately or it sits at body scale beside a caption-scale one. */
 #about > .wrap .prose p     { font-size: var(--fs-sm); line-height: 1.62; text-align: justify; text-align-last: left; hyphens: none; }

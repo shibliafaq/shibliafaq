@@ -4341,3 +4341,80 @@ choice; left keeps the heading where it already began.
 Verified at 1440: all three now 300px wide, 40px title, 14.4px justified lead,
 whole and about in the left band, future in the right. At 800: all three in
 flow, all visible, all on the same 25.6px/14.4px scale.
+
+## 52. A behaviour audit, and giving the phone the same model (2026-08-23)
+
+Asked to check the site behaves properly, then that it behaves the same way on a
+phone. Four real faults came out of it, three of them mine from this session.
+
+### Desktop
+
+**A first-load flash.** Sampling at scroll 0 immediately after load caught the
+tags and the Cost caption at full opacity; the same read on a settled page
+returned 0. Cause: the stylesheet fell back to 1 and `main.js` seeds 0 inside
+`idleInit`, so between first paint and idle the fallback applied.
+
+The fallback was 1 on the reasoning that no-JS visitors should not get a blank
+block. **That reasoning was wrong**: the `.no-js` rule at layout.css:261 is never
+applied by anything — no script sets or clears the class and the markup does not
+carry it — so every `[data-reveal]` element already fails closed without JS.
+`--whole` had always used 0. All fallbacks are now 0.
+
+**The tags lagged the scrub by 700px.** `--cost` hit 0 at y3500 while the tags
+were still fading at y4200. They carry `[data-reveal]`, which sets an opacity
+transition, and taking the opacity over without also taking the transition left
+the reveal system easing a value that is already scrubbed. `transition: none`.
+
+Two things checked and found NOT to be faults: the two zero-size images are the
+lightbox and book-cover placeholders, and `#riyadh` keeping opacity 1 to the
+document end is fine because it scrolls away rather than fading.
+
+### The phone had the fallback layout, not the design
+
+Everything dropped into normal flow below 901px, which was safe rather than
+right. Measured, the constraint is real and worth writing down:
+
+| | 1440x900 | 375x812 |
+|---|---|---|
+| globe radius | 333 | 176 |
+| clear left / right | 387 / 387 | **12 / 12** |
+| clear below | 84 | **369** |
+
+There are no side bands on a phone, so the desktop ARRANGEMENT cannot carry over.
+The MODEL now does: the copy is pinned and driven by the same `--whole`,
+`--cost` and `--heat`, at the bottom instead of in a side band; the tags are
+fixed, float, and arrive staggered off `--cost`.
+
+**Three tags, not six.** The band between the globe (ends y393) and the pinned
+caption (starts y575) is 182px. Four pills at 35px plus drift measured 1px of
+clearance from the planet and 997px of overlap with the caption. Three fit with
+real gaps, and the drift is scaled down to ~7px because the desktop's ~50px is
+most of the band.
+
+Verified across a full compressed drift cycle at 375x812: 17px clear of the
+globe, 0 overlap with the caption, 0 tag-on-tag overlap, 0 frames off screen.
+
+### Two more leaks of the same kind
+
+The mobile stack was overlapping the copy by **59075px** before any of this:
+`.ftags` and `.future__body` are deliberately placed in the SAME grid cell so
+they can overlap on a desktop, and the phone block never moved them apart. It
+also set `margin-top` while leaving the base `margin: -26vh 0` bottom at -211px,
+and `align-self: stretch` was making each pill 74px tall against 31px of content.
+
+And `text-align-last: right` for the Cost frame sat unguarded LATER in the file
+than the phone block, so it won there and left a right-ranged last line in a
+left-ranged layout. Now guarded at 901px, like `.ftags` position before it.
+
+**The pattern, three times now:** a desktop-composition rule written without a
+media guard, sitting after the phone block, silently winning. If a rule encodes
+where something sits or which way it ranges, it belongs inside `min-width: 901px`.
+
+### A self-inflicted one worth recording
+
+One edit inserted comment TEXT where the preceding comment had already closed,
+leaving prose raw in the stylesheet. It invalidated the rule immediately after
+it, so `.ftag--a` kept its desktop 10% and sat on the planet while its siblings
+moved. The measurement caught it as "clearance -320px", which is a nonsense
+number and exactly the sort that means the instrument is reading a broken state
+rather than a bad value.
