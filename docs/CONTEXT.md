@@ -4304,3 +4304,40 @@ fully visible below it.
 Verified after, desktop: all three fixed, windows in sequence — whole, then
 future 1200-3300, then about 4200-5100 — and **zero frames with two captions
 visible at once**.
+
+### The heat caption joins the caption scale (2026-08-23)
+
+Once pinned over the map, `#about` was still being set at CHAPTER scale while
+its two siblings were captions. Measured side by side:
+
+| | whole | future | about, before |
+|---|---|---|---|
+| box width | 300px | 300px | **1440px** |
+| title | 40px | 40px | **108px** |
+| lead | 14.4px | 14.4px | **23.04px** |
+| lead align | justify | justify | start |
+
+Fixed by adding `#about` to the existing rule groups rather than writing new
+numbers, so there is one definition of "caption scale" and the three frames
+cannot drift apart:
+
+- `#whole .sec-title, #future .sec-title` gains `#about .sec-title`
+- the shared `.lead` rule gains `#about > .wrap .lead`
+- `text-align-last: left` and the eyebrow alignment likewise
+
+The comment already sitting above that group turned out to describe the new
+member exactly: "smaller and quieter than a section head, because these are
+captions on a picture rather than the start of a chapter."
+
+Two things the copy needed beyond the group: `.wrap` carries
+`max-width: var(--max)` = 1560px from base.css, which had to be cleared, and the
+section's second paragraph is not a `.lead`, so it needed telling separately or
+it sat at body scale beside a caption-scale one.
+
+Placement is the left band, matching `#whole`. This frame sits over a flat map
+rather than a globe, so there is no disc to avoid and the side is a composition
+choice; left keeps the heading where it already began.
+
+Verified at 1440: all three now 300px wide, 40px title, 14.4px justified lead,
+whole and about in the left band, future in the right. At 800: all three in
+flow, all visible, all on the same 25.6px/14.4px scale.

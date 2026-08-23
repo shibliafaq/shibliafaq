@@ -1506,12 +1506,21 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 @media (min-width: 901px) {
   #about > .wrap {
     position: fixed;
-    left: var(--pad-x);
-    right: var(--pad-x);
+    /* Left band, matching #whole. The other two frames alternate around a
+       globe; this one sits over a flat map with no disc to avoid, so the side
+       is a composition choice rather than a constraint — left keeps the
+       heading where it already started. */
+    left: 3%;
+    right: auto;
     top: 50%;
+    width: min(300px, 26vw);
+    /* .wrap carries max-width: var(--max) = 1560px from base.css. */
+    max-width: none;
     translate: 0 calc(-50% + (1 - var(--heat, 1)) * 1.2rem);
     z-index: 3;
   }
+  /* The grid inside it was sized for a full-width section. */
+  #about .about__grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* THE INTERACTION CUE IS NOT PART OF THE ARGUMENT.
@@ -1657,16 +1666,23 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 #future .future__body { justify-self: end; }     /* right corner — bad earth  */
 
 /* Smaller and quieter than a section head, because these are captions on a
-   picture rather than the start of a chapter. */
+   picture rather than the start of a chapter.
+
+   #about joined this group once it was pinned over the heat map: it is the
+   same kind of thing now, a caption on an image, and it was still being set
+   at chapter scale. Measured against its two siblings it was 108px against
+   40px, with a 23px lead against 14.4px, in a box 1440px wide against 300. */
 #whole .sec-title,
-#future .sec-title {
+#future .sec-title,
+#about .sec-title {
   font-size: clamp(1.5rem, 3.2vw, 2.5rem);
   max-width: 18ch;
   letter-spacing: -.02em;
 }
 
 #whole .future__body .lead,
-#future .future__body .lead {
+#future .future__body .lead,
+#about > .wrap .lead {
   font-size: var(--fs-sm);
   line-height: 1.62;
   margin-inline: 0;
@@ -1678,6 +1694,10 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    which way to fall — otherwise it ranges left inside a right-ranged frame. */
 #whole .future__body .lead  { text-align-last: left; }
 #future .future__body .lead { text-align-last: right; }
+#about > .wrap .lead        { text-align-last: left; }
+/* The second paragraph in this group is not a .lead, so it needs telling
+   separately or it sits at body scale beside a caption-scale one. */
+#about > .wrap .prose p     { font-size: var(--fs-sm); line-height: 1.62; text-align: justify; text-align-last: left; hyphens: none; }
 
 /* The title carries the same edge, and its measure comes off the right in
    Frame 3 so the short second line hangs under the first rather than away
@@ -1685,7 +1705,8 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
 #future .sec-title { margin-left: auto; }
 
 #whole .future__body .eyebrow,
-#future .future__body .eyebrow { justify-content: flex-start; }
+#future .future__body .eyebrow,
+#about > .wrap .eyebrow { justify-content: flex-start; }
 
 /* Justify needs words per line to distribute. Under 720px this measure has too
    few, so it goes back to ranged left and the copy re-centres — at that width
