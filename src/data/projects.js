@@ -517,6 +517,43 @@ export const projects = {
     ],
   },
 
+  /* ==========================================================
+     THE SEVENTH M.Sc. RESEARCH CARD
+     ==========================================================
+
+     Deliberately thin. Asked for the abstract and at most two illustrations
+     and nothing else, because this is a live competition entry: the financing
+     mechanism, the scenario tests and the phasing are the entry's substance
+     and are not the site's to publish ahead of it.
+
+     So there is no `method`, no `methodFlow`, no metrics, no tag list and no
+     link. That is not an omission to be filled in later — it is the whole
+     brief, and anything added here should be checked against it first.
+
+     Abstract taken verbatim from UMN-Abstract.pdf, 31 July 2026. The only
+     changes are <strong> on the terms the source sets in bold, and two commas
+     replacing a dash pair the source used around a list of six systems. */
+  umn: {
+    cat: 'InfraVision 2026 · Student Competition · Infrastructure as a System',
+    pub: {
+      authors: 'Hilal Alghamdi, Haidar Alnasser, Shibli Afaq, Alfarouq Tarabzouni',
+      venue: 'King Khalid Street, Al Khubar Ash Shamaliyah · Eastern Province, Saudi Arabia',
+      state: 'prep',
+      status: 'Competition entry · July 2026',
+    },
+    title: 'The Urban Mycelium Network · A Self-Financing Cooling Corridor',
+    desc: 'A cooling network for one Al Khobar street that grows the way a mycelium colonises a forest: block by block, each cluster helping fund the next.',
+    abstract: 'In the Gulf, heat and humidity have made the outdoors unusable for much of the year, and the people with the least shelter carry the cost: outdoor workers, delivery riders, the elderly, children, and lower-income households. Along our 28-block pilot corridor, 4,245 residents live under an average summer land-surface temperature of 51.7 °C, with severe heat-stress days rising by 15 to 18 per decade. Shade is treated as amenity. We treat it as infrastructure. The Urban Mycelium Network cools a street the way a mycelium colonises a forest: block by block, each cluster helping fund the next. Three layers do the work. <strong>Nodes</strong> are the physical intervention, made of biomimetic solar canopies, cool roofs, cool paving and native Ghaf planting irrigated with treated wastewater. <strong>Threads</strong> are sensors and a routing app that verify performance and guide people to cool refuges. <strong>Roots</strong> are the Cool-Share Fund, a revolving vehicle in which verified energy savings repay capital through a charge on the utility bill that is capped below the savings itself, then seed the next block. We do not forecast one world. We test the network against three. In the <strong>first</strong>, replication demand outruns our capacity to build. In the <strong>second</strong>, reform arrives in a shape our financing cannot use. In the <strong>third</strong>, heat accelerates while capital and input costs rise. Every vulnerability, from subsidy dependency and affordability to supply-chain shock, water throughput, verification integrity and disintermediation, is answered by a design choice already made: bolted modules that unbolt, procurement in 28 tranches rather than one order, a phase gate before any scaling, and auditors who sit off the board. The block, not the corridor, is the unit of risk. We chose financial resilience over maximum yield, proof over speed, inclusion over simplicity, and credibility over big claims. Each choice costs something, and we boldly say what. The corridor links six systems, energy, water, mobility, urban heritage, public health, and finance, into one street-scale operating architecture aligned with Saudi Arabia Vision 2030 targets for wastewater reuse and energy-subsidy reform. Delivery runs in four phases, from a regulatory sandbox cluster to a full 28-block corridor costing about USD 10.7 million, split between a public purse and a private account repaid from verified savings. Our single indicator of success is felt-temperature relief on the street, with a target of −6 °C for the people who need it, at no net cost to the public purse. The corridor delivers 15.2 GWh of clean power a year, avoids roughly 9,040 tonnes of carbon annually, and builds the next block. It is the mechanism itself that replicates, not the canopy.',
+    /* Two, as asked. The sketches show the intent over the real street; the
+       visualisation shows the same views built. Together they are the before
+       and after of the same corridor, which is the only pair worth having if
+       the count is two. */
+    images: [
+      { src: `${IMG}/umn_sketches.webp`, cap: 'Conceptual sketches over King Khalid Street: biomimetic canopy, cool-air downdraft, raised planter bed and a shaded walking zone' },
+      { src: `${IMG}/umn_visualization.webp`, cap: 'The same two views as built: solar canopies, misting, native planting and a shaded pedestrian edge' },
+    ],
+    links: [],
+  },
   arch: {
     cat: 'B.Arch Thesis · BIT Mesra · 2020–2021 · First Class with Distinction',
     title: 'Twin Tower Complex — Net-Zero Mixed-Use High-Rise Development',

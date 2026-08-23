@@ -5845,3 +5845,38 @@ and the card now does both instead of using one for both.
 The link label also lost its connecting dash, which had survived the sweep in
 section 73 because that pass only looked at rendered prose and this string is an
 attribute of a link.
+
+## 83. The seventh research card, deliberately thin (2026-08-24)
+
+`index.html` carried a placeholder — `pcard--todo`, `data-msc-slot="7"`, titled
+"Research project 7" and pointing at the thesis key so the wheel had something
+to open. The legend counted seven M.Sc. cards; six existed. That slot is now the
+Urban Mycelium Network.
+
+**What is disclosed, and what is not.** Asked for the abstract and at most two
+illustrations and nothing else, so there is no method, no metrics, no tag list
+and no link. This is a live competition entry: the financing mechanism, the
+three scenario tests and the phasing are its substance, and publishing them
+ahead of the competition is not the site's call to make.
+
+That absence is now written into the data as the brief rather than left looking
+like an entry someone did not finish — because every other card has those
+fields, and the next person here would otherwise read the gap as a to-do.
+
+**The abstract is verbatim** from UMN-Abstract.pdf, 31 July 2026. Two changes,
+both recorded at the field: `<strong>` on the terms the source itself sets bold,
+and two commas replacing a dash pair around the list of six systems, per the
+no-connecting-dashes rule.
+
+**The two illustrations** are the deck's last two slides, which are the before
+and the after of the same two views: the sketches show the intent drawn over
+photographs of the real street, the visualisation shows it built. If the count
+is two, that pair carries more than any two single images could.
+
+Rendered from `Urban-Mycelium-Network-Deck-v3.4.pdf` at 150 dpi with `pdftoppm`
+and converted with PIL, since neither ImageMagick, cwebp nor sharp is available
+here — worth noting because the obvious three tools are all absent and PIL is
+not. 1800px WebP for the gallery, 1200px for the card.
+
+The v3.3 `.pptx` is newer by file date than the v3.4 `.pdf`; the higher version
+number was taken as the later work. Worth confirming if the deck moves again.
