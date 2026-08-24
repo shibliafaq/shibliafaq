@@ -786,7 +786,11 @@
 </div>
 
 <div class="lightbox" id="lightbox" hidden>
-  <img id="lightboxImg" src="" alt="">
+  <!-- No src attribute rather than src="": an empty src is invalid, and it
+       resolves against the document URL rather than to nothing. lightbox.js
+       assigns .src when a figure is opened, which works whether or not the
+       attribute was there to begin with. -->
+  <img id="lightboxImg" alt="">
   <span data-copy="_nav.30" class="lightbox__hint mono">Click anywhere to close</span>
 </div>
 

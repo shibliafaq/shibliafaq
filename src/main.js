@@ -338,8 +338,14 @@ handoverSections.forEach((sec) => {
 // The Experience map. On idle rather than near-viewport for the same reason as
 // the skills field — it replaces the timeline, and doing that as the reader
 // arrives would show the list and then visibly swap it. The 220 KB of sheets and
-// the composer live in a lazy chunk inside, and nothing is fetched at all below
-// 900px or under reduced motion.
+// the composer live in a lazy chunk inside.
+//
+// THE 900px GATE IS GONE and this comment used to still claim it. The map runs
+// at every width down to MIN_W = 320 now (see the note at the top of
+// experience.js), so on a phone it mounts and its sheets are fetched.
+// Measured at 375px: stage 349x812, 177 pixel assets loaded. Under reduced
+// motion the walk still does not move on its own, and the timeline stays the
+// fallback for no JS, a failed sheet, or widths under 320.
 idleInit(() => initExperience());
 
 // three.js is the heaviest dependency on the page. The hero needs it, but not

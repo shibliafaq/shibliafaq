@@ -6671,3 +6671,48 @@ frame, and forcing the container's opacity failed because its children carry
 [data-reveal] and had not been revealed at that scroll position. Verified by DOM
 instead — element absent, title text and computed font unchanged against its
 sibling. Worth knowing before anyone else tries to screenshot these frames.
+
+## 102. Full-site audit (2026-08-24)
+
+Swept at 1374px and 375px, top to bottom, after the session's changes.
+
+CLEAN. No horizontal overflow at either width, sampled every ~1500px of the
+whole page. No duplicate ids. No in-page anchor pointing at a missing target.
+Every section present and sized (#thermal and #atlas measure 0 and are hidden by
+design — they are embeds modal.js relocates). No runtime errors or unhandled
+rejections across a full traversal at either width. Project modals open the card
+aimed at and close from a real coordinate click. The architecture book opens
+from its own cards, does NOT also open the project modal, and its cover matches
+the card aimed at. Six languages switch and English restores. The contact form
+has three required fields, all labelled, and an empty submit does not show the
+success line.
+
+TWO THINGS FIXED. `<img id="lightboxImg" src="">` carried an empty src, which is
+invalid and resolves against the document URL rather than to nothing; the
+attribute is gone and lightbox.js assigns .src on open regardless, verified by
+loading an image into it with no attribute present. And main.js still claimed
+"nothing is fetched at all below 900px", which stopped being true when the map's
+width gate was dropped to MIN_W = 320 — measured at 375px, the stage mounts at
+349x812 and 177 pixel assets load. The comment now says what happens.
+
+THREE NON-FINDINGS, recorded so they are not chased again. /favicon.ico 404s,
+but the Performance API shows the browser never requests it: an inline SVG icon
+is declared and used, and the 404 only appears if something asks explicitly.
+#experienceList reports hidden=false while the map is up, which looks like the
+timeline and the map both rendering — it carries `visually-hidden` and measures
+25x1, which is the screen-reader pattern working correctly. And a book card
+appeared to open the project modal too, which was stale state from the previous
+test in the same session, not a real double-open; from a clean start it does not.
+
+ONE OPEN ITEM, and it needs a dashboard rather than code. Production
+/api/visits returns 200 with {"configured": false} and the debug view reports
+urlVarFound: null, tokenVarFound: null — no Redis/Upstash store is attached in
+Vercel, so the footer counter stays hidden rather than showing a zero, which is
+the designed behaviour for a missing store. The endpoint itself is healthy. The
+dev-server 404 on the same path is expected: Vite does not run Vercel functions.
+
+NOT COVERED, so nobody reads this as broader than it is: real touch hardware
+(only the emulated pointer), any browser other than this Chromium pane, the
+prefers-reduced-motion path, print styles, a keyboard-only or screen-reader
+pass, and the Formspree endpoint — which was deliberately left alone, since
+exercising it sends a real message.
