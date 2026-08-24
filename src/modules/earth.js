@@ -28,11 +28,42 @@ import { reducedMotion, stopScroll, startScroll } from './scroll.js';
  * nature, and matching them tier-for-tier would triple VRAM for no visible gain.
  */
 function tiers() {
-  const px = window.innerWidth * Math.min(window.devicePixelRatio || 1, 2);
+  /* CSS WIDTH GATES THIS, not device pixels, and that is the fix.
+
+     The rule was `innerWidth * min(dpr, 2)`, meant as "how many real pixels
+     is this display". It conflates a small high-DPI phone with a large
+     screen, and phones lost: 390 CSS px at dpr 3 clears 760 and took the 4k
+     tier, as did 412@2.6 and 430@3. An 820pt iPad cleared 1500 and took the
+     SIX k one. Meanwhile navigator.deviceMemory is undefined on Safari, so
+     the memory guard never fired on any iPhone or iPad at all.
+
+     What that cost: the -4k maps decode to 4096x2048, which is 33.5MB of GPU
+     memory each and about 45MB with mipmaps. Four of them — day, future,
+     night, clouds — is roughly 179MB on a phone, and the iPad case was 320MB.
+     That is a plausible way to have a tab killed and recovered, which is what
+     a page reloading on its own actually is.
+
+     CSS width is the honest gate because the globe can never be drawn larger
+     than the layout box it sits in, and setPixelRatio is already capped at 2.
+     A 390pt phone renders the globe into at most ~780 device pixels; a 2048px
+     map is already more than twice what it can show. Nothing visible is lost.
+
+     900 matches the breakpoint the stylesheets already use for "this is not a
+     desktop". Phones and portrait tablets take the 2k tier, roughly 45MB for
+     all four; desktops are untouched. */
+  const cssW = window.innerWidth;
+  const px = cssW * Math.min(window.devicePixelRatio || 1, 2);
   const mem = navigator.deviceMemory; // undefined outside Chromium
 
-  if (px < 760 || (mem !== undefined && mem < 4)) return { day: '', rest: '' };
-  if (px >= 1500 && (mem === undefined || mem >= 8)) return { day: '-6k', rest: '-4k' };
+  if (cssW < 900 || px < 760 || (mem !== undefined && mem < 4)) return { day: '', rest: '' };
+  /* The top tier also wants real desktop WIDTH, for the same reason as above.
+     `px >= 1500` is cleared by any landscape iPad at dpr 2 from about 750 CSS
+     px up, and with deviceMemory undefined on Safari the memory arm of this
+     test waves it straight through — so an iPad Air in landscape was taking two
+     6144x3072 maps, about 277MB with the other two. 1400 CSS px is above every
+     iPad in landscape including the 12.9 Pro at 1366, and below every desktop
+     worth giving 6k to. */
+  if (cssW >= 1400 && px >= 1500 && (mem === undefined || mem >= 8)) return { day: '-6k', rest: '-4k' };
   return { day: '-4k', rest: '-4k' };
 }
 
@@ -402,6 +433,26 @@ export function initEarth(opts = {}) {
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  /* A LOST CONTEXT IS RECOVERABLE, BUT ONLY IF THE EVENT IS CANCELLED.
+
+     Mobile GPUs drop contexts under memory pressure or when a tab is
+     backgrounded, and the default action of `webglcontextlost` is to make the
+     loss permanent. Without preventDefault() the globe is gone for the rest
+     of the visit and the only thing left on screen is the CSS starfield
+     behind it — silently, with no error anyone would see.
+
+     three.js re-uploads its own buffers and textures on restore, so there is
+     nothing to rebuild here. The listeners exist to say "keep the context
+     alive" and to leave a trace in the console when it happens, because a
+     lost context is otherwise indistinguishable from a rendering bug. */
+  canvas.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault();
+    console.warn('[earth] WebGL context lost; waiting for restore');
+  }, false);
+  canvas.addEventListener('webglcontextrestored', () => {
+    console.warn('[earth] WebGL context restored');
+  }, false);
 
   const scene = new THREE.Scene();
   /* Near plane at 0.01, not the usual 0.1.

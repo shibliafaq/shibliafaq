@@ -6794,3 +6794,51 @@ A measurement note: the first check of the wake reported NO CHANGE and looked
 like a regression. It had sampled the canvas's top-left 400x300 while the sweep
 ran across the vertical centre. Re-sampled over the full canvas it was fine.
 Second time this session a bad probe nearly became a bug report.
+
+## 105. The globe's texture budget, and the walk cleared (2026-08-24)
+
+Following 104, the other two heavy loops were audited for the same class of
+fault. One had a worse problem than the heat map; the other is clean.
+
+THE GLOBE WAS SIZING ITS MAPS BY THE WRONG NUMBER. tiers() gated on
+`innerWidth * min(dpr, 2)`, meant as "how many real pixels is this display". It
+conflates a small high-DPI phone with a large screen, and phones lost: 390 CSS px
+at dpr 3 resolves to 780, clears the 760 gate and took the -4k tier. So did
+412@2.6 and 430@3. An 820pt iPad in portrait cleared 1500 and took the SIX k one.
+And navigator.deviceMemory is undefined on Safari, so the `mem < 4` arm never
+fired on any iPhone or iPad at all.
+
+What that cost, measured from the decoded sizes: -4k is 4096x2048, about 45MB of
+GPU memory each with mipmaps. Four maps — day, future, night, clouds — is
+roughly 170MB on a phone, and the portrait-iPad case was about 277MB. That is a
+real way to have a tab killed and recovered, which is what a page reloading on
+its own is.
+
+CSS width is the honest gate: the globe can never be drawn larger than its layout
+box, and setPixelRatio is already capped at 2, so a 390pt phone renders it into
+at most ~780 device pixels and a 2048px map is already more than double what it
+can show. Nothing visible is lost. Under 900 CSS px takes the 2k tier, about
+43MB for all four. The 6k tier additionally requires 1400 CSS px, which is above
+every iPad in landscape including the 12.9 Pro at 1366 and below every desktop
+worth giving it to. Checked after: phones and portrait tablets 2k, laptop at 1374
+still 4k, desktop at 1920 still 6k.
+
+AND IT COULD NOT SURVIVE A LOST CONTEXT. There was no `webglcontextlost`
+listener, and the default action of that event is to make the loss permanent.
+Mobile GPUs drop contexts under memory pressure and when a tab is backgrounded,
+so the globe would simply be gone for the rest of the visit with nothing but the
+CSS starfield behind it, silently. preventDefault() plus a restore log now; three
+re-uploads its own buffers, so there is nothing else to rebuild.
+
+THE PIXEL WALK IS CLEAN, and worth recording so it is not re-audited. frame()
+reschedules unconditionally but early-returns unless `sheets && active &&
+!document.hidden`, so an off-screen walk does no canvas work; `raf` is a single
+handle reassigned each frame, so it cannot multiply the way riyadh's could; and
+walkmap.js has an explicit start/stop pair with cancelAnimationFrame.
+setActive(false) does not cancel the frame, only flags it — that leaves one empty
+callback per frame running forever, which is a rounding error against what it
+would cost to render, and not worth changing.
+
+Measured across the page afterwards: rAF scheduling flat at 184, 187 and 184 per
+second at the globe, at the walk, and past both. Nothing accumulates. The globe
+still renders — canvas 1374x910, context not lost, 4k maps on this display.
