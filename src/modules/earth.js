@@ -431,8 +431,25 @@ export function initEarth(opts = {}) {
 
   const TEX = { day: DAY, future: FUTURE, night: NIGHT, clouds: CLOUDS, ...(opts.textures || {}) };
 
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  /* THE FRAMEBUFFER IS THE OTHER HALF OF THE MEMORY BILL, and it is easy to
+     miss because it never appears as a file.
+
+     `antialias: true` asks for a multisampled buffer. At 375 CSS px and dpr 2
+     the drawing buffer is 750x1624, which is 4.9MB on its own, and MSAA
+     multiplies that by the sample count before depth and stencil are counted.
+     On a phone that is tens of megabytes for edge smoothing on a sphere, which
+     is the one shape that needs it least: it is a smooth silhouette against a
+     dark field at twice the device's own resolution.
+
+     So phones render without MSAA and at a 1.5 cap rather than 2, taking the
+     buffer to 562x1218 and about 2.7MB before the sample multiplier disappears
+     entirely. Desktops are untouched.
+
+     Same 900px CSS gate as the texture tiers above, and for the same reason:
+     the globe cannot be drawn larger than its layout box. */
+  const small = window.innerWidth < 900;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !small, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.5 : 2));
 
   /* A LOST CONTEXT IS RECOVERABLE, BUT ONLY IF THE EVENT IS CANCELLED.
 

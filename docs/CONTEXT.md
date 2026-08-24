@@ -6880,3 +6880,49 @@ of reload before hunting for what could crash.
 Support note: overscroll-behavior needs iOS 16 or later. Below that the gesture
 is still reachable and there is no CSS answer; it would need touchmove
 interception at the document level, which is worse for everything else.
+
+## 107. iPhone Safari, and what is actually left (2026-08-24)
+
+The reload was described precisely: iPhone Safari, mid-page, and the WELCOME
+screen plays again. That last detail settles it. The boot animation only runs on
+a fresh document load, so this is not a crash-and-restore (which returns you
+where you were) and not pull-to-refresh either (which only fires at scroll-top,
+and this happens in between). It is WebKit evicting the tab's web content
+process under memory pressure and reloading it, which is iOS's normal behaviour
+and looks exactly like this from the outside.
+
+VERIFIED DEPLOYED before hunting further, because "still happening" means
+nothing if the fix was not live: the production earth chunk contains the 1400
+gate and the webglcontextlost handler, and html/body both compute
+overscroll-behavior-y: contain. All of 104-106 is in production.
+
+MEASURED ON AN EMULATED PHONE, so the numbers are indicative rather than
+Safari's own: 9.2MB transferred, 19.2MB across seven DOM canvases, 27MB JS heap,
+and the globe correctly taking the 2k tier now (earth-day.webp, not -4k). The
+walk's offscreen world canvas is 44x164 tiles at TILE 16, so 704x2624 and about
+7.4MB — checked because it is invisible to a DOM query, and cleared. The eleven
+animated card loops are 440x248 to 480x270, about 0.5MB a frame. Nothing here is
+individually damning.
+
+THE FRAMEBUFFER WAS THE LAST THING I COULD TAKE without changing what the site
+does. `antialias: true` asks for a multisampled buffer, and at 375 CSS px with
+dpr 2 the drawing buffer was 750x1624 — 4.9MB before the sample count multiplies
+it. Phones now render without MSAA and cap the pixel ratio at 1.5, giving
+562x1218 and 2.6MB with no multiplier. Measured after: antialias false, buffer
+2.6MB, globe still rendering and looking right on a phone. Desktops untouched.
+
+WHAT IS LEFT IS A TRADE, NOT A BUG. The globe is the largest remaining
+allocation on a phone: three.js to parse, a WebGL context, four 2048x1024 maps
+at roughly 45MB with mipmaps, and a live render loop — and it is only ever
+needed for the hero and the dive, in the first fifth of the page. It cannot
+simply be disposed afterwards because scrolling back up must bring it back.
+Cutting it on phones would free the most by far and the CSS starfield fallback
+is already built and shipping, but it would take the dive with it, which is the
+site's opening argument. That is the owner's call and is being put to him rather
+than taken.
+
+PROCESS NOTE, second one in three sections. Three rounds went out against this
+report before anyone asked what KIND of reload it was. "I see the welcome screen
+again" was available for the asking on day one and rules out two of the three
+candidate causes in five words. Ask what the failure looks like before
+theorising about what could produce it.
