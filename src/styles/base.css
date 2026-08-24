@@ -10,6 +10,28 @@ html {
   scroll-behavior: auto;
 }
 
+/* PULL-TO-REFRESH IS OFF, and this is a bug fix rather than a preference.
+
+   Reported as: interacting with the heat map a lot makes the page reload. It
+   was not a crash and nothing was running away — it is the browser gesture.
+   `.worlds.is-draggable` carries `touch-action: pan-y` so a reader can still
+   scroll past the globe with a finger on it, which means a vertical drag over
+   the globe and the heat plate scrolls the page. Drag upward enough times and
+   the page reaches scroll-top; the next downward drag is no longer a scroll,
+   it is pull-to-refresh, and the page reloads. "Too much interaction" is
+   exactly the condition — one drag never does it, a dozen do.
+
+   `contain` rather than `none`: it stops the refresh gesture and scroll
+   chaining while leaving the rubber-band bounce, which is the platform feel
+   and costs nothing. On both html and body because which one is the scrolling
+   element differs by engine, and the property only works on the one that is.
+
+   Modals, the pinned note and the Instagram strip already set this locally for
+   the unrelated reason of not scrolling the page out from under themselves;
+   this is the document-level rule that was missing. */
+html,
+body { overscroll-behavior-y: contain; }
+
 body {
   background: var(--ink);
   color: var(--t);

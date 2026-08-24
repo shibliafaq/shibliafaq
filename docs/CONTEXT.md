@@ -6842,3 +6842,41 @@ would cost to render, and not worth changing.
 Measured across the page afterwards: rAF scheduling flat at 184, 187 and 184 per
 second at the globe, at the walk, and past both. Nothing accumulates. The globe
 still renders — canvas 1374x910, context not lost, 4k maps on this display.
+
+## 106. It was pull-to-refresh, not a crash (2026-08-24)
+
+104 and 105 fixed two real defects and neither stopped the reload, because the
+reload was never a crash. It is the browser's own gesture.
+
+`.worlds.is-draggable` carries `touch-action: pan-y` so a reader can still scroll
+past the globe with a finger resting on it. That means a vertical drag over the
+globe and the heat plate scrolls the PAGE. Drag upward enough times and the page
+arrives at scroll-top; the next downward drag is no longer a scroll, it is
+pull-to-refresh, and the page reloads. "Too much interaction" is precisely the
+condition — one drag never does it, a dozen do, which is why it read as
+something building up rather than as a gesture.
+
+Nothing at the document level was stopping it. `overscroll-behavior` appears
+three times in the stylesheets and all three are local: modals, the pinned note,
+and the Instagram strip, each set so scrolling that thing does not scroll the
+page out from under it. html and body had none, so the refresh gesture was fully
+available everywhere.
+
+`overscroll-behavior-y: contain` on both, because which element is the scrolling
+one differs by engine and the property only takes effect on the one that is.
+`contain` rather than `none`: it stops the refresh and scroll chaining while
+leaving the rubber-band bounce, which is platform feel and costs nothing.
+Verified after: contain on both, scrollingElement is html, and scrolling still
+runs 0 to 19166 and back to 0.
+
+THE LESSON, and it is the expensive one. Two rounds of fixes went out against
+"the page reloads" without ever reproducing it, on a reading — tab killed and
+recovered — that was never tested. Both found genuine defects, so both were
+worth shipping, but neither was the reported bug, and shipping them read as
+progress. A reload has two causes and only one of them is a crash; the cheap
+check is whether the page state survives, and it was never made. Ask what kind
+of reload before hunting for what could crash.
+
+Support note: overscroll-behavior needs iOS 16 or later. Below that the gesture
+is still reachable and there is no CSS answer; it would need touchmove
+interception at the document level, which is worse for everything else.
