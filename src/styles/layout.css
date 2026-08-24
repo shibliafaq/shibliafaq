@@ -828,6 +828,31 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   .hero__ask { text-wrap: balance; }
 }
 
+/* ---- THE PREMISE LINES ARE A DESKTOP THING ------------------------------
+
+   "I was always driven by simple questions:" and the two questions under it
+   come off entirely below 640px. On a phone the hero is already four stacked
+   blocks before the biography starts, and these three lines pushed the thing
+   the reader came for below the fold without adding an argument the
+   biography does not make on its own.
+
+   640px, not the 779px above: that rule is about whether a single question
+   fits on one line, which is a typesetting question. This one is about how
+   much hero a small screen should carry, and it should not fire on a tablet
+   where there is room for both.
+
+   .hero__desc--intro, NOT .hero__desc. The biography carries the same base
+   class (plus --2 and --just), so the bare selector would have taken the
+   whole opening paragraph with it. The modifier exists only to make this
+   rule unable to reach it.
+
+   display: none rather than visibility or opacity, so the space goes too and
+   nothing is announced to a screen reader that is not on the page. */
+@media (max-width: 640px) {
+  .hero__desc--intro,
+  .hero__asks { display: none; }
+}
+
 /* Justified, and NO hyphenation — no broken words with dashes at the line ends.
 
    `hyphens: auto` was here for a reason: justify can only stretch word spaces,

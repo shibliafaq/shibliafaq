@@ -6716,3 +6716,32 @@ NOT COVERED, so nobody reads this as broader than it is: real touch hardware
 prefers-reduced-motion path, print styles, a keyboard-only or screen-reader
 pass, and the Formspree endpoint — which was deliberately left alone, since
 exercising it sends a real message.
+
+## 103. The hero premise lines come off on phones (2026-08-24)
+
+"I was always driven by simple questions:" and the two questions under it are
+hidden below 640px. Desktop keeps all three, unchanged.
+
+.hero__desc--intro, NOT .hero__desc, and this is the whole care in the change.
+The biography carries the same base class — `hero__desc hero__desc--2
+hero__desc--just` — so a bare `.hero__desc { display: none }` would have taken
+the opening paragraph with it, on the one screen where the biography is the
+first thing worth reading. The modifier exists only so this rule cannot reach
+it. Checked at 375px after: intro none, asks none, biography still 335x182 and
+reading correctly.
+
+640px, not the 779px used just above it in the same file. That rule is about
+whether one question fits on one line, which is typesetting; this is about how
+much hero a small screen should carry, and it should not fire on a tablet where
+there is room for both.
+
+`display: none` rather than visibility or opacity, so the space goes with the
+text and a screen reader is not read three lines that are not on the page.
+
+Measured at 1374px afterwards to confirm the desktop is untouched: intro 765x35,
+asks 864x66, both questions present.
+
+Note for anyone verifying this kind of change: the first check said the rule had
+not applied, and it had — Vite had not pushed the new stylesheet yet. A reload
+showed `none` at the same width. Stale CSS reads exactly like a selector that
+does not match.
