@@ -1344,45 +1344,40 @@
   bottom: clamp(1rem, 3vh, 2rem);
   z-index: 7;
   pointer-events: none;
-  /* 32rem forced a wrap that split "(90’s Nintendo Style)" across two lines,
-     which reads as a mistake rather than as a list. Wide enough for one line at
-     a normal desktop, and still short of the way-out button in the opposite
-     corner: measured at 1134px the tag ends at 797 and the skip starts at 903. */
   max-width: min(64vw, 44rem);
-  display: inline-block;
-  padding: .24rem .62rem;
-  background: color-mix(in srgb, var(--ink) 80%, transparent);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--line);
-  border-radius: var(--r-pill);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .3rem;
   font-family: var(--f-mono);
-  /* Smaller than --fs-xs (.79rem) on purpose: this is a credit, and it should
-     sit under everything else on the stage rather than compete with the card
-     and the chapter rail.
-
-     THE COLOUR GOES UP AS THE SIZE COMES DOWN. --t-3 at 10px would be the same
-     mistake the project tile subtitles just had fixed -- the smallest text on a
-     surface carrying the least contrast. --t-2 holds it readable at this size,
-     and the bracketed terms keep the accent, which is the part worth seeing. */
   font-size: .64rem;
   letter-spacing: .1em;
   text-transform: uppercase;
-  color: var(--t-2);
   line-height: 1.5;
 }
 
-/* Not italic: the brackets already separate these, and the mono face at this
-   size leans badly. Colour is the whole distinction. */
-.journey__adapted em {
-  font-style: normal;
+/* THE OUTER PILL IS GONE. Three button-shaped tags inside a fourth rounded box
+   reads as a group inside a group, and the container was only ever there to
+   hold one run of text. The label now sits bare and the tags carry the shape. */
+.journey__adapted-label { color: var(--t-3); }
+
+/* Each term is its own tag, which is what makes them read as three things
+   rather than one sentence with brackets in it. The brackets went with the
+   change: a pill already says where a term starts and stops, and keeping both
+   would be saying it twice.
+
+   `nowrap` so a term never breaks across lines; the flex row wraps BETWEEN
+   tags instead, which is the only place a break belongs. */
+.journey__tag {
+  display: inline-block;
+  padding: .22rem .58rem;
+  background: color-mix(in srgb, var(--ink) 82%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in oklab, var(--amber) 34%, var(--line));
+  border-radius: var(--r-pill);
   color: var(--amber);
-  margin-inline-start: .35em;
-  /* Each bracketed term is one token. If the line has to break, it breaks
-     BETWEEN them and never inside one, which is what stopped "(90’s Nintendo
-     Style)" being cut in half on a narrower stage. */
   white-space: nowrap;
 }
-
 .journey__hint {
   position: absolute;
   inset-inline: 0;
@@ -1571,6 +1566,35 @@
    again on phones. There is no opt-out here: the 62ch measure below is the
    existing one and applies at every width, so the block is justified wherever
    it is read. */
+/* ---- THE CONTACT BLOCK IS SET SMALLER THAN THE REST -------------------
+
+   One factor on both the heading and the prose, so the relationship between
+   them is exactly what it was and only the whole group shrinks. Measured at
+   1374px before: the title resolved to 103.05px on the 7.5vw branch of --fs-h2
+   and the paragraphs to 21.98px on the 1.6vw branch of --fs-lead, and the four
+   of them stood 514px tall. At .76 that is roughly 78px and 17px.
+
+   Expressed as calc() ON THE TOKENS rather than as fixed sizes, so both keep
+   their clamps and stay responsive; hardcoding px here would freeze this one
+   section while every other heading on the page kept scaling.
+
+   THE PROSE HAS A FLOOR AND THE HEADING DOES NOT. --fs-lead bottoms out at
+   1.1rem, and .76 of that is 13.4px, which is too small to read a paragraph in
+   on a phone. max() holds it at 16px there. The heading has no such floor
+   because .76 of its 2.75rem minimum is still 33px, which is plainly a
+   heading. So the two scale together everywhere there is room, and only on the
+   narrowest screens does the prose stop following the title down. */
+/* The heading comes down further than the prose did, to .56, because at .76 it
+   still ran the full width of the wrap and read as the loudest thing in the
+   section by some margin. 103.05px -> 57.7px at 1374.
+
+   It gets a floor of its own for the same reason the prose has one, just at a
+   different height: below about 640px --fs-h2 is already on its 2.75rem
+   minimum, and .56 of that is 24.6px, which stops being a section heading and
+   starts being a subheading. 2rem holds it at 32px there. */
+#contact .sec-title { font-size: max(2rem, calc(var(--fs-h2) * .56)); }
+#contact .contact__lead { font-size: max(1rem, calc(var(--fs-lead) * .76)); }
+
 .contact__lead {
   max-width: 62ch;
   text-align: justify;

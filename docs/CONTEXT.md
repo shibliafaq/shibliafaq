@@ -6597,3 +6597,43 @@ least contrast. --t-2 holds it at 10.24px, one line, 25px tall against 50.
 
 bg.lead has no entry in any of the six dictionaries, so it was already
 English-only and this introduced no translation drift.
+
+## 100. Three tags, and a smaller contact block (2026-08-24)
+
+THE MAP CREDIT BECOMES THREE TAGS. Asked for as separate buttons after 99 made
+them one run of bracketed text, so the outer pill went and each term carries its
+own. The brackets went with it: a pill already says where a term starts and
+stops, and keeping both says it twice. The row is flex with `nowrap` on each
+tag, so a break can only fall BETWEEN terms, never inside one. Measured at
+1374px: Fantasy 69x24, Medieval 75x24, 90's Nintendo Style 145x24, all on one
+line beside the label.
+
+They are still spans rather than <button>. Raised once in 99 and not re-argued
+here, but recorded so the next person does not "fix" it by accident: they have
+no action, and a real button would take a tab stop, answer to Enter and promise
+something. If they ever get behaviour they should become buttons the same day.
+
+THE CONTACT BLOCK IS SET SMALLER. One factor on the heading and the prose
+together first, so the relationship between them survived and only the group
+shrank: measured at 1374px the title was 103.05px on the 7.5vw branch of
+--fs-h2 and the paragraphs 21.98px on the 1.6vw branch of --fs-lead, a ratio of
+4.69, and the four of them stood 514px. At .76 the ratio was still 4.69.
+
+Then the heading alone came down again to .56, because at .76 it still ran the
+full width of the wrap. It now sets 57.7px against a 1237px wrap, 728px wide on
+one line, and the block is 312px against the original 514.
+
+Both are calc() ON THE TOKENS rather than fixed px, so they keep their clamps
+and stay responsive. Both carry a floor, at different heights and for the same
+reason: .76 of --fs-lead's 1.1rem minimum is 13.4px, too small to read a
+paragraph in on a phone, so max() holds it at 16px; .56 of --fs-h2's 2.75rem
+minimum is 24.6px, which stops being a section heading, so max() holds that at
+32px.
+
+A NOTE ON A BUG THAT WAS NOT ONE. The contact heading rendered as black text on
+amber blocks in two consecutive screenshots and looked badly broken. Nothing in
+the DOM had a background: it was a live text selection of exactly "Let's
+Collaborate & Connect", left behind by this session's own measurement code
+calling range.selectNodeContents() on the title, against a site that styles
+::selection as amber on ink. Measurement that selects text has to clear the
+selection afterwards, or the next screenshot is a lie.
