@@ -56,6 +56,10 @@ export function initRiyadhReveal(root) {
   let cx = 0; let cy = 0;      // the head — trails the pointer
   let lx = 0; let ly = 0;      // where the head was last frame, in buffer space
   let seeded = false;
+  /* When the pointer last said anything. The wake decays to 2% after
+     WAKE_SECONDS, so once that has passed with no input there is nothing left
+     to animate and the loop can stand down until someone touches it again. */
+  let lastInput = 0;
   let running = false;
   /* The one pending animation frame, or 0. Single source of truth for
      whether a callback is queued — see frame(). */
@@ -146,6 +150,22 @@ export function initRiyadhReveal(root) {
     if (!live()) { running = false; return; }
     if (!mctx || !heat) return;
 
+    /* NOTHING TO DRAW WITHOUT A POINTER.
+
+       The wake is entirely pointer-driven and fully decayed WAKE_SECONDS after
+       the last input, but the loop kept repainting regardless: three full-canvas
+       drawImage calls a frame, forever, over a plate that had been blank for
+       minutes. That cost lands hardest in exactly the case it is least wanted —
+       a fast scroll past the section, where the pointer is not moving at all and
+       every frame is already contended.
+
+       One extra second past the decay before standing down, so the tail of a
+       wake is never cut short. track() restarts the loop on the next input. */
+    if (lastInput && (now - lastInput) > (WAKE_SECONDS + 1) * 1000) {
+      running = false;
+      return;
+    }
+
     /* Scheduled AFTER the exit test, and through a handle, so there is only
        ever one pending callback. Scheduling at the top meant a frame could be
        queued and then `running` set false on the same pass; if a pointermove
@@ -204,6 +224,7 @@ export function initRiyadhReveal(root) {
   }
 
   function track(clientX, clientY) {
+    lastInput = performance.now();
     const r = root.getBoundingClientRect();
     px = clientX - r.left;
     py = clientY - r.top;

@@ -6926,3 +6926,39 @@ report before anyone asked what KIND of reload it was. "I see the welcome screen
 again" was available for the asking on day one and rules out two of the three
 candidate causes in five words. Ask what the failure looks like before
 theorising about what could produce it.
+
+## 108. Measuring the fast-scroll case, and idling the wake (2026-08-24)
+
+Owner's read after the last round: it happens less, and it looks like the phone
+cannot keep up with the number of animations during a fast up-and-down scroll.
+That is testable rather than something to theorise about, so it was measured.
+
+FAST SCRUBBING, on emulation and therefore indicative only: p50 frame 17ms, p90
+33ms, p99 67ms, worst 100ms, ten frames over 50ms, eight long tasks with the
+worst at 83ms. Heap flat at 28MB. That is desktop-class hardware already showing
+strain, and an iPhone CPU multiplies it. The reading holds up.
+
+WHAT CAME OUT. The wake loop repainted every frame whether or not anyone was
+touching it — three full-canvas drawImage calls a frame over a plate that had
+been blank for however long. It is entirely pointer-driven and fully decayed
+WAKE_SECONDS after the last input, so there was nothing to draw. It now stands
+down one second past the decay and track() restarts it on the next input.
+
+Measured in the band where the plate is genuinely live: 219 drawImage calls in
+1200ms while the wake is alive, 0 after it decays, and 180 again on the next
+pointer move. It stops and it comes back.
+
+A USEFUL NUMBER FOUND WHILE LOOKING FOR THE TEST POSITION. The plate is only
+live between y=3619 and about y=4394 — the stage is at opacity 0 by 4394 and
+stays there. So 105's visibility gate had already cut this loop from the entire
+page down to roughly 400px of scroll; today's change removes what was left
+inside that band. Two earlier attempts to measure this landed outside the band
+and read as "the loop is not running", which was true and meant nothing.
+
+WHAT IS NOT DONE. The globe cannot be skipped during a fast scroll the way the
+wake can: the dive is scroll-driven, so dropping its frames would make the
+sequence stutter rather than save anything the reader would thank us for. If the
+phone still gives up, the remaining levers are halving the phone textures again
+(2048 to 1024, roughly 45MB to 11MB) or dropping the globe on phones for the CSS
+starfield that already ships. Both were put to the owner and both were declined
+in favour of testing what is already in.
