@@ -1323,6 +1323,66 @@
 /* Clear of the fixed nav (74px). While the section is pinned the stage top IS
    the viewport top, so anything higher than this sits underneath the nav and is
    simply invisible — which is what happened the moment the pin engaged. */
+/* ---- WHAT THE ART IS ADAPTED FROM --------------------------------------
+
+   Bottom-left, which is the one free corner of the stage: the chapter rail
+   holds the left edge at mid-height, the hint sits top-centre and the way out
+   sits bottom-right. Measured against all three before it was put there.
+
+   Wears the same pill as .journey__hint deliberately. It is the same KIND of
+   thing -- a quiet note laid over the map rather than part of it -- and giving
+   it a second treatment would say it was a different kind.
+
+   z-index 7 against the skip button's 8: if a very narrow stage ever brings
+   the two together, the control wins and the label goes behind it.
+
+   The three bracketed terms take the accent so the sentence scans as one
+   phrase plus a list, which is what it is. */
+.journey__adapted {
+  position: absolute;
+  inset-inline-start: clamp(1rem, 3vw, 2.25rem);
+  bottom: clamp(1rem, 3vh, 2rem);
+  z-index: 7;
+  pointer-events: none;
+  /* 32rem forced a wrap that split "(90’s Nintendo Style)" across two lines,
+     which reads as a mistake rather than as a list. Wide enough for one line at
+     a normal desktop, and still short of the way-out button in the opposite
+     corner: measured at 1134px the tag ends at 797 and the skip starts at 903. */
+  max-width: min(64vw, 44rem);
+  display: inline-block;
+  padding: .24rem .62rem;
+  background: color-mix(in srgb, var(--ink) 80%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  font-family: var(--f-mono);
+  /* Smaller than --fs-xs (.79rem) on purpose: this is a credit, and it should
+     sit under everything else on the stage rather than compete with the card
+     and the chapter rail.
+
+     THE COLOUR GOES UP AS THE SIZE COMES DOWN. --t-3 at 10px would be the same
+     mistake the project tile subtitles just had fixed -- the smallest text on a
+     surface carrying the least contrast. --t-2 holds it readable at this size,
+     and the bracketed terms keep the accent, which is the part worth seeing. */
+  font-size: .64rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--t-2);
+  line-height: 1.5;
+}
+
+/* Not italic: the brackets already separate these, and the mono face at this
+   size leans badly. Colour is the whole distinction. */
+.journey__adapted em {
+  font-style: normal;
+  color: var(--amber);
+  margin-inline-start: .35em;
+  /* Each bracketed term is one token. If the line has to break, it breaks
+     BETWEEN them and never inside one, which is what stopped "(90’s Nintendo
+     Style)" being cut in half on a narrower stage. */
+  white-space: nowrap;
+}
+
 .journey__hint {
   position: absolute;
   inset-inline: 0;

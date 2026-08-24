@@ -6568,3 +6568,32 @@ phone preset with the RTL mirror kept in step.
 Verified at 1035px and at 375px, on two different tiles each time, by resolving
 elementFromPoint at the button's centre and clicking THAT: reaches the button,
 and the modal closes.
+
+## 99. The walk says what its art is borrowed from (2026-08-24)
+
+The Background lead becomes "Let me walk you through the Journey so far in 90's
+gaming style", and a small tag sits over the map itself reading "Gaming graphics
+adapted (Fantasy)(Medieval)(90's Nintendo Style)", with the three bracketed
+terms in the accent.
+
+A LABEL, NOT A BUTTON, despite being asked for as a button tag. It does nothing
+when pressed, and a control that controls nothing is worse than a plain tag: it
+takes a tab stop, it answers to Enter, and it promises something it cannot do.
+`pointer-events: none` for a second reason — the stage under it is draggable on
+touch, and a decorative chip must never swallow a press meant for the character.
+
+Bottom-left is the one free corner: the chapter rail holds the left edge at
+mid-height, the hint sits top-centre, the way out sits bottom-right. Checked
+against all three with the walk running, plus the distance to the skip button
+(471px of clearance at 1374px wide).
+
+Two corrections after seeing it. At 32rem it wrapped and split "(90's Nintendo
+Style)" across two lines, which reads as a mistake rather than as a list; the
+measure went wider and each bracketed term is now `white-space: nowrap`, so a
+break can only ever fall between them. And asked to make it smaller, the colour
+went UP as the size came down — .64rem at --t-3 would have been the project-tile
+subtitle mistake all over again, the smallest text on the surface carrying the
+least contrast. --t-2 holds it at 10.24px, one line, 25px tall against 50.
+
+bg.lead has no entry in any of the six dictionaries, so it was already
+English-only and this introduced no translation drift.

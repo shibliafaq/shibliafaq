@@ -318,7 +318,7 @@ node tools/sync-site-copy.mjs --write   # apply it
 - Experience &amp; <em>Education</em>
 
 ### bg.lead
-- Let me walk you through the Journey so far.
+- Let me walk you through the Journey so far in 90’s gaming style.
 
 ### background.1
 - <span data-i18n="bg.hint">Keep scrolling</span>
