@@ -6637,3 +6637,37 @@ Collaborate & Connect", left behind by this session's own measurement code
 calling range.selectNodeContents() on the title, against a site that styles
 ::selection as amber on ink. Measurement that selects text has to clear the
 selection afterwards, or the next screenshot is a lie.
+
+## 101. The Whole Picture frame stops saying itself twice (2026-08-24)
+
+The eyebrow read "The Whole Picture" directly above a title reading "Looking at
+the Whole Picture", so the frame spent its first two lines on the same four
+words before saying anything. The eyebrow is gone. The title is untouched —
+same markup, same `.display sec-title`, and measured after: Jost, 40px, weight
+800, identical to the #future frame beside it.
+
+`.future__body` STAYS even though it now holds one fewer child. It is the
+element `--whole` is published on, so the frame's entire fade lives on that
+container; emptying it of a heading costs nothing and deleting it would take
+the fade with it.
+
+Three now-dead `#whole .future__body .eyebrow` fragments came out of grouped
+selectors that also serve #future and #about, leaving those groups intact. The
+three `#whole .sec-title` fragments stayed, because that element still exists.
+Checked afterwards for dangling commas and selector-less rules: none.
+
+TWO PROCESS NOTES, both mine.
+
+The first pass removed BOTH the eyebrow and the title, on a straightforward
+reading of "remove THE WHOLE PICTURE / LOOKING AT THE WHOLE PICTURE" as naming
+two lines to delete. It meant keep the second. Reverting the four touched files
+with `git checkout --` and redoing only the eyebrow was cheaper and safer than
+unpicking six selector deletions by hand.
+
+And the visual check did not land. #whole's frame is `position: fixed` at
+`opacity: var(--whole, 0)`, so it is invisible outside its beat in the earth
+sequence; forcing the variable failed because the scrub republishes it every
+frame, and forcing the container's opacity failed because its children carry
+[data-reveal] and had not been revealed at that scroll position. Verified by DOM
+instead — element absent, title text and computed font unchanged against its
+sibling. Worth knowing before anyone else tries to screenshot these frames.

@@ -1440,7 +1440,6 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   #whole .sec-title,
   #future .sec-title,
   #about .sec-title { text-align: center; margin-inline: auto; }
-  #whole .future__body .eyebrow,
   #future .future__body .eyebrow,
   #about > .wrap .eyebrow { justify-content: center; }
   #whole .future__body  { opacity: var(--whole, 0); }
@@ -2082,7 +2081,6 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    from it. */
 #future .sec-title { margin-left: auto; }
 
-#whole .future__body .eyebrow,
 #future .future__body .eyebrow,
 #about > .wrap .eyebrow { justify-content: flex-start; }
 
@@ -2106,7 +2104,6 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   #whole .future__body .lead,
   #future .future__body .lead,
   #about > .wrap .lead { text-align: justify; text-align-last: center; }
-  #whole .future__body .eyebrow,
   #future .future__body .eyebrow { justify-content: center; }
   #whole .sec-title,
   #future .sec-title { max-width: none; }
