@@ -77,15 +77,35 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  border: 1px solid var(--line-2);
-  background: rgba(9, 9, 11, .8);
+  /* LOUD ENOUGH TO FIND, and it was not.
+
+     The cross sat at --t-2 on the panel wash: measured 6.91:1, on a glyph only
+     12.32px tall. That is a legible ratio for body text and not for a 12px mark
+     that has to be spotted rather than read, over media tiles that are bright
+     in places. --t takes it to 18.47:1 and the glyph up to about 17px.
+
+     This is the one control on the panel that must never be hunted for, which
+     is the same argument the walk's skip button won: every other control here
+     stays quiet so it does not compete with the content, and the way OUT is the
+     exception. A reader looking for the exit is already slightly frustrated. */
+  border: 1px solid var(--line-3);
+  background: rgba(9, 9, 11, .88);
   backdrop-filter: blur(10px);
-  color: var(--t-2);
-  font-size: var(--ms-small);
+  color: var(--t);
+  font-size: 1.05rem;
   transition: color var(--d-fast), border-color var(--d-fast), transform var(--d-fast);
 }
 
-.modal__close:hover { color: var(--t); border-color: var(--line-3); transform: rotate(90deg); }
+.modal__close:hover { color: var(--t); border-color: var(--amber); transform: rotate(90deg); }
+
+/* A 40px target clears the 44px guideline only just, and misses it outright
+   once a finger rather than a cursor is doing the aiming. Touch pointers get
+   the larger box; the rest keep the smaller one, because on a desktop this is
+   already easy to hit and a bigger disc would only crowd the panel corner. */
+@media (pointer: coarse) {
+  .modal__close { width: 46px; height: 46px; top: .75rem; right: .75rem; }
+  .is-rtl .modal__close { right: auto; left: .75rem; }
+}
 
 .mcat {
   font-family: var(--f-mono);
@@ -1077,7 +1097,23 @@ body.is-grabbing, body.is-grabbing * { user-select: none; }
   filter: blur(64px) saturate(120%);
   opacity: .5;
 }
-.modal__panel > * { position: relative; z-index: 1; }
+/* Lifts the panel's real children above the ambient gradient on ::before.
+
+   THE CLOSE BUTTON IS EXCLUDED, and leaving it in was a real bug. Both this
+   selector and `.modal__close` are a single class, so they have equal
+   specificity and this one wins on being later in the file. That quietly
+   turned the button from `position: absolute` into `position: relative` and
+   dropped its z-index from 3 to 1, which put it into the flow at the top of
+   the panel and UNDER `.modal__inner`.
+
+   Measured with a project modal open: the button reported 39x22 at (336, 71),
+   and elementFromPoint at its own centre returned .modal__inner rather than
+   the button. So the cross was drawn but not reachable -- a click on it went
+   to the scroll container behind it.
+
+   :not() carries no specificity of its own here, so this stays exactly as
+   specific as it was for everything else. */
+.modal__panel > *:not(.modal__close) { position: relative; z-index: 1; }
 
 @media (prefers-reduced-motion: no-preference) {
   .modal__panel::before { transition: opacity .6s var(--e-out, ease); }

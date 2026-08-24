@@ -6527,3 +6527,44 @@ Also: contact ranges left under 640px, as asked. Note that .hero__desc--just doe
 the opposite deliberately — it carried the same guard once and the centred-justify
 was asked for back at every width — so this is a documented divergence rather than
 a pattern to copy.
+
+## 98. The modal close button was drawn but not reachable (2026-08-24)
+
+Reported as the cross not working and not being visible, on both desktop and
+phone. Both halves were real and they had different causes.
+
+NOT REACHABLE. `.modal__panel > *` at overlays.css:1080 lifts the panel's real
+children above the ambient gradient on ::before. It also caught `.modal__close`,
+and both selectors are a single class, so they are equally specific and the
+later one wins. That quietly turned the button from `position: absolute` into
+`position: relative` and dropped its z-index from 3 to 1 — which put it into the
+flow at the top of the panel, UNDER `.modal__inner`. Measured with a project
+modal open: the button reported 39x22 at (336, 71), and elementFromPoint at its
+own centre returned `.modal__inner`. The cross was painted and a click on it went
+to the scroll container behind it. `:not(.modal__close)` excludes it and carries
+no specificity of its own, so nothing else moved. The 22px height went with it:
+that was the flow layout, not a height override — back to 40x40 the moment it
+was absolute again.
+
+AND THIS IS WHY 97's FIX LOOKED LIKE IT WORKED. That test called
+`btn.dispatchEvent(click)` directly on the element, which skips hit-testing
+entirely. It proved the handler was bound; it could not have proved the button
+was clickable, and the button was not. A close-button test has to resolve
+elementFromPoint at the control's own centre and dispatch on THAT, or it is
+testing the listener rather than the affordance.
+
+NOT VISIBLE. The glyph sat at --t-2 on the panel wash, measured 6.91:1, on a mark
+only 12.32px tall. That is a fine ratio for body text and not for a small mark
+that has to be spotted rather than read, over media tiles that are bright in
+places. --t takes it to 18.47:1 and the glyph to 16.8px, with the border up to
+--line-3 and the hover ring going amber. Same argument the walk's skip button
+won: everything else on the panel stays quiet so it does not compete with the
+content, and the way OUT is the exception.
+
+Touch targets: 40px only just clears the 44px guideline and misses once a finger
+is aiming. `@media (pointer: coarse)` takes it to 46px, measured 45x45 on the
+phone preset with the RTL mirror kept in step.
+
+Verified at 1035px and at 375px, on two different tiles each time, by resolving
+elementFromPoint at the button's centre and clicking THAT: reaches the button,
+and the modal closes.
