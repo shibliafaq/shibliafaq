@@ -1287,7 +1287,39 @@ export function initEarth(opts = {}) {
   /* The tuning lives here rather than inline so the restore path applies
      exactly what the first load did. Two copies of this would drift, and the
      drift would be a globe that comes back subtly softer than it went. */
+  /* HALF AGAIN ON A MOBILE GPU, done here rather than with another asset.
+
+     The base tier is 2048x1024, and four of those with mipmaps is 42.6MB —
+     measured, and by a wide margin the largest single thing this page holds on
+     a phone. For comparison the entire pixel-art walk, all 184 sprites plus its
+     world canvas, comes to about 13MB.
+
+     Downscaling into a canvas at load costs one decode and one draw and takes
+     that to 10.7MB. Shipping a third set of files would have been cleaner and
+     would also have been a third set of files to keep in step with the other
+     two; this needs no new assets and cannot drift from them.
+
+     A phone renders the globe into at most ~780 device pixels, so a 1024px map
+     is still more than it can show. Nothing is lost that the screen could have
+     resolved. */
+  function halve(img) {
+    const w = Math.max(1, Math.round((img.naturalWidth || img.width) / 2));
+    const h = Math.max(1, Math.round((img.naturalHeight || img.height) / 2));
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const cx = c.getContext('2d');
+    cx.imageSmoothingEnabled = true;
+    cx.imageSmoothingQuality = 'high';
+    cx.drawImage(img, 0, 0, w, h);
+    return c;
+  }
+
   function applyMaps([day, future, night, clouds]) {
+    if (small) {
+      for (const t of [day, future, night, clouds]) {
+        try { t.image = halve(t.image); } catch (err) { /* keep the full map */ }
+      }
+    }
     for (const t of [day, future, night, clouds]) {
       t.colorSpace = THREE.SRGBColorSpace;
       // Most of the visible disc is viewed at a grazing angle — exactly the

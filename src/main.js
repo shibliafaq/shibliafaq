@@ -22,6 +22,32 @@ import { initVisits } from './modules/visits.js';
 import { initEmWave } from './modules/emwave.js';
 import { initTileField } from './modules/tilefield.js';
 
+/* ============================================================
+   ?lite — A SWITCH FOR DIAGNOSING A DEVICE NOBODY HERE OWNS
+   ============================================================
+
+   The site reloads itself on an iPhone under heavy interaction and cannot be
+   reproduced on any machine available to us. Six rounds of fixes have gone out
+   against that report, each one a real defect and none of them provably THE
+   defect, because the only person who can see the failure has no way to run
+   half the site and compare.
+
+   `?lite` is that way. It skips the two heaviest optional systems — the WebGL
+   globe and the pixel-art walk — and leaves everything else exactly as it is.
+   Both already have designed fallbacks that ship in the HTML: the CSS starfield
+   stands in for the globe, and the timeline <ol> IS the Experience section.
+
+   So the test is: open the site normally and make it fail, then open
+   ?lite=1 and try just as hard. If it survives, the graphics load is the
+   cause and we know which half to cut. If it still fails, it was never the
+   graphics and six rounds of memory work were the wrong tree.
+
+   Deliberately not tied to a breakpoint or a device test — it is a diagnostic
+   handle, not a feature, and the person using it needs to be able to turn it on
+   and off on the same phone in the same minute. */
+const LITE = new URLSearchParams(location.search).has('lite');
+if (LITE) console.info('[site] lite mode: globe and experience map are off');
+
 const idleInit = window.requestIdleCallback
   ? (fn) => window.requestIdleCallback(fn)
   : (fn) => setTimeout(fn, 200);
@@ -346,13 +372,13 @@ handoverSections.forEach((sec) => {
 // Measured at 375px: stage 349x812, 177 pixel assets loaded. Under reduced
 // motion the walk still does not move on its own, and the timeline stays the
 // fallback for no JS, a failed sheet, or widths under 320.
-idleInit(() => initExperience());
+idleInit(() => { if (!LITE) initExperience(); });
 
 // three.js is the heaviest dependency on the page. The hero needs it, but not
 // on the critical path — the CSS starfield paints instantly and the globe fades
 // in over it, so first paint never waits on a 126 KB chunk plus two textures.
 idleInit(() => {
-  if (!document.getElementById('heroGlobe')) return;
+  if (LITE || !document.getElementById('heroGlobe')) return;
 
   import('./modules/earth.js').then((m) => {
     /* host = the WRAPPER, not the sticky stage.

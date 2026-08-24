@@ -7049,3 +7049,45 @@ carrying the least contrast, over a photographic globe. Same fault as
 .pcard__course, so it takes the same #d9d9e0 rather than a second opinion about
 what off-white means. Measured 14.17 against the ink. .hstat__idx stays at --t-4:
 "#01" is an index mark, not supporting text, and should stay almost invisible.
+
+## 111. Measuring which system to blame, and a switch to prove it (2026-08-24)
+
+Still crashing on the phone after six rounds. Before cutting anything, the two
+heavy systems were finally weighed against each other rather than argued about:
+
+    globe textures      42.6 MB   (four 2048x1024 with mipmaps)
+    walk world canvas    7.0 MB   (704x2624)
+    walk sprites         5.7 MB   (184 files, decoded)
+    globe framebuffer    2.6 MB
+
+The walk costs about 13MB all in. The globe costs about 45MB — nearly four times
+as much, from the system that is on screen for the first fifth of the page. Every
+instinct that said "184 sprite files must be the problem" was wrong, and the
+count was doing the misleading: they are tiny.
+
+SO THE GLOBE TOOK ANOTHER HALVING, and without a third set of files. applyMaps
+downscales each map into a canvas before upload on any coarse pointer, taking
+42.6MB to 10.6MB. A phone renders the globe into at most ~780 device pixels, so
+a 1024px map is still more than it can resolve; nothing is lost that the screen
+could have shown. Verified on the phone preset: globe renders, imagery intact.
+Across the three rounds the phone budget for these four maps has gone 170MB ->
+42.6 -> 10.6.
+
+AND THAT IS WHERE GUESSING STOPS. Total measured on a phone is now roughly 65MB
+across everything, which should not evict a modern iPhone — which means the
+memory theory may simply be wrong, and six rounds of memory work would have been
+the wrong tree. The alternative is the main-thread watchdog: measured fast
+scrubbing hit 83ms long tasks on desktop-class hardware, and a phone multiplies
+that.
+
+`?lite=1` exists to settle it. It skips the globe and the walk and changes
+nothing else, leaning on fallbacks that already ship — the CSS starfield and the
+timeline <ol>. Open the site, make it fail; open ?lite=1, try just as hard. If it
+survives, the graphics load is the cause and we know which half to cut. If it
+still fails, it was never the graphics. Verified both paths: lite loads zero
+earth textures and zero sprites with the starfield and timeline standing in;
+normal still mounts a 562x1218 globe and 170 sprites.
+
+The lesson from 106 is being applied properly this time: stop shipping fixes
+against a failure nobody here can see, and build the smallest thing that tells us
+which half of the site is guilty.
