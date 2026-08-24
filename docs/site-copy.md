@@ -332,10 +332,16 @@ node tools/sync-site-copy.mjs --write   # apply it
 - Contact
 
 ### contact.title
-- Let’s talk <em>research</em>
+- Let’s Collaborate &amp; <em>Connect</em>
 
 ### contact.lead
-- I’m actively looking for <strong>fully funded PhD positions</strong> in urban climate informatics, smart city analytics, and GIS-based climate adaptation, particularly in the UK, EU, North America, and the GCC. If you’re working on heat resilience, digital twins, or spatial data for sustainable cities, I’d love to connect. Also open to smart city research roles and GIS consultancy in KSA.
+- I am actively seeking <strong>fully funded PhD positions</strong> in urban climate informatics, spatial data science, and digital twins for climate resilience, with an open focus on leading research labs in North America, Europe, the UK, Asia-Pacific, and the GCC.
+
+### contact.lead2
+- I also welcome opportunities for smart city research positions, urban data science roles, and geospatial consultancy globally and regionally.
+
+### contact.lead3
+- If you are working on extreme heat adaptation, environmental data pipelines, or urban analytics, let’s connect.
 
 ### contact.1
 - shibliafaq4@gmail.com
@@ -357,9 +363,6 @@ node tools/sync-site-copy.mjs --write   # apply it
 
 ### contact.5
 - Instagram <span class="btn__arrow">↗</span>
-
-### contact.6
-- Live Demo <span class="btn__arrow">↗</span>
 
 ## Instagram
 

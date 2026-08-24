@@ -40,9 +40,27 @@ const MIN_W = 320;
 
 export function initExperience() {
   const stage = document.getElementById('journeyStage');
+  /* EARNED PER PAGE VIEW, NOT REMEMBERED ACROSS RELOADS.
+
+     This used to read `journeyPlayed` out of sessionStorage and put
+     `has-played` on the stage at init, so that a reader who reloaded
+     mid-session did not have to earn the way out twice. On a desktop that
+     is a kindness. On a phone it was the bug: a reload is not a rare event
+     there — the URL bar, switching apps and the back gesture all cause one
+     — so the button was already sitting on the stage the first time the
+     walk was reached in what, to the reader, was a fresh visit. Measured at
+     scrollY=0 straight after a reload: class `journey has-played`, skip
+     visible, opacity 1, before a single step had been walked.
+
+     So the crossing has to be made in THIS page view. Nothing is persisted
+     and nothing is restored; `skipped` starts false every time the module
+     mounts and is set only by actually reaching the end below. The offer is
+     then made on a later pass, exactly as before.
+
+     The sessionStorage write went with the read. Keeping a key nothing
+     consumes is how a stale flag survives long enough to be trusted by
+     something later. */
   let skipped = false;
-  try { skipped = sessionStorage.getItem('journeyPlayed') === '1'; } catch { /* private mode */ }
-  if (skipped && stage) stage.classList.add('has-played');
 
   /* THE SKIP HAS TO GO THE WAY THE READER IS ALREADY GOING.
 
@@ -230,18 +248,14 @@ export function initExperience() {
 
              So a skip appears once, and only once, they have actually reached
              the end. Offering it before then would be offering to skip
-             something they have not been shown yet. Remembered for the session
-             rather than forever, because a fresh visit should still get the
-             walk. */
+             something they have not been shown yet. Not remembered past
+             this page view -- see the note where `skipped` is declared. */
           /* Reaching the end RECORDS the crossing but does not offer the
              skip. Showing it here would put the button on screen during the
              very first descent, in the last moments of the walk the reader is
              still watching — offering to skip something they are in the middle
              of enjoying. */
-          if (!skipped && self.progress > 0.98) {
-            skipped = true;
-            try { sessionStorage.setItem('journeyPlayed', '1'); } catch { /* private mode */ }
-          }
+          if (!skipped && self.progress > 0.98) skipped = true;
         },
         /* The offer is made on a LATER pass, which is the only time it is worth
            anything: they have seen the walk, they are meeting it again, and the

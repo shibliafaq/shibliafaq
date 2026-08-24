@@ -154,6 +154,21 @@ export function initSkills() {
   /* ---- read the markup ------------------------------------------- */
 
   const groups = [...list.querySelectorAll('.sgroup')];
+
+  /* THE HUES COME FROM THE STYLESHEET, not from GROUPS above.
+
+     The panel below colour-codes each card by group, so the five values now
+     live in sections.css as `--c` on `.sgroup`. Reading them back here keeps
+     one list rather than two that have to be kept in step by hand — the same
+     reason emwave.js reads --tag-msc instead of writing the red out.
+
+     Falls back to the built-in value per group, so the balls are still painted
+     if the rule is ever removed or the card is not in the DOM. */
+  groups.forEach((g, gi) => {
+    if (gi >= GROUPS.length) return;
+    const c = getComputedStyle(g).getPropertyValue('--c').trim();
+    if (c) GROUPS[gi].c = c;
+  });
   const seeds = [];
   groups.forEach((g, gi) => {
     if (gi >= GROUPS.length) return;

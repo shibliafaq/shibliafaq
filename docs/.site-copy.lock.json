@@ -1,6 +1,6 @@
 {
   "note": "Baseline for tools/sync-site-copy.mjs. Generated - do not edit by hand.",
-  "generated": "2026-08-23T23:09:24.994Z",
+  "generated": "2026-08-24T12:58:58.051Z",
   "keys": {
     "_nav.1": "ac576a66d4563e60",
     "_nav.2": "38835a2db14755c9",
@@ -112,8 +112,10 @@
     "background.1": "bc0aa71231d7d993",
     "bg.skip": "74cb1b23445a24f9",
     "contact.label": "2b5c3d26721ae9c3",
-    "contact.title": "a2e03259e9307781",
-    "contact.lead": "1616d4e4b1421107",
+    "contact.title": "39f985fa04d7dda2",
+    "contact.lead": "c915ab50f688c2b3",
+    "contact.lead2": "5c622c45e033f9a6",
+    "contact.lead3": "f974d64006426846",
     "contact.1": "8c12defa5532004f",
     "contact.form": "56e541ad86e099c0",
     "contact.2": "99e9495b79112c89",
@@ -121,7 +123,6 @@
     "contact.3": "9a581209c5aec1cb",
     "contact.4": "97f712529bdb4753",
     "contact.5": "2880efb95d6dd040",
-    "contact.6": "8c6d115a0c962eed",
     "instagram.1": "e3373f2cf1719946",
     "instagram.2": "fb4876e8ac25c23f",
     "instagram.3": "201bb6d4bb86cfe8",

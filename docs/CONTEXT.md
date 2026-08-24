@@ -6072,3 +6072,458 @@ scales heading, tags, padding and gaps together, so the card gets smaller rather
 than looser. `text-align` is set explicitly rather than inherited, because these
 sit under a centred section heading and inheriting alignment from an ancestor
 that may or may not be centred is how a list ends up centred by accident.
+
+## 88. The five group cards wear their own colours (2026-08-24)
+
+The panel a legend key opens had amber headings on all five cards, whichever
+group they belonged to. The brain above paints its balls on a thermal ramp and
+the legend dots match it, so the one place the collections are actually listed
+was the one place the colour meant nothing. Five identical boxes, and no way to
+tell from the panel that the colours upstream were a system.
+
+Each card now takes its group hue on three things: the heading, a 3px bar down
+the leading edge at .55 opacity, and the tag borders through
+`color-mix(in oklab, var(--c) 34%, var(--line))`. The mix is deliberately weak.
+Forty tags at full strength is a colour chart, and the information on this panel
+is the words; the border identifies the group, the text stays readable. The card
+opened from a key takes its own hue for the active state too, where it used to
+go amber regardless.
+
+THE PALETTE MOVED INTO CSS. The five values had been written only in skills.js,
+so colour-coding the panel would have meant a second copy in the stylesheet with
+nothing keeping the two in step. They live on `.sgroup:nth-of-type(n)` as `--c`
+now, and skills.js reads them back at mount with its own values as the fallback.
+One list: change a hue and the ball, the legend dot and the card all move
+together. This is the same fix as emwave.js reading `--tag-msc` rather than
+writing the red out, and the opposite of the `--heat` duplication in 59.
+
+Measured after: five distinct hues on heading, edge and tag border
+(`#ff5a2b`, `#f5a20b`, `#e4ded3`, `#22d3ee`, `#4ade80`), active card cyan.
+
+Also re-measured, both already built and both confirmed working rather than
+rebuilt: the wave amplitude follows vertical scroll — 271px of drawn ink with
+the section high in the viewport, 98px at the bottom of its range, against 95px
+predicted by the 0.30 floor — and the mirror field answers the cursor, −6.0deg
+to +5.6deg across the viewport width, while the tiles keep their own
+`wtile-drift` animation on the same property. Tilt listens where it arrives
+unasked and still never prompts on iOS.
+
+## 89. The legend is left aligned, including the lines that wrap (2026-08-24)
+
+The dots were already flush left on desktop and the labels looked ragged anyway.
+The cause was the UA stylesheet: a `<button>` computes `text-align: center`, and
+`font: inherit` does not carry text-align with it, so the two labels long enough
+to wrap put their second line ("ANALYTICS", "DESIGN") centred under the first
+while every dot stayed at x=56. A key whose rows do not share a left edge reads
+as a list that was never aligned rather than as a legend.
+
+`text-align: start` on `.skillkey__btn`. START, NOT LEFT: Arabic is one of the
+five languages and `i18n/index.js` sets `is-rtl` on the root for it, where a
+hardcoded `left` would strand every label on the far side of its own dot. The
+two render identically in English, so this costs nothing and removes a bug
+nobody would have found until someone switched language. The same substitution
+was applied to `.sgroup`, written as `left` in 88 for the same reason.
+
+The ≤720px key also went from `justify-content: center` to `flex-start`, so the
+key packs to the leading edge at every width rather than centring below the
+breakpoint and left-aligning above it.
+
+Measured after — desktop: both wrapped labels' line boxes start within a pixel
+of each other (73/73 and 74/74, against dots at 56); the 2px spread across rows
+is first-glyph side bearing, not alignment. Mobile 375px: all five items at
+x=20, the section's own padding, `justify-content: flex-start`.
+
+Left alone, and worth a decision later: `.skillkey__break` still forces a
+full-width break after the third item. At 720px that produces the 3-then-2 wrap
+it was written for; at 375px every item is already on its own line, so it only
+adds about 11px of extra gap between ARCHITECTURE & DESIGN and RESEARCH METHODS.
+Pre-existing, and it now reads either as a stray gap or as grouping depending on
+who is looking.
+
+## 90. The way out of the walk has to be earned each visit (2026-08-24)
+
+Reported as the skip button showing up on a first run on a phone. The logic read
+correctly on paper — `skipped` only goes true at `progress > 0.98`, and the class
+that reveals the button is added on `onEnter`/`onEnterBack`, a LATER pass — and a
+full first descent at 375px confirmed it: the button stayed hidden the whole way
+down and `journeyPlayed` flipped to "1" only at the end.
+
+The bug was one line above all of that. Init read `journeyPlayed` out of
+sessionStorage and put `has-played` straight on the stage, so the offer survived
+a reload. Measured at scrollY=0 immediately after one: class `journey has-played`,
+skip `visible`, opacity 1, before a single step had been walked.
+
+On a desktop that restore is a kindness — you reload, you keep what you earned.
+On a phone a reload is not a rare event: the URL bar, switching apps and the back
+gesture all cause one, so the reader kept meeting a fresh page that already had
+the exit sitting on it. The session memory was the whole feature and also the
+whole defect.
+
+So the crossing is made per page view now. The read went, the restore went, and
+the write went with them — a key nothing consumes is how a stale flag survives
+long enough for something later to trust it.
+
+Measured after, with `journeyPlayed=1` deliberately LEFT in storage so the dead
+path would show if it were still live: at load `journey`, hidden. Whole first
+descent, 45 steps to the foot of the page: never revealed. Back up: revealed at
+y=17788, visible. All three states are what was asked for.
+
+## 91. Three copy and type adjustments (2026-08-24)
+
+THE TWO QUESTIONS, BALANCED. Asked for two lines on a phone. They were already
+two lines at every phone width — the longer one needs 521px at 16px and the
+widest phone box is 404px, so three was never possible — but they split badly:
+328px then 62px, a full line followed by the single word "live?". `text-wrap:
+balance` below 780px gives 199/190 and 244/264 instead, two even couplets.
+
+Not one line each, which is the other reading of "two lines" and what the
+desktop rule does above 780px. That would need 10.8px type at 375px and 9.2px at
+320px, making the two questions the whole site answers the smallest text in the
+hero. Flagged rather than done.
+
+THE DIRECTION PAIR, BIGGER. `4.2vw -> 5.2vw`, cap `3.1rem -> 3.9rem`, about a
+quarter up, with the eyebrows following at +12% so the label stays subordinate.
+Measured first: at 1113px the columns were 234px and 326px inside a 967px wrap
+with a 78px gap, so the pair could take 1.58x before it stopped fitting. A
+quarter lands at 771px against a predicted 772, leaves 231px of slack, and both
+titles still break exactly where their `<br>` says. The clamp MINIMUM did not
+move, so everything below 609px renders as before and phones are untouched.
+
+LIVE DEMO REMOVED from the contact links; four remain. `sync-site-copy.mjs
+--export` re-baselined the 135 keys, so docs/site-copy.md no longer carries it
+either.
+
+## 92. The Direction crossing: one clock, five signals, and a dwell (2026-08-24)
+
+Everything between the heat map leaving and Selected Work arriving is now
+scrubbed from a single trigger anchored on #direction:
+
+    --dir-wave   0.02-0.20   the wave opens out of a single point
+    --dir-in     0.26-0.38   the two headings arrive on it
+                 0.38-0.58   NOTHING. The dwell.
+    --tiles-in   0.58-0.70   the mirrors of the next section come up
+    --dir-out    0.70-0.82   headings and wave go
+    --works-in   0.82-0.94   Selected Work lands
+
+Ranges overlap by a couple of points each: five hard fades read as five events,
+overlapped they read as one handoff. Same reason the map exit leads with its
+words.
+
+ON THE ROOT, and it has to be. #direction, #projects and #worlds are siblings,
+so there is no common ancestor below the root that all five consumers inherit
+from. TOP LEVEL, not inside the earth block, which sits behind an
+`if (!earth) return` for machines with no WebGL — beside it, those machines
+would get no signals and, since the seeds are 0, an invisible Direction section
+and an invisible Selected Work heading. The CSS fallbacks are all the FINISHED
+state, so if the trigger never runs the page is simply the page.
+
+THREE THINGS HAD TO CHANGE STRUCTURALLY, each from a specific complaint.
+
+"The wave should start at a point at the centre of the screen." It could not.
+The canvas was absolute inside #direction, and at the moment the map clears,
+#direction has not entered the viewport — its top is level with the viewport
+bottom and its own centre is 240px below the fold, so there was no pixel at the
+screen centre to put the point on. The canvas is fixed to the viewport now.
+Measured: ink centre (517, 342) against a screen centre of (518, 343).
+
+"The text is coming from bottom, it should come then and there only." Two
+causes. `[data-reveal]` translates 34px up from below and was on all four
+elements; it came off, and the headings' word split is released by this clock
+instead, through the `[data-split-hold]` attribute reveals.js already provides
+for headings that arrive on someone else's clock. And the block itself was flow
+content, so any fade was also a journey — it is fixed to the middle of the
+viewport now. Measured across the whole crossing: the heading group's centre
+sits at y=343 at every sample, which is the viewport half.
+
+"Should remain for a bit of vertical scroll just like sections before." That is
+the 0.38-0.58 gap, worth about 500px of scrolling on a 686px viewport, bought by
+giving #direction `min-height: 200vh` while its content stays fixed. Same effect
+as the pins before it, done with position rather than a pin spacer, because the
+content is two headings and a canvas and none of it needs the layout surgery a
+real pin performs.
+
+THE COLUMNS WERE EQUALISED so the seam IS the screen centre. They were
+max-content — 289px against 404px — and a centred grid puts its own middle at
+the centre, which for unequal columns is not the gap: measured 57px off, putting
+the point the wave opens from 49px left of centre. Invisible once the headings
+explain it, very visible in the seconds when the dot is the only thing on
+screen. `1fr` each fixes it and the text does not move, since both columns still
+range toward the gap and the extra width becomes outer margin. Seam 518 against
+a screen centre of 518; on a phone the columns stack but stay equal and centred,
+so the same expression still yields the middle (188 against 188).
+
+Also: the wave's `pointer-events` and the wrap's. The fixed heading block is
+`pointer-events: none` and only as tall as its content rather than `inset: 0` —
+a full-viewport transparent sheet over Selected Work that ate clicks would be
+the classic way a decorative overlay breaks a page long after anyone remembers
+it is there.
+
+Verified end to end at 1035px and at 375px: point at centre → wave opens (ink
+4px → 220 → 1028) with the headings still at 0 → headings arrive → nothing
+changes for ~500px → mirrors up (field 0 → 1) with the headings still full →
+headings and wave go (ink 0) → Selected Work lands last.
+
+## 93. The dot that followed the reader, and the mirrors that arrived offstage (2026-08-24)
+
+Two faults from 92, both created by moving things onto the viewport.
+
+THE SEED DOT ON EVERY OTHER SECTION. `stop()` cancelled the animation frame and
+left the canvas painted. That was harmless while the canvas was absolute inside
+#direction — the stale frame stayed inside a section nobody was looking at. Fixed
+to the viewport it is a different object entirely: the leftover frame, in
+practice the seed dot as the smallest and last thing drawn, sat in the middle of
+whatever the reader scrolled to. Measured at y=411 with #direction 4064px below:
+29 painted pixels still on the canvas.
+
+Parking now clears, and a frame already queued when the observer parks clears
+and returns rather than repainting what stop() just wiped. Verified at y=0 and
+at y=16199: zero painted pixels at both ends of the page.
+
+THE MIRRORS WERE REVEALED WHERE NOBODY COULD SEE IT. The order was also wrong,
+and the two turned out to be the same fault. `--tiles-in` ran at 0.58-0.70 of the
+direction clock, and at 0.58 #projects does not start until y=865 on a 686px
+viewport — the entire fade happened below the fold, and the tiles then rose into
+view already lit. That is what "coming by scrolling down" was: the fade was never
+the thing being watched, only its result arriving from underneath.
+
+So the field is fixed to the viewport too, and the exit was reordered to what was
+actually asked for — the headings and wave go FIRST, onto empty ground, and the
+mirrors come up on that:
+
+    --dir-out    0.56-0.68   headings and wave go
+    --tiles-in   0.74-0.88   the mirrors come up in place
+    --works-in   0.88-1.00   Selected Work lands
+
+The field being the viewport also means each tile's --y is a percentage of the
+screen rather than of 1087px of section, so all fourteen spread across what the
+reader can see instead of a third of them sitting below it.
+
+--tiles-out IS THE PRICE OF BEING FIXED. Nothing confines the field to #projects
+any more, so without a way down it would hang over Skills, Background and Contact
+for the rest of the page. Published from #projects leaving, and from `bottom
+center` rather than `bottom bottom`: the section is 1087px on a 686px viewport and
+its wheel is NOT pinned (the only pin spacer on the page belongs to the journey),
+so `bottom bottom` began the fade 686px early and left the mirrors fully lit for
+340px and dimming through the whole wheel they are meant to sit behind. From
+`bottom center` they hold for 947px and go once the next section owns half the
+screen.
+
+Measured end to end: out 1.00 and wave ink 0 at y5243, mirrors 0.77 at y5510 with
+Selected Work still 0, works 1.00 at y5955, field still 1 through y6468, gone by
+y6955. Across all of it the tiles' top edge reads 72px and the heading group's
+centre 343px — neither travels.
+
+## 94. Reveal in place, hold, vanish in place — for the whole page (2026-08-24)
+
+"The rest of the portion is also coming like scroll down." Two mechanisms were
+still sliding content upward, and both are gone.
+
+`[data-reveal]` translated 34px up from below, and `[data-split]` raised each
+word 118% out of an overflow mask. Every heading on the site announced itself by
+moving up while the section under it was ALSO moving up, which is what made the
+page feel scrolled at rather than read. Both are now a small scale plus opacity:
+.985 for blocks, .92 per word. The stagger is untouched — that was always the
+point of the split rule, not the direction of travel. .word keeps its mask; a
+shrink cannot overflow the box it started in, so it clips nothing new, and
+leaving it alone avoids an inline-block baseline shift. Verified from a cold
+load: 25 pending blocks and 26 pending words, every one a scale, zero translate.
+
+THE HANDOVER. Each section now publishes --sec-in/--sec-out ON ITSELF, so it
+owns its own pair and its children inherit; one name on the root shared by five
+sections would be the --heat collision with five participants. Two shapes,
+because the geometry genuinely differs:
+
+  plain  (#projects, #contact)   top top -> bottom top      fades out as it exits
+  staged (#skills, #instagram)   top top -> bottom bottom   arrives, holds, goes
+
+`top top -> bottom bottom` is exactly the window in which a sticky child is
+pinned, so for a staged section the whole cycle happens without the content
+moving. Measured on Skills: titleY reads 81 through fade-in, hold and fade-out,
+and the fade completes 27px before it unsticks.
+
+WHY ONLY TWO ARE STAGED. Measured on a 686px viewport: the contact form is 855px
+and the projects intro and wheel together 1052px. A sticky box taller than the
+viewport pins its own top and takes its bottom out of reach, so holding either
+would put the Send button and the lower project cards permanently below the fold.
+They fade and keep scrolling. #background was never a candidate and never needed
+to be — it is the pinned walk and has held still since long before this.
+
+THREE THINGS THIS COST, each found by measuring rather than by looking:
+
+`.section`'s 116.7px block padding was eating the stick budget. A sticky child
+ranges over its parent's CONTENT box, so a 1373px section with a 686px stage had
+only 453px of stick and the fade-out ran after it had already come unstuck. At
+`padding-block: 0` the content box is the full 200vh and the stick matches the
+trigger range to the pixel. The nav clearance that padding provided moved onto
+the sticky box itself, where box-sizing: border-box means min-height: 100vh
+already includes it and it costs no budget.
+
+REFRESH ORDER, and this was the bad one. Everything below the Experience walk
+sits 8,860px lower once that pin builds its spacer. A global refresh tears the
+spacers down and rebuilds them, and at the default priority these triggers
+measured in between: Contact cached a start of 9744 against a real position of
+18604, so by the time a reader arrived its progress was past 1 and the section
+had already faded to nothing. It was invisible on arrival — content that exists,
+reads correctly in the DOM, and cannot be seen. Proved rather than guessed:
+ScrollTrigger.refresh(true) left the numbers untouched while .refresh() on the
+trigger itself corrected start to 18604 immediately. That is an ORDER problem,
+and `refreshPriority: -1` is what it is for.
+
+THE LAST SECTION NEVER VANISHES. Nothing follows Instagram but the footer, so
+the page cannot scroll far enough for it to leave and its progress simply
+reached 1 while it was still the thing on screen: measured at the foot of the
+page, opacity 0 with 875px of it still in the viewport, and the site ended on a
+blank screen. It arrives and holds; it has nowhere to hand over to.
+
+Left as-is and worth a look later: at maximum scroll the footer pushes the
+Instagram stage up by its own height, so the last screen shows the strip and
+lead without the heading above them.
+
+## 95. Six corrections to the projects handover (2026-08-24)
+
+1. THE TILE FIELD IS ABSOLUTE AGAIN, and this is a revert of 93. Fixing it to
+the viewport was how the mirrors got revealed in place, and it broke two things
+that matter more. The field stopped being the section box and became the screen,
+so every tile --y went from a percentage of 1087px to a percentage of 686px and
+the flock compressed upward onto the section title; and `perspective-origin` is
+the centre of THAT box, so it moved from 543.5px to 343px and every tile was
+projected through a different vanishing point, which is the tiles visibly
+changing shape. Checked against production side by side at 1512x945: field
+1510px, origin 756 x 754.906, tile sizes 76x59 / 115x119 / 67x53 / 95x71, three
+tiles crossing behind the words. Local now reports every one of those
+identically. The tiles travel with the section again, which is the live
+behaviour and the one that was asked for.
+
+2 and 5. THE CROSSING IS SLOWER. #direction went 200vh -> 340vh and the phases
+were respread, so on a 686px viewport the range is 3020px rather than 2058.
+Measured through it: wave open by +489, headings by +1163, dwell to about +1700,
+headings and wave gone by +2424, Selected Work landed by +3044. The dwell more
+than doubled and "the word Projects" now arrives over 499px instead of 247. A
+scrub crossed faster than the eye can follow reads as dropped frames whether or
+not a frame was dropped.
+
+3. THE WHEEL OPENS WHAT YOU AIM AT. Both modal.js and book.js resolved every
+click inside a wheel through frontCard(), so whichever card was frontmost opened
+no matter where the reader clicked, and .is-front marked that same card. New
+`cardAtPoint()` answers the question actually asked, by the same geometry
+frontCard() uses and for the same reason: elementFromPoint cannot be trusted in
+a preserve-3d scene. A candidate must contain the point, and among those that
+do the largest projected area wins, which is the depth proxy this module already
+relies on — so where a near and a far card both cover the pointer, the near one
+takes it. Both files resolve through the SAME call from the same coordinates,
+which is what keeps them from disagreeing and opening two projects at once.
+`.is-hot` follows the pointer and `has-hot` stands the front mark down, so there
+is only ever one highlight. Verified: front was `iot`, aimed at `temp`, hot at
+click was `temp`, and the modal that opened was Multi-City Surface Temperature.
+
+4. Tools & Methods is a plain section again — `data-stage` removed.
+
+6. The contact copy is replaced, heading and three paragraphs.
+
+WHAT IS NOT DONE, and why. "The projects section stay for few scroll" is the one
+part of 5 that is not in. Holding a section means sticking it, and a sticky box
+taller than the viewport pins its own top and takes its bottom out of reach:
+measured, intro 411 + wheel 641 = 1053 against a 686px viewport, and the same
+proportion at 1512x945. Holding it would put the lower half of the wheel
+somewhere no scroll can reach. It also cannot be given extra height without
+stretching the tile field, which is exactly what 1 above was fixing. What it did
+get is the slower approach in 2. Worth revisiting as either a sticky heading
+alone, or an inner wrapper that lets the section grow while the field keeps the
+box its fourteen positions were authored against.
+
+ALSO STALE: contact.title and contact.lead still carry the OLD English wording in
+all four translations in strings.js. contact.lead2 and lead3 have no entries at
+all, which is safe rather than broken — setLanguage only overwrites an element
+when the key exists — but it means those two paragraphs stay English under every
+language.
+
+## 96. The projects entrance slows down, and the tile subtitle becomes legible
+(2026-08-24)
+
+THE ENTRANCE. `runIntro`'s DUR went 1400ms -> 2600ms. It was marked "fast on
+purpose" and it was too fast to read: fourteen tiles travelling a curve, a wave
+lighting under them and eight letters striking, all inside 1.4 seconds, blur into
+one flash — which is what "frames are getting missed" describes whether or not a
+frame was ever dropped. The tile choreography is expressed as fractions of that
+timer so it stretched on its own; the CSS durations are not, and had to be scaled
+by hand or their stage would finish early and the overlap the entrance was
+composed around would come apart. Wave .55s -> 1s, per-letter 55ms -> 100ms,
+legend .45s -> .8s with its delay .1s -> .18s, caret .28s -> .5s.
+
+Measured after: eight letters, last one delayed 0.7s instead of 0.385s, lighting
+between +680ms and +862ms. "PROJECTS" now types over 700ms rather than 385, which
+is the difference between a typewriter and a word simply appearing. Note for next
+time: THIS wordmark is what "the word Projects" meant, not the section title —
+95 slowed --works-in on that assumption, which was also worth doing but was not
+what was asked.
+
+THE SMALL LINE ON EACH TILE. Every project tile carries a title and, above it, a
+mono line with the course, institution and field. Measured on a card: the title
+is #fafafa at 18.4px on #101014, ratio 18.19; the small line was `--t-3`,
+#6d6d77 at 13.12px, ratio 3.71. That is under the 4.5:1 floor for text that
+size, and it was the SMALLER of the two — the line needing the most help was
+getting the least. #d9d9e0 takes it to 13.52 while staying clearly short of the
+title's 18.98, so the hierarchy still reads. It now separates itself with three
+signals rather than one: size, uppercase mono, and an off-white tone instead of
+grey. Dimming was the least useful of the three and was carrying all the weight.
+
+CONTACT, JUSTIFIED. `text-align: justify; hyphens: none;` on `.contact__lead`,
+which all three paragraphs share, so it covers the block rather than part of it —
+worth stating because the last attempt at justification here landed on four class
+names out of twelve, and the fix after that was undone by a max-width opt-out
+that switched it off again on phones. No opt-out here.
+
+And the spacing that exposed: the rule carried no bottom margin because it had
+only ever styled one paragraph. With three, measured tops of 223/307/362 against
+a 28px line meant they ran together as one wall, and justifying them made it
+worse — flush edges on both sides removes the last cue that a paragraph ended.
+`.contact__lead + .contact__lead { margin-top: .85em }` gives an even 15px
+between them and leaves the block's spacing to the email address alone.
+
+## 97. A missing import, and two clocks cancelling a caption (2026-08-24)
+
+THE CLOSE BUTTON, and this one was mine. 96's edit to book.js was applied by a
+script that asserted its way through two files and aborted partway: modal.js got
+both the import and the call, book.js got only the call. So every click anywhere
+inside a wheel threw `ReferenceError: cardAtPoint is not defined` from book.js,
+and a throw in one document-level click handler takes the rest of that click with
+it — which is why the symptom was the modal's CLOSE button rather than anything
+about opening cards.
+
+THE BUILD PASSED THE WHOLE TIME. An undefined identifier is a runtime
+ReferenceError, not a bundling error, so `npx vite build` had nothing to say
+about it. The exit-code check that has caught everything else this month cannot
+catch this class at all; only running the page does. Verified after the fix by
+opening and closing a modal twice at 375px and twice at 1035px, and by an audit
+that every file calling cardAtPoint also imports it.
+
+THE MIRRORS ON A PHONE. `frontMax: 0.62` exists to stop a narrow screen solving
+for a card wider than its own stage, and it was also letting the 9pt type floor
+push the front card most of the way across a phone: measured at 375px the solve
+landed at 0.578 of a 335px stage, a 195px card, with 22.1% of all card area as
+overlap against roughly 2% on a desktop. A separate `frontMaxNarrow: 0.46` for
+stages under 520px takes that to a 153px card and 7.5% overlap. It costs type --
+the rendered title line goes 17.7px -> 13.9px -- and that is the trade: a title
+you can read on a card you can tell apart beats a larger title on a card lost in
+a pile. The desktop never reaches either cap.
+
+THE HEAT-MAP CAPTION WAS NEVER ARRIVING. Reported as coming and going too fast.
+It was not a duration problem. `--dive-copy` is `heatIn * (1 - heatOut)` and the
+two are set by DIFFERENT triggers: measured on an 812px viewport the dive runs
+3035-4253 and puts heatIn at 3766-3936, while the exit trigger starts at 3733 --
+thirty-three pixels BEFORE the caption begins to arrive. heatOut was climbing
+through the entire arrival, so the caption peaked around 0.43 and fell away
+without ever being fully visible.
+
+My first attempt made it worse, and instructively so: widening heatIn to 0.88
+pushed its completion further into the exit's range and dropped the peak to 0.28.
+Stretching a signal that is being cancelled just gives the canceller more room.
+The fix is to stop them overlapping — heatOut now starts at 0.25 of its range,
+which is 3936, exactly where heatIn completes. Measured after: peak 0.89 at a
+sample 200px apart, so effectively full, then fading to 0 by 4338. The map still
+leaves behind the words, which is the ordering that trigger was built around.
+
+Also: contact ranges left under 640px, as asked. Note that .hero__desc--just does
+the opposite deliberately — it carried the same guard once and the centred-justify
+was asked for back at every width — so this is a documented divergence rather than
+a pattern to copy.

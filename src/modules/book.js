@@ -1,6 +1,6 @@
 import { archBySlug, archPage, archPageHi, archHero } from '../data/arch.js';
 import { reducedMotion, stopScroll, startScroll } from './scroll.js';
-import { frontCard } from './wheel.js';
+import { frontCard, cardAtPoint } from './wheel.js';
 
 /**
  * A real book: two pages open at once, and leaves that turn about the spine.
@@ -586,7 +586,17 @@ export function initBook() {
     const inWheel = e.target.closest?.('.wheel');
     let t = null;
     if (inWheel) {
-      const front = frontCard(inWheel, '.wheel__card');
+      /* THE CARD AIMED AT, falling back to the front one. Resolved through
+         the SAME call as modal.js, from the same coordinates, which is what
+         keeps the two handlers from disagreeing and opening two different
+         projects from one click -- the bug the note above is about.
+
+         frontCard() still covers a click with no coordinates, so a keyboard
+         Enter behaves exactly as it did. */
+      const aimed = e.clientX != null
+        ? cardAtPoint(inWheel, '.wheel__card', e.clientX, e.clientY)
+        : null;
+      const front = aimed || frontCard(inWheel, '.wheel__card');
       t = front && front.hasAttribute('data-book') ? front : null;
       if (!t) return;
     }

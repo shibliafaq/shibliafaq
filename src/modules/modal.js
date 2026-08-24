@@ -1,7 +1,7 @@
 import { projects, archPages } from '../data/projects.js';
 import { DIAGRAMS } from './diagrams.js';
 import { stopScroll, startScroll } from './scroll.js';
-import { frontCard } from './wheel.js';
+import { frontCard, cardAtPoint } from './wheel.js';
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -568,7 +568,25 @@ export function initModal() {
     const inWheel = e.target.closest?.('.wheel');
     let el = null;
     if (inWheel) {
-      const front = frontCard(inWheel, '.wheel__card');
+      /* THE CARD AIMED AT, falling back to the front one.
+
+         This resolved through frontCard() alone, so every click inside a
+         wheel opened whichever card happened to be frontmost no matter
+         where the reader had clicked. cardAtPoint() answers the question
+         that was actually asked, by the same geometry and without
+         elementFromPoint, which cannot be trusted in a preserve-3d scene.
+
+         frontCard() still covers the case with no coordinates at all --
+         a keyboard Enter, or a synthetic click -- so the wheel stays
+         operable without a pointer.
+
+         Both this file and its twin resolve through the SAME call, which
+         is what keeps them from disagreeing and opening two different
+         projects from one click. */
+      const aimed = e.clientX != null
+        ? cardAtPoint(inWheel, '.wheel__card', e.clientX, e.clientY)
+        : null;
+      const front = aimed || frontCard(inWheel, '.wheel__card');
       el = front && front.hasAttribute('data-modal') ? front : null;
       if (!el) return;
     }

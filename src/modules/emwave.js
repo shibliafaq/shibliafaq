@@ -42,6 +42,14 @@ export function initEmWave(host) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
 
+  /* THE SECTION, WHICH IS NOT THE CANVAS ANY MORE.
+
+     The canvas is fixed to the viewport (see sections.css), so its own rect
+     is the viewport on every frame and is useless for anything that wants to
+     know where #direction has got to. Everything that used to read the host
+     for that -- the drive, the visibility gate -- reads this instead. */
+  const sect = el.closest('#direction') || el.parentElement;
+
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let w = 0, h = 0, dpr = 1;
@@ -83,7 +91,7 @@ export function initEmWave(host) {
      getBoundingClientRect work again on a different clock. Reading layout once
      per frame, at the top of the frame, is the cheap version of this. */
   function readDrive() {
-    const r = el.getBoundingClientRect();
+    const r = sect.getBoundingClientRect();
     const span = innerHeight + r.height;
     if (span <= 0) return;
     drive = Math.min(1, Math.max(0, (innerHeight - r.top) / span));
@@ -100,6 +108,40 @@ export function initEmWave(host) {
     const b = cs.getPropertyValue('--tag-arch').trim();
     if (a) hue[0] = a;
     if (b) hue[1] = b;
+  }
+
+  /* THE TWO SIGNALS THE SECTION'S OWN CLOCK PUBLISHES.
+
+     Read off the root element's INLINE style, not through getComputedStyle.
+     main.js sets them with setProperty on document.documentElement, so the
+     value is sitting on that style object and reading it back is a property
+     lookup. getComputedStyle here would force a style resolution on every
+     frame of a loop that already does one layout read for the drive, to
+     recover a number that is not styled by anything.
+
+     The fallbacks are the FINISHED state, full reach and not gone, so the
+     figure is whole for a reader the scrub never reaches and for the gap
+     between this module mounting on idle and the trigger first publishing. */
+  const rootStyle = document.documentElement.style;
+  function signal(name, fallback) {
+    const v = rootStyle.getPropertyValue(name);
+    if (v === '') return fallback;
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  /* WHERE THE FIGURE SITS ON THE SCREEN: the middle of it, always.
+
+     This briefly tracked the section centre and eased to the screen centre,
+     to keep the wave under headings that were still travelling. The headings
+     do not travel any more -- they are fixed to the middle of the viewport
+     (see layout.css) -- so both are simply centred on the same point and the
+     tracking was solving a problem that no longer exists.
+
+     h is the canvas height and the canvas is the viewport, so this is the
+     centre of the screen and not the centre of the section. */
+  function figureY() {
+    return h / 2;
   }
 
   function size() {
@@ -119,8 +161,12 @@ export function initEmWave(host) {
   function draw(now) {
     raf = 0;
     if (!w || !h) return;
+    /* A frame already queued when the observer parked would repaint the
+       canvas straight after stop() had cleared it, and there would be
+       nothing left to clear it again. */
+    if (!visible) { ctx.clearRect(0, 0, w, h); return; }
     const travel = (now / 1000) * CFG.speed * Math.PI * 2;
-    const midY = h / 2;
+    const midY = figureY();
     const midX = w * seam;
     readDrive();
     readSeam();
@@ -129,15 +175,54 @@ export function initEmWave(host) {
        rather than as a response. It breathes between a third and full. */
     const amp = (h / 2) * CFG.amp * (0.30 + 0.70 * drive);
 
-    ctx.clearRect(0, 0, w, h);
+    /* REACH IS HOW MUCH OF THE WIDTH EXISTS YET, measured from the seam out.
+       At 0 the two halves collapse onto the same x and the figure is a point;
+       at 1 it spans the canvas. LIFE is the other end of the crossing: the
+       whole figure fading once the mirrors of the next section are up. */
+    const reach = Math.min(1, Math.max(0, signal('--dir-wave', 1)));
+    const life = 1 - Math.min(1, Math.max(0, signal('--dir-out', 0)));
 
-    ctx.globalAlpha = CFG.axisOpacity;
+    ctx.clearRect(0, 0, w, h);
+    if (life <= 0.004) {
+      /* Gone, but the loop stays alive: this is a scrub position and not a
+         one-shot, so scrolling back up has to bring it straight back. */
+      if (visible && !reduced) raf = requestAnimationFrame(draw);
+      return;
+    }
+
+    const spanL = midX * reach;
+    const spanR = (w - midX) * reach;
+
+    /* The axis grows with it. Left full width it would be a rule lying across
+       an empty section before anything else arrived, which gives away that a
+       point is about to become a line. */
+    ctx.globalAlpha = CFG.axisOpacity * life;
     ctx.strokeStyle = hue[1];
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(0, midY);
-    ctx.lineTo(w, midY);
+    ctx.moveTo(midX - spanL, midY);
+    ctx.lineTo(midX + spanR, midY);
     ctx.stroke();
+
+    /* THE SEED.
+
+       At reach 0 both halves are a zero-length path, and a zero-length stroke
+       paints nothing in canvas however the caps are set. Without this the
+       figure would not grow out of a point, it would appear at the first
+       reach wide enough to stroke. A filled dot at the seam covers that, and
+       dissolves over the first 24px of opening so it never sits on top of the
+       finished wave.
+
+       hue[0] because the left colour owns the seam going outward. Either
+       would do at this size, and picking one stops it flickering between. */
+    const seed = 1 - Math.min(1, (spanL + spanR) / 24);
+    if (seed > 0.01) {
+      ctx.globalAlpha = CFG.opacity * life * seed;
+      ctx.fillStyle = hue[0];
+      ctx.beginPath();
+      ctx.arc(midX, midY, CFG.width, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
     /* TWO HALVES, MIRRORED, GROWING OUTWARD.
 
@@ -161,23 +246,31 @@ export function initEmWave(host) {
     const AMPS = [1, 0.55];
     for (let k = 0; k < 2; k++) {
       const sign = k === 0 ? -1 : 1;        // screen y runs downward
-      /* Each colour runs from an end to the seam, so the handover happens where
-         the headings meet rather than at a fixed halfway point. */
-      const cut = Math.round(CFG.points * seam);
-      const from = k === 0 ? 0 : cut;
-      const to = k === 0 ? cut : CFG.points;
+      /* Each colour runs from the seam OUTWARD to wherever reach has got to,
+         so the handover stays where the headings meet and the two ends walk
+         away from it together. */
+      const x0 = k === 0 ? midX - spanL : midX;
+      const x1 = k === 0 ? midX : midX + spanR;
+      if (x1 - x0 < 0.5) continue;          // still the seed, nothing to stroke
+      /* Points in proportion to the width actually drawn, so a half open wave
+         costs half the work rather than crowding the full count into a sliver. */
+      const steps = Math.max(2, Math.round(CFG.points * ((x1 - x0) / w)));
       ctx.strokeStyle = hue[k];
       for (let a = 0; a < AMPS.length; a++) {
-        ctx.globalAlpha = CFG.opacity * (a === 0 ? 1 : 0.62);
+        ctx.globalAlpha = CFG.opacity * life * (a === 0 ? 1 : 0.62);
         ctx.lineWidth = CFG.width * (a === 0 ? 1 : 0.8);
         ctx.beginPath();
-        for (let i = from; i <= to; i++) {
-          const t = i / CFG.points;
-          const x = t * w;
+        for (let i = 0; i <= steps; i++) {
+          const x = x0 + (x1 - x0) * (i / steps);
+          /* Phase off ABSOLUTE x, never off the drawn span. Tie it to the
+             span and the crests slide along the wave as it opens, which
+             reads as the figure moving sideways rather than extending, and
+             the two halves stop being mirrors of each other. */
+          const t = x / w;
           const grow = Math.pow(Math.abs(x - midX) / midX, 2);
           const y = midY + sign * amp * AMPS[a] * grow
                   * Math.sin(CFG.freq * t * Math.PI * 2 - travel);
-          if (i === from) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         }
         ctx.stroke();
       }
@@ -191,9 +284,24 @@ export function initEmWave(host) {
     raf = requestAnimationFrame(draw);
   }
 
+  /* PARKING MUST ALSO WIPE THE CANVAS.
+
+     This only cancelled the frame. That was harmless while the canvas was
+     absolute inside #direction: the last frame stayed painted, but it stayed
+     painted inside a section that was off screen, so nobody saw it.
+
+     Fixed to the viewport it is a different object. The canvas is now over
+     whatever the reader is looking at, so the leftover frame -- in practice the
+     seed dot, the smallest and last thing drawn before the section left --
+     sat in the middle of every other section on the page. Measured at y=411
+     with #direction 4064px below: 29 painted pixels still on the canvas.
+
+     So the rule is that nothing is painted unless the section is on screen,
+     and leaving has to clear rather than merely stop. */
   function stop() {
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
+    if (w && h) ctx.clearRect(0, 0, w, h);
   }
 
   readPalette();
@@ -206,7 +314,7 @@ export function initEmWave(host) {
     visible = en.isIntersecting;
     if (visible) { if (reduced) requestAnimationFrame(draw); else run(); }
     else stop();
-  }, { threshold: 0 }).observe(el);
+  }, { threshold: 0 }).observe(sect);
 
   /* Under reduced motion the loop does not run, so the scroll response needs
      its own trigger or the amplitude would freeze at whatever it was when the

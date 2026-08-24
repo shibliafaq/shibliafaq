@@ -179,6 +179,24 @@ const LISS = {
   minTitlePt: 9,
   frontMax: 0.62,
 
+  /* A LOWER CAP ON A NARROW STAGE, because 0.62 was never about spacing.
+
+     frontMax exists to stop a very narrow screen solving for a card wider than
+     its own stage. It does that, and it also lets the type floor push the front
+     card most of the way across a phone: measured at 375px, the solve landed at
+     0.578 of a 335px stage -- a 195px card -- and 22.1% of all card area was
+     overlap against roughly 2% on a desktop. Six live cards were stacked on top
+     of each other with their titles crossing, which is what "no visible spaces
+     between tiles" describes.
+
+     0.46 is a deliberate trade in the other direction, and it costs type: the
+     rendered title line goes from about 17.7px to about 14px. That is still
+     legible on a phone held at arm's length, and a title you can read on a card
+     you can tell apart beats a larger title on a card lost in a pile. The
+     desktop is untouched -- it never reaches either cap, because its own solve
+     asks for 0.222 and the tuned 0.28 wins. */
+  frontMaxNarrow: 0.46,
+
   /* THE FAR CARDS SHRINK; THE NEAR ONE DOES NOT GROW.
 
      Perspective already enlarges with depth, so a scale ramp that ALSO grows
@@ -371,7 +389,10 @@ function lissFit(W, H, cardW, cardH, P, titleFs) {
   /* The larger of the tuned fraction and whatever the type floor demands,
      capped so a narrow screen cannot ask for a card wider than its stage. */
   const needed = titleFs > 0 ? (LISS.minTitlePt * cardW) / (0.75 * titleFs * W) : 0;
-  const front = Math.min(LISS.frontMax, Math.max(LISS.front, needed));
+  /* 520px on the STAGE, not the viewport: this function is handed the stage
+     it has to fit, and that is the box the overlap actually happens in. */
+  const cap = W < 520 ? LISS.frontMaxNarrow : LISS.frontMax;
+  const front = Math.min(cap, Math.max(LISS.front, needed));
   const sBase = (W * front) / (cardW * mFront);
 
   const n = FIT_STEPS;
@@ -452,6 +473,44 @@ export function frontCard(wheelEl, selector) {
   let biggest = 0;
   wheelEl.querySelectorAll(selector).forEach((c) => {
     const r = c.getBoundingClientRect();
+    const area = r.width * r.height;
+    if (area > biggest) { biggest = area; best = c; }
+  });
+  return best;
+}
+
+/**
+ * The card under a given point, or null.
+ *
+ * WHY THIS AND NOT elementFromPoint, AGAIN
+ * For the reason frontCard() exists: inside a preserve-3d scene the browser
+ * hit-tests the ring wrong at most rotations, returning .wheel__scene through
+ * a card that is visibly in front. So the same trick is used here — geometry
+ * rather than the browser's opinion.
+ *
+ * Two rules. A candidate must CONTAIN the point, and among those that do, the
+ * largest projected area wins. Area is the depth proxy the whole module
+ * already uses: a ring turning about X foreshortens every card except the one
+ * facing the viewer, so bigger is nearer. That is what makes overlaps resolve
+ * the way the eye expects — where a near card and a far card both cover the
+ * pointer, the near one takes it.
+ *
+ * Plates are skipped. They carry no legible title, so they are structure on
+ * the path rather than targets, and paint() has already said so by setting
+ * their pointer-events to none.
+ *
+ * The rect is the axis-aligned box of a rotated quad, so it is slightly
+ * generous at the corners. That is the right way to be wrong for a click
+ * target: it costs a few pixels of overshoot on a card the reader was
+ * plainly aiming at, where being tight costs a click that does nothing.
+ */
+export function cardAtPoint(wheelEl, selector, x, y) {
+  let best = null;
+  let biggest = 0;
+  wheelEl.querySelectorAll(selector).forEach((c) => {
+    if (c.style.pointerEvents === 'none') return;
+    const r = c.getBoundingClientRect();
+    if (x < r.left || x > r.right || y < r.top || y > r.bottom) return;
     const area = r.width * r.height;
     if (area > biggest) { biggest = area; best = c; }
   });
@@ -1363,6 +1422,26 @@ function setupWheel(root) {
   let lastT = 0;
   let ptrX = 0, ptrY = 0, ptrFresh = false;
 
+  /* THE HIGHLIGHT FOLLOWS THE POINTER, not the front of the ring.
+
+     .is-front marks whichever card the geometry puts frontmost, and while
+     nobody is pointing at anything that is still the right mark. But it used
+     to be the ONLY mark, and clicks resolved through frontCard() as well, so
+     aiming at a card two places round the ring highlighted one card and
+     opened another. .is-hot is what the reader is actually pointing at, and
+     modal.js and book.js now resolve through the same point.
+
+     `has-hot` on the wheel lets the stylesheet stand the front mark down
+     while a hot card exists, so there is only ever one highlight. */
+  let hotEl = null;
+  function setHot(el) {
+    if (el === hotEl) return;
+    if (hotEl) hotEl.classList.remove('is-hot');
+    hotEl = el;
+    if (hotEl) hotEl.classList.add('is-hot');
+    root.classList.toggle('has-hot', !!hotEl);
+  }
+
   function drifts() {
     return !reducedMotion && onScreen && intro >= 1
         && !hovering && !dragging && !focused;
@@ -1378,7 +1457,13 @@ function setupWheel(root) {
        already committed; reading from an event handler mid-frame forces a
        synchronous reflow instead. Only re-evaluated when the pointer has
        actually moved, so an unattended wheel costs nothing. */
-    if (ptrFresh) { hovering = overRing({ clientX: ptrX, clientY: ptrY }); ptrFresh = false; }
+    if (ptrFresh) {
+      hovering = overRing({ clientX: ptrX, clientY: ptrY });
+      /* Same frame, same committed layout, for the same reason `hovering` is
+         resolved here rather than in the event handler. */
+      setHot(hovering ? cardAtPoint(root, '.wheel__card', ptrX, ptrY) : null);
+      ptrFresh = false;
+    }
     const drift = drifts();
 
     if (settling && !drift) {
@@ -1739,6 +1824,7 @@ function setupWheel(root) {
 
   root.addEventListener('pointerleave', () => {
     hovering = false; ptrFresh = false;
+    setHot(null);
     run();
   });
 
@@ -1822,9 +1908,24 @@ function setupWheel(root) {
       return;
     }
     const t0 = performance.now();
-    // Fast on purpose. Three overlapping stages inside 1.4s: the wave lights,
-    // the tiles walk in from the back, the wordmark types itself.
-    const DUR = 1400;
+    /* THREE OVERLAPPING STAGES: the wave lights, the tiles walk in from the
+       back, the wordmark types itself.
+
+       This was 1400ms and marked "fast on purpose". It was too fast to read.
+       Fourteen tiles travelling along a curve, a wave lighting under them and
+       eight letters striking is a lot of separate motion, and inside 1.4s the
+       three stages blur into one flash — which is what "frames are getting
+       missed" describes, whether or not a frame was actually dropped.
+
+       2600ms gives each stage room to be seen as itself. Everything below is
+       a FRACTION of this, so the tile choreography stretches with it and the
+       overlap between stages is unchanged; only the CSS durations had to be
+       scaled by hand to match, and they were (sections.css).
+
+       The cubic ease-out still means it commits quickly and settles slowly,
+       so the extra time lands where it is wanted -- in the settle, not in a
+       longer wait before anything happens. */
+    const DUR = 2600;
     (function step_(now) {
       const t = Math.min(1, (now - t0) / DUR);
       introT = t;

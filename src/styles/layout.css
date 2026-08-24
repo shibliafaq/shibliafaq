@@ -218,17 +218,39 @@
    see the long note in reveals.js: an inline style written by JS is lost the
    moment anything re-parses the heading's innerHTML, and something on this page
    does exactly that. A class and a custom property both survive it. */
+/* IN PLACE, NOT OUT OF THE FLOOR.
+
+   The words used to translate 118% up through the mask, one after another.
+   Read on its own it is a lovely effect; read against a page whose sections
+   now arrive by materialising, it was the last thing still sliding, and every
+   heading on the site announced itself by moving upward while the section
+   under it was ALSO moving upward. Two motions in the same direction is what
+   made the whole page feel like it was being scrolled at rather than read.
+
+   A small scale plus opacity puts the word where it belongs from the start and
+   lets it resolve there. The stagger is untouched -- that was always the point
+   of this rule, not the direction of travel (see the note below on --reveal-i,
+   which makes the same argument about the generic blocks).
+
+   .word keeps its overflow mask. Nothing rises out of it any more, but a
+   shrink cannot overflow the box it started in, so it clips nothing that was
+   not already clipped, and leaving it alone avoids the inline-block baseline
+   shift that changing overflow on these would cause. */
 [data-split] .word > span {
   display: inline-block;
-  transform: translateY(118%);
-  transition: transform .95s var(--e-out, cubic-bezier(.16, 1, .3, 1))
-              calc(var(--wi, 0) * 55ms);
+  opacity: 0;
+  transform: scale(.92);
+  transform-origin: 50% 60%;
+  transition: transform .8s var(--e-out, cubic-bezier(.16, 1, .3, 1))
+              calc(var(--wi, 0) * 45ms),
+              opacity .8s var(--e-out, cubic-bezier(.16, 1, .3, 1))
+              calc(var(--wi, 0) * 45ms);
 }
 
-[data-split].is-split-in .word > span { transform: none; }
+[data-split].is-split-in .word > span { opacity: 1; transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-split] .word > span { transform: none; transition: none; }
+  [data-split] .word > span { opacity: 1; transform: none; transition: none; }
 }
 
 /* Generic reveal. JS adds .is-in; without JS the @media rule below
@@ -243,9 +265,15 @@
 
    Capped at six steps so a long list cannot run up half a second of lag on its
    last item. */
+/* Also in place: `translateY(34px)` was the other half of the same complaint.
+   A block that fades up from below while the page scrolls up reads as arriving
+   BECAUSE of the scroll; one that resolves where it stands reads as arriving
+   because the reader got there. .985 rather than a bigger number -- at this
+   size it is felt and not seen, which is the whole difference between
+   materialising and zooming. */
 [data-reveal] {
   opacity: 0;
-  transform: translateY(34px);
+  transform: scale(.985);
   transition:
     opacity var(--d-slow) var(--e-out) calc(var(--reveal-i, 0) * 90ms),
     transform var(--d-slow) var(--e-out) calc(var(--reveal-i, 0) * 90ms);
@@ -777,6 +805,27 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    which is worse than the wrap it was meant to prevent. */
 @media (min-width: 780px) {
   .hero__ask { white-space: nowrap; }
+}
+
+/* TWO EVEN LINES BELOW THAT, instead of a full line and a dangling word.
+
+   Each question already wrapped to exactly two lines at every phone width
+   (measured 320-430px: the longer one needs 521px at 16px and the widest
+   phone box is 404px, so it can never make three). What it did NOT do was
+   split them evenly — the first question came out 328px then 62px, a whole
+   line followed by the single word "live?", which reads as a mistake
+   rather than as a couplet.
+
+   `balance` splits the two lines to near-equal length. It is capped at a
+   handful of lines by every engine that implements it, which is no
+   constraint on two, and where it is unsupported the text wraps exactly as
+   it does today. Nothing to lose.
+
+   NOT one line each, which is what the desktop rule above does: the longer
+   question would need 10.8px type at 375px and 9.2px at 320px, making the
+   two lines the whole site answers into the smallest text in the hero. */
+@media (max-width: 779px) {
+  .hero__ask { text-wrap: balance; }
 }
 
 /* Justified, and NO hyphenation — no broken words with dashes at the line ends.
@@ -2084,12 +2133,66 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    `will-change` is deliberately absent: this runs once, near the end of a
    long scroll, and promoting a full-width block to its own layer for the
    whole page to save one transition is the wrong trade. */
+/* IN AND OUT ARE ONE DECLARATION, not two rules fighting for opacity.
+   --dir-in brings the headings on after the wave has opened; --dir-out
+   takes them off again once the mirrors of the next section are up. Two
+   signals, one owner, which is the only way to hold "one element, one
+   owner" when a thing has to arrive AND leave.
+
+   The blur is additive for the same reason it was there on the way in: a
+   block that resolves reads as arriving and a block that dissolves reads
+   as leaving, where two plain fades would read as the lights going on and
+   off. 5px out against 6px in — slightly less, because leaving should not
+   draw more attention than arriving did. */
+/* THE HEADINGS ARE FIXED, AND THAT IS WHAT MAKES THEM ARRIVE IN PLACE.
+
+   They used to be ordinary flow content, so however they were faded in they
+   were also travelling: the section was scrolling up underneath the fade and
+   the words climbed into view from the bottom of the screen. What is wanted
+   is for them to appear where they already are, which no opacity curve can
+   do for something that is moving.
+
+   Fixed to the middle of the viewport, they hold still while the reader
+   scrolls, exactly like the three captions over the earth. The dwell is the
+   200vh on #direction below: the section supplies the scroll, the content
+   does not move through it. This is the same pattern as the pinned sections
+   before it, done with position rather than with a pin spacer, because the
+   content here is two headings and a canvas and none of it needs the layout
+   surgery a real pin performs.
+
+   TOP 50% AND A TRANSLATE, NOT inset: 0. A full-viewport fixed box would
+   cover Selected Work as it arrives. This one is only as tall as the
+   headings. `pointer-events: none` is the belt to that braces: nothing in
+   here is interactive, and a transparent sheet that eats clicks meant for
+   the section behind it is the classic way a decorative overlay breaks a
+   page long after anyone remembers it is there.
+
+   --dir-in brings them on after the wave has opened; --dir-out takes them
+   off once the mirrors of the next section are up. Two signals, ONE
+   declaration each: the alternative is two rules fighting for opacity.
+
+   The blur is additive for the same reason it was there on the way in: a
+   block that resolves reads as arriving and one that dissolves reads as
+   leaving, where two plain fades read as a light switch. */
 #direction > .wrap {
-  opacity: var(--dir-in, 1);
-  transform: scale(calc(0.965 + 0.035 * var(--dir-in, 1)));
-  transform-origin: 50% 40%;
-  filter: blur(calc((1 - var(--dir-in, 1)) * 6px));
+  position: fixed;
+  top: 50%;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  max-width: none;
+  padding-inline: clamp(1.25rem, 5vw, 4rem);
+  pointer-events: none;
+  opacity: calc(var(--dir-in, 1) * (1 - var(--dir-out, 0)));
+  transform: translateY(-50%) scale(calc(0.965 + 0.035 * var(--dir-in, 1)));
+  transform-origin: 50% 50%;
+  filter: blur(calc((1 - var(--dir-in, 1)) * 6px + var(--dir-out, 0) * 5px));
 }
+
+/* The scroll the headings hold still through. Without a height here the
+   section collapses to nothing -- its only child is out of flow -- and the
+   whole sequence would have to happen in the width of a scrollbar. */
+#direction { min-height: 340vh; }
 
 /* The fallback of 1 above is doing real work: without JS, or before the
    trigger has published anything, the section is simply visible. A default
@@ -2097,8 +2200,15 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    anyone the scrub never reaches. */
 @media (prefers-reduced-motion: reduce) {
   #direction > .wrap {
-    transform: none;
+    /* The centring translate stays: dropping it to `none` would strand the
+       headings half a viewport low. Only the scale and blur go. */
+    transform: translateY(-50%);
     filter: none;
     opacity: 1;
   }
+  /* The rest of the crossing, held at its finished state. Someone who has
+     asked their machine to calm down still gets the mirrors and the
+     Selected Work heading; they simply do not watch them arrive. */
+  .works__field,
+  .projects__intro { opacity: 1; }
 }

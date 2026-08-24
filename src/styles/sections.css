@@ -331,12 +331,26 @@
 
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
 
+/* OFF-WHITE, BECAUSE --t-3 WAS NOT READABLE HERE.
+
+   Each tile carries two lines: the title, and this one under it with the
+   degree, the institution and the field. Measured on a card: the title is
+   #fafafa at 18.4px against #101014, a contrast ratio of 18.19; this line was
+   #6d6d77 at 13.12px, a ratio of 3.71. That is under the 4.5:1 minimum for
+   text this size, and it is the SMALLER of the two, which is the wrong way
+   round -- the line that needs the most help was getting the least.
+
+   #d9d9e0 takes it to about 13:1 while staying visibly short of the pure
+   white above it, so the hierarchy still reads. It is doing that job with
+   three signals now rather than one: size, uppercase mono, and a tone that
+   is off-white instead of grey. Dimming was only ever the least useful of
+   the three and it was the one carrying all the weight. */
 .pcard__course {
   font-family: var(--f-mono);
   font-size: var(--fs-label);
   letter-spacing: .07em;
   text-transform: uppercase;
-  color: var(--t-3);
+  color: #d9d9e0;
   display: flex;
   align-items: center;
   gap: .5rem;
@@ -523,13 +537,47 @@
    text-align is set explicitly rather than inherited: these cards sit under a
    centred section heading, and inheriting from an ancestor that may or may not
    be centred is how a list ends up centred by accident. */
+/* THE PANEL IS COLOUR-CODED BY GROUP, and the palette lives HERE.
+
+   The five hues are the thermal ramp the brain paints its balls with, and they
+   were previously written only in skills.js. Keeping them in CSS and having the
+   module read them back means there is one list: change a hue and the ball, the
+   legend dot and this card all move together. Duplicating them would be the
+   --heat mistake again, one value in two places drifting apart quietly.
+
+   Every card had an amber heading whichever group it was, so the panel gave no
+   clue that the colours in the brain above meant anything at all. Now the
+   heading, the edge and the tag borders take the group hue, and the panel reads
+   as the legend expanded rather than as five identical boxes.
+
+   Order is the markup order the module also relies on. */
+.sgroup { --c: var(--amber); }
+.sgroup:nth-of-type(1) { --c: #ff5a2b; }   /* Spatial & GIS */
+.sgroup:nth-of-type(2) { --c: #f5a20b; }   /* Data Pipelines & Analytics */
+.sgroup:nth-of-type(3) { --c: #e4ded3; }   /* Architecture & Design */
+.sgroup:nth-of-type(4) { --c: #22d3ee; }   /* Research Methods */
+.sgroup:nth-of-type(5) { --c: #4ade80; }   /* Creative & Personal */
+
 .sgroup {
   --sg: .9;
-  text-align: left;
+  position: relative;
+  overflow: hidden;
+  text-align: start;
   padding: calc(1.75rem * var(--sg));
   background: var(--ink-card);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
+}
+
+/* A hairline of the group colour down the leading edge: enough to identify a
+   card at a glance across the grid, not enough to compete with the tags. */
+.sgroup::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--c);
+  opacity: .55;
 }
 .sgroup .tag { font-size: calc(var(--fs-label) * var(--sg)); }
 .sgroup .tags { gap: calc(.45rem * var(--sg)); }
@@ -541,7 +589,7 @@
   font-weight: 500;
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  color: var(--amber);
+  color: var(--c, var(--amber));
   margin-bottom: calc(1.15rem * var(--sg, 1));
   padding-bottom: .85rem;
   border-bottom: 1px solid var(--line);
@@ -592,6 +640,16 @@
   display: inline-flex;
   align-items: center;
   gap: .6rem;
+  /* A <button> is centred by the UA stylesheet, and `font: inherit` does
+     not carry text-align with it. So the two labels long enough to wrap
+     ("DATA PIPELINES & ANALYTICS", "ARCHITECTURE & DESIGN") had their
+     second line centred under the first while every dot stayed flush
+     left, which read as a ragged column rather than as a key.
+
+     `start`, not `left`: Arabic is one of the languages here and sets
+     dir=rtl on the root, where a hardcoded left would strand the labels
+     away from their dots. Identical in English. */
+  text-align: start;
   padding: 0;
   border: 0;
   background: none;
@@ -847,10 +905,18 @@
   color: var(--t-2);
 }
 
-/* Was a zero-height full-width item forcing a 3-then-2 wrap while the key was
-   a row. A column has no wrap point to control, so it is simply not rendered —
-   removing it from the markup would mean touching the module that builds the
-   key, for no gain. */
+/* Never rendered, at any width.
+
+   It was a zero-height full-width item forcing a 3-then-2 wrap back when the
+   key was a row. The key is a column now, which has no wrap point to control,
+   and below 720px the labels are long enough that each already takes its own
+   line — so the forced break bought nothing there and cost about 11px of
+   extra gap after the third item, which reads as a stray hole once the key is
+   left aligned and the rhythm is visible.
+
+   Left in the markup rather than removed from it: the module that builds the
+   key would have to change for no gain, and a `display: none` here is the
+   cheaper way to say the same thing. */
 .skillkey__break { display: none; }
 
 /* Below this the two columns fight: the key needs ~10rem and the brain stops
@@ -864,11 +930,14 @@
     justify-self: stretch;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: center;
+    /* Packed to the leading edge, same as the column above it and the
+       group cards below. A centred key rag on one axis and left on the
+       other is the kind of inconsistency that only shows up when the
+       window is resized past the breakpoint. */
+    justify-content: flex-start;
     gap: .7rem 1.6rem;
     margin-top: 1.2rem;
   }
-  .skillkey__break { display: block; flex-basis: 100%; height: 0; }
 }
 
 .skillkey__dot {
@@ -1432,7 +1501,54 @@
 .contact__inner { display: grid; justify-items: center; }
 .contact .eyebrow::before { display: none; }
 .contact .sec-title { max-width: none; }
-.contact__lead { max-width: 62ch; }
+/* Justified, and NO hyphenation — no broken words with dashes at the line ends,
+   same rule as the hero and the About prose.
+
+   All three paragraphs share this one class, so this covers the block rather
+   than part of it. That is worth saying because the last time justification was
+   added here it went on four class names out of twelve and looked arbitrary,
+   and the fix after that was undone by a max-width opt-out that switched it off
+   again on phones. There is no opt-out here: the 62ch measure below is the
+   existing one and applies at every width, so the block is justified wherever
+   it is read. */
+.contact__lead {
+  max-width: 62ch;
+  text-align: justify;
+  hyphens: none;
+}
+
+/* This was one paragraph until the copy became three, and the rule carried no
+   bottom margin because a single block never needed one. Measured after the
+   change: tops at 223, 307 and 362 against a 28px line, so the three ran
+   together as one wall of text and the justification made that worse rather
+   than better -- flush edges on both sides is exactly what removes the last
+   visual cue that a paragraph ended.
+
+   On the adjacent selector rather than a blanket margin-bottom, so the block
+   keeps its existing spacing to the email address below it. */
+.contact__lead + .contact__lead { margin-top: .85em; }
+
+/* RANGED LEFT ON PHONES.
+
+   Justify can only stretch word spaces, so on a narrow measure the stretch has
+   few gaps to spread across and each one has to open far. Measured at 375px:
+   the block is 335px wide and lines like "resilience, with an open focus on
+   leading" came out visibly gappy -- the rivers justification is supposed to
+   prevent, produced by justification.
+
+   `start`, not `left`: Arabic sets dir=rtl on the root and a hardcoded left
+   would range this block the wrong way against everything around it. Identical
+   in English.
+
+   NOTE THAT THE HERO DOES THE OPPOSITE, deliberately. It carried this same
+   guard once, and the centred-justify was asked for back at every width
+   including phones -- see the note on .hero__desc--just. So this is a
+   divergence rather than a pattern: the hero block is centred and short, this
+   one is three ranged-left paragraphs, and the same rivers read worse here
+   because there is no centred last line to make them look intentional. */
+@media (max-width: 640px) {
+  .contact__lead { text-align: start; }
+}
 
 .contact__email {
   display: inline-block;
@@ -2494,7 +2610,11 @@
 /* The wave is the path the tiles land on, so it arrives first. */
 .wheels .wheel--liss .wheel__wave {
   opacity: 0;
-  transition: opacity .55s var(--e-out, ease);
+  /* .55s -> 1s, in step with the 1400ms -> 2600ms entrance in wheel.js.
+     These durations are not fractions of that timer, so they have to be
+     scaled by hand or the stage they belong to finishes early and the
+     overlap the entrance was composed around comes apart. */
+  transition: opacity 1s var(--e-out, ease);
 }
 
 .wheels .wheel--liss.is-lit .wheel__wave { opacity: 1; }
@@ -2509,11 +2629,16 @@
    So there is no fade and no travel: 1ms is effectively instant, and the
    per-letter delay is the whole effect — the rhythm is the animation. An eased
    fade-up reads as a stagger, which is a different thing and is what this was
-   before. 55ms a letter puts "Projects" on screen in 440ms. */
+   before.
+
+   55ms -> 100ms a letter, which puts "Projects" on screen over 700ms rather
+   than 385ms. At the old rate the word was a flicker: eight letters inside
+   four tenths of a second is below the point where a typewriter reads as
+   typing rather than as the word simply appearing. */
 .wheels .wheel--liss .wheel__title .wl {
   display: inline-block;
   opacity: 0;
-  transition: opacity 1ms linear calc(var(--li, 0) * 55ms);
+  transition: opacity 1ms linear calc(var(--li, 0) * 100ms);
 }
 
 .wheels .wheel--liss.is-typed .wheel__title .wl { opacity: 1; }
@@ -2538,12 +2663,13 @@
 .wheels .wheel--liss .wheel__legend-item {
   opacity: 0;
   transform: translateY(10px);
+  /* .45s -> .8s, scaled with the entrance like everything else here. */
   transition:
-    opacity .45s var(--e-out, ease),
-    transform .45s var(--e-out, ease);
+    opacity .8s var(--e-out, ease),
+    transform .8s var(--e-out, ease);
 }
 
-.wheels .wheel--liss .wheel__legend-item:nth-child(2) { transition-delay: .1s; }
+.wheels .wheel--liss .wheel__legend-item:nth-child(2) { transition-delay: .18s; }
 
 .wheels .wheel--liss.is-typed .wheel__legend-item {
   opacity: 1;
@@ -2574,7 +2700,8 @@
 }
 
 .wheels .wheel--liss.is-typed .wheel__title::after {
-  animation: wl-caret .28s steps(1) 0s 5 forwards;
+  /* Five blinks, now spanning the slower typing rather than ending before it. */
+  animation: wl-caret .5s steps(1) 0s 5 forwards;
 }
 
 @keyframes wl-caret {
@@ -2885,12 +3012,29 @@
    contrast. wheel.js puts .is-front on the card with the greatest --depth,
    which is the same card frontCard() resolves by projected area, so the mark
    and the click target are guaranteed to agree. */
-.wheels .wheel--liss .wheel__card.is-front {
+.wheels .wheel--liss .wheel__card.is-front,
+.wheels .wheel--liss .wheel__card.is-hot {
   box-shadow:
     0 0 0 1.5px var(--amber),
     0 18px 48px rgba(0, 0, 0, .55);
 }
-.wheels .wheel--liss .wheel__card.is-front .pcard__title { color: #fff; }
+.wheels .wheel--liss .wheel__card.is-front .pcard__title,
+.wheels .wheel--liss .wheel__card.is-hot .pcard__title { color: #fff; }
+
+/* ONE HIGHLIGHT AT A TIME. While the reader is pointing at a card, that card is
+   the mark and the front of the ring stands down: two frames lit at once says
+   two things are selected and only one of them opens. With no pointer on the
+   wheel `has-hot` is absent and the front mark is the only one, which is the
+   ambient state this started as. */
+.wheels .wheel--liss.has-hot .wheel__card.is-front:not(.is-hot) {
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .55);
+}
+.wheels .wheel--liss.has-hot .wheel__card.is-front:not(.is-hot) .pcard__title {
+  color: inherit;
+}
+
+/* The pointer is aiming at something openable, so say so. */
+.wheels .wheel--liss .wheel__card.is-hot { cursor: pointer; }
 
 /* Reduced motion flattens the path to a grid, so none of the depth-derived
    states mean anything there. */
@@ -3379,7 +3523,28 @@
    up on. */
 .dirs {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, max-content));
+  /* EQUAL COLUMNS, so the seam between them IS the centre of the screen.
+
+     They were max-content, which sized each to its own words: 289px for
+     "Turning Data into Action" against 404px for "Making better spaces for
+     people". A centred grid then puts its own middle at the screen centre, and
+     the GAP between two unequal columns is not that middle -- measured, it sat
+     57px to the left of it.
+
+     That gap is where the wave meets. So the point the figure opens from was
+     49px left of centre on a 1113px screen, which is invisible once the
+     headings are there to explain it and very visible in the seconds before
+     they arrive, when the only thing on screen is that one dot.
+
+     1fr each makes the two columns the same width, so the gap lands dead
+     centre and the dot opens on the middle of the screen. The text does not
+     move: the left column still ranges right and the right column still ranges
+     left, so both blocks stay hard against the gap and the extra width is empty
+     margin on the OUTSIDE. What changes is only where the empty space is.
+
+     The wider title still fits at every width above the 760px stacking point,
+     because the type is vw-based and shrinks with the column. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   justify-content: center;
   gap: clamp(2rem, 7vw, 6rem);
   align-items: start;
@@ -3426,8 +3591,29 @@
 .dirs .sec-title {
   margin-top: .55rem;
   max-width: none;
-  font-size: clamp(1.6rem, 4.2vw, 3.1rem);
+  /* The vw term went 4.2 -> 5.2 and the cap 3.1rem -> 3.9rem, about a
+     quarter bigger on a desktop. There was room: measured at 1113px the two
+     columns came to 234px and 326px against a 967px wrap with a 78px gap,
+     so the pair could grow 1.58x before it stopped fitting. A quarter takes
+     it to roughly 772px and leaves ~195px of slack, which is the margin
+     that keeps each title on the two lines its <br> asks for. Going to the
+     limit would put them one narrow window away from wrapping again, and a
+     title that wraps past its own break is what the note above is about.
+
+     THE MINIMUM DID NOT MOVE. 1.6rem still governs everything below 609px
+     of viewport, which is well inside the 760px breakpoint where the pair
+     stacks, so phones render exactly as before. The ask was for the desktop
+     only and this is the term that keeps it there. */
+  font-size: clamp(1.6rem, 5.2vw, 3.9rem);
   line-height: 1.06;
+}
+
+/* The two eyebrows come up with them, but by less: +12% against the titles'
+   +24%, so the label stays clearly subordinate to the line it introduces
+   rather than growing into a second heading. Above the stacking breakpoint
+   only, for the same reason the minimum above did not move. */
+@media (min-width: 761px) {
+  .dirs .eyebrow { font-size: .82rem; }
 }
 
 /* One under the other below the two-column breakpoint, still centred as a
@@ -3441,15 +3627,33 @@
 }
 
 /* The wave sits behind everything in the section and is decoration: it never
-   takes a pointer, and it is not in the accessibility tree. `contain: strict`
-   keeps a full-width canvas from contributing to layout or overflow. */
+   takes a pointer, and it is not in the accessibility tree.
+
+   FIXED, NOT ABSOLUTE, and that is the whole reason the entrance works.
+
+   The figure has to open from a point at the CENTRE OF THE SCREEN on the
+   scroll straight after the heat map clears. At that moment #direction has
+   not entered the viewport at all -- its top is level with the viewport
+   bottom and its own centre is 240px below the fold -- so a canvas bound to
+   the section simply has no pixel at the screen centre to put the point on.
+   Bound to the viewport it always does.
+
+   The section still owns WHEN: emwave.js observes #direction, not this
+   element, so nothing is drawn until the section is on screen and the
+   canvas is cleared and parked once it has gone. That matters more for a
+   fixed element than an absolute one -- see the note in main.js about
+   fixed things painting over sections they do not belong to. The signal
+   reaching 0 is not the only guard here; the observer is the other.
+
+   No `contain: strict`: size containment on a viewport-sized box buys
+   nothing, and layout/paint containment on a fixed element is already
+   implied by it being out of flow. */
 #direction { position: relative; isolation: isolate; overflow: hidden; }
 .dirs__wave {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  contain: strict;
 }
 .dirs__wave canvas { display: block; width: 100%; height: 100%; }
 
@@ -3474,14 +3678,56 @@
    plus a hairline edge. Kept dim on purpose — this sits behind fourteen cards
    carrying photographs, and anything brighter competes with the content it is
    supposed to sit behind. */
+/* FIXED, so the mirrors are REVEALED rather than scrolled into view.
+
+   Absolute inside #projects, the field travelled with the section, and the
+   reveal was timed while #projects was still below the fold: measured, the
+   section did not start until y=865 on a 686px viewport when the fade began,
+   so the whole of it happened off screen and the tiles then rose into view
+   already lit. That is the "coming by scrolling down" -- the fade was never
+   the thing being watched.
+
+   On the viewport they are simply there, at their own depths, and --tiles-in
+   turns them up in place while the reader scrolls. Same treatment as the
+   wave and the Direction headings, and for the same reason.
+
+   THE FIELD IS THE VIEWPORT NOW, not the section, so each tile's --y is a
+   percentage of the screen rather than of 1087px of section. They spread
+   across what the reader can actually see instead of a third of them sitting
+   below it.
+
+   --tiles-out is the price of being fixed. Nothing confines this to
+   #projects any more, so without an explicit way down it would hang over
+   Skills, Background and Contact for the rest of the page. It is published
+   from #projects leaving -- see main.js.
+
+   `contain: strict` relaxed to layout/paint: size containment on a box whose
+   size comes from the viewport buys nothing and is one more way for a fixed
+   element to collapse to zero. */
 .works__field {
+  /* ABSOLUTE, AS ON THE LIVE SITE, and this is a revert.
+
+     Fixing it to the viewport was how the tiles got revealed in place, and
+     it broke two things that matter more. The field stopped being the
+     section box and became the screen, so every tile --y went from a
+     percentage of 1087px to a percentage of 686px and the whole flock
+     compressed upward onto the section title. And `perspective-origin` is
+     the centre of THIS box, so it moved from 543.5px to 343px and every
+     tile was projected through a different vanishing point -- which is the
+     tiles visibly changing shape.
+
+     Measured against production: absolute, inset 0, box 1035x1087,
+     perspective-origin 517.6px 543.5px. That is what these fourteen
+     positions were authored against, so the box has to be the one they
+     were authored for. The tiles travel with the section again, which is
+     the live behaviour and the correct one. */
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   perspective: 900px;
   overflow: hidden;
-  contain: strict;
+  contain: layout paint;
 }
 
 /* THE PARALLAX LIVES HERE, NOT ON THE TILES.
@@ -3498,6 +3744,39 @@
 }
 /* The intro and the wheel both sit above the field. */
 .projects__intro, .wheels { position: relative; z-index: 1; }
+
+/* ---- THE HANDOFF IN FROM DIRECTION ------------------------------------
+
+   Both signals are scrubbed from the #direction crossing in main.js, which
+   is a SIBLING section — see the note there for why they are published on
+   the root and not on a wrapper.
+
+   The mirrors come up FIRST, while the Direction headings are still on
+   screen, and the heading follows once those headings have gone. That order
+   is the whole effect: the next section announces itself with its
+   decoration, so by the time the words land the reader is already somewhere
+   new rather than watching one block swap for another.
+
+   OPACITY ON THE FIELD, NOT ON THE TILES. Each .wtile runs its own drift and
+   carries its own opacity (.95); tilefield.js owns the field's TRANSFORM via
+   --fx/--fy. Opacity on the field is the one free property here, and it
+   multiplies with both instead of fighting either.
+
+   OPACITY ON .projects__intro, WHICH IS A CONTAINER. It carries no
+   [data-reveal] — only its eyebrow and heading do — so this multiplies with
+   the reveal system rather than overwriting it. Same reasoning as the two
+   future frames in main.js, and the "one element, one owner" collision from
+   CONTEXT 48 is what it avoids.
+
+   Fallback 1 on both: with no JS, or before the trigger has published
+   anything, the section is simply the section. */
+/* One declaration owning opacity, reading both ends of the crossing. */
+.works__field { opacity: calc(var(--tiles-in, 1) * (1 - var(--tiles-out, 0))); }
+/* Three signals, ONE declaration. --works-in brings it in from the Direction
+   clock; --sec-out takes it away with the rest of the section. Left to the
+   generic vanish rule below, that selector would out-specify this one and
+   the Selected Work heading would stop arriving at all. */
+.projects__intro { opacity: calc(var(--works-in, 1) * (1 - var(--sec-out, 0))); }
 
 .wtile {
   position: absolute;
@@ -3561,4 +3840,108 @@
   display: block;
   font-size: var(--fs-xs);
   color: var(--t);
+}
+
+/* Tags carry a tint of their own group rather than one shared amber. Kept low:
+   forty of these at full strength would be a colour chart, and the information
+   here is the WORDS. The border identifies, the text stays readable. */
+.sgroup .tag,
+.sgroup .tag--amber {
+  border-color: color-mix(in oklab, var(--c) 34%, var(--line));
+  color: color-mix(in oklab, var(--c) 30%, var(--t-2));
+}
+.sgroup .tag:hover {
+  border-color: color-mix(in oklab, var(--c) 62%, transparent);
+  color: var(--t);
+}
+
+/* The card a legend key opened takes its own hue rather than a generic amber. */
+.skills.is-open .sgroup.is-active .sgroup__t { color: var(--c, var(--amber)); }
+.skills.is-open .sgroup.is-active .sgroup__t::after { background: var(--c, var(--amber)); }
+.skills.is-open .sgroup.is-active { border-color: color-mix(in oklab, var(--c) 40%, var(--line)); }
+.skills.is-open .sgroup.is-active::before { opacity: 1; }
+
+/* ============================================================
+   SECTION HANDOVER — reveal in place, hold, vanish in place
+   ============================================================
+
+   Every section below Direction now fades out where it stands instead of
+   simply scrolling away, so one hands over to the next rather than the page
+   sliding past a column of blocks. --sec-in and --sec-out are published on
+   each SECTION by main.js, so each owns its own pair and the children
+   inherit them; there is no page-wide name for two sections to fight over.
+
+   OPACITY ONLY, deliberately. A transform here would create a containing
+   block on .wheels and re-parent every absolutely positioned project card
+   inside it, and a filter on this many elements is a layer each.
+
+   .works__field and .projects__intro are excluded because they already own
+   their opacity from the Direction clock. .projects__intro folds --sec-out
+   into its own declaration instead (above) — the alternative is two rules
+   setting one property, which is the collision this file keeps coming back
+   to. */
+[data-vanish] > *:not(.works__field):not(.projects__intro),
+[data-stage] > .stage {
+  opacity: calc(var(--sec-in, 1) * (1 - var(--sec-out, 0)));
+}
+
+/* THE HOLD, for the two sections whose content fits on one screen.
+
+   Sticky rather than fixed, because everything in here is interactive — the
+   skills brain takes a pointer and the Instagram strip is a scroll container
+   with its own tabindex — and a fixed layer would have to be
+   pointer-events: none to be safe.
+
+   NOT APPLIED TO CONTACT OR PROJECTS. Measured on a 686px viewport: the
+   contact form is 855px and the projects intro and wheel together are
+   1052px. Holding either still puts the Send button and the lower project
+   cards permanently below the fold with no way to scroll to them, because a
+   sticky box taller than the viewport pins its own top and takes its bottom
+   out of reach. They fade in and out and keep scrolling normally.
+
+   200vh gives roughly a screen of stick: a sixth of it to arrive, most of it
+   holding, a third to go. #background is not here either — it is the pinned
+   walk and has held still on its own since long before this. */
+[data-stage] {
+  min-height: 200vh;
+  /* THE BLOCK PADDING GOES, and it is not cosmetic.
+
+     A sticky child ranges over its parent's CONTENT box, so .section's
+     116.7px top and bottom came straight off the stick budget: measured, a
+     1373px section with a 686px stage had 1139px of content box and therefore
+     453px of stick instead of 686px, and the fade-out ran after the stage had
+     already come unstuck and started travelling -- which is the exact thing
+     this is supposed to stop. At 0 the content box is the whole 200vh, the
+     stick is exactly 100vh, and it lines up with the trigger range in main.js
+     to the pixel: arrive, hold and go all happen without a pixel of movement.
+
+     Nothing is lost visually. The stage is min-height: 100vh with its content
+     centred, so the breathing room the padding used to provide is now the
+     empty half of a screen above and below. */
+  padding-block: 0;
+}
+[data-stage] > .stage {
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+  /* CLEARANCE FOR THE FIXED NAV, and it belongs HERE rather than on the
+     section. The 116.7px of section padding removed above was what used to
+     keep content out from under the 74px header; without it the Skills eyebrow
+     sat at y=54, behind the bar. Padding on the section would come straight
+     back off the stick budget, but padding on the sticky box itself does not:
+     box-sizing is border-box globally, so min-height: 100vh already includes
+     it and the element stays exactly a screen tall. It only grows, and only
+     costs stick, if the content genuinely needs more than a screen. */
+  padding-block: clamp(5.5rem, 12vh, 8rem) 2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No hold and no handover: the sections are simply there, in order. */
+  [data-stage] { min-height: 0; }
+  [data-stage] > .stage { position: static; min-height: 0; }
+  [data-vanish] > *,
+  [data-stage] > .stage,
+  .projects__intro { opacity: 1; }
 }
