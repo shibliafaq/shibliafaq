@@ -57,6 +57,9 @@ export function initRiyadhReveal(root) {
   let lx = 0; let ly = 0;      // where the head was last frame, in buffer space
   let seeded = false;
   let running = false;
+  /* The one pending animation frame, or 0. Single source of truth for
+     whether a callback is queued — see frame(). */
+  let raf = 0;
   let t = 0;
   let last = 0;
 
@@ -135,10 +138,21 @@ export function initRiyadhReveal(root) {
   }
 
   function frame(now) {
+    raf = 0;
     if (!running) return;
-    requestAnimationFrame(frame);
-    if (parseFloat(root.style.opacity || '0') < 0.05) { running = false; return; }
+    /* The same question the pointer handlers ask, so the loop cannot outlive
+       the thing it is drawing. It used to test only this element's opacity,
+       which is never lowered — see the note on live(). */
+    if (!live()) { running = false; return; }
     if (!mctx || !heat) return;
+
+    /* Scheduled AFTER the exit test, and through a handle, so there is only
+       ever one pending callback. Scheduling at the top meant a frame could be
+       queued and then `running` set false on the same pass; if a pointermove
+       arrived before that queued frame ran, it saw `!running`, set it true and
+       queued a SECOND. Every time that raced, the number of live loops
+       doubled. The handle makes double-scheduling impossible to express. */
+    raf = requestAnimationFrame(frame);
 
     const dt = Math.min(0.05, last ? (now - last) / 1000 : 0.016);
     last = now;
@@ -198,11 +212,45 @@ export function initRiyadhReveal(root) {
       lx = cx / DIV; ly = cy / DIV;
       seeded = true;
     }
-    if (!running) { running = true; last = 0; requestAnimationFrame(frame); }
+    /* Guarded on the HANDLE rather than on `running`, for the reason in
+       frame(): `running` can be false while a callback is still queued. */
+    if (!raf) { running = true; last = 0; raf = requestAnimationFrame(frame); }
   }
 
-  const live = () => parseFloat(root.style.opacity || '0') >= 0.05;
+  /* IS THE PLATE ACTUALLY ON SCREEN — not just "has it been faded in".
 
+     This asked one question: is #riyadh's own opacity above 0.05. That value
+     is set to 1 when the dive reveals the plate and is NEVER LOWERED again,
+     because what takes the frame away is the parent stage fading and
+     scrolling off, not this element. Measured on the live page: at y=6798 the
+     stage is already opacity 0 with its top at -1775, and by y=18586 its top
+     is -13563 — while root.style.opacity still reads 1.000 at every one of
+     those points.
+
+     So `live()` stayed true for the whole rest of the page. Every pointermove
+     anywhere restarted the loop, the loop's own exit test could never fire,
+     and it went on stamping up to 72 radial gradients a frame onto a canvas
+     nobody could see for another 19,000px of scrolling. That is a phone
+     rendering a hidden animation until it gets warm enough for the tab to be
+     killed, which is what "too much interaction reloads the page" looks like
+     from the outside.
+
+     Three tests now, cheapest first: the element's own fade, then the stage
+     that actually carries it away, then whether the box is on screen at all.
+     The rect test alone would cover today's layout; the other two are kept
+     because they are what the fade MEANS, and a future layout could keep the
+     box in view while the frame is meant to be gone. */
+  const stage = root.closest('.worlds__stage') || root.parentElement;
+  const live = () => {
+    if (parseFloat(root.style.opacity || '0') < 0.05) return false;
+    if (stage && parseFloat(getComputedStyle(stage).opacity || '1') < 0.05) return false;
+    const r = root.getBoundingClientRect();
+    return r.bottom > 0 && r.top < window.innerHeight && r.width > 0;
+  };
+
+  /* live() is now a rect read as well as two opacity reads, and this fires on
+     every pointer move across the whole document. Cheap as it is, it is not
+     free, so it is only asked while the plate could plausibly be up. */
   window.addEventListener('pointermove', (e) => {
     if (live()) track(e.clientX, e.clientY);
   }, { passive: true });

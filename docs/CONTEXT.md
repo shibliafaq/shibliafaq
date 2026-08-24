@@ -6745,3 +6745,52 @@ Note for anyone verifying this kind of change: the first check said the rule had
 not applied, and it had — Vite had not pushed the new stylesheet yet. A reload
 showed `none` at the same width. Stale CSS reads exactly like a selector that
 does not match.
+
+## 104. The heat map's loop never stopped (2026-08-24)
+
+Reported from the live site: heavy interaction with the heat map makes the page
+reload. A reload nobody asked for is a tab being killed and recovered, so the
+question was what runs away.
+
+WHAT WAS WRONG. `live()` asked one thing — is #riyadh's own opacity above 0.05.
+That value is set to 1 when the dive reveals the plate and is never lowered,
+because what takes the frame away is the PARENT stage fading and scrolling off,
+not this element. Measured across the page: at y=6798 the stage is already
+opacity 0 with its top at -1775; by y=18586 its top is -13563; and at every one
+of those points root.style.opacity still reads 1.000.
+
+So the predicate was true for the whole rest of the page. Every pointermove
+anywhere restarted the loop, the loop's own exit test could never fire, and it
+kept stamping up to 72 radial gradients a frame onto a canvas nobody could see
+for another 19,000px of scrolling. On a phone that is a hidden animation running
+until the tab gets warm enough to be killed, which is exactly what the report
+describes from the outside.
+
+`live()` now asks three questions, cheapest first: the element's own fade, the
+stage that actually carries it away, and whether the box is on screen at all.
+frame() uses the same predicate instead of its own copy of the opacity test, so
+the loop cannot outlive what it is drawing.
+
+AND A SECOND FAULT FOUND WHILE READING IT. frame() scheduled its next rAF at the
+TOP, before the test that sets running=false. A frame could therefore be queued
+and then running cleared on the same pass; if a pointermove arrived before that
+queued callback ran, it saw !running, set it true and queued a SECOND. Every time
+that raced, the number of live loops doubled. Scheduling now happens after the
+exit test and through a handle (`raf`), and start is guarded on the handle rather
+than on `running`, so double-scheduling cannot be expressed. This was reasoned
+from the code, not observed — the race needs the opacity to cross 0.05, which the
+first fault made impossible.
+
+Measured after: 309 rAF/sec at the plate with it live, 185 once past it, a drop
+of about 124/sec. Before, the loop ran everywhere. The wake still works — a
+70-step pointer sweep changed the canvas by 3031 across 12,473 alpha samples.
+
+NOT REPRODUCED, and worth saying plainly. The crash itself never happened here:
+desktop Chromium with 16GB, heap flat at 24MB throughout. What is fixed is a
+measured defect that is the most plausible cause of a phone killing the tab, not
+a crash I watched and cured. Re-test on the device that showed it.
+
+A measurement note: the first check of the wake reported NO CHANGE and looked
+like a regression. It had sampled the canvas's top-left 400x300 while the sweep
+ran across the vertical centre. Re-sampled over the full canvas it was fine.
+Second time this session a bad probe nearly became a bug report.
