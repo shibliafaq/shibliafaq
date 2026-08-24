@@ -2394,6 +2394,35 @@
   .wheels .wheel__head .eyebrow { font-size: .55rem; }
 }
 
+/* ---- THE SAME BARGAIN ON EVERY TOUCH DEVICE, NOT JUST NARROW ONES ------
+
+   Everything above is inside `max-width: 900px`, so an iPad never saw it:
+   between 810 and 1366 CSS px it fell back to the base `touch-action:
+   pan-x`, which hands VERTICAL to the wheel and keeps only horizontal for
+   the browser. On a desktop that is right — the cursor turns the ring and
+   the page still scrolls from the margins. With a finger it means a swipe
+   anywhere on the figure turns the ring and cannot scroll the page, and the
+   figure is most of the width. That is the "stuck on the project wheel"
+   report.
+
+   It is also the diagonal one. Under `pan-x` the browser claims a diagonal
+   as a horizontal pan, and there is nothing to pan horizontally, so the
+   gesture is swallowed: the page does not move and the ring does not turn.
+   Under `pan-y` a diagonal resolves to the vertical component and the page
+   scrolls, which is what a diagonal should do.
+
+   So the phone model applies wherever the pointer is coarse: the page keeps
+   vertical everywhere on the figure, and the TILES take `none` so a drag
+   that starts on a card still turns the ring. Same bargain, now on iPads and
+   touch laptops as well.
+
+   After the 900px block on purpose, so it wins over the base rule at every
+   width rather than only below the breakpoint. */
+@media (pointer: coarse) {
+  .wheel { touch-action: pan-y; }
+  .wheel__card { touch-action: none; }
+}
+
 
 /* ---- wheel card internals -----------------------------------
    The card is now a fixed-height panel on a ring, so its parts share that

@@ -6962,3 +6962,47 @@ phone still gives up, the remaining levers are halving the phone textures again
 (2048 to 1024, roughly 45MB to 11MB) or dropping the globe on phones for the CSS
 starfield that already ships. Both were put to the owner and both were declined
 in favour of testing what is already in.
+
+## 109. Three iPad faults (2026-08-24)
+
+STUCK ON THE PROJECT WHEEL, and DIAGONAL DOING NOTHING. Both are the same rule.
+The touch model that makes the wheel work with a finger — `pan-y` on the figure
+so the page keeps vertical, `none` on the tiles so a drag on a card still turns
+the ring — lives inside `@media (max-width: 900px)`. An iPad is 810 to 1366 CSS
+px, so it never saw it and fell back to the base `touch-action: pan-x`, which
+hands VERTICAL to the wheel and keeps only horizontal for the browser.
+
+On a desktop that is correct: the cursor turns the ring and the page still
+scrolls from the margins either side. With a finger it means a swipe anywhere on
+the figure turns the ring and cannot scroll the page, and on an iPad the figure
+is most of the width. That is "stuck on the project wheel".
+
+The diagonal is the same rule seen from another angle. Under `pan-x` the browser
+claims a diagonal as a horizontal pan; there is nothing to pan horizontally, so
+the gesture is swallowed and neither the page nor the ring moves. Under `pan-y`
+it resolves to the vertical component and the page scrolls.
+
+`@media (pointer: coarse)` now applies the phone model at every width, placed
+after the 900px block so it wins over the base rule rather than only below the
+breakpoint.
+
+THE DASHBOARD RELOAD. /uhi-twin is a separate 54MB app — 7MB of map features per
+city, 3MB HVI geojsons — that opens in an iframe and draws its own 3D view in its
+own WebGL context, on top of a page whose globe textures are still resident. The
+width gate from 107 still handed an iPad the 4k tier, because 1024 to 1366
+clears 900 comfortably, so about 170MB of maps were sitting there when the
+dashboard asked for room. A coarse pointer now takes the 2k tier and skips MSAA
+regardless of width, which hands 127MB back.
+
+NOT VERIFIED ON THE DEVICE, and this needs saying. The browser pane here reports
+maxTouchPoints 0 and `pointer: fine` at every size, so the coarse branch cannot
+be exercised locally at all — what was checked is that both rules compile into
+the build (one `pointer:coarse` block in main.css, two matchMedia calls in the
+earth chunk) and that the desktop path is untouched: pan-x, card auto, 4k
+textures, antialias true. The iPad behaviour itself is reasoned, not observed.
+
+IF THE DASHBOARD STILL RELOADS, the next lever is releasing the globe's textures
+while a fullscreen embed is open rather than merely shrinking them. It is hidden
+behind the modal, so there is nothing to see while they are gone, and the reader
+is at the projects section when it closes, so a re-upload would be invisible.
+That is real work in earth.js and was not taken speculatively.

@@ -55,6 +55,21 @@ function tiers() {
   const px = cssW * Math.min(window.devicePixelRatio || 1, 2);
   const mem = navigator.deviceMemory; // undefined outside Chromium
 
+  /* A COARSE POINTER MEANS A MOBILE GPU, whatever the screen measures.
+
+     The width gate alone still handed an iPad the 4k tier: 1024 to 1366 CSS
+     px clears 900 comfortably, so a landscape iPad was carrying about 170MB
+     of maps. That is survivable on its own and stops being survivable the
+     moment the thesis dashboard opens over it — a separate 54MB app in an
+     iframe, with 7MB of map features per city, drawing its own 3D view in
+     its own context while these textures are still resident. That
+     combination is what reloads the tab.
+
+     `pointer: coarse` is the honest signal for "this is a tablet or a phone
+     and its GPU budget is not a desktop's". It costs an iPad the sharpest
+     tier of a globe it views at arm's length, and buys back 127MB for the
+     dashboard to work in. */
+  if (matchMedia('(pointer: coarse)').matches) return { day: '', rest: '' };
   if (cssW < 900 || px < 760 || (mem !== undefined && mem < 4)) return { day: '', rest: '' };
   /* The top tier also wants real desktop WIDTH, for the same reason as above.
      `px >= 1500` is cleared by any landscape iPad at dpr 2 from about 750 CSS
@@ -447,7 +462,8 @@ export function initEarth(opts = {}) {
 
      Same 900px CSS gate as the texture tiers above, and for the same reason:
      the globe cannot be drawn larger than its layout box. */
-  const small = window.innerWidth < 900;
+  /* Same signal as the texture tiers: a coarse pointer is a mobile GPU. */
+  const small = window.innerWidth < 900 || matchMedia('(pointer: coarse)').matches;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: !small, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, small ? 1.5 : 2));
 
