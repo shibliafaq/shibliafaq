@@ -917,12 +917,27 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
   font-variant-numeric: tabular-nums;
 }
 
+/* OFF-WHITE, THE SAME VALUE THE PROJECT TILE SUBTITLES TAKE.
+
+   Each stat is a loud amber number with the thing it measures underneath, and
+   the label was --t-3 at --fs-label — the smallest text in the block carrying
+   the least contrast, over a photographic globe that is bright in places. Same
+   fault as .pcard__course had, so it takes the same #d9d9e0 rather than a
+   second opinion about what off-white means here.
+
+   The amber number still leads by a wide margin: it is four times the size,
+   800 weight, and the one accent colour on the block. Lifting the label costs
+   that nothing and makes the pair readable as a pair.
+
+   .hstat__idx is deliberately left at --t-4. It is an index mark rather than
+   supporting text — "#01" tells you nothing you need — and it is the one thing
+   here that should stay almost invisible. */
 .hstat__lbl {
   font-family: var(--f-mono);
   font-size: var(--fs-label);
   letter-spacing: .08em;
   text-transform: uppercase;
-  color: var(--t-3);
+  color: #d9d9e0;
   margin-top: .3rem;
 }
 

@@ -1217,28 +1217,98 @@ export function initEarth(opts = {}) {
       requestFrame();
     },
     get isReady() { return ready; },
+
+    /* ---- HANDING THE GPU BACK WHILE SOMETHING BIGGER NEEDS IT --------
+
+       The thesis dashboard is a separate 54MB application that opens in an
+       iframe over this page and draws its own 3D city in its own WebGL
+       context. Everything this module is holding — four maps, and on a
+       desktop the 4k pair — stays resident the whole time, for a globe that
+       is completely hidden behind the modal. On an iPad that combination is
+       what reloads the tab.
+
+       So the maps are handed back while the dashboard is up, and taken again
+       when it closes. Both are safe precisely because nothing can see the
+       globe in between: the modal covers the viewport on the way in, and on
+       the way out the reader is down at the projects wheel, several screens
+       below the hero.
+
+       A 1x1 STUB RATHER THAN null. A shader sampler set to null is not an
+       empty texture, it is undefined behaviour — three warns and some
+       drivers draw garbage or drop the context, which is the exact failure
+       this is meant to prevent. Pointing all four samplers at one black
+       pixel costs four bytes and keeps every draw call legal.
+
+       Idempotent on both sides: releasing twice frees nothing extra, and
+       restoring when nothing was released returns without a fetch. */
+    releaseTextures() {
+      if (released || !mapRefs) return false;
+      released = true;
+      surfaceUniforms.dayMap.value = STUB;
+      surfaceUniforms.futureMap.value = STUB;
+      surfaceUniforms.nightMap.value = STUB;
+      surfaceUniforms.cloudMap.value = STUB;
+      for (const t of mapRefs) t.dispose();
+      mapRefs = null;
+      return true;
+    },
+
+    async restoreTextures() {
+      if (!released) return false;
+      /* Cleared BEFORE the await, not after: two closes in quick succession
+         would otherwise both see `released` and both start a fetch, and the
+         second set of maps would leak with nothing referencing it. */
+      released = false;
+      try {
+        const maps = await Promise.all(
+          [load(TEX.day), load(TEX.future), load(TEX.night), load(TEX.clouds)],
+        );
+        applyMaps(maps);
+        if (ready) renderer.render(scene, camera);
+        return true;
+      } catch (err) {
+        console.warn('[earth] could not restore textures', err);
+        released = true;   // still released, so a later close can try again
+        return false;
+      }
+    },
   };
 
   const loader = new THREE.TextureLoader();
   const load = (url) => new Promise((res, rej) => loader.load(url, res, undefined, rej));
 
-  Promise.all([load(TEX.day), load(TEX.future), load(TEX.night), load(TEX.clouds)])
-    .then(([day, future, night, clouds]) => {
-      for (const t of [day, future, night, clouds]) {
-        t.colorSpace = THREE.SRGBColorSpace;
-        // Most of the visible disc is viewed at a grazing angle — exactly the
-        // case trilinear filtering blurs and anisotropic filtering rescues.
-        t.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        t.minFilter = THREE.LinearMipmapLinearFilter;
-        t.magFilter = THREE.LinearFilter;
-      }
-      // Clouds scroll in U, so they have to wrap rather than clamp.
-      clouds.wrapS = THREE.RepeatWrapping;
+  /* One black pixel, shared by all four samplers while the maps are away. */
+  const STUB = new THREE.DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1);
+  STUB.needsUpdate = true;
 
-      surfaceUniforms.dayMap.value = day;
-      surfaceUniforms.futureMap.value = future;
-      surfaceUniforms.nightMap.value = night;
-      surfaceUniforms.cloudMap.value = clouds;
+  let mapRefs = null;
+  let released = false;
+
+  /* The tuning lives here rather than inline so the restore path applies
+     exactly what the first load did. Two copies of this would drift, and the
+     drift would be a globe that comes back subtly softer than it went. */
+  function applyMaps([day, future, night, clouds]) {
+    for (const t of [day, future, night, clouds]) {
+      t.colorSpace = THREE.SRGBColorSpace;
+      // Most of the visible disc is viewed at a grazing angle — exactly the
+      // case trilinear filtering blurs and anisotropic filtering rescues.
+      t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      t.minFilter = THREE.LinearMipmapLinearFilter;
+      t.magFilter = THREE.LinearFilter;
+    }
+    // Clouds scroll in U, so they have to wrap rather than clamp.
+    clouds.wrapS = THREE.RepeatWrapping;
+
+    surfaceUniforms.dayMap.value = day;
+    surfaceUniforms.futureMap.value = future;
+    surfaceUniforms.nightMap.value = night;
+    surfaceUniforms.cloudMap.value = clouds;
+    mapRefs = [day, future, night, clouds];
+  }
+
+  Promise.all([load(TEX.day), load(TEX.future), load(TEX.night), load(TEX.clouds)])
+    .then((maps) => {
+      applyMaps(maps);
 
       layout();
       window.addEventListener('resize', layout, { passive: true });

@@ -854,6 +854,21 @@ idleInit(() => {
       },
     });
 
+    /* ---- HANDING THE GPU TO THE DASHBOARD -------------------------------
+
+       modal.js announces when the thesis twin actually loads and when it goes,
+       and the globe hands its four maps back for the duration. It is completely
+       hidden behind the modal, so there is nothing to see while they are away,
+       and when the modal closes the reader is down at the projects wheel,
+       several screens below the hero, so the re-upload is invisible too.
+
+       Wired here because this is where `earth` lives. modal.js knows nothing
+       about three.js and should not learn; the event is the seam, the same way
+       sa:languagechange is. Both handlers are safe to fire out of order or
+       twice — release and restore are each idempotent. */
+    window.addEventListener('sa:twinload', () => { earth.releaseTextures?.(); });
+    window.addEventListener('sa:twinfree', () => { earth.restoreTextures?.(); });
+
     initRiyadhReveal(riyadh);
   });
 });

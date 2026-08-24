@@ -7006,3 +7006,46 @@ while a fullscreen embed is open rather than merely shrinking them. It is hidden
 behind the modal, so there is nothing to see while they are gone, and the reader
 is at the projects section when it closes, so a re-upload would be invisible.
 That is real work in earth.js and was not taken speculatively.
+
+## 110. The globe hands the GPU to the dashboard (2026-08-24)
+
+The thesis twin is a separate 54MB application that opens in an iframe over this
+page and draws its own 3D city in its own WebGL context. Everything earth.js
+holds stayed resident the whole time, for a globe completely hidden behind the
+modal. On an iPad that combination is what reloaded the tab.
+
+The four maps are now handed back while the dashboard is up and taken again when
+it closes. Both moments are safe precisely because nothing can see the globe in
+between: the modal covers the viewport going in, and coming out the reader is
+down at the projects wheel, several screens below the hero.
+
+FIRED WHEN THE IFRAME ACTUALLY LOADS, not when the modal opens. The dashboard is
+armed on demand, so a reader can open the card, read the abstract and close it
+without the twin ever existing; freeing the globe then would buy a re-upload for
+nothing. modal.js dispatches sa:twinload and sa:twinfree, main.js listens and
+calls earth — the same seam sa:languagechange uses, so modal.js still knows
+nothing about three.js.
+
+A 1x1 STUB RATHER THAN null. A shader sampler set to null is undefined
+behaviour, not an empty texture: three warns and some drivers draw garbage or
+drop the context, which is the exact failure being avoided. Four samplers
+pointing at one black pixel costs four bytes and keeps every draw call legal.
+
+`released` is cleared BEFORE the await in restore, not after. Two closes in
+quick succession would otherwise both see it set, both start a fetch, and the
+second set of maps would leak with nothing referencing it. Both calls are
+idempotent in the other direction too.
+
+Verified end to end: launching the dashboard fired sa:twinload, closing fired
+sa:twinfree, the texture requests went 4 to 6 (a real re-fetch), no errors, and
+the globe came back with its imagery — checked by screenshot, because readPixels
+on a presented WebGL buffer returns black without preserveDrawingBuffer and read
+as a failure when it was not. Third time this session a bad probe nearly became
+a bug report.
+
+Also: .hstat__lbl goes off-white. Each stat is a loud amber number with the thing
+it measures underneath, and the label was --t-3 — the smallest text in the block
+carrying the least contrast, over a photographic globe. Same fault as
+.pcard__course, so it takes the same #d9d9e0 rather than a second opinion about
+what off-white means. Measured 14.17 against the ink. .hstat__idx stays at --t-4:
+"#01" is an index mark, not supporting text, and should stay almost invisible.

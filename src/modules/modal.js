@@ -412,6 +412,17 @@ function initTwin(root) {
     if (box.classList.contains('is-loaded')) return;
     frame.src = frame.dataset.src;
     box.classList.add('is-loaded');
+    /* THE MOMENT THE HEAVY THING ACTUALLY ARRIVES.
+
+       Announced here rather than when the modal opens, because the iframe is
+       loaded on demand — a reader can open the card, read the abstract and
+       close it again without the dashboard ever existing. Freeing the globe
+       then would cost a re-upload for nothing.
+
+       An event rather than a direct call: this module knows nothing about
+       the globe and should not start now. main.js owns that handle and does
+       the listening, the same way sa:languagechange is wired. */
+    window.dispatchEvent(new CustomEvent('sa:twinload'));
   };
 
   const setArmed = (on) => {
@@ -450,6 +461,9 @@ function initTwin(root) {
 
   return {
     destroy() {
+      /* The counterpart to sa:twinload. Fires even if the frame was never
+         armed, which is why the listener has to be idempotent. */
+      window.dispatchEvent(new CustomEvent('sa:twinfree'));
       document.removeEventListener('pointerdown', outside, true);
       document.removeEventListener('fullscreenchange', onFs);
       if (document.fullscreenElement === box) document.exitFullscreen?.();
