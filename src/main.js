@@ -32,8 +32,9 @@ import { initTileField } from './modules/tilefield.js';
    defect, because the only person who can see the failure has no way to run
    half the site and compare.
 
-   `?lite` is that way. It skips the two heaviest optional systems — the WebGL
-   globe and the pixel-art walk — and leaves everything else exactly as it is.
+   `?lite` is that way. `?lite=1` skips both of the heaviest optional systems,
+   and `?lite=globe` or `?lite=walk` skips one of them, so a failure can be
+   pinned on a half rather than on the pair. Everything else is untouched.
    Both already have designed fallbacks that ship in the HTML: the CSS starfield
    stands in for the globe, and the timeline <ol> IS the Experience section.
 
@@ -45,8 +46,13 @@ import { initTileField } from './modules/tilefield.js';
    Deliberately not tied to a breakpoint or a device test — it is a diagnostic
    handle, not a feature, and the person using it needs to be able to turn it on
    and off on the same phone in the same minute. */
-const LITE = new URLSearchParams(location.search).has('lite');
-if (LITE) console.info('[site] lite mode: globe and experience map are off');
+const LITE_MODE = new URLSearchParams(location.search).get('lite');
+const LITE_GLOBE = LITE_MODE === '1' || LITE_MODE === 'globe';
+const LITE_WALK  = LITE_MODE === '1' || LITE_MODE === 'walk';
+if (LITE_MODE) {
+  console.info('[site] lite:', LITE_MODE,
+    '| globe', LITE_GLOBE ? 'off' : 'on', '| walk', LITE_WALK ? 'off' : 'on');
+}
 
 const idleInit = window.requestIdleCallback
   ? (fn) => window.requestIdleCallback(fn)
@@ -372,13 +378,13 @@ handoverSections.forEach((sec) => {
 // Measured at 375px: stage 349x812, 177 pixel assets loaded. Under reduced
 // motion the walk still does not move on its own, and the timeline stays the
 // fallback for no JS, a failed sheet, or widths under 320.
-idleInit(() => { if (!LITE) initExperience(); });
+idleInit(() => { if (!LITE_WALK) initExperience(); });
 
 // three.js is the heaviest dependency on the page. The hero needs it, but not
 // on the critical path — the CSS starfield paints instantly and the globe fades
 // in over it, so first paint never waits on a 126 KB chunk plus two textures.
 idleInit(() => {
-  if (LITE || !document.getElementById('heroGlobe')) return;
+  if (LITE_GLOBE || !document.getElementById('heroGlobe')) return;
 
   import('./modules/earth.js').then((m) => {
     /* host = the WRAPPER, not the sticky stage.
@@ -892,8 +898,43 @@ idleInit(() => {
        about three.js and should not learn; the event is the seam, the same way
        sa:languagechange is. Both handlers are safe to fire out of order or
        twice — release and restore are each idempotent. */
-    window.addEventListener('sa:twinload', () => { earth.releaseTextures?.(); });
-    window.addEventListener('sa:twinfree', () => { earth.restoreTextures?.(); });
+    /* TWO REASONS TO PUT THE MAPS DOWN, ONE PLACE THAT DECIDES.
+
+       The globe wants its textures when the reader is anywhere near the top
+       of the page and the dashboard is not open over it. Those are two
+       independent conditions and they were heading for two independent
+       callers, which is how a release ends up racing a restore and the globe
+       comes back black. One predicate, evaluated whenever either input
+       changes, and release/restore are both idempotent so calling it more
+       often than necessary costs nothing.
+
+       WHY THE PAGE POSITION MATTERS AT ALL. The globe is on screen for the
+       hero and the dive and never again — the first fifth of the page. Its
+       maps, its context and three.js itself then sit resident for the other
+       four fifths, which is roughly 20,000px of scrolling during which a
+       phone is carrying the single largest allocation on the page for
+       something it cannot show. Measured against ?lite, that load is the
+       difference between a phone that survives the site and one that does
+       not.
+
+       A FULL VIEWPORT OF MARGIN either side, so the maps are back well before
+       the globe could be seen and the boundary cannot chatter: a reader
+       hovering exactly on the edge would otherwise release and restore once
+       per wobble, which is worse than never releasing at all. */
+    let nearEarth = true;
+    let twinOpen = false;
+    const syncGlobeTextures = () => {
+      if (nearEarth && !twinOpen) earth.restoreTextures?.();
+      else earth.releaseTextures?.();
+    };
+
+    window.addEventListener('sa:twinload', () => { twinOpen = true; syncGlobeTextures(); });
+    window.addEventListener('sa:twinfree', () => { twinOpen = false; syncGlobeTextures(); });
+
+    new IntersectionObserver(([e]) => {
+      nearEarth = e.isIntersecting;
+      syncGlobeTextures();
+    }, { rootMargin: '100% 0px 100% 0px' }).observe(worlds);
 
     initRiyadhReveal(riyadh);
   });

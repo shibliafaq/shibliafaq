@@ -7091,3 +7091,47 @@ normal still mounts a 562x1218 globe and 170 sprites.
 The lesson from 106 is being applied properly this time: stop shipping fixes
 against a failure nobody here can see, and build the smallest thing that tells us
 which half of the site is guilty.
+
+## 112. Regulating the globe instead of removing it (2026-08-24)
+
+?lite settled it: the site does not crash with the globe and the walk off. So it
+is the graphics load, and the question stops being "what else can be trimmed"
+and becomes "why are both systems resident when neither is needed".
+
+THEY NEVER OVERLAP. The globe serves the hero and the dive — the first fifth of
+the page — and is never shown again. The walk sits thousands of pixels below it.
+Yet the globe's maps, its context and three.js itself stayed resident for the
+other four fifths, roughly 20,000px of scrolling during which a phone carries the
+largest single allocation on the page for something it cannot show.
+
+So it is released when the reader is more than a viewport past `.worlds`, and
+taken again a viewport before they could see it. The machinery already existed —
+110 built releaseTextures/restoreTextures for the dashboard — and this is the
+same pair on a second trigger.
+
+ONE PREDICATE, NOT TWO CALLERS. The globe wants its maps when the reader is near
+the top AND the dashboard is not open over it. Two independent conditions heading
+for two independent callers is how a release ends up racing a restore and the
+globe comes back black, so both inputs set a flag and one function decides.
+Release and restore are each idempotent, so calling it more often than necessary
+costs nothing.
+
+A FULL VIEWPORT OF MARGIN either side. Without hysteresis a reader resting on the
+boundary would release and restore once per wobble, which is worse than never
+releasing: a re-upload is more expensive than holding.
+
+Verified over a 22,481px round trip: nothing fetches on the way down, all four
+maps re-fetch on the way back, no errors, globe visibly restored with its
+imagery.
+
+?lite ALSO LEARNED TO NAME A HALF. `?lite=globe` and `?lite=walk` skip one system
+each, so a failure can be pinned rather than merely bracketed. Both verified:
+=globe leaves 169 sprites and a mounted walk with no earth textures; =walk leaves
+a 562x1218 ready globe with no sprites and the timeline standing in.
+
+NOT DONE, and the obvious next step if the phone still struggles: the walk mounts
+on idle at page load and holds its sprites and world canvas from then on, the
+same fault the globe just had. Deferring it until the section is near is the
+matching fix, but creating that pin late changes document height mid-scroll,
+which is the refresh-order problem from 94 in a worse place. It needs doing
+carefully rather than quickly.
