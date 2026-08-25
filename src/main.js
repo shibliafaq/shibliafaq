@@ -6,7 +6,7 @@ import './styles/overlays.css';
 import './styles/book.css';
 import './styles/i18n.css';
 
-import { initScroll, ScrollTrigger } from './modules/scroll.js';
+import { initScroll, ScrollTrigger, flatScroll } from './modules/scroll.js';
 import { initReveals } from './modules/reveals.js';
 import { initHero, heroExit } from './modules/hero.js';
 import { initWheels } from './modules/wheel.js';
@@ -234,6 +234,23 @@ if (direction) {
   direction.querySelectorAll('[data-split-hold]')
            .forEach((el) => el.classList.add('is-split-in'));
 
+  /* ON A PHONE THE CROSSING DOES NOT RUN, it simply arrives.
+
+     Every one of these five signals is read by a CSS declaration that is
+     perfectly happy at its finished value — the wave open, the headings up,
+     the mirrors lit, Selected Work landed. Publishing that once and never
+     creating the trigger gives a phone the same page without a scrubbed
+     five-stage sequence writing custom properties on every frame of a flick.
+
+     --dir-out stays at 0 on purpose: it is the only signal whose finished
+     state is "gone", and the headings should be there. */
+  if (flatScroll) {
+    rootStyle.setProperty('--dir-wave', '1');
+    rootStyle.setProperty('--dir-in', '1');
+    rootStyle.setProperty('--dir-out', '0');
+    rootStyle.setProperty('--tiles-in', '1');
+    rootStyle.setProperty('--works-in', '1');
+  } else {
   paintDirection(0);
   ScrollTrigger.create({
     trigger: direction,
@@ -248,6 +265,7 @@ if (direction) {
        signals would sit at their seeded zeros and hide two whole sections. */
     onRefresh: (self) => paintDirection(self.progress),
   });
+  }
 
   /* THE WAY DOWN FOR THE MIRROR FIELD.
 
@@ -313,7 +331,12 @@ if (direction) {
    onRefresh as well as onUpdate: a reader who lands past a section, or a
    resize that re-measures, gets its progress without ever scrubbing through,
    and without this the section would sit at its seeded zero and stay blank. */
+/* Skipped entirely on a phone, for the reason above: the handover exists to
+   fade one section into the next, and a page that scrolls normally does not
+   need one. Left unbound, --sec-in and --sec-out are never published and
+   every consumer falls back to 1 and 0 — which is the visible state. */
 const bindHandover = (sec, staged, isLast) => {
+  if (flatScroll) return;
   const paint = (p) => {
     sec.style.setProperty('--sec-in', (staged ? span(p, 0, 0.16) : 1).toString());
     /* THE LAST SECTION NEVER VANISHES.

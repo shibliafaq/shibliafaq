@@ -4050,6 +4050,25 @@
   padding-block: clamp(5.5rem, 12vh, 8rem) 2rem;
 }
 
+/* The staged sections stop being stages on a phone: no sticky hold, no
+   handover fade, nothing published to fade them. Same declarations as the
+   reduced-motion block, and the wave canvas comes out of the viewport too —
+   fixed decoration over a normally scrolling page has nothing to sit still
+   against. */
+@media (max-width: 900px) {
+  [data-stage] { min-height: 0; }
+  [data-stage] > .stage { position: static; min-height: 0; padding-block: 0; }
+  /* The wave was fixed to the viewport so it could hold still under headings
+     that were also fixed. With the section back in normal flow it has to travel
+     with the words it sits behind, or it hangs in the viewport while they
+     scroll away from it. */
+  .dirs__wave { position: absolute; }
+  [data-vanish] > *,
+  [data-stage] > .stage,
+  .projects__intro,
+  .works__field { opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* No hold and no handover: the sections are simply there, in order. */
   [data-stage] { min-height: 0; }

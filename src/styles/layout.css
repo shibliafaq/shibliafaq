@@ -2235,6 +2235,28 @@ body.is-grabbing .worlds.is-draggable { cursor: grabbing; }
    trigger has published anything, the section is simply visible. A default
    of 0 would leave the whole of Research Direction blurred to nothing for
    anyone the scrub never reaches. */
+/* THE HELD DIRECTION FRAME BECOMES AN ORDINARY SECTION ON A PHONE.
+
+   340vh of section with its content fixed to the middle of the viewport is
+   the machinery of a scroll-scrubbed crossing. With that crossing switched
+   off (see flatScroll in main.js) the height is 340vh of nothing and the
+   fixed block would sit over whatever came next, so both go back to normal
+   flow and the section is as tall as its words.
+
+   Same declarations the reduced-motion block below uses, for the same
+   reason — the difference is only who asked. */
+@media (max-width: 900px) {
+  #direction { min-height: 0; }
+  #direction > .wrap {
+    position: static;
+    transform: none;
+    filter: none;
+    opacity: 1;
+    pointer-events: auto;
+    padding-block: clamp(3rem, 10vh, 6rem);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   #direction > .wrap {
     /* The centring translate stays: dropping it to `none` would strand the

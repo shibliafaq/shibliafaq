@@ -7135,3 +7135,51 @@ same fault the globe just had. Deferring it until the section is near is the
 matching fix, but creating that pin late changes document height mid-scroll,
 which is the refresh-order problem from 94 in a worse place. It needs doing
 carefully rather than quickly.
+
+## 113. Phones get the content without the choreography (2026-08-24)
+
+Asked for directly: on a phone, keep the earth, the heat map and the walking
+game, but drop the transitions between them and just scroll normally. That is
+the right instinct — ?lite proved the graphics load is the cause, and the
+choreography is the part of that load which exists purely to move.
+
+FOUR THINGS CHANGE BELOW 900px, and no content is among them.
+
+Lenis is off. It runs its own rAF loop, writes a transform every frame and
+drives ScrollTrigger.update from it. On a desktop that buys smoothing worth
+having; on a phone the platform already scrolls smoothly, so the whole apparatus
+is duplicated work on the one device that cannot afford it — and it lands on
+every frame of exactly the fast flick that was killing the tab. Kept OUT of
+`reducedMotion`, which ten modules read and which means "this reader asked for
+less movement". A phone has asked for nothing. Only the smoothing decision is
+shared.
+
+The Direction crossing does not run. All five signals are published once at
+their settled values — wave open, headings up, mirrors lit, Selected Work landed,
+--dir-out at 0 so the headings stay — and the trigger is never created. The
+section drops from 340vh to its natural 667px and its content returns to normal
+flow, because 340vh with a fixed block inside is the machinery of a scrub and
+nothing else.
+
+The section handover does not bind. --sec-in and --sec-out are never published,
+so every consumer falls back to 1 and 0, which is the visible state.
+
+And the wave canvas goes back to absolute. It was fixed to the viewport so it
+could hold still under headings that were also fixed; with the section in normal
+flow it has to travel with the words it sits behind.
+
+MEASURED, and this is the number that matters. A realistic fast flick — 180px a
+frame, continuously, up and down — now runs p50 14ms, p90 21ms, p99 28ms, worst
+frame 35ms, ZERO frames over 50ms and ZERO long tasks. The same page previously
+produced eight long tasks topping 83ms. The page is also 3,500px shorter.
+
+A MEASUREMENT TRAP WORTH RECORDING. The first comparison said everything had got
+WORSE — p99 67 to 83, worst 100 to 236, long tasks 8 to 18. It had not: the
+earlier run drove synthetic wheel events through Lenis, which interpolates, and
+the new one called scrollBy(2600) fourteen times in a row, which teleports. The
+input method changed with the scroll mechanism, so the two were never comparable.
+Changing what you measure at the same time as what you are measuring produces a
+number that looks like a regression and means nothing.
+
+The globe, the heat map and the walk are all still there and still work. What is
+gone is the scrubbed sequencing between them.

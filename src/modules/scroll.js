@@ -21,8 +21,22 @@ let lenis = null;
  * Lenis owns the scroll position and ScrollTrigger reads from it. They have to
  * be wired together explicitly or every pinned section lags a frame behind.
  */
+/* PHONES SCROLL NATIVELY.
+
+   Lenis runs its own rAF loop, writes a transform every frame and drives
+   ScrollTrigger.update from it. On a desktop that buys smoothing worth
+   having. On a phone the platform already scrolls smoothly, so the whole
+   apparatus is duplicated work on the one device that cannot afford it —
+   and it is work that lands on every frame of exactly the fast flick that
+   was killing the tab.
+
+   Deliberately NOT folded into `reducedMotion`. That flag is read by ten
+   modules and means "this reader asked for less movement"; a phone has asked
+   for nothing. Only the smoothing decision is shared. */
+export const flatScroll = window.matchMedia('(max-width: 900px)').matches;
+
 export function initScroll() {
-  if (reducedMotion) {
+  if (reducedMotion || flatScroll) {
     // No smoothing, but ScrollTrigger still drives reveals at their end state.
     ScrollTrigger.refresh();
     return null;
