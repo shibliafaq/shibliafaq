@@ -7183,3 +7183,38 @@ number that looks like a regression and means nothing.
 
 The globe, the heat map and the walk are all still there and still work. What is
 gone is the scrubbed sequencing between them.
+
+## 114. A LinkedIn card beside the Instagram one (2026-08-24)
+
+The Off the clock strip ends on an invitation rather than a cut-off tile, and
+there are two places worth inviting someone to: the personal one and the
+professional one. `connect` is appended after `invite` in insta.js and wears the
+same `.insta__more` component.
+
+DELIBERATELY THE SAME CARD. It is the same kind of thing in the same row, and
+giving it its own treatment would say it was a different kind. Only the wash and
+the glyph change — which is already the only thing separating one tile from
+another in this strip.
+
+The glyph keeps the amber the Instagram card uses rather than turning LinkedIn
+blue. Brand colour lives in the background on both, and the house rule is that
+the accent never carries data; an amber mark on one card and a blue mark on the
+other would make the accent a label for which network you are looking at.
+
+One radial in the wash, not two. The Instagram card needs a pair because its
+brand is a gradient; LinkedIn is one colour, and faking a gradient out of it
+would only make it look like a worse version of its neighbour.
+
+Rendered unconditionally, for the same reason the invite is: the posts can fail
+to load and the section still has to be a way through to somewhere.
+
+Verified: two cards, Instagram then LinkedIn, both 230x230, both carrying
+target=_blank and rel=noopener, both with a glyph, and the modifier class on the
+second. NOT verified visually — the browser pane would not composite a frame at
+the time, so the tint and the pairing want an eyeball before anyone trusts them.
+
+A note on the edit rather than the code: the first attempt to write this failed
+because a Python string containing `.join('')` closed itself on the JS quotes.
+Nothing was written, because the asserts run before the write. Building JS
+template literals from inside single-quoted Python is a trap worth avoiding —
+use double quotes for any line carrying JS quotes.

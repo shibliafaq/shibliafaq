@@ -3496,6 +3496,16 @@
     rgba(255, 255, 255, .02);
 }
 
+/* The LinkedIn card wears the same everything except its wash. One radial
+   rather than the two the Instagram card needs, because LinkedIn is one
+   colour and faking a gradient out of it would only make it look like a
+   worse Instagram card. Weighted to sit at the same volume as its sibling. */
+.insta__more--in {
+  background:
+    radial-gradient(120% 120% at 30% 110%, rgba(10, 102, 194, .30) 0%, transparent 58%),
+    rgba(255, 255, 255, .02);
+}
+
 .insta__more-glyph { color: var(--amber); }
 
 .insta__more-t {

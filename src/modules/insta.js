@@ -27,6 +27,12 @@
 const MANIFEST = '/assets/insta/posts.json';
 const PROFILE_FALLBACK = 'https://www.instagram.com/shibli_afaq';
 
+/* The other way out of this section. The strip ends on an invitation rather
+   than on a cut-off tile, and there are two places worth inviting someone to
+   — the personal one and the professional one. Kept beside its sibling so the
+   pair are obviously a pair. */
+const LINKEDIN = 'https://www.linkedin.com/in/shibliafaq';
+
 function tile(post, profile) {
   const href = post.permalink || profile;
   const cap = (post.caption || '').trim();
@@ -73,7 +79,33 @@ export async function initInstagram() {
       <span class="insta__more-h">@${profile.replace(/\/+$/, '').split('/').pop()}</span>
     </a>`;
 
-  strip.innerHTML = posts.map((p) => tile(p, profile)).join('') + invite;
+
+  /* SAME CARD, SECOND DESTINATION.
+
+     Deliberately the same component rather than a new one: it is the same
+     kind of thing in the same row, and giving it its own treatment would say
+     it was a different kind. Only the wash and the glyph change, which is
+     already what separates one tile from another here.
+
+     The glyph keeps the amber the Instagram card uses. Brand colour lives in
+     the background on both, and the house rule is that the accent never
+     carries data — so it stays chrome rather than becoming a label for which
+     network you are looking at.
+
+     Rendered unconditionally, for the same reason the invite above is: the
+     posts can fail to load and this section still has to be a way through to
+     somewhere. */
+  const connect = `
+    <a class="insta__more insta__more--in" href="${LINKEDIN}" target="_blank" rel="noopener">
+      <span class="insta__more-glyph" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+          <path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3.2 9h3.6v12H3.2zM9.6 9h3.45v1.64h.05c.48-.91 1.66-1.87 3.42-1.87 3.66 0 4.33 2.4 4.33 5.52V21h-3.6v-5.5c0-1.31-.02-3-1.83-3-1.83 0-2.11 1.43-2.11 2.9V21H9.6z"></path>
+        </svg>
+      </span>
+      <span class="insta__more-t">Connect</span>
+      <span class="insta__more-h">in/shibliafaq</span>
+    </a>`;
+  strip.innerHTML = posts.map((p) => tile(p, profile)).join('') + invite + connect;
   section.classList.toggle('has-posts', posts.length > 0);
 
   /* A horizontal strip is a scroll container, and a scroll container that only
