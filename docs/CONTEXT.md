@@ -7218,3 +7218,70 @@ because a Python string containing `.join('')` closed itself on the JS quotes.
 Nothing was written, because the asserts run before the write. Building JS
 template literals from inside single-quoted Python is a trap worth avoiding —
 use double quotes for any line carrying JS quotes.
+
+
+## 115. The Interventions tab was still wearing a dark theme (2026-09-02)
+
+The M.Sc. card's dashboard is the UHI twin, source at
+`E:/KFUPM/uhi_digital_twin_v2/portfolio/uhi-twin-portfolio`, built to `dist/`
+and copied into `public/uhi-twin/`. Its Interventions tab was reported as
+having "a shadow effect which is not looking nice" and text leaving the panels.
+Both turned out to be leftovers from when the app was dark.
+
+`InterventionsPage.jsx` is the only file in that app that hand-rolls its panel
+chrome instead of using the `.glass-*` classes in `index.css`. Its `GLASS`
+constant carried
+
+    boxShadow:  ... 0 24px 64px rgba(0,0,0,0.60), 0 4px 16px rgba(0,0,0,0.35)
+    textShadow: 0 1px 4px rgba(0,0,0,0.85)
+
+and `textShadow` inherits, so every word in all eight panels of that tab was
+painted with an 85%-black blur behind dark slate text. That is the smudge. The
+shadow is now the one the rest of the app uses, `0 6px 24px rgba(15,23,42,0.10)`
+plus a 1px white inset, and the text shadow is gone. The panel fill went
+0.66 -> 0.82 white, because the black text-shadow had been doing the legibility
+work over the map and something had to replace it.
+
+Four more of the same vintage in that file: the map hover tooltip was
+`rgba(7,15,28,0.96)` with `#0f172a` text -- black on black, so the district
+name, the city and every label were invisible and only the green value read.
+The basemap style menu was `rgba(4,8,15,0.98)`, a black box in a light UI. The
+coverage popover and the enlarged-results modal both cast 60%-black. Three
+sub-cards inside the results panel were filled `rgba(0,0,0,0.18)`-`0.22`, which
+over the frosted panel renders as a mid-grey slab.
+
+### The text leaving the panel is a width problem, not a wrapping one
+
+The opacity row is `[dot Layer] [range] [100%]` in a 200px panel. A range input
+has an intrinsic min-width and `min-width: auto` on a flex item, so the row
+could not shrink and `100%` printed 21px past the panel edge. `minWidth: 0` on
+the input, `flexShrink: 0` on the label.
+
+The bigger one only appears at the size the site actually embeds this at. The
+top strip is `left: 216, right: 490`; the modal panel is `max-width: 1080px`,
+so the strip gets about 270px for four category pills -- roughly 43px each.
+The four category labels have `whiteSpace/overflow/textOverflow` and clip; the
+Literature Basis pill, written out separately below them, was missing those
+three properties on its title line, so "Literature Basis" wrapped and printed
+onto the map. The count badge and the caret escaped every pill, because nothing
+on the button clipped and nothing was `flexShrink: 0`.
+
+Clipping alone would have left four unreadable stubs, so the strip now wraps:
+`flexWrap` with `flex: '1 1 130px'` per pill gives four across when there is
+room and 2x2 when there is not, with no breakpoint. A `ResizeObserver` on
+`headStripRef` (already there for outside-click) sets `stripCompact` below
+560px, which drops the tagline line -- at 990px that is a 70px strip instead of
+a 140px one over the map.
+
+Verified at 900, 990, 1440 and 1920: zero elements with `scrollWidth >
+clientWidth` under visible overflow anywhere on the tab, in the empty state and
+with a simulation run; every child of every pill measured 11px inside its
+edges. The one remaining overflow report on the tab is an open dropdown being
+wider than its anchor, which is what a dropdown is. The navbar clips its last
+tab below ~950px, but that is `Navbar.jsx` and affects all seven tabs -- not
+touched.
+
+Rebuild is `node_modules/.bin/vite build` in that folder (~40-110s), then copy
+`dist/index.html` and `dist/assets/*` over `public/uhi-twin/`, clearing the old
+hashed files first. `db/`, `districts/` and `figures/` are unchanged data and
+do not need recopying.
