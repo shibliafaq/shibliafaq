@@ -6,18 +6,19 @@
  * switching back to English restores from that snapshot — so the English can be
  * edited freely without the translations drifting out of sync with it.
  *
- * Detection uses navigator.language, which is the language the visitor asked
- * their browser for. That is a far better signal than IP or timezone: someone in
- * Riyadh reading in English gets English, which is what they wanted.
- *
- * Nothing is switched automatically. A visitor whose language is supported is
- * offered the swap and can decline; the choice is remembered.
+ * Nothing is detected and nothing is offered. navigator.language used to drive
+ * an opt-in offer toast, but it is not a reliable signal of what a visitor
+ * actually wants to read — plenty of Indian visitors' devices (Xiaomi/MIUI
+ * phones especially) report Chinese as a system/keyboard language even though
+ * the visitor is browsing in English, so the offer kept surfacing Chinese to
+ * people who never asked for it. The only way a language other than English
+ * is ever shown now is the reader picking it from the toolbar switcher
+ * themselves; that choice is remembered for next visit.
  */
 
 import { LANGUAGES, strings } from './strings.js';
 
 const STORE_KEY = 'sa-lang';
-const DECLINED_KEY = 'sa-lang-declined';
 
 let current = 'en';
 let english = null; // snapshot of the source markup
@@ -166,45 +167,6 @@ function syncSwitcher() {
   });
 }
 
-/* ============================================================
-   THE OFFER
-   ============================================================ */
-
-function showOffer(code) {
-  const dict = strings[code];
-  if (!dict) return;
-
-  const toast = document.createElement('div');
-  toast.className = 'langtoast';
-  toast.setAttribute('role', 'dialog');
-  toast.setAttribute('aria-live', 'polite');
-  toast.innerHTML = `
-    <p class="langtoast__offer">${dict['lang.offer']}</p>
-    <p class="langtoast__note">${dict['lang.disclaimer']}</p>
-    <div class="langtoast__actions">
-      <button class="btn btn--solid langtoast__yes">${dict['lang.apply']}</button>
-      <button class="btn langtoast__no">${dict['lang.dismiss']}</button>
-    </div>
-  `;
-  document.body.appendChild(toast);
-  requestAnimationFrame(() => toast.classList.add('is-in'));
-
-  const dismiss = () => {
-    toast.classList.remove('is-in');
-    setTimeout(() => toast.remove(), 400);
-  };
-
-  toast.querySelector('.langtoast__yes').addEventListener('click', () => {
-    setLanguage(code, { remember: true });
-    dismiss();
-  });
-
-  toast.querySelector('.langtoast__no').addEventListener('click', () => {
-    try { localStorage.setItem(DECLINED_KEY, '1'); } catch {}
-    dismiss();
-  });
-}
-
 /**
  * Shown when the reader picks a language themselves — the same friendly caveat,
  * without the offer, so it never lands silently.
@@ -244,24 +206,14 @@ export function initI18n() {
   english = snapshotEnglish();
   buildSwitcher();
 
+  // The only language a visitor ever sees besides English is one they picked
+  // themselves from the switcher — restore that choice if there is one.
   let stored = null;
-  let declined = false;
   try {
     stored = localStorage.getItem(STORE_KEY);
-    declined = localStorage.getItem(DECLINED_KEY) === '1';
   } catch {}
 
   if (stored && byCode(stored)) {
     setLanguage(stored, { quiet: true });
-    return;
-  }
-
-  // navigator.language is what the visitor asked their browser for.
-  const preferred = (navigator.languages || [navigator.language || 'en'])
-    .map((l) => String(l).toLowerCase().split('-')[0])
-    .find((l) => l !== 'en' && byCode(l) && strings[l]);
-
-  if (preferred && !declined) {
-    setTimeout(() => showOffer(preferred), 1800);
   }
 }

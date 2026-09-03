@@ -65,44 +65,8 @@
 }
 
 /* ============================================================
-   THE OFFER + THE DISCLAIMER
+   THE DISCLAIMER
    ============================================================ */
-
-.langtoast {
-  position: fixed;
-  inset-block-end: clamp(1rem, 3vh, 2rem);
-  inset-inline-end: clamp(1rem, 3vw, 2rem);
-  z-index: calc(var(--z-modal) + 5);
-  width: min(92vw, 24rem);
-  padding: 1.35rem 1.5rem;
-  background: rgba(14, 14, 17, .97);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-lg);
-  box-shadow: 0 22px 60px rgba(0, 0, 0, .6);
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity var(--d) var(--e-out), transform var(--d) var(--e-out);
-}
-
-.langtoast.is-in { opacity: 1; transform: none; }
-
-.langtoast__offer {
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  color: var(--t);
-  margin-bottom: .45rem;
-}
-
-.langtoast__note {
-  font-size: var(--fs-xs);
-  line-height: 1.6;
-  color: var(--t-2);
-  margin-bottom: 1.1rem;
-}
-
-.langtoast__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
-.langtoast__actions .btn { padding: .6rem 1rem; font-size: .66rem; }
 
 /* Shown when the reader picks a language themselves. */
 .langnote {

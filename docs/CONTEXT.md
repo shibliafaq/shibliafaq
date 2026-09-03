@@ -7285,3 +7285,39 @@ Rebuild is `node_modules/.bin/vite build` in that folder (~40-110s), then copy
 `dist/index.html` and `dist/assets/*` over `public/uhi-twin/`, clearing the old
 hashed files first. `db/`, `districts/` and `figures/` are unchanged data and
 do not need recopying.
+
+## 116. Language switching stops guessing (2026-09-03)
+
+Reported: visitors in India were "sometimes" seeing the site in Chinese without
+choosing it. `src/i18n/index.js` had never force-switched anything — it detected
+`navigator.language`, and if that resolved to a supported non-English code it
+surfaced an opt-in toast ("This page is available in Chinese — yes / stay in
+English") 1.8s after load. Requiring a click was meant to make this safe.
+
+The signal itself was the bug. `navigator.languages` reflects whatever
+languages/keyboards are installed system-wide, not what the visitor reads in —
+and Xiaomi/MIUI phones (extremely common in India) commonly carry a Chinese
+system component that reports `zh` in that list even when the device's actual
+UI and the visitor's browsing language are English. So the toast kept
+offering Chinese to English-reading visitors in India specifically, which read
+to them as "the site changed language on its own."
+
+Fix: deleted the detection entirely. `initI18n()` now only restores a language
+the visitor previously *picked from the toolbar switcher themselves*
+(`localStorage['sa-lang']`, set only by the switcher's click handler with
+`remember:true`); it no longer reads `navigator.language` at all, and there is
+no timer, no toast, no offer/decline choice to track. Removed with it:
+`showOffer()`, the `sa-lang-declined` localStorage key, and the now-dead
+`.langtoast*` CSS block in `src/styles/i18n.css`. `showDisclaimer()` (the small
+"machine-assisted translation" note) stays — it still fires after a manual
+switcher pick, which is the one path left that ever shows a non-English page.
+
+`lang.offer`/`lang.apply`/`lang.dismiss` keys are now unused in every language
+block of `src/i18n/strings.js` (21 lines) — left in place since dead dictionary
+entries are harmless and touching all seven blocks wasn't worth the risk for
+this fix; worth a cleanup pass if `strings.js` is touched for other reasons.
+
+Verified in the dev server: switcher lists all seven languages, waiting past
+the old 1.8s delay produces no toast, `vite build` passes, picking a language
+from the toolbar sets `html[lang]`, persists to `localStorage`, and shows the
+disclaimer note; a fresh load with no stored preference stays English.
