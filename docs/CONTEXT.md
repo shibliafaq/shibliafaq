@@ -7367,3 +7367,40 @@ the site's actual `#09090b` background (matching `theme-color`, not a guessed
 black) — and shipped as `public/assets/img/og-earth.webp` (33 KB). Also added
 `og:image:width/height/alt` and `twitter:image`, which the original tags
 never had.
+
+Also fixed same session: `og:url`/`og:image`/`twitter:image` pointed at the
+bare `shibliafaq.com` apex, which was still intermittently unreachable on one
+of Vercel's two edge IPs hours after the domain was added (TLS reset on
+`216.198.79.1`, fine on `64.29.17.1`) — a crawler landing on the broken edge
+got no response and showed no preview card at all. Pointed everything
+crawler-facing at `www.shibliafaq.com` instead, which was reliable throughout.
+
+**og-earth.webp was superseded same day** by `og-direction.webp` — Shibli
+preferred the site's own Research/Design Direction graphic (the red/blue
+`.dirs__wave` canvas plus its two headline columns) over a bare globe, with
+the earth kept as a dimmed backdrop rather than the subject. Built the same
+way as the globe capture (`.dirs__wave canvas` is a plain 2D canvas, so
+`toDataURL()` worked immediately — no rAF timing trick needed the way the
+WebGL globe required). The headline text itself couldn't be captured from the
+DOM: an SVG `<foreignObject>` + `drawImage` render (the standard DOM-to-canvas
+trick) throws on `toDataURL()` because the cross-origin Google Fonts load
+taints the canvas. Rendered it natively with Pillow instead, using the real
+`Jost.ttf`/`Jost-Italic.ttf` (pulled from the google/fonts GitHub mirror,
+variable-weight, `set_variation_by_axes([500])`/`([400])`) at the exact
+computed color/size/weight read off the live page via `getComputedStyle`
+(`#FFD429` eyebrow, `#FAFAFA`/`#FFD429` italic title). One gotcha in the wave
+crop: the source canvas is 952x914 and nearly square, but the visible wave
+line only occupies `y:356..576` — scaling the full canvas to the 1200x630
+frame by width first blew the height up to ~1200px and pushed the line
+off-frame entirely; crop to `getbbox()` before scaling.
+
+Two follow-up alignment passes, both requested after seeing the first render:
+the two columns were left-anchored at fixed x positions (60 / 618), which put
+the right column's near edge almost touching the canvas centerline while the
+left column's near edge sat far from it — fixed by right-aligning the left
+column and left-aligning the right column, each to a fixed `GAP` from
+`CANVAS_W // 2` (computed per-line with `textbbox` since "Turning Data" and
+"into Action" differ in width). Then the whole three-line block was
+vertically centered by measuring real eyebrow/title glyph heights via
+`textbbox` rather than eyeballing a `TOP_Y`, so `TOP_Y = (CANVAS_H -
+BLOCK_H) // 2`.
