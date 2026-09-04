@@ -7404,3 +7404,20 @@ column and left-aligning the right column, each to a fixed `GAP` from
 vertically centered by measuring real eyebrow/title glyph heights via
 `textbbox` rather than eyeballing a `TOP_Y`, so `TOP_Y = (CANVAS_H -
 BLOCK_H) // 2`.
+
+## 118. Hero text scaled to 80% on laptop-width screens (2026-09-04)
+
+Reported from a real laptop screenshot: `.hero__name` ran up to its
+`10rem`/160px clamp ceiling and dominated the hero out of proportion to
+everything around it. Scaled the four hero-specific clamps (`.hero__name`,
+`.hero__role`, `.hstat__val`) to exactly 80% of their prior min/preferred/max
+values, verified via `getComputedStyle` at 1920px (128px/13.44px/33.28px vs.
+the old 160px/16.8px/41.6px — each ratio is exactly 0.8).
+
+`.hero__desc`/`.hero__desc--2` used the shared `--fs-lead`/`--fs-body`
+tokens, which every other section's lead/body paragraphs also read from —
+scaling those tokens directly would have shrunk text sitewide. Gave the hero
+its own 80%-scaled `clamp()` literals instead, scoped to just those two
+classes. The mobile breakpoint overrides further down the file (fixed rem
+values under a `@media` block) are untouched — they already had their own
+tuned sizes and don't consume these clamps.
