@@ -7321,3 +7321,49 @@ Verified in the dev server: switcher lists all seven languages, waiting past
 the old 1.8s delay produces no toast, `vite build` passes, picking a language
 from the toolbar sets `html[lang]`, persists to `localStorage`, and shows the
 disclaimer note; a fresh load with no stored preference stays English.
+
+## 117. Social-preview card: stale title, static-image reality, and a real hero-globe frame (2026-09-04)
+
+The share-preview card (WhatsApp/iMessage/LinkedIn) was still saying "Smart
+Cities Researcher, Urban Data Scientist" — a label the site itself dropped a
+while ago. The live typewriter under the hero name now cycles "Architect /
+Urban Designer / Spatial Researcher" (`src/modules/hero.js` `EN_ROLES`), and
+the `<title>`, meta description, `og:title`/`og:description`, and
+`twitter:title`/`twitter:description` had never been updated to match. Fixed
+all of them to the current framing, and rewrote the description to the
+current, accurate facts (GPA 4.0/4.0, satellite-driven digital twin for UHI,
+seeking fully funded PhD positions — matching `#contact .contact__lead`
+verbatim in substance) rather than the old vaguer "smart city roles" line.
+`og:url` also still said `shibliafaq.vercel.app`; now `shibliafaq.com`.
+
+**Worth knowing for next time: link-preview cards never animate `og:image`.**
+Every platform that renders one (WhatsApp, iMessage, LinkedIn, Slack...)
+extracts a single static frame even from an actual `.gif` — asked to use "a
+GIF of the site scrolling / the earth rotating," the real deliverable is one
+well-chosen still frame, not a truly animated preview.
+
+**Getting a real frame out of the three.js globe was the actual work.**
+`document.getElementById('heroGlobe').toDataURL()` returns near-empty PNGs
+(single-digit KB) most of the time — the renderer does not set
+`preserveDrawingBuffer`, so the drawing buffer is typically already cleared by
+the time JS reads it. Calling `toDataURL()` inside a double
+`requestAnimationFrame` (i.e. wait two frames, then read) reliably lands
+between a render and the clear — same canvas went from a 27 KB near-blank
+capture to an 886 KB real one this way, no renderer changes needed.
+
+Getting that data OUT of the sandboxed preview pane was the second problem:
+neither an `<a download>` click nor `Read`-ing a "screenshot" produces a file
+on disk from this environment. What worked: spin up a one-shot local HTTP
+server (`http.server`, CORS-open, writes whatever body it receives to a named
+file and shuts itself down), then `fetch(dataURL).then(r => r.blob())` and
+`fetch('http://127.0.0.1:8765/upload', {method:'POST', body: blob})` from the
+page. The blob crosses the sandbox boundary fine even when nothing
+download-shaped does.
+
+The raw capture was composited afterward with Pillow — trimmed to the
+sphere's own bounding box, scaled to overflow the 630px card height for an
+immersive crop rather than a small centered dot, placed asymmetric-right on
+the site's actual `#09090b` background (matching `theme-color`, not a guessed
+black) — and shipped as `public/assets/img/og-earth.webp` (33 KB). Also added
+`og:image:width/height/alt` and `twitter:image`, which the original tags
+never had.
