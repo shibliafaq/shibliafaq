@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /gis-twin.html
+Disallow: /iot-twin.html
+Disallow: /lst-twin.html
+Disallow: /projects-map.html
+Disallow: /uhi-twin/

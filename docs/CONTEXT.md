@@ -7432,3 +7432,88 @@ introducing a new one, same reasoning as the last resume swap (§ commit
 project card, and the footer — and swapping the file in place updates all
 four with no markup change. Verified the new file lands in `dist/` after
 `vite build`.
+
+## 120. Security/polish audit against two internet checklists (2026-09-09)
+
+Shibli asked for an audit against two lists he'd read online: a backend
+checklist (ACID, encryption, RabbitMQ, DynamoDB, load balancer, consistency,
+indexing, CDN, message queues) and a security/polish checklist aimed at
+vibe-coded apps generally. Both assume a database-backed multi-user app;
+this site is static (Vite, no framework) plus one 14-line serverless
+function (`api/visits.js`) that increments a single integer in Upstash
+Redis. Recorded here so the next session doesn't re-derive which half of
+each list is real:
+
+**Not applicable, and why:** ACID/consistency (no transactions — one Redis
+INCR), RabbitMQ/message queues (nothing async to decouple), DynamoDB (one
+key, one integer — a whole database is the wrong tool), load balancer
+(Vercel's edge network does this invisibly for any deployment), indexing in
+the database sense (no queries to speed up — `docs/CONTEXT.md` §24's
+Getis-Ord/Jenks work is the closest thing to "indexing" this project has,
+and it is precomputed at build time, not a runtime concern), row-level
+security / hashed passwords / session cookies / login rate-limiting (no
+accounts, no login, nothing to protect at that layer).
+
+**Already fine, checked not assumed:** git history scanned for committed
+secrets/API keys/private keys — clean, nothing ever committed, no `.env`
+ever tracked. `api/visits.js` takes no user input into its Redis command
+(fixed key, `command` is one of two hardcoded strings), stores no PII by
+design (documented in its own header comment), and its `?debug` endpoint
+only echoes which env var NAMES are set, never values. Contact form
+(`src/modules/ui.js`) validates client-side and posts to Formspree (which
+does its own server-side spam/rate-limit handling) with a `mailto:`
+fallback on failure — no XSS surface since submitted values are never
+rendered back into the page. HTTPS is enforced automatically by Vercel for
+every custom domain. Favicon, meta description, mobile menu, clickable
+logo/email, accurate copyright year (2026, matches real date), no
+placeholder/lorem/TODO text, and no dead internal nav anchors — all
+verified present/correct, not just assumed.
+
+**Fixed this pass:**
+- `⇩ Resume` → `⇩ CV` across all four instances (nav, mobile menu, project
+  card, footer), and the footer's stale `shibliafaq.vercel.app` → `shibliafaq.com`.
+- `vercel.json`: added `Strict-Transport-Security` (2-year max-age,
+  includeSubDomains, preload), `X-Frame-Options: SAMEORIGIN` (safe here
+  specifically because the five dashboard pages are framed by `index.html`
+  on the *same* origin — `DENY` would have broken them), and a
+  `Permissions-Policy` disabling camera/mic/geolocation/payment/usb/FLoC,
+  none of which the site uses.
+- Added `public/404.html` — self-contained (inline CSS, CDN font, no
+  bundled JS) so it doesn't need a Vite build entry, just `public/`'s
+  verbatim copy-to-`dist/`-root behaviour, which is what Vercel's static
+  hosting looks for on an unmatched route. Previously an unmatched path
+  fell through to Vercel's generic branded 404.
+- Added `public/robots.txt` — allows the main page, disallows the four
+  standalone dashboard pages and `/uhi-twin/`, since those exist to be
+  framed inside a project card, not to rank as their own search results.
+
+**Found, not fixed — flagged for a decision:**
+- `npm audit` (`--omit=dev`): **maplibre-gl has a CRITICAL XSS**
+  (GHSA-jrc7-96c5-q579, sanitizer bypass in `DOM.sanitize()`), used only in
+  `src/gis-twin.js` for the Dammam GIS twin. The map style/data it loads is
+  self-hosted, not third-party, so exploitability looks low here
+  specifically, but the fix is a major-version bump (4.x → 6.8.0) that npm
+  flags as breaking — needs testing against the actual dashboard before
+  shipping, not a blind `audit fix --force`.
+- Same audit: 9 HIGH + 4 MODERATE findings, all in the deck.gl/loaders.gl
+  chain (`image-size`, `fflate`) — infinite-loop DoS bugs in image/ZIP
+  parsers. These only matter if the app parses attacker-supplied
+  images/3D-tiles/zip files at runtime; this site doesn't accept uploads or
+  load untrusted external data into those parsers, so exploitability is
+  low, but they'd clear on the same deck.gl major-version bump above.
+- **CSP not added.** Checked what it would actually need to allow first:
+  the whole front page only ever loads `fonts.googleapis.com`/
+  `fonts.gstatic.com` and `fetch()`s `formspree.io` — a small, buildable
+  surface — but three.js/deck.gl/maplibre commonly need `worker-src`/
+  `wasm-unsafe-eval` allowances that aren't safe to guess at without
+  loading the built dashboards under the policy and watching the console.
+  Worth doing properly in its own pass, not bolted on here.
+- Contact form has no honeypot field and shows no visible error message on
+  Formspree failure (it silently opens the visitor's mail client instead) —
+  low priority given Formspree already spam-filters server-side and the
+  mailto fallback means a failure still reaches Shibli either way.
+- `api/visits.js`'s POST has no rate limit, so the counter can be
+  vanity-inflated by repeated POSTs. Deliberately not fixed with
+  IP-based limiting: the file's own header comment documents storing no
+  IP/identifier as a considered privacy choice, and a rate limit worth
+  having would need one.
