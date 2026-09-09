@@ -7421,3 +7421,14 @@ its own 80%-scaled `clamp()` literals instead, scoped to just those two
 classes. The mobile breakpoint overrides further down the file (fixed rem
 values under a `@media` block) are untouched — they already had their own
 tuned sizes and don't consume these clamps.
+
+## 119. Resume swapped for the updated CV (2026-09-09)
+
+Replaced `public/assets/doc/Shibli_Afaq_Resume.pdf` in place with the newer
+CV from `E:\Job_Applications\Master_Resume\Shibli_Afaq_CV_.pdf` (77,408 bytes
+-> 86,390 bytes, 2 pages, PDF 1.5). Kept the existing filename rather than
+introducing a new one, same reasoning as the last resume swap (§ commit
+`d4bcb32`): four anchors point at it — nav, mobile menu, the featured
+project card, and the footer — and swapping the file in place updates all
+four with no markup change. Verified the new file lands in `dist/` after
+`vite build`.
