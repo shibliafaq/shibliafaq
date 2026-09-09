@@ -199,6 +199,16 @@ const saveRoad = {
 
 export default defineConfig({
   plugins: [saveRoad],
+  optimizeDeps: {
+    // maplibre-gl loads its worker as a sidecar file via a URL computed at
+    // runtime from import.meta.url. Vite's dev-server dependency pre-bundle
+    // copies the main module into node_modules/.vite/deps/ but not that
+    // sidecar, so the computed URL 404s and the map never fires 'load'.
+    // Excluding it serves the package straight from node_modules/maplibre-gl/
+    // dist/, where the worker file actually sits next to it. Production
+    // builds are unaffected — Rollup resolves the worker import for real.
+    exclude: ['maplibre-gl'],
+  },
   build: {
     // Never re-inline assets as base64 — undoing that is the whole point of v2.
     assetsInlineLimit: 0,

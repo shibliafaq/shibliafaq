@@ -7548,3 +7548,57 @@ scoped to metadata only: the on-page hero typewriter (`src/modules/hero.js`
 `EN_ROLES`: Architect / Urban Designer / Spatial Researcher) is a separate,
 bigger content decision and wasn't touched — flagged to Shibli rather than
 assumed.
+
+## 122. maplibre-gl 4.7.1 -> 6.8.0, clearing the CRITICAL XSS from §120 (2026-09-09)
+
+`@deck.gl/mapbox` has no maplibre-gl peer dependency at all (checked its
+package.json directly), so the two libraries aren't version-locked to each
+other — safe to move maplibre-gl on its own. gis-twin.js's actual API
+surface is tiny (`new maplibregl.Map(...)`, one `.on('load', ...)`, one
+`addControl(new maplibregl.NavigationControl(...))`), none of which changed
+across the major version jump. Two things actually did break, both fixed:
+
+**No default export any more.** 6.x's package.json now serves the module as
+plain ESM with named exports only (`Map`, `NavigationControl`, `Popup`, etc.)
+— no default. `import maplibregl from 'maplibre-gl'` failed the build
+outright (`"default" is not exported`). Fixed with a namespace import,
+`import * as maplibregl from 'maplibre-gl'`, which collects the named
+exports into the same shape every existing `maplibregl.X` call site already
+expects — zero other lines touched.
+
+**The worker sidecar 404s under Vite, even excluded from optimizeDeps.**
+maplibre-gl loads its web worker via a URL it computes at runtime from
+`import.meta.url`. Vite's dev server logged this outright: `"The file does
+not exist at .../node_modules/.vite/deps/maplibre-gl-worker.mjs ... Try
+adding it to optimizeDeps.exclude"`. Adding the exclude got maplibre-gl's
+own import resolving to the real `node_modules/maplibre-gl/dist/` (confirmed
+by reading the served, transformed `gis-twin.js` and checking the import
+specifier directly) — but the worker fetch still 404'd from the same
+`.vite/deps/` path, because the *worker URL itself* is still computed at
+runtime by maplibre-gl's own code, unaffected by which path its parent
+module was resolved from. The fix: import the worker file explicitly as a
+`?url` asset (`import maplibreWorkerUrl from
+'maplibre-gl/dist/maplibre-gl-worker.mjs?url'`) and call
+`maplibregl.setWorkerUrl(maplibreWorkerUrl)` before constructing the Map —
+this gives Vite a real, statically-resolvable reference in both dev (served
+directly, confirmed 200 in the network log) and the production build
+(Rollup emits it as a hashed asset, `dist/assets/maplibre-gl-worker-*.mjs`;
+confirmed the built `gisTwin-*.js` chunk references the exact same hash).
+`optimizeDeps.exclude: ['maplibre-gl']` in `vite.config.js` was still needed
+for the first problem (the default-export/named-export resolution) and is
+kept.
+
+Both bugs were silent in the sense that the boot screen just never went
+away ("Loading 12,954 cells") with no thrown error surfaced to the console
+in some runs — diagnosed by reading the actual served module source
+(`fetch('/src/gis-twin.js')` and grepping the transformed import specifier)
+and the Vite dev server's own stdout, not by guessing from symptoms.
+
+Verified live after both fixes: map renders, all layer buttons switch
+correctly (Heat-weighted, Vegetation index, etc. — legend/stats/colors all
+updated), hover tooltips work, `npx vite build` passes, and the shipped
+`dist/assets/gisTwin-*.js` references the exact worker asset filename that
+actually exists in `dist/assets/`. `npm audit` confirms maplibre-gl no
+longer appears in the vulnerability list at all; the CRITICAL from §120 is
+gone (13 remaining, all the pre-existing deck.gl/loaders.gl chain, unchanged
+from before this upgrade).

@@ -26,7 +26,18 @@
  */
 import './styles/gis-twin.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import maplibregl from 'maplibre-gl';
+// maplibre-gl 6.x dropped its default export in favour of named exports only
+// (see docs/CONTEXT.md #122) — a namespace import keeps every existing
+// maplibregl.Map / maplibregl.NavigationControl call site unchanged.
+import * as maplibregl from 'maplibre-gl';
+// maplibre-gl computes its worker's URL at runtime from import.meta.url,
+// which Vite's dep optimizer cannot follow (it 404s the sidecar file even
+// with maplibre-gl excluded from optimizeDeps — see docs/CONTEXT.md #122).
+// Importing the worker as a `?url` asset gives Vite a real, resolvable
+// reference in both dev and the production build, so setWorkerUrl replaces
+// maplibre-gl's own broken guess rather than racing it.
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import { GridCellLayer } from '@deck.gl/layers';
 
