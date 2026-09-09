@@ -7517,3 +7517,34 @@ verified present/correct, not just assumed.
   IP-based limiting: the file's own header comment documents storing no
   IP/identifier as a considered privacy choice, and a rate limit worth
   having would need one.
+
+## 121. Real favicon files, and the Google-result headline lagging the CV (2026-09-09)
+
+Two things Shibli noticed from an actual Google search result screenshot,
+not from the site itself. Neither was visible testing the site directly —
+worth remembering that a search snippet is a different render target from
+the page.
+
+**No logo in the Google result.** The only favicon was an inline
+`data:image/svg+xml` URI. That renders fine as a browser tab icon, but
+Google's search-result favicon pipeline evidently doesn't reliably pick up
+data-URI icons — it wants a real fetchable file. Generated a matching set
+with Pillow (same design as the old inline SVG: `--ink` rounded square,
+`--accent` border and "SA" wordmark, Segoe UI Bold standing in for Jost at
+favicon size since nobody can tell the difference at 32px) —
+`favicon.ico` (16/32/48 multi-size), `favicon-32.png`, `favicon-192.png`,
+`favicon-512.png`, `apple-touch-icon.png`, plus a minimal
+`site.webmanifest` referencing the two PNG sizes. All in `public/`, all
+verified 200 after a build. Google re-crawls on its own schedule, so the
+new icon won't appear in results until that happens — nothing further to
+do on this end.
+
+**Headline didn't match the CV.** `<title>`/meta description/`og:title`/
+`twitter:title` still said "Architect, Urban Designer & Spatial
+Researcher" — the label used a few sessions back, before the CV (see
+§119) settled on "Architect | Urban Data Researcher". Changed the
+metadata to "Architect & Urban Data Researcher" to match. Deliberately
+scoped to metadata only: the on-page hero typewriter (`src/modules/hero.js`
+`EN_ROLES`: Architect / Urban Designer / Spatial Researcher) is a separate,
+bigger content decision and wasn't touched — flagged to Shibli rather than
+assumed.
