@@ -7649,3 +7649,16 @@ Specialist" / "Urban Data Scientist" / "Climate Resilience Analyst" /
 across all six languages. That drift predates this session and is a bigger
 job than what was asked; flagging it here so it isn't mistaken for new
 breakage next time someone reads the translated hero.
+
+## 125. "M.Sc. Researcher, KFUPM" swapped for "Data-Driven Urbanist" (2026-09-10)
+
+Follow-up to §124: Shibli didn't like the third typewriter phrase reading as
+a degree/institution credential rather than an identity. Replaced it with
+"Data-Driven Urbanist" in `src/modules/hero.js`'s `EN_ROLES`, chosen from a
+short list offered (alternatives were "GIS & Spatial Analyst" and "Urban
+Systems Designer"). `EN_ROLES` is now `['Architect', 'Urban Data
+Researcher', 'Data-Driven Urbanist']`.
+
+Same caveat as §124 still stands: the translated `role.0`-`role.4` keys in
+`src/i18n/strings.js` are an unrelated, older stale list and were not
+touched.
