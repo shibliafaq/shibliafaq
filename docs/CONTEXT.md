@@ -7626,3 +7626,26 @@ nothing in this codebase reaches it. The findings are real in
 imported) but never ship to a browser. Left unfixed deliberately — the
 available "fix" is worse than the problem, and the problem itself isn't
 reachable.
+
+## 124. Hero typewriter roles updated to match the CV (2026-09-10)
+
+Follow-up to §121, which scoped the CV-alignment fix to metadata only and
+left `src/modules/hero.js`'s `EN_ROLES` — the on-page typewriter under the
+name — untouched, flagging it as a separate content decision. Shibli
+confirmed he wants it updated too. `EN_ROLES` was `['Architect', 'Urban
+Designer', 'Spatial Researcher']`; neither "Urban Designer" nor "Spatial
+Researcher" appears anywhere on the CV. Changed to `['Architect', 'Urban
+Data Researcher', 'M.Sc. Researcher, KFUPM']`, mirroring the CV's own
+header line ("Architect | Urban Data Researcher | M.Sc. Smart &
+Sustainable Cities") — the third phrase is paraphrased slightly to read as
+an identity noun phrase for the "Hey there, I'm ___" sentence the
+typewriter completes, rather than the CV's literal degree-program name.
+
+Left alone, noted but not fixed: `src/i18n/strings.js`'s translated
+`role.0`-`role.4` keys are already a *different* 5-item stale list from an
+even older version of the hero ("Smart Cities Researcher" / "GIS
+Specialist" / "Urban Data Scientist" / "Climate Resilience Analyst" /
+"Architecture → Data Science" — none of these three-code English phrases)
+across all six languages. That drift predates this session and is a bigger
+job than what was asked; flagging it here so it isn't mistaken for new
+breakage next time someone reads the translated hero.

@@ -1,12 +1,14 @@
 import { gsap, reducedMotion } from './scroll.js';
 
 /* The line under the name. It is a typewriter that cycles, so a single line of
-   "Architect · Urban Designer · Spatial Researcher" becomes three phrases rather
-   than one string — the separators are what the animation replaces. */
+   "Architect · Urban Data Researcher · M.Sc. Researcher, KFUPM" becomes three
+   phrases rather than one string — the separators are what the animation
+   replaces. Matches the CV's own header line (see docs/CONTEXT.md #124) —
+   "Urban Designer" and "Spatial Researcher" were never on the CV. */
 const EN_ROLES = [
   'Architect',
-  'Urban Designer',
-  'Spatial Researcher',
+  'Urban Data Researcher',
+  'M.Sc. Researcher, KFUPM',
 ];
 
 // Mutable so the language switcher can swap the phrases mid-cycle without
