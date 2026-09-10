@@ -7602,3 +7602,27 @@ actually exists in `dist/assets/`. `npm audit` confirms maplibre-gl no
 longer appears in the vulnerability list at all; the CRITICAL from §120 is
 gone (13 remaining, all the pre-existing deck.gl/loaders.gl chain, unchanged
 from before this upgrade).
+
+## 123. The remaining 13 deck.gl/loaders.gl findings: no real fix, and it doesn't matter (2026-09-10)
+
+Followed up on §120's flagged deck.gl/loaders.gl chain (image-size DoS bugs
+in ICNS/JXL/HEIF parsing, buried under `texture-compressor` ->
+`@loaders.gl/textures` -> `@luma.gl/gltf` -> `@deck.gl/geo-layers` ->
+`deck.gl`). `npm audit`'s suggested fix is `deck.gl@9.1.0` — which is
+*older* than the installed `9.3.10`. Not a real fix: deck.gl's own current
+release still carries this unfixed dependency chain upstream, and
+`npm audit fix --force` would silently downgrade the package for zero
+security benefit.
+
+Checked whether it's exploitable here regardless of the missing upstream
+fix: `gis-twin.js` (the only file that imports deck.gl) only uses
+`MapboxOverlay` and `GridCellLayer` — no GLTF, no 3D-tile, no mesh layers,
+nothing that would ever invoke the vulnerable image parsers. Confirmed by
+grepping the built production bundle (`dist/assets/gisTwin-*.js`,
+`dist/assets/deck-*.js`) for any trace of `image-size`, `texture-compressor`,
+or `gltf` — none found. Rollup's tree-shaking drops that code entirely since
+nothing in this codebase reaches it. The findings are real in
+`node_modules` (which `npm audit` scans regardless of what's actually
+imported) but never ship to a browser. Left unfixed deliberately — the
+available "fix" is worse than the problem, and the problem itself isn't
+reachable.
