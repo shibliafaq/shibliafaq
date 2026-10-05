@@ -7662,3 +7662,56 @@ Researcher', 'Data-Driven Urbanist']`.
 Same caveat as §124 still stands: the translated `role.0`-`role.4` keys in
 `src/i18n/strings.js` are an unrelated, older stale list and were not
 touched.
+
+
+## 126. The Dammam dashboard never loaded in production (2026-10-05)
+
+Reported from the live site: the GIS card's dashboard sat on "Loading 12,954
+cells · 13 layers" forever. The other three dashboards were fine.
+
+Cause: §122's maplibre-gl 6 upgrade imported the worker with `?url`. That copies
+`maplibre-gl-worker.mjs` into `dist/assets/` byte for byte, but in 6.x the
+worker is an ES module whose first statement is
+`import {...} from "./maplibre-gl-shared.mjs"`, and nothing copied the sibling.
+On the live site the worker asked for `/assets/maplibre-gl-shared.mjs`, got
+Vercel's 404 page, failed to start, and maplibre never fired `load`, so the
+loader never came down. No error reached the page console: a module worker
+whose import fails surfaces only as a bare `error` event on the Worker object.
+
+Why §122 believed it worked: it was verified on the dev server, which serves
+`node_modules/maplibre-gl/dist/`, where the sibling exists. Measured on the
+live site:
+
+    /assets/maplibre-gl-worker-CoHs9J4f.mjs   200  19 KB, opens with that import
+    /assets/maplibre-gl-shared.mjs            404
+    new Worker(url, {type: 'module'})         error event, no message
+
+Fix: `?worker&url` instead of `?url`, so Vite builds the worker as its own
+entry with its imports resolved, plus `worker: { format: 'es' }` in
+vite.config.js, because maplibre 6 starts any worker URL not ending in `.cjs`
+as a module worker (`Qi()` in maplibre-gl.mjs). The built worker is a single
+486 KB file with no relative imports left. It carries its own copy of the
+shared code, which is unavoidable: the main thread's copy sits inside the deck
+chunk, and a worker cannot borrow it.
+
+Verified on the PRODUCTION build (`vite preview` through the new root launch
+config `portfolio-prod`, port 4173), not only on dev. gis-twin.html on its own
+renders the basemap, the 3D cells and the stats with no console errors. Opened
+the way a visitor opens it (Enter on the GIS card, then Launch the dashboard),
+the embed reaches `is-loaded is-armed` with both canvases and the stats panel.
+Dev on 5199 still works, serving the worker as `?worker_file&type=module`.
+lst-twin, which shares the deck chunk, still renders on the production build.
+
+The other three on the live site, checked the same day: IoT and Global Surface
+Temperature load with no errors. The UHI twin loads (Map and Interventions
+tabs) but logs three 404s, `get_alerts_date_2026_08_14.json`,
+`get_data_cells_daily_check_date_2026_08_14.json` and
+`get_data_cells_daily_check.json`. None of the three was ever in the snapshot
+(166 files on disk, 166 tracked), so this is not a deploy loss, and the app
+already treats them as optional. The dev server hid this one as well, by
+answering a missing file under `public/` with index.html and a 200.
+
+The lesson, twice in one session: the dev server is not evidence about
+production. It serves node_modules, and it never 404s a missing public file. A
+dashboard change is verified when `npm run build` exits 0 AND the page renders
+under `vite preview`.

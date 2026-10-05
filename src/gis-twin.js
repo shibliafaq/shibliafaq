@@ -27,16 +27,20 @@
 import './styles/gis-twin.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // maplibre-gl 6.x dropped its default export in favour of named exports only
-// (see docs/CONTEXT.md #122) — a namespace import keeps every existing
+// (see docs/CONTEXT.md #122), so a namespace import keeps every existing
 // maplibregl.Map / maplibregl.NavigationControl call site unchanged.
 import * as maplibregl from 'maplibre-gl';
-// maplibre-gl computes its worker's URL at runtime from import.meta.url,
-// which Vite's dep optimizer cannot follow (it 404s the sidecar file even
-// with maplibre-gl excluded from optimizeDeps — see docs/CONTEXT.md #122).
-// Importing the worker as a `?url` asset gives Vite a real, resolvable
-// reference in both dev and the production build, so setWorkerUrl replaces
-// maplibre-gl's own broken guess rather than racing it.
-import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
+// The worker has to be BUILT, not copied. maplibre-gl-worker.mjs is an ES
+// module whose first statement imports ./maplibre-gl-shared.mjs. A plain `?url`
+// import copies the worker into dist/assets verbatim and leaves that sibling
+// behind, so in production the worker 404s on its own dependency, never
+// starts, and the map never fires 'load': the live dashboard sat on its loader
+// from 2026-09-09 (docs/CONTEXT.md #126). The dev server hid it by serving
+// node_modules, where the sibling exists. `?worker&url` makes Vite build the
+// worker as its own entry with its imports resolved. maplibre starts any
+// worker URL not ending in .cjs as a module worker, hence worker.format 'es'
+// in vite.config.js.
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 maplibregl.setWorkerUrl(maplibreWorkerUrl);
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import { GridCellLayer } from '@deck.gl/layers';

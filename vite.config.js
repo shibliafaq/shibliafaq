@@ -205,9 +205,18 @@ export default defineConfig({
     // copies the main module into node_modules/.vite/deps/ but not that
     // sidecar, so the computed URL 404s and the map never fires 'load'.
     // Excluding it serves the package straight from node_modules/maplibre-gl/
-    // dist/, where the worker file actually sits next to it. Production
-    // builds are unaffected — Rollup resolves the worker import for real.
+    // dist/, where the worker file actually sits next to it. Production does
+    // not go through this at all: gis-twin.js imports the worker with
+    // `?worker&url`, which Rollup builds for real (see `worker` below).
     exclude: ['maplibre-gl'],
+  },
+  worker: {
+    // maplibre-gl 6 starts any worker URL that does not end in .cjs as a
+    // MODULE worker, so the worker gis-twin.js hands it must be an ES module.
+    // The previous `?url` import shipped the worker without its
+    // ./maplibre-gl-shared.mjs dependency, and the live map never loaded
+    // (docs/CONTEXT.md #126).
+    format: 'es',
   },
   build: {
     // Never re-inline assets as base64 — undoing that is the whole point of v2.
